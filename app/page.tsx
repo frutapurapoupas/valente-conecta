@@ -1,329 +1,213 @@
-// app/page.tsx
+"use client";
+
 import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen w-full bg-[#061627] text-white">
-      {/* Background */}
-      <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-[radial-gradient(1100px_700px_at_20%_10%,rgba(59,130,246,0.35),transparent_60%),radial-gradient(900px_650px_at_80%_30%,rgba(249,115,22,0.25),transparent_55%),radial-gradient(900px_650px_at_50%_95%,rgba(34,197,94,0.18),transparent_55%)]" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/60" />
-      </div>
-
-      <div className="mx-auto max-w-6xl px-4 py-8 md:py-10">
-        {/* Topbar */}
-        <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-2xl bg-white/10 ring-1 ring-white/15 backdrop-blur-md flex items-center justify-center">
-              <span className="text-lg font-semibold">V</span>
+    <main className="min-h-screen bg-[#020817] text-white">
+      <header className="border-b border-white/10 px-5 py-7 md:px-8 md:py-8">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-xl font-bold shadow-lg">
+              V
             </div>
+
             <div>
-              <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
+              <h1 className="text-3xl font-bold tracking-tight md:text-5xl">
                 Valente Conecta
               </h1>
-              <p className="text-sm text-white/70">
+              <p className="mt-1 text-sm text-slate-300 md:text-lg">
                 Ofertas, serviços e oportunidades — tudo em um só lugar.
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-white/80 ring-1 ring-white/15 backdrop-blur">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200 md:px-5 md:py-2.5">
               Cidade
             </span>
-            <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-white/90 ring-1 ring-white/15 backdrop-blur">
-              Valente • BA
+
+            <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200 md:px-5 md:py-2.5">
+              Valente - BA
             </span>
+
             <Link
               href="/indicar"
-              className="ml-auto md:ml-0 inline-flex items-center justify-center rounded-full bg-emerald-500/90 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-emerald-500/20 hover:bg-emerald-500 transition"
+              className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 transition hover:bg-emerald-400 md:px-6 md:py-3.5 md:text-base"
             >
               Indicar e ganhar R$1
             </Link>
           </div>
-        </header>
+        </div>
+      </header>
 
-        {/* Search + Quick chips */}
-        <section className="mt-8 grid gap-4">
-          <div className="rounded-3xl bg-white/8 ring-1 ring-white/15 backdrop-blur-xl p-4 md:p-5 shadow-2xl shadow-black/30">
-            <div className="flex flex-col gap-3 md:flex-row md:items-center">
-              <div className="flex-1">
-                <label className="text-xs text-white/70">Buscar no Valente Conecta</label>
-                <div className="mt-2 flex items-center gap-2 rounded-2xl bg-black/25 ring-1 ring-white/10 px-3 py-3">
-                  <span className="text-white/60">🔎</span>
-                  <input
-                    className="w-full bg-transparent outline-none placeholder:text-white/40 text-sm"
-                    placeholder="Ex.: pizzaria, pedreiro, promoção, som automotivo..."
-                  />
-                </div>
-              </div>
+      <section className="px-5 py-8 md:px-8 md:py-10">
+        <div className="mx-auto w-full max-w-7xl rounded-[30px] border border-white/10 bg-white/5 p-5 shadow-2xl backdrop-blur md:p-6 lg:p-7">
+          <p className="mb-4 text-sm text-slate-300 md:text-base">
+            Buscar no Valente Conecta
+          </p>
 
-              <div className="flex gap-2">
-                <Link
-                  href="/ofertas"
-                  className="inline-flex items-center justify-center rounded-2xl bg-blue-500/90 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-500 transition shadow-lg shadow-blue-500/20"
-                >
-                  Ver Ofertas
-                </Link>
-                <Link
-                  href="/servicos"
-                  className="inline-flex items-center justify-center rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold text-white ring-1 ring-white/15 hover:bg-white/15 transition"
-                >
-                  Ver Serviços
-                </Link>
-              </div>
+          <div className="flex flex-col gap-4 xl:flex-row">
+            <div className="flex min-h-[64px] flex-1 items-center rounded-2xl border border-white/10 bg-[#0b1220] px-5 text-slate-400 shadow-inner md:min-h-[70px] md:text-base">
+              🔎 Ex.: pizzaria, pedreiro, promoção, som automotivo...
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-2">
-              {[
-                "🔥 Promoções do dia",
-                "🍕 Food & Delivery",
-                "🛠️ Pedreiro/Obras",
-                "🚗 Oficina & Auto",
-                "🎉 Eventos",
-                "🏠 Aluguel",
-                "📦 Vendas",
-              ].map((t) => (
-                <span
-                  key={t}
-                  className="rounded-full bg-white/8 px-3 py-1 text-xs text-white/75 ring-1 ring-white/10"
-                >
-                  {t}
-                </span>
-              ))}
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Link
+                href="/ofertas"
+                className="inline-flex min-h-[64px] items-center justify-center rounded-2xl bg-blue-500 px-7 text-base font-semibold text-white shadow-lg shadow-blue-500/30 transition hover:bg-blue-400 md:min-h-[70px] md:text-lg"
+              >
+                Ver Ofertas
+              </Link>
+
+              <Link
+                href="/servicos"
+                className="inline-flex min-h-[64px] items-center justify-center rounded-2xl border border-white/10 bg-white/10 px-7 text-base font-semibold text-white transition hover:bg-white/15 md:min-h-[70px] md:text-lg"
+              >
+                Ver Serviços
+              </Link>
             </div>
           </div>
-        </section>
 
-        {/* Main grid */}
-        <section className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
-          <HomeCard
-            title="Ofertas"
-            desc="Promoções do comércio local e oportunidades."
-            icon="🏷️"
+          <div className="mt-4 flex flex-wrap gap-2.5">
+            <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">
+              🔥 Promoções do dia
+            </span>
+            <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">
+              🍔 Food & Delivery
+            </span>
+            <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">
+              🛠️ Pedreiro/Obras
+            </span>
+            <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">
+              🚗 Oficina & Auto
+            </span>
+            <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">
+              🎉 Eventos
+            </span>
+            <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">
+              🏠 Aluguel
+            </span>
+            <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">
+              📦 Vendas
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <section className="px-5 pb-10 md:px-8 md:pb-14">
+        <div className="mx-auto grid w-full max-w-7xl gap-6 lg:grid-cols-3">
+          <Link
             href="/ofertas"
-            accent="from-blue-500/30 to-cyan-400/10"
-            cta="Explorar ofertas"
-          />
-          <HomeCard
-            title="Serviços"
-            desc="Profissionais por categoria, com contato rápido."
-            icon="🧰"
-            href="/servicos"
-            accent="from-orange-500/30 to-yellow-400/10"
-            cta="Encontrar profissional"
-          />
-          <HomeCard
-            title="Classificados"
-            desc="Vendas, aluguel, anúncios e achados da cidade."
-            icon="🧾"
-            href="/classificados"
-            accent="from-emerald-500/30 to-lime-400/10"
-            cta="Ver classificados"
-          />
-        </section>
+            className="group rounded-[30px] border border-blue-500/20 bg-gradient-to-br from-blue-900/40 to-cyan-900/20 p-7 shadow-xl transition hover:-translate-y-1 hover:border-blue-400/40 hover:bg-blue-900/50"
+          >
+            <div className="mb-8 flex items-center justify-between">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-black/20 text-2xl">
+                🏷️
+              </div>
+              <span className="text-sm text-slate-300 md:text-base">Abrir →</span>
+            </div>
 
-        {/* Destaques */}
-        <section className="mt-8">
-          <div className="flex items-end justify-between gap-3">
-            <div>
-              <h2 className="text-lg md:text-xl font-semibold">Destaques</h2>
-              <p className="text-sm text-white/70">
-                O que está em alta agora em Valente.
+            <h3 className="text-3xl font-bold md:text-4xl">Ofertas</h3>
+            <p className="mt-4 text-base text-slate-300 md:text-lg">
+              Promoções do comércio local e oportunidades especiais.
+            </p>
+
+            <div className="mt-10 inline-flex items-center rounded-full border border-white/10 bg-black/20 px-5 py-3 text-sm font-semibold text-white transition group-hover:bg-black/30 md:text-base">
+              Explorar ofertas →
+            </div>
+          </Link>
+
+          <Link
+            href="/servicos"
+            className="group rounded-[30px] border border-amber-500/20 bg-gradient-to-br from-amber-900/30 to-slate-800/40 p-7 shadow-xl transition hover:-translate-y-1 hover:border-amber-400/40 hover:bg-amber-900/30"
+          >
+            <div className="mb-8 flex items-center justify-between">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-black/20 text-2xl">
+                🧰
+              </div>
+              <span className="text-sm text-slate-300 md:text-base">Abrir →</span>
+            </div>
+
+            <h3 className="text-3xl font-bold md:text-4xl">Serviços</h3>
+            <p className="mt-4 text-base text-slate-300 md:text-lg">
+              Profissionais por categoria, com contato rápido.
+            </p>
+
+            <div className="mt-10 inline-flex items-center rounded-full border border-white/10 bg-black/20 px-5 py-3 text-sm font-semibold text-white transition group-hover:bg-black/30 md:text-base">
+              Encontrar profissional →
+            </div>
+          </Link>
+
+          <Link
+            href="/classificados"
+            className="group rounded-[30px] border border-emerald-500/20 bg-gradient-to-br from-emerald-900/30 to-teal-900/20 p-7 shadow-xl transition hover:-translate-y-1 hover:border-emerald-400/40 hover:bg-emerald-900/30"
+          >
+            <div className="mb-8 flex items-center justify-between">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-black/20 text-2xl">
+                📄
+              </div>
+              <span className="text-sm text-slate-300 md:text-base">Abrir →</span>
+            </div>
+
+            <h3 className="text-3xl font-bold md:text-4xl">Classificados</h3>
+            <p className="mt-4 text-base text-slate-300 md:text-lg">
+              Vendas, aluguel, anúncios e achados da cidade.
+            </p>
+
+            <div className="mt-10 inline-flex items-center rounded-full border border-white/10 bg-black/20 px-5 py-3 text-sm font-semibold text-white transition group-hover:bg-black/30 md:text-base">
+              Ver classificados →
+            </div>
+          </Link>
+        </div>
+      </section>
+
+      <section className="px-5 pb-14 md:px-8 md:pb-16">
+        <div className="mx-auto w-full max-w-7xl">
+          <h2 className="text-3xl font-bold md:text-4xl">Destaques</h2>
+          <p className="mt-2 text-slate-300 md:text-lg">
+            O que está em alta agora em Valente.
+          </p>
+
+          <div className="mt-6 grid gap-4 lg:grid-cols-3">
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
+              <p className="text-sm font-semibold text-cyan-300 md:text-base">
+                Oferta em destaque
+              </p>
+              <h3 className="mt-3 text-xl font-bold md:text-2xl">
+                Promoções locais
+              </h3>
+              <p className="mt-3 text-sm text-slate-300 md:text-base">
+                Espaço ideal para divulgar os melhores preços e campanhas da cidade.
               </p>
             </div>
-            <Link
-              href="/cadastro"
-              className="text-xs text-white/80 hover:text-white underline underline-offset-4"
-            >
-              Quero aparecer aqui →
-            </Link>
-          </div>
 
-          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-            <HighlightCard
-              title="Comércio local"
-              subtitle="Ofertas do dia e cupons"
-              badge="Popular"
-              icon="🛒"
-              href="/ofertas"
-            />
-            <HighlightCard
-              title="Profissionais"
-              subtitle="Serviços com contato rápido"
-              badge="Recomendado"
-              icon="👷"
-              href="/servicos"
-            />
-            <HighlightCard
-              title="Anúncios"
-              subtitle="Vendas e oportunidades"
-              badge="Novo"
-              icon="📣"
-              href="/classificados"
-            />
-          </div>
-        </section>
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
+              <p className="text-sm font-semibold text-amber-300 md:text-base">
+                Serviço em alta
+              </p>
+              <h3 className="mt-3 text-xl font-bold md:text-2xl">
+                Profissionais da região
+              </h3>
+              <p className="mt-3 text-sm text-slate-300 md:text-base">
+                Reúna pedreiros, eletricistas, pintores, mecânicos e muitos outros.
+              </p>
+            </div>
 
-        {/* Ações rápidas */}
-        <section className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div className="rounded-3xl bg-white/8 ring-1 ring-white/15 backdrop-blur-xl p-5 shadow-2xl shadow-black/30">
-            <h3 className="text-base font-semibold">Painel do Parceiro</h3>
-            <p className="mt-1 text-sm text-white/70">
-              Cadastre sua empresa e apareça no Valente Conecta.
-            </p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Link
-                href="/cadastro"
-                className="inline-flex items-center justify-center rounded-2xl bg-white text-[#061627] px-4 py-2 text-sm font-semibold hover:bg-white/90 transition"
-              >
-                Cadastrar empresa
-              </Link>
-              <Link
-                href="/cadastro"
-                className="inline-flex items-center justify-center rounded-2xl bg-white/10 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/15 hover:bg-white/15 transition"
-              >
-                Entrar no painel
-              </Link>
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
+              <p className="text-sm font-semibold text-emerald-300 md:text-base">
+                Classificado recente
+              </p>
+              <h3 className="mt-3 text-xl font-bold md:text-2xl">
+                Oportunidades da comunidade
+              </h3>
+              <p className="mt-3 text-sm text-slate-300 md:text-base">
+                Espaço para vendas, aluguel e anúncios úteis para toda a cidade.
+              </p>
             </div>
           </div>
-
-          <div className="rounded-3xl bg-white/8 ring-1 ring-white/15 backdrop-blur-xl p-5 shadow-2xl shadow-black/30">
-            <h3 className="text-base font-semibold">Programa de Indicação</h3>
-            <p className="mt-1 text-sm text-white/70">
-              Indique o app e ganhe recompensas. Crescimento da cidade com você.
-            </p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Link
-                href="/indicar"
-                className="inline-flex items-center justify-center rounded-2xl bg-emerald-500/90 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500 transition shadow-lg shadow-emerald-500/20"
-              >
-                Indicar agora
-              </Link>
-              <span className="inline-flex items-center justify-center rounded-2xl bg-white/10 px-4 py-2 text-sm font-semibold text-white/80 ring-1 ring-white/15">
-                Meta: 1.000 usuários
-              </span>
-            </div>
-          </div>
-        </section>
-
-        {/* Footer */}
-        <footer className="mt-10 pb-6 text-center text-xs text-white/55">
-          © {new Date().getFullYear()} Valente Conecta • Feito para fortalecer a economia local.
-        </footer>
-      </div>
-
-      {/* Mobile bottom nav */}
-      <nav className="md:hidden fixed bottom-3 left-1/2 -translate-x-1/2 w-[92%] rounded-3xl bg-black/45 ring-1 ring-white/15 backdrop-blur-xl shadow-2xl shadow-black/40">
-        <div className="grid grid-cols-4 gap-1 p-2">
-          <BottomNavItem href="/" label="Início" icon="🏠" active />
-          <BottomNavItem href="/ofertas" label="Ofertas" icon="🏷️" />
-          <BottomNavItem href="/servicos" label="Serviços" icon="🧰" />
-          <BottomNavItem href="/classificados" label="Classif." icon="🧾" />
         </div>
-      </nav>
+      </section>
     </main>
-  );
-}
-
-function HomeCard({
-  title,
-  desc,
-  icon,
-  href,
-  accent,
-  cta,
-}: {
-  title: string;
-  desc: string;
-  icon: string;
-  href: string;
-  accent: string;
-  cta: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="group rounded-3xl bg-white/8 ring-1 ring-white/15 backdrop-blur-xl p-5 shadow-2xl shadow-black/30 hover:bg-white/10 transition overflow-hidden relative"
-    >
-      <div className={`absolute inset-0 bg-gradient-to-br ${accent} opacity-70`} />
-      <div className="relative">
-        <div className="flex items-center justify-between">
-          <div className="h-11 w-11 rounded-2xl bg-black/25 ring-1 ring-white/10 flex items-center justify-center">
-            <span className="text-lg">{icon}</span>
-          </div>
-          <span className="text-xs text-white/70 group-hover:text-white transition">
-            Abrir →
-          </span>
-        </div>
-
-        <h3 className="mt-4 text-lg font-semibold">{title}</h3>
-        <p className="mt-1 text-sm text-white/70">{desc}</p>
-
-        <div className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-black/25 ring-1 ring-white/10 px-4 py-2 text-sm font-semibold text-white">
-          {cta} <span className="text-white/70">→</span>
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-function HighlightCard({
-  title,
-  subtitle,
-  badge,
-  icon,
-  href,
-}: {
-  title: string;
-  subtitle: string;
-  badge: string;
-  icon: string;
-  href: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="rounded-3xl bg-white/8 ring-1 ring-white/15 backdrop-blur-xl p-5 shadow-2xl shadow-black/30 hover:bg-white/10 transition"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs text-white/80 ring-1 ring-white/10">
-            <span>{badge}</span>
-          </div>
-          <h4 className="mt-3 text-base font-semibold">{title}</h4>
-          <p className="mt-1 text-sm text-white/70">{subtitle}</p>
-        </div>
-        <div className="h-11 w-11 rounded-2xl bg-black/25 ring-1 ring-white/10 flex items-center justify-center">
-          <span className="text-lg">{icon}</span>
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-function BottomNavItem({
-  href,
-  label,
-  icon,
-  active,
-}: {
-  href: string;
-  label: string;
-  icon: string;
-  active?: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      className={`flex flex-col items-center justify-center rounded-2xl px-2 py-2 text-xs transition ${
-        active
-          ? "bg-white/12 ring-1 ring-white/15 text-white"
-          : "text-white/70 hover:text-white hover:bg-white/10"
-      }`}
-    >
-      <span className="text-base leading-none">{icon}</span>
-      <span className="mt-1">{label}</span>
-    </Link>
   );
 }
