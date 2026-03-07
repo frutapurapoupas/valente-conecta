@@ -13,6 +13,22 @@ function sanitizeCode(value: string) {
     .slice(0, 20);
 }
 
+function createRandomCode() {
+  const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+  return `VC${random}`;
+}
+
+function ensureUserReferralCode() {
+  if (typeof window === "undefined") return "";
+
+  const existing = localStorage.getItem("vc_ref_code");
+  if (existing) return sanitizeCode(existing);
+
+  const newCode = createRandomCode();
+  localStorage.setItem("vc_ref_code", newCode);
+  return newCode;
+}
+
 export default function CadastroPage() {
   const router = useRouter();
 
@@ -52,9 +68,9 @@ export default function CadastroPage() {
           ? localStorage.getItem("vc_referred_by")
           : null;
 
-      const emailLimpo = email.trim() ? email.trim() : null;
       const nomeLimpo = nome.trim();
       const telefoneLimpo = telefone.trim();
+      const emailLimpo = email.trim() ? email.trim() : null;
 
       const { error: cadastroErro } = await supabase.from("usuarios").insert([
         {
@@ -105,8 +121,10 @@ export default function CadastroPage() {
         }
       }
 
+      ensureUserReferralCode();
+
       alert("Cadastro concluído!");
-      router.push("/");
+      router.push("/indicar");
     } catch (err) {
       console.error("Erro inesperado no cadastro:", err);
       alert("Erro inesperado");
