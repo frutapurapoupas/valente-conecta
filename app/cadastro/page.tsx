@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
 function sanitizeCode(value: string) {
@@ -14,9 +14,7 @@ function sanitizeCode(value: string) {
 }
 
 export default function CadastroPage() {
-
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
@@ -25,105 +23,122 @@ export default function CadastroPage() {
   const [codigoIndicado, setCodigoIndicado] = useState("");
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
 
-    const ref = searchParams.get("ref");
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get("ref");
 
     if (!ref) return;
 
     const codigoLimpo = sanitizeCode(ref);
+    if (!codigoLimpo) return;
 
     localStorage.setItem("vc_referred_by", codigoLimpo);
-
     setCodigoIndicado(codigoLimpo);
-
-  }, [searchParams]);
+  }, []);
 
   async function finalizarCadastro(e: FormEvent<HTMLFormElement>) {
-
     e.preventDefault();
-
     setCarregando(true);
 
     try {
+      const visitanteToken =
+        typeof window !== "undefined"
+          ? localStorage.getItem("vc_visitor_token")
+          : null;
 
-      const visitanteToken = localStorage.getItem("vc_visitor_token");
+      const indicadorCodigo =
+        typeof window !== "undefined"
+          ? localStorage.getItem("vc_referred_by")
+          : null;
 
-      const { error } = await supabase
-        .from("usuarios")
-        .insert([
-          {
-            nome,
-            telefone,
-            email,
-            created_at: new Date().toISOString()
-          }
-        ]);
+      const { error: cadastroErro } = await supabase.from("usuarios").insert([
+        {
+          nome,
+          telefone,
+          email,
+          created_at: new Date().toISOString(),
+        },
+      ]);
 
-      if (error) {
-
+      if (cadastroErro) {
+        console.error(cadastroErro);
         alert("Erro ao salvar cadastro");
-
         setCarregando(false);
-
         return;
-
       }
 
       if (visitanteToken) {
-
-        await supabase
+        const { error: updateErro } = await supabase
           .from("indicacoes")
           .update({
             telefone_indicado: telefone,
             indicado_email: email,
-            status: "confirmado"
+            status: "confirmado",
           })
           .eq("visitante_token", visitanteToken);
 
+        if (updateErro) {
+          console.error(updateErro);
+        }
+      } else if (indicadorCodigo) {
+        const { error: insertIndicacaoErro } = await supabase
+          .from("indicacoes")
+          .insert([
+            {
+              indicador_codigo: indicadorCodigo,
+              telefone_indicado: telefone,
+              indicado_email: email,
+              status: "confirmado",
+              bonus: 1,
+              origem: "cadastro",
+              created_at: new Date().toISOString(),
+            },
+          ]);
+
+        if (insertIndicacaoErro) {
+          console.error(insertIndicacaoErro);
+        }
       }
 
       alert("Cadastro concluído!");
-
       router.push("/");
-
-    } catch {
-
+    } catch (err) {
+      console.error(err);
       alert("Erro inesperado");
-
     }
 
     setCarregando(false);
-
   }
 
   return (
-
     <main className="min-h-screen flex items-center justify-center bg-[#041022] text-white px-6">
-
       <form
         onSubmit={finalizarCadastro}
         className="w-full max-w-lg bg-white/10 backdrop-blur p-8 rounded-2xl space-y-4"
       >
-
         <div className="text-center">
-
           <h1 className="text-3xl font-bold text-emerald-400">
             APP VALENTE CONECTA
           </h1>
 
-          <p className="text-sm text-slate-300 mt-1">
+          <p className="mt-1 text-sm text-slate-300">
             o classificado da cidade
           </p>
-
         </div>
 
-        <h2 className="text-xl text-center font-semibold">
-          Criar cadastro
-        </h2>
+        <h2 className="text-xl text-center font-semibold">Criar cadastro</h2>
+
+        {codigoIndicado && (
+          <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3 text-sm text-emerald-200">
+            Você está se cadastrando por uma indicação:{" "}
+            <strong>{codigoIndicado}</strong>
+          </div>
+        )}
 
         <input
           placeholder="Nome"
-          className="w-full p-3 rounded-lg text-black"
+          className="w-full rounded-lg p-3 text-black"
           value={nome}
           onChange={(e) => setNome(e.target.value)}
           required
@@ -131,7 +146,7 @@ export default function CadastroPage() {
 
         <input
           placeholder="Telefone"
-          className="w-full p-3 rounded-lg text-black"
+          className="w-full rounded-lg p-3 text-black"
           value={telefone}
           onChange={(e) => setTelefone(e.target.value)}
           required
@@ -140,7 +155,7 @@ export default function CadastroPage() {
         <input
           placeholder="Email"
           type="email"
-          className="w-full p-3 rounded-lg text-black"
+          className="w-full rounded-lg p-3 text-black"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -148,15 +163,11 @@ export default function CadastroPage() {
 
         <button
           disabled={carregando}
-          className="w-full bg-emerald-500 p-3 rounded-lg font-semibold"
+          className="w-full rounded-lg bg-emerald-500 p-3 font-semibold hover:bg-emerald-600 disabled:opacity-60"
         >
           {carregando ? "Salvando..." : "Finalizar cadastro"}
         </button>
-
       </form>
-
     </main>
-
   );
-
 }
