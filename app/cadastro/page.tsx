@@ -32,9 +32,8 @@ export default function CadastroPage() {
 
     const codigoLimpo = sanitizeCode(ref);
 
-    if (!codigoLimpo) return;
-
     localStorage.setItem("vc_referred_by", codigoLimpo);
+
     setCodigoIndicado(codigoLimpo);
 
   }, [searchParams]);
@@ -42,27 +41,30 @@ export default function CadastroPage() {
   async function finalizarCadastro(e: FormEvent<HTMLFormElement>) {
 
     e.preventDefault();
+
     setCarregando(true);
 
     try {
 
       const visitanteToken = localStorage.getItem("vc_visitor_token");
 
-      const { error: cadastroErro } = await supabase
+      const { error } = await supabase
         .from("usuarios")
         .insert([
           {
             nome,
             telefone,
-            email
+            email,
+            created_at: new Date().toISOString()
           }
         ]);
 
-      if (cadastroErro) {
+      if (error) {
 
         alert("Erro ao salvar cadastro");
-        console.error(cadastroErro.message);
+
         setCarregando(false);
+
         return;
 
       }
@@ -84,9 +86,8 @@ export default function CadastroPage() {
 
       router.push("/");
 
-    } catch (err) {
+    } catch {
 
-      console.error(err);
       alert("Erro inesperado");
 
     }
@@ -104,31 +105,21 @@ export default function CadastroPage() {
         className="w-full max-w-lg bg-white/10 backdrop-blur p-8 rounded-2xl space-y-4"
       >
 
-        {/* CABEÇALHO DO APP */}
-
-        <div className="text-center mb-4">
+        <div className="text-center">
 
           <h1 className="text-3xl font-bold text-emerald-400">
-            App Valente Conecta
+            APP VALENTE CONECTA
           </h1>
 
           <p className="text-sm text-slate-300 mt-1">
-            o classificados da cidade
+            o classificado da cidade
           </p>
 
         </div>
 
-        {/* TITULO DO FORM */}
-
-        <h2 className="text-xl font-semibold text-center mb-4">
+        <h2 className="text-xl text-center font-semibold">
           Criar cadastro
         </h2>
-
-        {codigoIndicado && (
-          <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3 text-sm text-emerald-200">
-            Você está se cadastrando por uma indicação.
-          </div>
-        )}
 
         <input
           placeholder="Nome"
@@ -157,7 +148,7 @@ export default function CadastroPage() {
 
         <button
           disabled={carregando}
-          className="w-full bg-emerald-500 p-3 rounded-lg font-semibold hover:bg-emerald-600"
+          className="w-full bg-emerald-500 p-3 rounded-lg font-semibold"
         >
           {carregando ? "Salvando..." : "Finalizar cadastro"}
         </button>
