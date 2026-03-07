@@ -103,7 +103,7 @@ export default function IndicarPage() {
 
   const linkIndicacao = useMemo(() => {
     if (!origin || !codigo) return "";
-    return `${origin}/r/${codigo}`;
+    return `${origin}/cadastro?ref=${encodeURIComponent(codigo)}`;
   }, [origin, codigo]);
 
   const confirmadas = indicacoes.filter((item) => item.status === "confirmado");
@@ -137,7 +137,7 @@ export default function IndicarPage() {
     }
 
     const texto = encodeURIComponent(
-      `Cadastre-se no Valente Conecta pelo meu link:\n\n${linkIndicacao}`
+      `Cadastre-se no APP VALENTE CONECTA - o classificado da cidade - pelo meu link:\n\n${linkIndicacao}`
     );
 
     window.open(`https://wa.me/?text=${texto}`, "_blank");
@@ -181,13 +181,13 @@ export default function IndicarPage() {
             <button
               onClick={salvarCodigoPersonalizado}
               disabled={salvandoCodigo}
-              className="rounded-xl bg-slate-950 px-5 py-3 text-white font-medium hover:bg-slate-800 disabled:opacity-60"
+              className="rounded-xl bg-slate-950 px-5 py-3 font-medium text-white hover:bg-slate-800 disabled:opacity-60"
             >
               {salvandoCodigo ? "Salvando..." : "Salvar código"}
             </button>
           </div>
 
-          <div className="mt-5 rounded-2xl bg-slate-50 border border-slate-200 p-4">
+          <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
             <p className="text-sm text-slate-500">Seu link correto para compartilhar</p>
             <p className="mt-2 break-all text-base font-semibold text-slate-900">
               {linkIndicacao || "Gerando link..."}
@@ -197,7 +197,7 @@ export default function IndicarPage() {
           <div className="mt-4 flex flex-col gap-3 md:flex-row">
             <button
               onClick={copiarLink}
-              className="rounded-xl bg-emerald-500 px-5 py-3 text-white font-semibold hover:bg-emerald-600"
+              className="rounded-xl bg-emerald-500 px-5 py-3 font-semibold text-white hover:bg-emerald-600"
             >
               {copiado ? "Link copiado" : "Copiar link"}
             </button>
@@ -218,21 +218,21 @@ export default function IndicarPage() {
         </section>
 
         <section className="mt-6 grid gap-4 md:grid-cols-3">
-          <div className="rounded-[24px] bg-white p-6 shadow-sm border border-slate-200">
+          <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
             <p className="text-sm text-slate-500">Indicações confirmadas</p>
             <p className="mt-2 text-4xl font-bold text-slate-900">
               {carregando ? "..." : confirmadas.length}
             </p>
           </div>
 
-          <div className="rounded-[24px] bg-white p-6 shadow-sm border border-slate-200">
+          <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
             <p className="text-sm text-slate-500">Faltam concluir cadastro</p>
             <p className="mt-2 text-4xl font-bold text-amber-600">
               {carregando ? "..." : pendentes.length}
             </p>
           </div>
 
-          <div className="rounded-[24px] bg-white p-6 shadow-sm border border-slate-200">
+          <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
             <p className="text-sm text-slate-500">Créditos acumulados</p>
             <p className="mt-2 text-4xl font-bold text-emerald-600">
               {carregando ? "..." : `R$${creditos}`}
@@ -243,7 +243,9 @@ export default function IndicarPage() {
         <section className="mt-6 grid gap-5 lg:grid-cols-2">
           <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-slate-900">Indicados que já se cadastraram</h3>
+              <h3 className="text-lg font-bold text-slate-900">
+                Indicados que já se cadastraram
+              </h3>
               <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
                 {confirmadas.length} confirmados
               </span>
