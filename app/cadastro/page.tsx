@@ -47,7 +47,6 @@ export default function CadastroPage() {
     if (!ref) return;
 
     const codigoLimpo = sanitizeCode(ref);
-    if (!codigoLimpo) return;
 
     localStorage.setItem("vc_referred_by", codigoLimpo);
     setCodigoIndicado(codigoLimpo);
@@ -58,19 +57,12 @@ export default function CadastroPage() {
     setCarregando(true);
 
     try {
-      const visitanteToken =
-        typeof window !== "undefined"
-          ? localStorage.getItem("vc_visitor_token")
-          : null;
-
-      const indicadorCodigo =
-        typeof window !== "undefined"
-          ? localStorage.getItem("vc_referred_by")
-          : null;
+      const visitanteToken = localStorage.getItem("vc_visitor_token");
+      const indicadorCodigo = localStorage.getItem("vc_referred_by");
 
       const nomeLimpo = nome.trim();
       const telefoneLimpo = telefone.trim();
-      const emailLimpo = email.trim() ? email.trim() : null;
+      const emailLimpo = email.trim() || null;
 
       const { error: cadastroErro } = await supabase.from("usuarios").insert([
         {
@@ -82,14 +74,14 @@ export default function CadastroPage() {
       ]);
 
       if (cadastroErro) {
-        console.error("Erro ao salvar em usuarios:", cadastroErro);
+        console.error("Erro ao salvar:", cadastroErro);
         alert("Erro ao salvar cadastro");
         setCarregando(false);
         return;
       }
 
       if (visitanteToken) {
-        const { error: updateErro } = await supabase
+        await supabase
           .from("indicacoes")
           .update({
             telefone_indicado: telefoneLimpo,
@@ -97,36 +89,15 @@ export default function CadastroPage() {
             status: "confirmado",
           })
           .eq("visitante_token", visitanteToken);
-
-        if (updateErro) {
-          console.error("Erro ao atualizar indicacao:", updateErro);
-        }
-      } else if (indicadorCodigo) {
-        const { error: insertIndicacaoErro } = await supabase
-          .from("indicacoes")
-          .insert([
-            {
-              indicador_codigo: indicadorCodigo,
-              telefone_indicado: telefoneLimpo,
-              indicado_email: emailLimpo,
-              status: "confirmado",
-              bonus: 1,
-              origem: "cadastro",
-              created_at: new Date().toISOString(),
-            },
-          ]);
-
-        if (insertIndicacaoErro) {
-          console.error("Erro ao inserir indicacao:", insertIndicacaoErro);
-        }
       }
 
       ensureUserReferralCode();
 
       alert("Cadastro concluído!");
+
       router.push("/indicar");
     } catch (err) {
-      console.error("Erro inesperado no cadastro:", err);
+      console.error(err);
       alert("Erro inesperado");
     }
 
@@ -149,7 +120,9 @@ export default function CadastroPage() {
           </p>
         </div>
 
-        <h2 className="text-center text-xl font-semibold">Criar cadastro</h2>
+        <h2 className="text-center text-xl font-semibold">
+          Criar cadastro
+        </h2>
 
         {codigoIndicado && (
           <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3 text-sm text-emerald-200">
@@ -160,7 +133,7 @@ export default function CadastroPage() {
 
         <input
           placeholder="Nome"
-          className="w-full rounded-lg p-3 text-black"
+          className="w-full rounded-lg p-3 bg-white text-black placeholder-gray-500 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-400"
           value={nome}
           onChange={(e) => setNome(e.target.value)}
           required
@@ -168,7 +141,7 @@ export default function CadastroPage() {
 
         <input
           placeholder="Telefone"
-          className="w-full rounded-lg p-3 text-black"
+          className="w-full rounded-lg p-3 bg-white text-black placeholder-gray-500 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-400"
           value={telefone}
           onChange={(e) => setTelefone(e.target.value)}
           required
@@ -177,7 +150,7 @@ export default function CadastroPage() {
         <input
           placeholder="Email (opcional)"
           type="email"
-          className="w-full rounded-lg p-3 text-black"
+          className="w-full rounded-lg p-3 bg-white text-black placeholder-gray-500 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-400"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
