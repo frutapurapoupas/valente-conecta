@@ -52,17 +52,21 @@ export default function CadastroPage() {
           ? localStorage.getItem("vc_referred_by")
           : null;
 
+      const emailLimpo = email.trim() ? email.trim() : null;
+      const nomeLimpo = nome.trim();
+      const telefoneLimpo = telefone.trim();
+
       const { error: cadastroErro } = await supabase.from("usuarios").insert([
         {
-          nome,
-          telefone,
-          email,
+          nome: nomeLimpo,
+          telefone: telefoneLimpo,
+          email: emailLimpo,
           created_at: new Date().toISOString(),
         },
       ]);
 
       if (cadastroErro) {
-        console.error(cadastroErro);
+        console.error("Erro ao salvar em usuarios:", cadastroErro);
         alert("Erro ao salvar cadastro");
         setCarregando(false);
         return;
@@ -72,14 +76,14 @@ export default function CadastroPage() {
         const { error: updateErro } = await supabase
           .from("indicacoes")
           .update({
-            telefone_indicado: telefone,
-            indicado_email: email,
+            telefone_indicado: telefoneLimpo,
+            indicado_email: emailLimpo,
             status: "confirmado",
           })
           .eq("visitante_token", visitanteToken);
 
         if (updateErro) {
-          console.error(updateErro);
+          console.error("Erro ao atualizar indicacao:", updateErro);
         }
       } else if (indicadorCodigo) {
         const { error: insertIndicacaoErro } = await supabase
@@ -87,8 +91,8 @@ export default function CadastroPage() {
           .insert([
             {
               indicador_codigo: indicadorCodigo,
-              telefone_indicado: telefone,
-              indicado_email: email,
+              telefone_indicado: telefoneLimpo,
+              indicado_email: emailLimpo,
               status: "confirmado",
               bonus: 1,
               origem: "cadastro",
@@ -97,14 +101,14 @@ export default function CadastroPage() {
           ]);
 
         if (insertIndicacaoErro) {
-          console.error(insertIndicacaoErro);
+          console.error("Erro ao inserir indicacao:", insertIndicacaoErro);
         }
       }
 
       alert("Cadastro concluído!");
       router.push("/");
     } catch (err) {
-      console.error(err);
+      console.error("Erro inesperado no cadastro:", err);
       alert("Erro inesperado");
     }
 
@@ -112,10 +116,10 @@ export default function CadastroPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[#041022] text-white px-6">
+    <main className="min-h-screen flex items-center justify-center bg-[#041022] px-6 text-white">
       <form
         onSubmit={finalizarCadastro}
-        className="w-full max-w-lg bg-white/10 backdrop-blur p-8 rounded-2xl space-y-4"
+        className="w-full max-w-lg rounded-2xl bg-white/10 p-8 backdrop-blur space-y-4"
       >
         <div className="text-center">
           <h1 className="text-3xl font-bold text-emerald-400">
@@ -127,7 +131,7 @@ export default function CadastroPage() {
           </p>
         </div>
 
-        <h2 className="text-xl text-center font-semibold">Criar cadastro</h2>
+        <h2 className="text-center text-xl font-semibold">Criar cadastro</h2>
 
         {codigoIndicado && (
           <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3 text-sm text-emerald-200">
@@ -153,12 +157,11 @@ export default function CadastroPage() {
         />
 
         <input
-          placeholder="Email"
+          placeholder="Email (opcional)"
           type="email"
           className="w-full rounded-lg p-3 text-black"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          required
         />
 
         <button
