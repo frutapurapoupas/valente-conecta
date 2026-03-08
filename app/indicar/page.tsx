@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import PwaInstallCard from "@/app/components/pwa-install-card";
 
 type Indicacao = {
   id: string;
@@ -172,10 +171,6 @@ export default function IndicarPage() {
             Ganhe <strong>R$1 em crédito</strong> para cada novo cadastro
             confirmado pelo seu link.
           </p>
-        </section>
-
-        <section className="mt-6">
-          <PwaInstallCard />
         </section>
 
         <section className="mt-6 rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">

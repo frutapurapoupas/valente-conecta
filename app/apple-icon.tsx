@@ -15,31 +15,80 @@ export default function AppleIcon() {
           width: "100%",
           height: "100%",
           display: "flex",
-          background: "#16a34a",
           alignItems: "center",
           justifyContent: "center",
+          background:
+            "linear-gradient(180deg, #16a34a 0%, #15803d 55%, #166534 100%)",
           fontFamily: "Arial, sans-serif",
         }}
       >
         <div
           style={{
-            width: "78%",
-            height: "78%",
-            borderRadius: "24%",
-            background: "#ffffff",
+            width: "84%",
+            height: "84%",
+            borderRadius: "26%",
+            background: "rgba(255,255,255,0.14)",
+            border: "4px solid rgba(255,255,255,0.18)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: "#16a34a",
-            fontSize: 44,
-            fontWeight: 800,
-            letterSpacing: -1.5,
+            position: "relative",
           }}
         >
-          VC
+          <div
+            style={{
+              position: "absolute",
+              width: 62,
+              height: 62,
+              borderRadius: "50%",
+              border: "9px solid white",
+              opacity: 0.95,
+              top: 34,
+            }}
+          />
+
+          <div
+            style={{
+              position: "absolute",
+              width: 16,
+              height: 16,
+              borderRadius: "50%",
+              background: "#facc15",
+              top: 57,
+            }}
+          />
+
+          <div
+            style={{
+              position: "absolute",
+              width: 12,
+              height: 42,
+              background: "white",
+              borderRadius: 10,
+              transform: "rotate(45deg)",
+              top: 70,
+              left: 101,
+            }}
+          />
+
+          <div
+            style={{
+              position: "absolute",
+              bottom: 18,
+              fontSize: 28,
+              fontWeight: 800,
+              color: "white",
+              letterSpacing: -1,
+            }}
+          >
+            VC
+          </div>
         </div>
       </div>
     ),
-    { width: 180, height: 180 }
+    {
+      width: 180,
+      height: 180,
+    }
   );
 }

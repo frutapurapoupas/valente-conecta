@@ -1,16 +1,20 @@
 import "./globals.css";
-import PwaRegister from "@/app/components/pwa-register";
+import PwaRegister from "../components/pwa-register";
+import BottomNav from "../components/bottom-nav";
+import PushPermissionCard from "../components/push-permission-card";
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="pt-BR">
-      <body>
+      <body className="pb-20">
         <PwaRegister />
+        <PushPermissionCard />
         {children}
+        <BottomNav />
       </body>
     </html>
   );
