@@ -1,22 +1,31 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
+import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
-type Indicacao = {
+const QRCode = dynamic(() => import("react-qr-code"), { ssr: false });
+
+type IndicacaoRow = {
   id: string;
-  indicador_codigo: string;
-  visitante_token: string | null;
-  telefone_indicado: string | null;
-  indicado_email: string | null;
-  status: "pendente" | "confirmado";
-  bonus: number | null;
-  origem: string | null;
-  created_at: string;
+  nome: string | null;
+  telefone: string | null;
+  email: string | null;
+  cidade: string | null;
+  created_at: string | null;
+  status_credito: string | null;
+  cadastro_concluido: boolean | null;
 };
 
-function sanitizeCode(value: string) {
+type PerfilIndicador = {
+  id: string;
+  nome: string | null;
+  telefone: string | null;
+  codigo_indicacao: string | null;
+};
+
+function normalizarCodigo(value: string) {
   return value
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -25,315 +34,537 @@ function sanitizeCode(value: string) {
     .slice(0, 20);
 }
 
-function createRandomCode() {
-  const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-  return `VC${random}`;
+function gerarCodigoLocal() {
+  const base = `VC${Date.now().toString(36)}${Math.random()
+    .toString(36)
+    .slice(2, 6)}`;
+  return normalizarCodigo(base);
 }
 
-function getUserCode() {
-  const saved = localStorage.getItem("vc_ref_code");
-  if (saved) return sanitizeCode(saved);
+function formatarData(data?: string | null) {
+  if (!data) return "-";
+  const d = new Date(data);
+  if (Number.isNaN(d.getTime())) return "-";
+  return (
+    d.toLocaleDateString("pt-BR") +
+    " " +
+    d.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+  );
+}
 
-  const newCode = createRandomCode();
-  localStorage.setItem("vc_ref_code", newCode);
-  return newCode;
+function getBaseUrl() {
+  if (typeof window !== "undefined" && window.location?.origin) {
+    return window.location.origin;
+  }
+
+  const envUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.NEXT_PUBLIC_VERCEL_URL ||
+    "";
+
+  if (envUrl) {
+    return envUrl.startsWith("http") ? envUrl : `https://${envUrl}`;
+  }
+
+  return "http://localhost:3000";
 }
 
 export default function IndicarPage() {
-  const [origin, setOrigin] = useState("");
-  const [codigo, setCodigo] = useState("");
-  const [codigoInput, setCodigoInput] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
   const [copiado, setCopiado] = useState(false);
-  const [erro, setErro] = useState("");
-  const [carregando, setCarregando] = useState(true);
-  const [salvandoCodigo, setSalvandoCodigo] = useState(false);
-  const [indicacoes, setIndicacoes] = useState<Indicacao[]>([]);
+
+  const [nome, setNome] = useState("");
+  const [telefone, setTelefone] = useState("");
+  const [perfil, setPerfil] = useState<PerfilIndicador | null>(null);
+  const [indicacoes, setIndicacoes] = useState<IndicacaoRow[]>([]);
+
+  const carregarTudo = async (nomeValor?: string, telefoneValor?: string) => {
+    try {
+      setLoading(true);
+      setErro(null);
+
+      const telefoneLimpo = (telefoneValor ?? telefone).replace(/\D/g, "");
+      const nomeLimpo = (nomeValor ?? nome).trim();
+
+      if (!telefoneLimpo && !nomeLimpo) {
+        setLoading(false);
+        return;
+      }
+
+      let perfilEncontrado: PerfilIndicador | null = null;
+
+      if (telefoneLimpo) {
+        const { data, error } = await supabase
+          .from("indicadores")
+          .select("id, nome, telefone, codigo_indicacao")
+          .eq("telefone", telefoneLimpo)
+          .limit(1)
+          .maybeSingle();
+
+        if (error) throw error;
+        if (data) perfilEncontrado = data as PerfilIndicador;
+      }
+
+      if (!perfilEncontrado && nomeLimpo) {
+        const { data, error } = await supabase
+          .from("indicadores")
+          .select("id, nome, telefone, codigo_indicacao")
+          .ilike("nome", nomeLimpo)
+          .limit(1)
+          .maybeSingle();
+
+        if (error) throw error;
+        if (data) perfilEncontrado = data as PerfilIndicador;
+      }
+
+      if (!perfilEncontrado) {
+        const novoCodigo = gerarCodigoLocal();
+
+        const { data: criado, error: erroCriacao } = await supabase
+          .from("indicadores")
+          .insert({
+            nome: nomeLimpo || null,
+            telefone: telefoneLimpo || null,
+            codigo_indicacao: novoCodigo,
+          })
+          .select("id, nome, telefone, codigo_indicacao")
+          .single();
+
+        if (erroCriacao) throw erroCriacao;
+        perfilEncontrado = criado as PerfilIndicador;
+      }
+
+      if (!perfilEncontrado.codigo_indicacao) {
+        const novoCodigo = gerarCodigoLocal();
+
+        const { data: perfilAtualizado, error: erroCodigo } = await supabase
+          .from("indicadores")
+          .update({ codigo_indicacao: novoCodigo })
+          .eq("id", perfilEncontrado.id)
+          .select("id, nome, telefone, codigo_indicacao")
+          .single();
+
+        if (erroCodigo) throw erroCodigo;
+        perfilEncontrado = perfilAtualizado as PerfilIndicador;
+      }
+
+      setPerfil(perfilEncontrado);
+
+      const { data: listaIndicacoes, error: erroIndicacoes } = await supabase
+        .from("indicacoes")
+        .select(
+          "id, nome, telefone, email, cidade, created_at, status_credito, cadastro_concluido"
+        )
+        .eq("codigo_indicador", perfilEncontrado.codigo_indicacao)
+        .order("created_at", { ascending: false });
+
+      if (erroIndicacoes) throw erroIndicacoes;
+
+      setIndicacoes((listaIndicacoes || []) as IndicacaoRow[]);
+    } catch (e: any) {
+      setErro(e?.message || "Não foi possível carregar seus dados.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    setOrigin(window.location.origin);
+    const nomeSalvo = localStorage.getItem("vc_indicador_nome") || "";
+    const telefoneSalvo = localStorage.getItem("vc_indicador_telefone") || "";
 
-    const code = getUserCode();
-    setCodigo(code);
-    setCodigoInput(code);
+    setNome(nomeSalvo);
+    setTelefone(telefoneSalvo);
+
+    if (nomeSalvo || telefoneSalvo) {
+      void carregarTudo(nomeSalvo, telefoneSalvo);
+    } else {
+      setLoading(false);
+    }
   }, []);
 
-  useEffect(() => {
-    if (!codigo) return;
-    carregarIndicacoes(codigo);
-  }, [codigo]);
+  const salvarIdentificacao = async () => {
+    try {
+      setErro(null);
+      setSalvando(true);
 
-  async function carregarIndicacoes(cod: string) {
-    setCarregando(true);
-    setErro("");
+      const telefoneLimpo = telefone.replace(/\D/g, "");
+      const nomeLimpo = nome.trim();
 
-    const { data, error } = await supabase
-      .from("indicacoes")
-      .select("*")
-      .eq("indicador_codigo", cod)
-      .order("created_at", { ascending: false });
+      if (!nomeLimpo && !telefoneLimpo) {
+        setErro("Informe pelo menos nome ou telefone.");
+        return;
+      }
 
-    if (error) {
-      setErro("Não foi possível carregar suas indicações.");
-      setCarregando(false);
-      return;
+      localStorage.setItem("vc_indicador_nome", nomeLimpo);
+      localStorage.setItem("vc_indicador_telefone", telefoneLimpo);
+
+      await carregarTudo(nomeLimpo, telefoneLimpo);
+    } finally {
+      setSalvando(false);
     }
-
-    setIndicacoes((data || []) as Indicacao[]);
-    setCarregando(false);
-  }
-
-  async function salvarCodigoPersonalizado() {
-    const clean = sanitizeCode(codigoInput);
-
-    if (!clean || clean.length < 4) {
-      setErro("Use um código com pelo menos 4 caracteres.");
-      return;
-    }
-
-    setErro("");
-    setSalvandoCodigo(true);
-
-    localStorage.setItem("vc_ref_code", clean);
-    setCodigo(clean);
-    setCodigoInput(clean);
-
-    await carregarIndicacoes(clean);
-    setSalvandoCodigo(false);
-  }
+  };
 
   const linkIndicacao = useMemo(() => {
-    if (!origin || !codigo) return "";
-    return `${origin}/cadastro?ref=${encodeURIComponent(codigo)}`;
-  }, [origin, codigo]);
+    if (!perfil?.codigo_indicacao) return "";
+    return `${getBaseUrl()}/cadastro?indicador=${encodeURIComponent(
+      perfil.codigo_indicacao
+    )}`;
+  }, [perfil?.codigo_indicacao]);
 
-  const confirmadas = indicacoes.filter((item) => item.status === "confirmado");
-  const pendentes = indicacoes.filter((item) => item.status === "pendente");
+  const resumo = useMemo(() => {
+    const total = indicacoes.length;
+    const concluidos = indicacoes.filter((i) =>
+      Boolean(i.cadastro_concluido)
+    ).length;
+    const pendentes = total - concluidos;
+    const creditados = indicacoes.filter(
+      (i) => (i.status_credito || "").toLowerCase() === "creditado"
+    ).length;
 
-  const creditos = confirmadas.reduce(
-    (acc, item) => acc + Number(item.bonus || 0),
-    0
-  );
+    return { total, concluidos, pendentes, creditados };
+  }, [indicacoes]);
 
-  async function copiarLink() {
-    if (!linkIndicacao) {
-      setErro("O link ainda não foi gerado.");
-      return;
-    }
+  const copiarLink = async () => {
+    if (!linkIndicacao) return;
 
     try {
       await navigator.clipboard.writeText(linkIndicacao);
       setCopiado(true);
-      setErro("");
-      setTimeout(() => setCopiado(false), 2000);
+      setTimeout(() => setCopiado(false), 2500);
     } catch {
-      setErro("Não foi possível copiar o link.");
+      setErro("Não consegui copiar automaticamente.");
     }
-  }
-
-  function compartilharWhatsApp() {
-    if (!linkIndicacao) {
-      setErro("O link ainda não foi gerado.");
-      return;
-    }
-
-    const texto = encodeURIComponent(
-      `Cadastre-se no APP VALENTE CONECTA pelo meu link:\n\n${linkIndicacao}`
-    );
-
-    window.open(`https://wa.me/?text=${texto}`, "_blank");
-  }
+  };
 
   return (
-    <main className="min-h-screen bg-slate-100 px-4 py-10">
-      <div className="mx-auto max-w-5xl">
-        <div className="mb-5 flex flex-wrap gap-3">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-          >
-            ← Abrir app completo
-          </Link>
+    <main className="min-h-screen bg-slate-950 pb-24 text-white">
+      <section className="border-b border-white/10 bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.18),transparent_42%),linear-gradient(180deg,#020617_0%,#020617_100%)]">
+        <div className="mx-auto max-w-6xl px-4 pb-8 pt-6 sm:px-6 lg:px-8">
+          <div className="inline-flex rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs font-medium text-emerald-300">
+            Indique e acompanhe seus cadastros
+          </div>
 
-          <Link
-            href="/indicar"
-            className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-100"
-          >
-            Programa de indicação
-          </Link>
+          <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+            Seu painel de indicações
+          </h1>
+
+          <p className="mt-3 max-w-2xl text-sm text-slate-300 sm:text-base">
+            Compartilhe seu link, acompanhe quem já concluiu o cadastro e
+            mostre o QR Code para a pessoa escanear direto do seu celular.
+          </p>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+        <div className="grid gap-6 lg:grid-cols-[1.05fr_1.45fr]">
+          <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.18)]">
+            <h2 className="text-lg font-semibold">
+              Identificação do indicador
+            </h2>
+            <p className="mt-1 text-sm text-slate-400">
+              Informe seu nome ou telefone para abrir seu painel.
+            </p>
+
+            <div className="mt-5 space-y-4">
+              <div>
+                <label className="mb-2 block text-sm text-slate-300">
+                  Nome
+                </label>
+                <input
+                  value={nome}
+                  onChange={(e) => setNome(e.target.value)}
+                  placeholder="Seu nome"
+                  className="h-12 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-sm text-white placeholder:text-slate-400 outline-none focus:border-emerald-400/50 focus:bg-white/10"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm text-slate-300">
+                  Telefone
+                </label>
+                <input
+                  value={telefone}
+                  onChange={(e) => setTelefone(e.target.value)}
+                  placeholder="Seu WhatsApp"
+                  className="h-12 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-sm text-white placeholder:text-slate-400 outline-none focus:border-emerald-400/50 focus:bg-white/10"
+                />
+              </div>
+
+              <button
+                onClick={salvarIdentificacao}
+                disabled={salvando}
+                className="flex h-12 w-full items-center justify-center rounded-2xl bg-emerald-500 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {salvando ? "Abrindo painel..." : "Abrir meu painel"}
+              </button>
+
+              {erro ? (
+                <div className="rounded-2xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                  {erro}
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.18)]">
+            {loading ? (
+              <div className="space-y-4">
+                <div className="h-6 w-44 animate-pulse rounded bg-white/10" />
+                <div className="h-28 animate-pulse rounded-3xl bg-white/10" />
+                <div className="h-52 animate-pulse rounded-3xl bg-white/10" />
+              </div>
+            ) : !perfil ? (
+              <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 text-center">
+                <div className="text-lg font-semibold">
+                  Nenhum painel encontrado ainda
+                </div>
+                <p className="mt-2 text-sm text-slate-400">
+                  Preencha seu nome ou telefone para localizar seus dados de
+                  indicação.
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <h2 className="text-xl font-semibold">
+                      {perfil.nome || "Indicador"}
+                    </h2>
+                    <p className="mt-1 text-sm text-slate-400">
+                      Código de indicação:{" "}
+                      <span className="font-medium text-emerald-300">
+                        {perfil.codigo_indicacao || "-"}
+                      </span>
+                    </p>
+                  </div>
+
+                  <Link
+                    href={linkIndicacao || "#"}
+                    className="rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-sm font-medium text-emerald-300 transition hover:bg-emerald-400/20"
+                  >
+                    Abrir página de cadastro
+                  </Link>
+                </div>
+
+                <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                  <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
+                    <div className="text-xs uppercase tracking-wide text-slate-400">
+                      Total indicados
+                    </div>
+                    <div className="mt-2 text-3xl font-bold">
+                      {resumo.total}
+                    </div>
+                  </div>
+
+                  <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
+                    <div className="text-xs uppercase tracking-wide text-slate-400">
+                      Cadastros concluídos
+                    </div>
+                    <div className="mt-2 text-3xl font-bold text-emerald-400">
+                      {resumo.concluidos}
+                    </div>
+                  </div>
+
+                  <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
+                    <div className="text-xs uppercase tracking-wide text-slate-400">
+                      Ainda pendentes
+                    </div>
+                    <div className="mt-2 text-3xl font-bold text-amber-300">
+                      {resumo.pendentes}
+                    </div>
+                  </div>
+
+                  <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
+                    <div className="text-xs uppercase tracking-wide text-slate-400">
+                      Créditos gerados
+                    </div>
+                    <div className="mt-2 text-3xl font-bold text-sky-300">
+                      {resumo.creditados}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+                  <div className="rounded-[28px] border border-white/10 bg-slate-900/60 p-5">
+                    <h3 className="text-lg font-semibold">
+                      Seu link de convite
+                    </h3>
+                    <p className="mt-1 text-sm text-slate-400">
+                      Envie pelo WhatsApp ou copie para compartilhar.
+                    </p>
+
+                    <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm break-all text-slate-200">
+                      {linkIndicacao || "Link ainda não disponível"}
+                    </div>
+
+                    <div className="mt-4 flex flex-wrap gap-3">
+                      <button
+                        onClick={copiarLink}
+                        className="rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition hover:bg-emerald-400"
+                      >
+                        {copiado ? "Link copiado" : "Copiar link"}
+                      </button>
+
+                      <a
+                        href={
+                          linkIndicacao
+                            ? `https://wa.me/?text=${encodeURIComponent(
+                                `Faça seu cadastro por este link: ${linkIndicacao}`
+                              )}`
+                            : "#"
+                        }
+                        target="_blank"
+                        rel="noreferrer"
+                        className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition hover:bg-white/10"
+                      >
+                        Enviar por WhatsApp
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[28px] border border-white/10 bg-slate-900/60 p-5">
+                    <h3 className="text-lg font-semibold">QR Code do convite</h3>
+                    <p className="mt-1 text-sm text-slate-400">
+                      A outra pessoa pode apontar a câmera para o seu celular e
+                      abrir o cadastro direto.
+                    </p>
+
+                    <div className="mt-5 flex items-center justify-center rounded-[28px] border border-white/10 bg-white p-4">
+                      {linkIndicacao ? (
+                        <div className="flex min-h-[240px] w-full max-w-[240px] items-center justify-center">
+                          <QRCode
+                            value={linkIndicacao}
+                            size={220}
+                            bgColor="#FFFFFF"
+                            fgColor="#000000"
+                            style={{
+                              width: "100%",
+                              height: "auto",
+                              display: "block",
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex h-[220px] w-[220px] items-center justify-center text-center text-sm text-slate-500">
+                          QR indisponível
+                        </div>
+                      )}
+                    </div>
+
+                    <p className="mt-3 text-center text-xs text-slate-400">
+                      Abra a câmera do celular convidado e aponte para este QR.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
-        <section className="rounded-[28px] bg-gradient-to-r from-slate-950 via-slate-900 to-slate-800 p-8 text-white shadow-xl">
-          <p className="text-xs uppercase tracking-[0.35em] text-cyan-300">
-            Programa de indicação
-          </p>
-          <h1 className="mt-3 text-3xl font-bold">Indique e ganhe</h1>
-          <p className="mt-3 text-slate-300">
-            Ganhe <strong>R$1 em crédito</strong> para cada novo cadastro
-            confirmado pelo seu link.
-          </p>
-        </section>
-
-        <section className="mt-6 rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        {perfil ? (
+          <div className="mt-6 rounded-[28px] border border-white/10 bg-white/[0.04] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.18)]">
             <div>
-              <h2 className="text-xl font-bold text-slate-900">
-                Seu código de indicação
-              </h2>
-              <p className="mt-2 text-slate-600">
-                Você pode manter o código automático ou personalizar com seu
-                nome.
+              <h2 className="text-lg font-semibold">Lista dos seus indicados</h2>
+              <p className="mt-1 text-sm text-slate-400">
+                Veja quem já concluiu o cadastro e quem ainda precisa finalizar.
               </p>
             </div>
 
-            <Link
-              href="/"
-              className="inline-flex items-center justify-center rounded-xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-50"
-            >
-              Ir para o app completo
-            </Link>
-          </div>
-
-          <div className="mt-5 flex flex-col gap-3 md:flex-row">
-            <input
-              value={codigoInput}
-              onChange={(e) => setCodigoInput(sanitizeCode(e.target.value))}
-              placeholder="Ex.: ARSENIO"
-              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-            <button
-              onClick={salvarCodigoPersonalizado}
-              disabled={salvandoCodigo}
-              className="rounded-xl bg-slate-950 px-5 py-3 font-medium text-white hover:bg-slate-800 disabled:opacity-60"
-            >
-              {salvandoCodigo ? "Salvando..." : "Salvar código"}
-            </button>
-          </div>
-
-          <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-sm text-slate-500">
-              Seu link correto para compartilhar
-            </p>
-            <p className="mt-2 break-all text-base font-semibold text-slate-900">
-              {linkIndicacao || "Gerando link..."}
-            </p>
-          </div>
-
-          <div className="mt-4 flex flex-col gap-3 md:flex-row">
-            <button
-              onClick={copiarLink}
-              className="rounded-xl bg-emerald-500 px-5 py-3 font-semibold text-white hover:bg-emerald-600"
-            >
-              {copiado ? "Link copiado" : "Copiar link"}
-            </button>
-
-            <button
-              onClick={compartilharWhatsApp}
-              className="rounded-xl border border-slate-300 px-5 py-3 font-semibold text-slate-900 hover:bg-slate-50"
-            >
-              Enviar no WhatsApp
-            </button>
-          </div>
-
-          {erro && (
-            <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {erro}
-            </div>
-          )}
-        </section>
-
-        <section className="mt-6 grid gap-4 md:grid-cols-3">
-          <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-sm text-slate-500">Indicações confirmadas</p>
-            <p className="mt-2 text-4xl font-bold text-slate-900">
-              {carregando ? "..." : confirmadas.length}
-            </p>
-          </div>
-
-          <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-sm text-slate-500">Faltam concluir cadastro</p>
-            <p className="mt-2 text-4xl font-bold text-amber-600">
-              {carregando ? "..." : pendentes.length}
-            </p>
-          </div>
-
-          <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-sm text-slate-500">Créditos acumulados</p>
-            <p className="mt-2 text-4xl font-bold text-emerald-600">
-              {carregando ? "..." : `R$${creditos}`}
-            </p>
-          </div>
-        </section>
-
-        <section className="mt-6 grid gap-5 lg:grid-cols-2">
-          <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <h3 className="text-lg font-bold text-slate-900">
-                Indicados que já se cadastraram
-              </h3>
-              <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
-                {confirmadas.length} confirmados
-              </span>
-            </div>
-
-            {confirmadas.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm text-slate-500">
-                Nenhum cadastro confirmado ainda.
+            {indicacoes.length === 0 ? (
+              <div className="mt-5 rounded-3xl border border-white/10 bg-white/[0.03] p-6 text-center text-sm text-slate-400">
+                Você ainda não possui indicados cadastrados.
               </div>
             ) : (
-              <div className="space-y-3">
-                {confirmadas.map((item) => (
-                  <div
-                    key={item.id}
-                    className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
-                  >
-                    <p className="font-semibold text-slate-900">
-                      {item.indicado_email ||
-                        item.telefone_indicado ||
-                        "Cadastro confirmado"}
-                    </p>
-                    <p className="mt-1 text-xs text-slate-500">
-                      Status: confirmado
-                    </p>
-                  </div>
-                ))}
+              <div className="mt-5 grid gap-4 md:grid-cols-2">
+                {indicacoes.map((item) => {
+                  const concluido = Boolean(item.cadastro_concluido);
+                  const credito = (item.status_credito || "").toLowerCase();
+
+                  return (
+                    <div
+                      key={item.id}
+                      className="rounded-[26px] border border-white/10 bg-slate-900/55 p-4"
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <div className="text-base font-semibold">
+                            {item.nome || "Sem nome informado"}
+                          </div>
+                          <div className="mt-1 text-sm text-slate-400">
+                            {[item.telefone, item.email]
+                              .filter(Boolean)
+                              .join(" • ") || "Sem contato informado"}
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                          <span
+                            className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                              concluido
+                                ? "bg-emerald-400/90 text-slate-950"
+                                : "bg-amber-300/90 text-slate-950"
+                            }`}
+                          >
+                            {concluido
+                              ? "Cadastro concluído"
+                              : "Ainda não concluiu"}
+                          </span>
+
+                          <span
+                            className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                              credito === "creditado"
+                                ? "bg-sky-300/90 text-slate-950"
+                                : "bg-white/10 text-slate-200"
+                            }`}
+                          >
+                            {credito === "creditado"
+                              ? "Crédito gerado"
+                              : "Sem crédito"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                        <div className="rounded-2xl bg-white/5 p-3">
+                          <div className="text-[11px] uppercase tracking-wide text-slate-400">
+                            Cidade
+                          </div>
+                          <div className="mt-1 text-sm font-medium text-white">
+                            {item.cidade || "-"}
+                          </div>
+                        </div>
+
+                        <div className="rounded-2xl bg-white/5 p-3">
+                          <div className="text-[11px] uppercase tracking-wide text-slate-400">
+                            Data
+                          </div>
+                          <div className="mt-1 text-sm font-medium text-white">
+                            {formatarData(item.created_at)}
+                          </div>
+                        </div>
+
+                        <div className="rounded-2xl bg-white/5 p-3">
+                          <div className="text-[11px] uppercase tracking-wide text-slate-400">
+                            Status crédito
+                          </div>
+                          <div className="mt-1 text-sm font-medium text-white">
+                            {item.status_credito || "-"}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
-
-          <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <h3 className="text-lg font-bold text-slate-900">
-                Indicados pendentes
-              </h3>
-              <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
-                {pendentes.length} faltando
-              </span>
-            </div>
-
-            {pendentes.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm text-slate-500">
-                Nenhum indicado pendente no momento.
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {pendentes.map((item) => (
-                  <div
-                    key={item.id}
-                    className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
-                  >
-                    <p className="font-semibold text-slate-900">
-                      {item.telefone_indicado || "Visitante pelo link"}
-                    </p>
-                    <p className="mt-1 text-xs font-medium text-amber-700">
-                      Ainda não concluiu o cadastro.
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
-      </div>
+        ) : null}
+      </section>
     </main>
   );
 }
