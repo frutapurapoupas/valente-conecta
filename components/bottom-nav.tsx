@@ -38,9 +38,7 @@ export default function BottomNav() {
         >
           <div
             className={`flex h-14 w-14 items-center justify-center rounded-full text-2xl text-white shadow-lg transition ${
-              ativoNovo
-                ? "bg-emerald-700"
-                : "bg-emerald-600"
+              ativoNovo ? "bg-emerald-700" : "bg-emerald-600"
             }`}
           >
             +

@@ -10,7 +10,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className="pb-20">
+      <body className="pb-24">
         <PwaRegister />
         <PushPermissionCard />
         {children}
