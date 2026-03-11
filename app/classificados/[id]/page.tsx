@@ -1,12 +1,14 @@
 import Link from "next/link";
 
 type Props = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
-export default function ClassificadoDetalhePage({ params }: Props) {
+export default async function ClassificadoDetalhePage({ params }: Props) {
+  const { id } = await params;
+
   return (
     <main className="min-h-screen bg-slate-950 px-4 py-10 text-white">
       <div className="mx-auto max-w-3xl">
@@ -23,13 +25,13 @@ export default function ClassificadoDetalhePage({ params }: Props) {
           </p>
 
           <h1 className="mt-3 text-3xl font-bold">
-            Detalhe do classificado #{params.id}
+            Detalhe do classificado #{id}
           </h1>
 
           <p className="mt-4 text-white/70">
-            Esta é uma página de detalhe temporária para garantir o funcionamento
-            do build. Na próxima etapa, podemos ligar esta rota ao Supabase e
-            exibir os dados reais do anúncio.
+            Esta é uma página temporária de detalhe para garantir o funcionamento
+            do build. Na próxima etapa, ligamos esta rota ao Supabase para exibir
+            os dados reais do anúncio.
           </p>
         </div>
       </div>
