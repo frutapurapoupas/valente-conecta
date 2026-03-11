@@ -1,306 +1,285 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import {
-  conectaPayWithCashback,
-  getCurrentUserId,
-  getMerchantStatement,
-  getMerchantWallet,
-  listEmpresas,
-  MerchantStatement,
-  MerchantWalletBalance,
-} from "@/lib/conecta";
+import Link from "next/link";
+import { getMerchantStatement, listEmpresas } from "@/lib/conecta";
+
+type MerchantStatement = Awaited<ReturnType<typeof getMerchantStatement>>;
+type WalletLike = Record<string, any> | null;
 
 type EmpresaOption = {
   id: string;
   nome: string;
-  whatsapp?: string | null;
-  is_provisional?: boolean | null;
-  plan_type?: string | null;
-  status?: string | null;
 };
 
-export default function CaixaComerciantePage() {
+export default function ComercianteCaixaPage() {
   const [empresas, setEmpresas] = useState<EmpresaOption[]>([]);
-  const [merchantId, setMerchantId] = useState("");
-  const [wallet, setWallet] = useState<MerchantWalletBalance | null>(null);
-  const [statement, setStatement] = useState<MerchantStatement[]>([]);
-  const [userId, setUserId] = useState("");
-  const [amount, setAmount] = useState("");
-  const [cashbackPercent, setCashbackPercent] = useState("5");
+  const [empresaId, setEmpresaId] = useState("");
+  const [statement, setStatement] = useState<MerchantStatement | null>(null);
+  const [wallet, setWallet] = useState<WalletLike>(null);
   const [loading, setLoading] = useState(true);
-  const [processing, setProcessing] = useState(false);
-  const [message, setMessage] = useState("");
+  const [loadingExtrato, setLoadingExtrato] = useState(false);
+  const [erro, setErro] = useState("");
 
   useEffect(() => {
-    async function load() {
-      setLoading(true);
-      const currentUserId = await getCurrentUserId();
-      if (currentUserId) setUserId(currentUserId);
+    let active = true;
 
-      const empresasRes = await listEmpresas();
-      setEmpresas((empresasRes.data as EmpresaOption[]) || []);
-      setLoading(false);
+    async function carregarEmpresas() {
+      setLoading(true);
+      setErro("");
+
+      try {
+        const data = await listEmpresas();
+
+        if (!active) return;
+
+        const lista = Array.isArray(data)
+          ? data.map((item: any) => ({
+              id: String(item?.id ?? ""),
+              nome: String(
+                item?.nome_fantasia ??
+                  item?.nome ??
+                  item?.empresa ??
+                  "Empresa sem nome"
+              ),
+            }))
+          : [];
+
+        setEmpresas(lista);
+
+        if (lista.length > 0) {
+          setEmpresaId(lista[0].id);
+        }
+      } catch (e: any) {
+        if (!active) return;
+        setErro(e?.message || "Não foi possível carregar as empresas.");
+      } finally {
+        if (active) setLoading(false);
+      }
     }
 
-    load();
+    carregarEmpresas();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
-  useEffect(() => {
-    async function loadMerchantData() {
-      if (!merchantId) {
-        setWallet(null);
-        setStatement([]);
-        return;
-      }
-
-      const [walletRes, statementRes] = await Promise.all([
-        getMerchantWallet(merchantId),
-        getMerchantStatement(merchantId),
-      ]);
-
-      setWallet(walletRes.data ?? null);
-      setStatement(statementRes.data ?? []);
-    }
-
-    loadMerchantData();
-  }, [merchantId]);
-
-  const totalRecebido = useMemo(
-    () => statement.reduce((sum, item) => sum + Number(item.amount || 0), 0),
-    [statement]
-  );
-
-  async function handlePay(e: React.FormEvent) {
-    e.preventDefault();
-    setMessage("");
-
-    if (!userId || !merchantId || !amount) {
-      setMessage("Preencha usuário, comerciante e valor.");
+  async function carregarExtrato() {
+    if (!empresaId) {
+      setErro("Selecione uma empresa.");
       return;
     }
 
-    const parsedAmount = Number(amount);
-    const parsedCashback = Number(cashbackPercent || 5);
+    setLoadingExtrato(true);
+    setErro("");
 
-    if (Number.isNaN(parsedAmount) || parsedAmount <= 0) {
-      setMessage("Informe um valor válido.");
-      return;
+    try {
+      const data = await getMerchantStatement(empresaId);
+      setStatement(data);
+
+      const saldoDetectado =
+        (data as any)?.wallet ??
+        (data as any)?.balance ??
+        (data as any)?.saldo ??
+        null;
+
+      setWallet(saldoDetectado);
+    } catch (e: any) {
+      setErro(e?.message || "Não foi possível carregar o extrato.");
+    } finally {
+      setLoadingExtrato(false);
     }
-
-    setProcessing(true);
-
-    const res = await conectaPayWithCashback({
-      userId,
-      merchantId,
-      amount: parsedAmount,
-      cashbackPercent: parsedCashback,
-    });
-
-    if (res.error) {
-      setMessage(res.error.message || "Erro ao processar pagamento.");
-      setProcessing(false);
-      return;
-    }
-
-    if (res.data?.status !== "success") {
-      setMessage(res.data?.message || "Pagamento não concluído.");
-      setProcessing(false);
-      return;
-    }
-
-    setMessage(
-      `Pagamento concluído com sucesso. Cashback: ${Number(
-        res.data.cashback || 0
-      ).toFixed(2)} CONECTAS`
-    );
-    setAmount("");
-
-    const [walletRes, statementRes] = await Promise.all([
-      getMerchantWallet(merchantId),
-      getMerchantStatement(merchantId),
-    ]);
-
-    setWallet(walletRes.data ?? null);
-    setStatement(statementRes.data ?? []);
-    setProcessing(false);
   }
 
+  useEffect(() => {
+    if (empresaId) {
+      carregarExtrato();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [empresaId]);
+
+  const movimentos = useMemo(() => {
+    const raw =
+      (statement as any)?.items ??
+      (statement as any)?.transactions ??
+      (statement as any)?.movimentos ??
+      (statement as any)?.extrato ??
+      [];
+
+    return Array.isArray(raw) ? raw : [];
+  }, [statement]);
+
+  const saldoTexto = useMemo(() => {
+    const valor =
+      (wallet as any)?.available ??
+      (wallet as any)?.balance ??
+      (wallet as any)?.saldo ??
+      (statement as any)?.balance ??
+      (statement as any)?.saldo ??
+      0;
+
+    const numero = Number(valor || 0);
+
+    return numero.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
+  }, [statement, wallet]);
+
   return (
-    <main className="min-h-screen bg-slate-950 text-white px-4 py-6">
-      <div className="mx-auto max-w-6xl space-y-6">
-        <header className="rounded-3xl border border-amber-500/20 bg-slate-900 p-6 shadow-2xl">
-          <p className="text-amber-300 text-sm uppercase tracking-[0.2em]">
-            Comerciante
-          </p>
-          <h1 className="mt-2 text-3xl font-bold">Caixa Conecta</h1>
-          <p className="mt-2 text-slate-300">
-            Receba pagamentos com CONECTA e acompanhe o histórico da loja.
-          </p>
-        </header>
+    <main className="min-h-screen bg-slate-950 px-4 py-8 text-white">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-sm uppercase tracking-[0.25em] text-emerald-400">
+              Comerciante
+            </p>
+            <h1 className="mt-2 text-3xl font-bold">Caixa</h1>
+            <p className="mt-2 text-white/70">
+              Consulta de saldo e extrato do comerciante.
+            </p>
+          </div>
 
-        {loading ? (
-          <section className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
-            Carregando empresas...
+          <Link
+            href="/admin/dashboard"
+            className="inline-flex items-center rounded-xl border border-white/10 px-4 py-3 text-sm hover:bg-white/5"
+          >
+            Voltar ao painel
+          </Link>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
+          <section className="rounded-2xl border border-white/10 bg-slate-900 p-5 shadow-xl">
+            <h2 className="text-lg font-semibold">Selecionar empresa</h2>
+
+            <div className="mt-4">
+              <label className="mb-2 block text-sm text-white/70">
+                Empresa
+              </label>
+
+              <select
+                value={empresaId}
+                onChange={(e) => setEmpresaId(e.target.value)}
+                className="w-full rounded-xl border border-white/10 bg-slate-800 px-4 py-3 outline-none"
+                disabled={loading || empresas.length === 0}
+              >
+                {empresas.length === 0 ? (
+                  <option value="">Nenhuma empresa disponível</option>
+                ) : (
+                  empresas.map((empresa) => (
+                    <option key={empresa.id} value={empresa.id}>
+                      {empresa.nome}
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
+
+            <button
+              type="button"
+              onClick={carregarExtrato}
+              disabled={loadingExtrato || !empresaId}
+              className="mt-4 w-full rounded-xl bg-emerald-500 px-4 py-3 font-semibold text-slate-950 disabled:opacity-60"
+            >
+              {loadingExtrato ? "Atualizando..." : "Atualizar extrato"}
+            </button>
+
+            {erro ? (
+              <div className="mt-4 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                {erro}
+              </div>
+            ) : null}
+
+            <div className="mt-6 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-5">
+              <p className="text-sm text-emerald-200/80">Saldo disponível</p>
+              <p className="mt-2 text-3xl font-bold">{saldoTexto}</p>
+            </div>
           </section>
-        ) : (
-          <>
-            <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-              <section className="rounded-3xl border border-slate-800 bg-slate-900 p-5 shadow-xl">
-                <h2 className="mb-4 text-xl font-semibold">Receber pagamento</h2>
 
-                <form onSubmit={handlePay} className="space-y-4">
-                  <Field label="Usuário pagador (ID)">
-                    <input
-                      value={userId}
-                      onChange={(e) => setUserId(e.target.value)}
-                      className="w-full rounded-2xl border border-slate-700 bg-slate-800 px-4 py-3 text-sm outline-none"
-                    />
-                  </Field>
+          <section className="rounded-2xl border border-white/10 bg-slate-900 p-5 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Extrato</h2>
+              <span className="text-sm text-white/50">
+                {movimentos.length} registro(s)
+              </span>
+            </div>
 
-                  <Field label="Loja / comerciante">
-                    <select
-                      value={merchantId}
-                      onChange={(e) => setMerchantId(e.target.value)}
-                      className="w-full rounded-2xl border border-slate-700 bg-slate-800 px-4 py-3 text-sm outline-none"
-                    >
-                      <option value="">Selecione</option>
-                      {empresas.map((item) => (
-                        <option key={item.id} value={item.id}>
-                          {item.nome}
-                        </option>
-                      ))}
-                    </select>
-                  </Field>
+            {loading ? (
+              <p className="text-white/60">Carregando empresas...</p>
+            ) : loadingExtrato ? (
+              <p className="text-white/60">Carregando extrato...</p>
+            ) : movimentos.length === 0 ? (
+              <div className="rounded-2xl border border-white/10 bg-slate-800/60 p-6 text-white/60">
+                Nenhum lançamento encontrado para esta empresa.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[720px] border-separate border-spacing-y-2">
+                  <thead>
+                    <tr className="text-left text-sm text-white/50">
+                      <th className="px-3 py-2">Data</th>
+                      <th className="px-3 py-2">Descrição</th>
+                      <th className="px-3 py-2">Tipo</th>
+                      <th className="px-3 py-2 text-right">Valor</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {movimentos.map((item: any, index: number) => {
+                      const data =
+                        item?.created_at ??
+                        item?.data ??
+                        item?.date ??
+                        item?.timestamp ??
+                        "-";
 
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <Field label="Valor da compra">
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                        className="w-full rounded-2xl border border-slate-700 bg-slate-800 px-4 py-3 text-sm outline-none"
-                        placeholder="20.00"
-                      />
-                    </Field>
+                      const descricao =
+                        item?.descricao ??
+                        item?.description ??
+                        item?.titulo ??
+                        item?.title ??
+                        "Lançamento";
 
-                    <Field label="Cashback (%)">
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={cashbackPercent}
-                        onChange={(e) => setCashbackPercent(e.target.value)}
-                        className="w-full rounded-2xl border border-slate-700 bg-slate-800 px-4 py-3 text-sm outline-none"
-                      />
-                    </Field>
-                  </div>
+                      const tipo =
+                        item?.tipo ??
+                        item?.type ??
+                        item?.natureza ??
+                        "-";
 
-                  <button
-                    type="submit"
-                    disabled={processing}
-                    className="w-full rounded-2xl bg-amber-500 px-4 py-3 font-semibold text-slate-950 transition hover:bg-amber-400 disabled:opacity-60"
-                  >
-                    {processing ? "Processando..." : "Receber com Conecta"}
-                  </button>
+                      const valorBruto =
+                        item?.valor ??
+                        item?.amount ??
+                        item?.total ??
+                        0;
 
-                  {!!message && (
-                    <div className="rounded-2xl border border-cyan-500/20 bg-cyan-950/30 px-4 py-3 text-sm text-cyan-100">
-                      {message}
-                    </div>
-                  )}
-                </form>
-              </section>
+                      const valor = Number(valorBruto || 0);
 
-              <section className="space-y-4">
-                <Card
-                  title="Saldo da loja"
-                  value={`${Number(wallet?.balance ?? 0).toFixed(2)} CONECTAS`}
-                />
-                <Card
-                  title="Total recebido"
-                  value={`R$ ${totalRecebido.toFixed(2)}`}
-                />
-                <Card
-                  title="Transações"
-                  value={String(statement.length)}
-                />
-              </section>
-            </section>
-
-            <section className="rounded-3xl border border-slate-800 bg-slate-900 p-5 shadow-xl">
-              <h2 className="mb-4 text-xl font-semibold">Histórico da loja</h2>
-
-              {statement.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-slate-700 p-5 text-slate-400">
-                  Nenhum recebimento encontrado para esta loja.
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead className="text-slate-400">
-                      <tr className="border-b border-slate-800">
-                        <th className="py-3 text-left">Cliente</th>
-                        <th className="py-3 text-left">Valor</th>
-                        <th className="py-3 text-left">Conecta</th>
-                        <th className="py-3 text-left">Status</th>
-                        <th className="py-3 text-left">Data</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {statement.map((item) => (
-                        <tr key={item.payment_id} className="border-b border-slate-900">
-                          <td className="py-3 break-all">{item.user_id}</td>
-                          <td className="py-3">R$ {Number(item.amount).toFixed(2)}</td>
-                          <td className="py-3">
-                            {Number(item.conecta_used).toFixed(2)}
+                      return (
+                        <tr
+                          key={`${index}-${data}-${descricao}`}
+                          className="rounded-2xl bg-slate-800"
+                        >
+                          <td className="rounded-l-2xl px-3 py-3 text-sm">
+                            {String(data)}
                           </td>
-                          <td className="py-3">{item.status}</td>
-                          <td className="py-3">{formatDate(item.created_at)}</td>
+                          <td className="px-3 py-3 text-sm">{String(descricao)}</td>
+                          <td className="px-3 py-3 text-sm">{String(tipo)}</td>
+                          <td className="rounded-r-2xl px-3 py-3 text-right text-sm font-semibold">
+                            {valor.toLocaleString("pt-BR", {
+                              style: "currency",
+                              currency: "BRL",
+                            })}
+                          </td>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </section>
-          </>
-        )}
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+        </div>
       </div>
     </main>
   );
-}
-
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="block">
-      <span className="mb-2 block text-sm text-slate-300">{label}</span>
-      {children}
-    </label>
-  );
-}
-
-function Card({ title, value }: { title: string; value: string }) {
-  return (
-    <article className="rounded-3xl border border-amber-500/20 bg-slate-900 p-5 shadow-xl">
-      <p className="text-sm text-slate-400">{title}</p>
-      <h3 className="mt-2 text-2xl font-bold text-white">{value}</h3>
-    </article>
-  );
-}
-
-function formatDate(value: string) {
-  try {
-    return new Date(value).toLocaleString("pt-BR");
-  } catch {
-    return value;
-  }
 }
