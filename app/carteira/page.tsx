@@ -1,7 +1,7 @@
 "use client";
 
-import MenuApp from "@/components/menuApp";
 import { useEffect, useMemo, useState } from "react";
+import AppShell from "@/components/AppShell";
 import {
   getCurrentUserId,
   getUserCashbacks,
@@ -10,13 +10,40 @@ import {
   getUserWallet,
 } from "@/lib/conecta";
 
+type WalletData = {
+  balance?: number | string | null;
+};
+
+type PaymentItem = {
+  payment_id?: string;
+  merchant_name?: string | null;
+  created_at?: string | null;
+  amount?: number | string | null;
+  status?: string | null;
+};
+
+type CashbackItem = {
+  id?: string;
+  merchant_name?: string | null;
+  created_at?: string | null;
+  cashback_amount?: number | string | null;
+};
+
+type StatementItem = {
+  id?: string;
+  transaction_type?: string | null;
+  amount?: number | string | null;
+  reference?: string | null;
+  created_at?: string | null;
+};
+
 export default function CarteiraPage() {
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
-  const [wallet, setWallet] = useState<any>(null);
-  const [payments, setPayments] = useState<any[]>([]);
-  const [cashbacks, setCashbacks] = useState<any[]>([]);
-  const [statement, setStatement] = useState<any[]>([]);
+  const [wallet, setWallet] = useState<WalletData | null>(null);
+  const [payments, setPayments] = useState<PaymentItem[]>([]);
+  const [cashbacks, setCashbacks] = useState<CashbackItem[]>([]);
+  const [statement, setStatement] = useState<StatementItem[]>([]);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -26,6 +53,7 @@ export default function CarteiraPage() {
         setError("");
 
         const currentUserId = await getCurrentUserId();
+
         if (!currentUserId) {
           setError("Usuário não autenticado.");
           return;
@@ -41,15 +69,15 @@ export default function CarteiraPage() {
             getUserStatement(),
           ]);
 
-        if (walletRes.error) throw walletRes.error;
-        if (paymentsRes.error) throw paymentsRes.error;
-        if (cashbackRes.error) throw cashbackRes.error;
-        if (statementRes.error) throw statementRes.error;
+        if (walletRes?.error) throw walletRes.error;
+        if (paymentsRes?.error) throw paymentsRes.error;
+        if (cashbackRes?.error) throw cashbackRes.error;
+        if (statementRes?.error) throw statementRes.error;
 
-        setWallet(walletRes.data ?? null);
-        setPayments(paymentsRes.data ?? []);
-        setCashbacks(cashbackRes.data ?? []);
-        setStatement(statementRes.data ?? []);
+        setWallet((walletRes?.data as WalletData) ?? null);
+        setPayments((paymentsRes?.data as PaymentItem[]) ?? []);
+        setCashbacks((cashbackRes?.data as CashbackItem[]) ?? []);
+        setStatement((statementRes?.data as StatementItem[]) ?? []);
       } catch (err: any) {
         setError(err?.message || "Erro ao carregar carteira.");
       } finally {
@@ -60,160 +88,167 @@ export default function CarteiraPage() {
     load();
   }, []);
 
-  const totalCashback = useMemo(
-    () => cashbacks.reduce((sum, item) => sum + Number(item.cashback_amount || 0), 0),
-    [cashbacks]
-  );
+  const saldoAtual = useMemo(() => {
+    return Number(wallet?.balance ?? 0);
+  }, [wallet]);
 
-  const totalCompras = useMemo(
-    () => payments.reduce((sum, item) => sum + Number(item.amount || 0), 0),
-    [payments]
-  );
+  const totalCashback = useMemo(() => {
+    return cashbacks.reduce(
+      (sum, item) => sum + Number(item.cashback_amount || 0),
+      0
+    );
+  }, [cashbacks]);
+
+  const totalCompras = useMemo(() => {
+    return payments.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+  }, [payments]);
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
-      <MenuApp />
+    <AppShell
+      title="Carteira Conecta"
+      subtitle="Acompanhe saldo, compras, cashback e extrato da sua conta."
+    >
+      <div className="grid-cards">
+        <div className="hero-card">
+          <p className="text-sm font-semibold opacity-90">MOEDA CONECTA</p>
+          <h2 className="mt-1 text-3xl font-extrabold">
+            {saldoAtual.toFixed(2)} CONECTAS
+          </h2>
+          <p className="mt-2 text-sm opacity-95">
+            Saldo disponível para utilização dentro da rede.
+          </p>
 
-      <div className="mx-auto max-w-5xl px-4 py-6 space-y-6">
-        <header className="rounded-3xl border border-cyan-500/20 bg-slate-900 p-6 shadow-2xl">
-          <p className="text-cyan-300 text-sm uppercase tracking-[0.2em]">
-            Carteira Conecta
-          </p>
-          <h1 className="mt-2 text-3xl font-bold">Minha Carteira</h1>
-          <p className="mt-2 text-slate-300">
-            Acompanhe seu saldo, compras realizadas e cashback recebido.
-          </p>
-          {userId && (
-            <p className="mt-3 text-xs text-slate-400 break-all">
+          {userId ? (
+            <p className="mt-3 break-all text-xs opacity-80">
               Usuário: {userId}
             </p>
-          )}
-        </header>
+          ) : null}
+        </div>
 
-        {loading && (
-          <section className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
-            Carregando carteira...
-          </section>
-        )}
+        {loading && <div className="card">Carregando carteira...</div>}
 
         {!!error && !loading && (
-          <section className="rounded-3xl border border-red-500/30 bg-red-950/40 p-6 text-red-200">
+          <div className="card border border-red-200 bg-red-50 text-red-700">
             {error}
-          </section>
+          </div>
         )}
 
         {!loading && !error && (
           <>
-            <section className="grid gap-4 md:grid-cols-3">
-              <Card
+            <div className="grid gap-4 md:grid-cols-3">
+              <InfoCard
                 title="Saldo atual"
-                value={`${Number(wallet?.balance ?? 0).toFixed(2)} CONECTAS`}
-                subtitle="Disponível para usar"
+                value={`${saldoAtual.toFixed(2)} CONECTAS`}
+                subtitle="Disponível agora"
               />
-              <Card
+
+              <InfoCard
                 title="Total em compras"
                 value={`R$ ${totalCompras.toFixed(2)}`}
                 subtitle="Compras registradas"
               />
-              <Card
+
+              <InfoCard
                 title="Cashback recebido"
                 value={`${totalCashback.toFixed(2)} CONECTAS`}
-                subtitle="Retorno acumulado"
+                subtitle="Acumulado"
               />
-            </section>
+            </div>
 
-            <section className="grid gap-6 lg:grid-cols-2">
-              <Panel title="Últimas compras">
-                {payments.length === 0 ? (
-                  <EmptyState text="Nenhuma compra registrada ainda." />
-                ) : (
-                  <div className="space-y-3">
-                    {payments.slice(0, 10).map((item) => (
-                      <div
-                        key={item.payment_id}
-                        className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4"
-                      >
-                        <div className="flex items-center justify-between gap-3">
-                          <div>
-                            <p className="font-semibold text-white">
-                              {item.merchant_name || "Comerciante"}
-                            </p>
-                            <p className="text-sm text-slate-400">
-                              {formatDate(item.created_at)}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-bold text-cyan-300">
-                              R$ {Number(item.amount).toFixed(2)}
-                            </p>
-                            <p className="text-xs text-slate-400">
-                              Status: {item.status}
-                            </p>
-                          </div>
+            <SectionPanel title="Últimas compras">
+              {payments.length === 0 ? (
+                <EmptyState text="Nenhuma compra registrada ainda." />
+              ) : (
+                <div className="grid gap-3">
+                  {payments.slice(0, 10).map((item, index) => (
+                    <div
+                      key={item.payment_id || `payment-${index}`}
+                      className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-bold text-slate-900">
+                            {item.merchant_name || "Comerciante"}
+                          </p>
+                          <p className="mt-1 text-sm text-slate-500">
+                            {formatDate(item.created_at)}
+                          </p>
+                        </div>
+
+                        <div className="text-right">
+                          <p className="font-bold text-green-700">
+                            R$ {Number(item.amount || 0).toFixed(2)}
+                          </p>
+                          <p className="mt-1 text-xs text-slate-500">
+                            Status: {item.status || "-"}
+                          </p>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </Panel>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </SectionPanel>
 
-              <Panel title="Cashbacks recentes">
-                {cashbacks.length === 0 ? (
-                  <EmptyState text="Nenhum cashback recebido ainda." />
-                ) : (
-                  <div className="space-y-3">
-                    {cashbacks.slice(0, 10).map((item) => (
-                      <div
-                        key={item.id}
-                        className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4"
-                      >
-                        <div className="flex items-center justify-between gap-3">
-                          <div>
-                            <p className="font-semibold text-white">
-                              {item.merchant_name || "Comerciante"}
-                            </p>
-                            <p className="text-sm text-slate-400">
-                              {formatDate(item.created_at)}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-bold text-amber-300">
-                              +{Number(item.cashback_amount).toFixed(2)} CONECTAS
-                            </p>
-                          </div>
+            <SectionPanel title="Cashbacks recentes">
+              {cashbacks.length === 0 ? (
+                <EmptyState text="Nenhum cashback recebido ainda." />
+              ) : (
+                <div className="grid gap-3">
+                  {cashbacks.slice(0, 10).map((item, index) => (
+                    <div
+                      key={item.id || `cashback-${index}`}
+                      className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-bold text-slate-900">
+                            {item.merchant_name || "Comerciante"}
+                          </p>
+                          <p className="mt-1 text-sm text-slate-500">
+                            {formatDate(item.created_at)}
+                          </p>
+                        </div>
+
+                        <div className="text-right">
+                          <p className="font-bold text-amber-600">
+                            +{Number(item.cashback_amount || 0).toFixed(2)} CONECTAS
+                          </p>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </Panel>
-            </section>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </SectionPanel>
 
-            <Panel title="Extrato da carteira">
+            <SectionPanel title="Extrato da carteira">
               {statement.length === 0 ? (
                 <EmptyState text="Extrato vazio." />
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead className="text-slate-400">
-                      <tr className="border-b border-slate-800">
-                        <th className="py-3 text-left">Tipo</th>
-                        <th className="py-3 text-left">Valor</th>
-                        <th className="py-3 text-left">Referência</th>
-                        <th className="py-3 text-left">Data</th>
+                  <table className="min-w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-200 text-left text-slate-500">
+                        <th className="py-3 pr-4">Tipo</th>
+                        <th className="py-3 pr-4">Valor</th>
+                        <th className="py-3 pr-4">Referência</th>
+                        <th className="py-3">Data</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {statement.slice(0, 20).map((item) => (
+                      {statement.slice(0, 20).map((item, index) => (
                         <tr
-                          key={item.id}
-                          className="border-b border-slate-900 text-slate-200"
+                          key={item.id || `statement-${index}`}
+                          className="border-b border-slate-100 text-slate-800"
                         >
-                          <td className="py-3">{item.transaction_type}</td>
-                          <td className="py-3">
-                            {Number(item.amount).toFixed(2)}
+                          <td className="py-3 pr-4">
+                            {item.transaction_type || "-"}
                           </td>
-                          <td className="py-3">{item.reference || "-"}</td>
+                          <td className="py-3 pr-4">
+                            {Number(item.amount || 0).toFixed(2)}
+                          </td>
+                          <td className="py-3 pr-4">{item.reference || "-"}</td>
                           <td className="py-3">{formatDate(item.created_at)}</td>
                         </tr>
                       ))}
@@ -221,15 +256,15 @@ export default function CarteiraPage() {
                   </table>
                 </div>
               )}
-            </Panel>
+            </SectionPanel>
           </>
         )}
       </div>
-    </main>
+    </AppShell>
   );
 }
 
-function Card({
+function InfoCard({
   title,
   value,
   subtitle,
@@ -239,15 +274,15 @@ function Card({
   subtitle: string;
 }) {
   return (
-    <article className="rounded-3xl border border-cyan-500/20 bg-slate-900 p-5 shadow-xl">
-      <p className="text-sm text-slate-400">{title}</p>
-      <h2 className="mt-2 text-2xl font-bold text-white">{value}</h2>
+    <div className="card">
+      <p className="text-sm text-slate-500">{title}</p>
+      <h3 className="mt-2 text-2xl font-extrabold text-slate-900">{value}</h3>
       <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
-    </article>
+    </div>
   );
 }
 
-function Panel({
+function SectionPanel({
   title,
   children,
 }: {
@@ -255,8 +290,8 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-3xl border border-slate-800 bg-slate-900 p-5 shadow-xl">
-      <h3 className="mb-4 text-xl font-semibold">{title}</h3>
+    <section className="card">
+      <h2 className="section-title mb-4">{title}</h2>
       {children}
     </section>
   );
@@ -264,13 +299,15 @@ function Panel({
 
 function EmptyState({ text }: { text: string }) {
   return (
-    <div className="rounded-2xl border border-dashed border-slate-700 p-5 text-slate-400">
+    <div className="rounded-2xl border border-dashed border-slate-300 p-5 text-slate-500">
       {text}
     </div>
   );
 }
 
-function formatDate(value: string) {
+function formatDate(value?: string | null) {
+  if (!value) return "-";
+
   try {
     return new Date(value).toLocaleString("pt-BR");
   } catch {

@@ -1,164 +1,216 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { FormEvent, useCallback, useEffect, useState } from "react";
+import AppShell from "@/components/AppShell";
 import { supabase } from "@/lib/supabaseClient";
 
-type Totais = {
-  empresas: number;
-  ofertas: number;
-  classificados: number;
+type Empresa = {
+  id: string;
+  nome?: string | null;
+  categoria?: string | null;
+  descricao?: string | null;
+  telefone?: string | null;
+  cidade?: string | null;
+  created_at?: string | null;
 };
 
-export default function AdminDashboardPage() {
-  const router = useRouter();
+const initialForm = {
+  id: "",
+  nome: "",
+  categoria: "",
+  descricao: "",
+  telefone: "",
+  cidade: "Valente",
+};
+
+export default function AdminEmpresasPage() {
+  const [items, setItems] = useState<Empresa[]>([]);
   const [loading, setLoading] = useState(true);
-  const [totais, setTotais] = useState<Totais>({
-    empresas: 0,
-    ofertas: 0,
-    classificados: 0,
-  });
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState(initialForm);
+
+  const carregar = useCallback(async () => {
+    setLoading(true);
+
+    const { data } = await supabase
+      .from("empresas")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    setItems((data as Empresa[]) || []);
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
-    async function init() {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+    carregar();
 
-      if (!session) {
-        router.replace("/admin/login");
-        return;
-      }
+    const channel = supabase
+      .channel("realtime-admin-empresas")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "empresas" },
+        carregar
+      )
+      .subscribe();
 
-      await carregarTotais();
-      setLoading(false);
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [carregar]);
+
+  async function salvar(e: FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+
+    const payload = {
+      nome: form.nome,
+      categoria: form.categoria,
+      descricao: form.descricao,
+      telefone: form.telefone,
+      cidade: form.cidade,
+    };
+
+    if (form.id) {
+      await supabase.from("empresas").update(payload).eq("id", form.id);
+    } else {
+      await supabase.from("empresas").insert(payload);
     }
 
-    init();
-  }, [router]);
+    setForm(initialForm);
+    setSaving(false);
+    await carregar();
+  }
 
-  async function carregarTotais() {
-    const [empresasRes, ofertasRes, classificadosRes] = await Promise.all([
-      supabase.from("empresas").select("*", { count: "exact", head: true }),
-      supabase.from("ofertas").select("*", { count: "exact", head: true }),
-      supabase.from("classificados").select("*", { count: "exact", head: true }),
-    ]);
+  async function excluir(id: string) {
+    const ok = window.confirm("Deseja excluir esta empresa?");
+    if (!ok) return;
 
-    setTotais({
-      empresas: empresasRes.count ?? 0,
-      ofertas: ofertasRes.count ?? 0,
-      classificados: classificadosRes.count ?? 0,
+    await supabase.from("empresas").delete().eq("id", id);
+    await carregar();
+  }
+
+  function editar(item: Empresa) {
+    setForm({
+      id: item.id,
+      nome: item.nome || "",
+      categoria: item.categoria || "",
+      descricao: item.descricao || "",
+      telefone: item.telefone || "",
+      cidade: item.cidade || "Valente",
     });
-  }
 
-  async function handleLogout() {
-    await supabase.auth.signOut();
-    router.replace("/admin/login");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
-
-  if (loading) {
-    return (
-      <main className="min-h-screen bg-slate-100 flex items-center justify-center">
-        <p className="text-slate-600">Carregando painel...</p>
-      </main>
-    );
-  }
-
-  const cards = [
-    {
-      titulo: "Empresas",
-      descricao: "Cadastro e gestão de parceiros.",
-      detalhes: "Área para cadastrar, editar e organizar empresas parceiras.",
-      href: "/admin/empresas",
-      total: totais.empresas,
-    },
-    {
-      titulo: "Ofertas",
-      descricao: "Promoções e destaques do comércio.",
-      detalhes: "Gestão de promoções com integração ao banco Supabase.",
-      href: "/admin/ofertas",
-      total: totais.ofertas,
-    },
-    {
-      titulo: "Classificados",
-      descricao: "Anúncios, vendas, aluguel e achados.",
-      detalhes: "Controle administrativo dos anúncios publicados no app.",
-      href: "/admin/classificados",
-      total: totais.classificados,
-    },
-  ];
 
   return (
-    <main className="min-h-screen bg-slate-100 py-10 px-4">
-      <div className="max-w-5xl mx-auto">
-        <section className="rounded-[28px] bg-gradient-to-r from-slate-950 via-slate-900 to-slate-800 text-white p-8 shadow-xl">
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
-            <div>
-              <p className="text-xs uppercase tracking-[0.35em] text-cyan-300">
-                Painel Administrativo
-              </p>
-              <h1 className="text-3xl md:text-5xl font-bold mt-3">
-                Administração de Dashboards
-              </h1>
-              <p className="text-slate-300 mt-4 max-w-2xl">
-                Controle inicial do Valente Conecta. Aqui você gerencia empresas,
-                ofertas e classificados antes da publicação.
-              </p>
-            </div>
+    <AppShell
+      title="Admin • Empresas"
+      subtitle="Cadastro de parceiros e empresas com atualização ao vivo."
+    >
+      <form onSubmit={salvar} className="card">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="section-title">
+            {form.id ? "Editar empresa" : "Nova empresa"}
+          </h2>
+          {form.id ? <span className="badge">Modo edição</span> : null}
+        </div>
 
-            <div className="flex gap-3">
-              <Link
-                href="/admin/login"
-                className="rounded-xl border border-slate-600 px-4 py-3 text-sm hover:bg-slate-800 transition"
-              >
-                Trocar login
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="rounded-xl bg-emerald-500 px-5 py-3 text-sm font-semibold hover:bg-emerald-600 transition"
-              >
-                Sair
-              </button>
-            </div>
-          </div>
-        </section>
+        <div className="grid gap-3">
+          <input
+            placeholder="Nome da empresa"
+            value={form.nome}
+            onChange={(e) => setForm({ ...form, nome: e.target.value })}
+            required
+          />
 
-        <section className="grid md:grid-cols-3 gap-6 mt-8">
-          {cards.map((item) => (
-            <div
-              key={item.titulo}
-              className="rounded-[24px] bg-white border border-slate-200 p-6 shadow-sm"
-            >
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
-                Módulo
-              </p>
-              <h2 className="text-2xl font-bold text-slate-900 mt-3">
-                {item.titulo}
-              </h2>
-              <p className="text-slate-600 mt-2">{item.descricao}</p>
+          <input
+            placeholder="Categoria"
+            value={form.categoria}
+            onChange={(e) => setForm({ ...form, categoria: e.target.value })}
+          />
 
-              <div className="mt-5 rounded-2xl bg-slate-50 border border-slate-200 p-4">
-                <p className="text-sm text-slate-500">Total cadastrado</p>
-                <p className="text-3xl font-bold text-slate-900 mt-1">
-                  {item.total}
-                </p>
+          <textarea
+            placeholder="Descrição"
+            value={form.descricao}
+            onChange={(e) => setForm({ ...form, descricao: e.target.value })}
+            rows={4}
+          />
+
+          <input
+            placeholder="Telefone / WhatsApp"
+            value={form.telefone}
+            onChange={(e) => setForm({ ...form, telefone: e.target.value })}
+          />
+
+          <input
+            placeholder="Cidade"
+            value={form.cidade}
+            onChange={(e) => setForm({ ...form, cidade: e.target.value })}
+          />
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <button type="submit" className="btn-primary" disabled={saving}>
+            {saving ? "Salvando..." : form.id ? "Atualizar" : "Cadastrar"}
+          </button>
+
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={() => setForm(initialForm)}
+          >
+            Limpar
+          </button>
+        </div>
+      </form>
+
+      <div className="mt-4">
+        {loading ? (
+          <div className="card">Carregando empresas...</div>
+        ) : items.length === 0 ? (
+          <div className="card">Nenhuma empresa cadastrada.</div>
+        ) : (
+          <div className="grid-cards">
+            {items.map((item) => (
+              <div key={item.id} className="card">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="font-bold">{item.nome || "Sem nome"}</h3>
+                    <p className="mt-1 text-sm text-slate-500">
+                      {item.categoria || "Sem categoria"}
+                    </p>
+                    {item.descricao ? (
+                      <p className="mt-2 text-sm text-slate-600">
+                        {item.descricao}
+                      </p>
+                    ) : null}
+                  </div>
+
+                  {item.cidade ? <span className="badge">{item.cidade}</span> : null}
+                </div>
+
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => editar(item)}
+                  >
+                    Editar
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    onClick={() => excluir(item.id)}
+                  >
+                    Excluir
+                  </button>
+                </div>
               </div>
-
-              <p className="text-slate-600 mt-4 text-sm leading-6">
-                {item.detalhes}
-              </p>
-
-              <Link
-                href={item.href}
-                className="inline-block mt-6 rounded-xl bg-slate-950 px-5 py-3 text-sm font-medium text-white hover:bg-slate-800 transition"
-              >
-                Abrir módulo
-              </Link>
-            </div>
-          ))}
-        </section>
+            ))}
+          </div>
+        )}
       </div>
-    </main>
+    </AppShell>
   );
 }

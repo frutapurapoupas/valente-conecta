@@ -1,152 +1,214 @@
 "use client";
 
-import MenuApp from "@/components/menuApp";
-import Link from "next/link";
-import { getSelectedCity, listOffersByCity } from "@/lib/conecta";
-import { useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
+import AppShell from "@/components/AppShell";
+import { supabase } from "@/lib/supabaseClient";
 
-export default function OfertasPage() {
-  const [ofertas, setOfertas] = useState<any[]>([]);
+type Oferta = {
+  id: string;
+  titulo?: string | null;
+  descricao?: string | null;
+  preco?: string | null;
+  imagem_url?: string | null;
+  whatsapp?: string | null;
+  telefone?: string | null;
+  created_at?: string | null;
+};
+
+const initialForm = {
+  id: "",
+  titulo: "",
+  descricao: "",
+  preco: "",
+  imagem_url: "",
+  whatsapp: "",
+};
+
+export default function AdminOfertasPage() {
+  const [items, setItems] = useState<Oferta[]>([]);
   const [loading, setLoading] = useState(true);
-  const [busca, setBusca] = useState("");
-  const [selectedCity, setSelectedCityState] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState(initialForm);
 
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
+  const carregar = useCallback(async () => {
+    setLoading(true);
 
-      const city = getSelectedCity();
-      setSelectedCityState(city);
+    const { data } = await supabase
+      .from("ofertas")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-      const res = await listOffersByCity(city || undefined);
-      setOfertas(res.data || []);
-      setLoading(false);
-    }
-
-    load();
+    setItems((data as Oferta[]) || []);
+    setLoading(false);
   }, []);
 
-  const ofertasFiltradas = useMemo(() => {
-    const termo = busca.trim().toLowerCase();
-    if (!termo) return ofertas;
+  useEffect(() => {
+    carregar();
 
-    return ofertas.filter((item) => {
-      return (
-        (item.titulo || "").toLowerCase().includes(termo) ||
-        (item.descricao || "").toLowerCase().includes(termo) ||
-        (item.loja || "").toLowerCase().includes(termo)
-      );
+    const channel = supabase
+      .channel("realtime-admin-ofertas")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "ofertas" },
+        carregar
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [carregar]);
+
+  async function salvar(e: FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+
+    const payload = {
+      titulo: form.titulo,
+      descricao: form.descricao,
+      preco: form.preco,
+      imagem_url: form.imagem_url,
+      whatsapp: form.whatsapp,
+    };
+
+    if (form.id) {
+      await supabase.from("ofertas").update(payload).eq("id", form.id);
+    } else {
+      await supabase.from("ofertas").insert(payload);
+    }
+
+    setForm(initialForm);
+    setSaving(false);
+    await carregar();
+  }
+
+  async function excluir(id: string) {
+    const ok = window.confirm("Deseja excluir esta oferta?");
+    if (!ok) return;
+
+    await supabase.from("ofertas").delete().eq("id", id);
+    await carregar();
+  }
+
+  function editar(item: Oferta) {
+    setForm({
+      id: item.id,
+      titulo: item.titulo || "",
+      descricao: item.descricao || "",
+      preco: item.preco || "",
+      imagem_url: item.imagem_url || "",
+      whatsapp: item.whatsapp || item.telefone || "",
     });
-  }, [busca, ofertas]);
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
-      <MenuApp />
+    <AppShell
+      title="Admin • Ofertas"
+      subtitle="Cadastre, edite e exclua ofertas com atualização ao vivo."
+    >
+      <form onSubmit={salvar} className="card">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="section-title">
+            {form.id ? "Editar oferta" : "Nova oferta"}
+          </h2>
+          {form.id ? <span className="badge">Modo edição</span> : null}
+        </div>
 
-      <div className="mx-auto max-w-7xl px-4 py-6 space-y-6">
-        <header className="rounded-3xl border border-cyan-500/20 bg-slate-900 p-6 shadow-2xl">
-          <p className="text-sm uppercase tracking-[0.2em] text-cyan-300">
-            Ofertas da cidade
-          </p>
-          <h1 className="mt-2 text-3xl font-bold">Ofertas em destaque</h1>
-          <p className="mt-2 max-w-3xl text-slate-300">
-            Veja promoções publicadas pelos comerciantes locais.
-          </p>
+        <div className="grid gap-3">
+          <input
+            placeholder="Título"
+            value={form.titulo}
+            onChange={(e) => setForm({ ...form, titulo: e.target.value })}
+            required
+          />
 
-          {!selectedCity && (
-            <div className="mt-4 rounded-2xl border border-amber-500/20 bg-amber-950/20 px-4 py-3 text-sm text-amber-200">
-              Nenhuma cidade selecionada. Vá em <strong>Cidade</strong> no menu
-              para definir a cidade do teste.
-            </div>
-          )}
+          <textarea
+            placeholder="Descrição"
+            value={form.descricao}
+            onChange={(e) => setForm({ ...form, descricao: e.target.value })}
+            rows={4}
+          />
 
-          <div className="mt-5">
-            <input
-              value={busca}
-              onChange={(e) => setBusca(e.target.value)}
-              placeholder="Buscar oferta, produto ou loja"
-              className="w-full rounded-2xl border border-slate-700 bg-slate-800 px-4 py-3 text-sm outline-none"
-            />
-          </div>
-        </header>
+          <input
+            placeholder="Preço"
+            value={form.preco}
+            onChange={(e) => setForm({ ...form, preco: e.target.value })}
+          />
 
+          <input
+            placeholder="URL da imagem"
+            value={form.imagem_url}
+            onChange={(e) => setForm({ ...form, imagem_url: e.target.value })}
+          />
+
+          <input
+            placeholder="WhatsApp"
+            value={form.whatsapp}
+            onChange={(e) => setForm({ ...form, whatsapp: e.target.value })}
+          />
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <button type="submit" className="btn-primary" disabled={saving}>
+            {saving ? "Salvando..." : form.id ? "Atualizar" : "Cadastrar"}
+          </button>
+
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={() => setForm(initialForm)}
+          >
+            Limpar
+          </button>
+        </div>
+      </form>
+
+      <div className="mt-4">
         {loading ? (
-          <section className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
-            Carregando ofertas...
-          </section>
-        ) : ofertasFiltradas.length === 0 ? (
-          <section className="rounded-3xl border border-dashed border-slate-700 bg-slate-900 p-6 text-slate-400">
-            Nenhuma oferta encontrada.
-          </section>
+          <div className="card">Carregando ofertas...</div>
+        ) : items.length === 0 ? (
+          <div className="card">Nenhuma oferta cadastrada.</div>
         ) : (
-          <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-            {ofertasFiltradas.map((item) => (
-              <article
-                key={item.offer_id}
-                className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-900 shadow-xl"
-              >
-                {!!item.imagem_url ? (
-                  <img
-                    src={item.imagem_url}
-                    alt={item.titulo || "Oferta"}
-                    className="h-56 w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-56 items-center justify-center bg-slate-800 text-slate-500">
-                    Sem imagem
-                  </div>
-                )}
-
-                <div className="p-5">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-xs uppercase tracking-[0.2em] text-cyan-300">
-                      Oferta
-                    </p>
-
-                    <span className="rounded-full border border-cyan-500/20 bg-cyan-950/30 px-3 py-1 text-xs text-cyan-200">
-                      {item.unlock_required
-                        ? `Contato R$ ${Number(item.unlock_price || 1).toFixed(2)}`
-                        : "Contato livre"}
-                    </span>
-                  </div>
-
-                  <h2 className="mt-2 text-xl font-bold text-white">
-                    {item.titulo || "Oferta"}
-                  </h2>
-
-                  <p className="mt-2 min-h-[48px] text-sm text-slate-300">
-                    {item.descricao || "Sem descrição."}
-                  </p>
-
-                  <div className="mt-4 flex items-center justify-between gap-3">
-                    <p className="text-2xl font-bold text-cyan-300">
-                      {item.preco
-                        ? `R$ ${Number(item.preco).toFixed(2)}`
-                        : "Consulte"}
+          <div className="grid-cards">
+            {items.map((item) => (
+              <div key={item.id} className="card">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="font-bold">{item.titulo || "Sem título"}</h3>
+                    <p className="mt-1 text-sm text-slate-500">
+                      {item.descricao || "Sem descrição"}
                     </p>
                   </div>
 
-                  <div className="mt-4 rounded-2xl border border-slate-800 bg-slate-950/60 p-3">
-                    <p className="text-xs text-slate-400">Loja</p>
-                    <p className="mt-1 font-medium text-white">
-                      {item.loja || "Loja parceira"}
-                    </p>
-                  </div>
-
-                  <div className="mt-4">
-                    <Link
-                      href={`/loja/${encodeURIComponent(item.loja || "")}?offerId=${item.offer_id}`}
-                      className="block rounded-2xl border border-cyan-500/20 bg-cyan-950/20 px-4 py-3 text-center text-sm font-semibold text-cyan-200 transition hover:bg-cyan-950/30"
-                    >
-                      Ver oferta e contato
-                    </Link>
-                  </div>
+                  {item.preco ? (
+                    <span className="badge">{String(item.preco)}</span>
+                  ) : null}
                 </div>
-              </article>
+
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => editar(item)}
+                  >
+                    Editar
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    onClick={() => excluir(item.id)}
+                  >
+                    Excluir
+                  </button>
+                </div>
+              </div>
             ))}
-          </section>
+          </div>
         )}
       </div>
-    </main>
+    </AppShell>
   );
 }
