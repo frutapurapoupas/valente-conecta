@@ -1,54 +1,76 @@
-const CACHE_NAME = "valente-conecta-v7";
+const CACHE_NAME = "valente-conecta-v20260311-01";
 
-self.addEventListener("install", () => {
+self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
+    (async () => {
+      const keys = await caches.keys();
+      await Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
             return caches.delete(key);
           }
+          return Promise.resolve();
         })
-      )
-    )
-  );
-
-  self.clients.claim();
-});
-
-self.addEventListener("fetch", (event) => {
-  if (event.request.method !== "GET") return;
-
-  event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        const responseClone = response.clone();
-
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseClone).catch(() => {});
-        });
-
-        return response;
-      })
-      .catch(async () => {
-        const cached = await caches.match(event.request);
-        return (
-          cached ||
-          new Response("Sem conexão.", {
-            status: 503,
-            statusText: "Offline",
-          })
-        );
-      })
+      );
+      await self.clients.claim();
+    })()
   );
 });
 
 self.addEventListener("message", (event) => {
   if (event.data && event.data.type === "SKIP_WAITING") {
     self.skipWaiting();
+  }
+});
+
+self.addEventListener("fetch", (event) => {
+  const request = event.request;
+
+  if (request.method !== "GET") {
+    return;
+  }
+
+  const url = new URL(request.url);
+
+  if (url.origin !== self.location.origin) {
+    return;
+  }
+
+  if (
+    url.pathname.startsWith("/api/") ||
+    url.pathname.startsWith("/admin") ||
+    url.pathname.startsWith("/login-admin")
+  ) {
+    event.respondWith(fetch(request, { cache: "no-store" }));
+    return;
+  }
+
+  if (
+    request.mode === "navigate" ||
+    request.destination === "document" ||
+    request.destination === "script" ||
+    request.destination === "style"
+  ) {
+    event.respondWith(fetch(request, { cache: "no-store" }));
+    return;
+  }
+
+  if (request.destination === "image" || request.destination === "font") {
+    event.respondWith(
+      caches.open(CACHE_NAME).then(async (cache) => {
+        const cached = await cache.match(request);
+        if (cached) return cached;
+
+        const response = await fetch(request);
+        if (response && response.status === 200) {
+          cache.put(request, response.clone());
+        }
+        return response;
+      })
+    );
   }
 });

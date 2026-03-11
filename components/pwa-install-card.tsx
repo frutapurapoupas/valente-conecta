@@ -82,7 +82,6 @@ export default function PwaInstallCard() {
     if (!registration?.waiting) return;
 
     setUpdating(true);
-
     registration.waiting.postMessage({ type: "SKIP_WAITING" });
   }
 
