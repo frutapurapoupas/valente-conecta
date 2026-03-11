@@ -1,113 +1,67 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
-import AppShell from "@/components/AppShell";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
-type DashboardCounts = {
-  ofertas: number;
-  classificados: number;
-  empresas: number;
-};
+export default function Dashboard() {
 
-export default function AdminDashboardPage() {
-  const [counts, setCounts] = useState<DashboardCounts>({
-    ofertas: 0,
-    classificados: 0,
-    empresas: 0,
-  });
-
-  const [loading, setLoading] = useState(true);
-
-  const carregar = useCallback(async () => {
-    setLoading(true);
-
-    const [ofertasRes, classificadosRes, empresasRes] = await Promise.all([
-      supabase.from("ofertas").select("*", { count: "exact", head: true }),
-      supabase
-        .from("classificados")
-        .select("*", { count: "exact", head: true }),
-      supabase.from("empresas").select("*", { count: "exact", head: true }),
-    ]);
-
-    setCounts({
-      ofertas: ofertasRes.count ?? 0,
-      classificados: classificadosRes.count ?? 0,
-      empresas: empresasRes.count ?? 0,
-    });
-
-    setLoading(false);
-  }, []);
+  const [empresas, setEmpresas] = useState(0);
+  const [ofertas, setOfertas] = useState(0);
+  const [classificados, setClassificados] = useState(0);
 
   useEffect(() => {
-    carregar();
 
-    const channel = supabase
-      .channel("realtime-admin-dashboard")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "ofertas" },
-        carregar
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "classificados" },
-        carregar
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "empresas" },
-        carregar
-      )
-      .subscribe();
+    async function load() {
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [carregar]);
+      const { count: e } = await supabase
+        .from("empresas")
+        .select("*", { count: "exact", head: true });
+
+      const { count: o } = await supabase
+        .from("ofertas")
+        .select("*", { count: "exact", head: true });
+
+      const { count: c } = await supabase
+        .from("classificados")
+        .select("*", { count: "exact", head: true });
+
+      setEmpresas(e || 0);
+      setOfertas(o || 0);
+      setClassificados(c || 0);
+    }
+
+    load();
+
+  }, []);
 
   return (
-    <AppShell
-      title="Painel Admin"
-      subtitle="Resumo geral com atualização automática."
-    >
-      {loading ? (
-        <div className="card">Carregando painel...</div>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div className="card">
-              <div className="text-sm text-slate-500">Ofertas</div>
-              <div className="mt-2 text-3xl font-bold">{counts.ofertas}</div>
-            </div>
 
-            <div className="card">
-              <div className="text-sm text-slate-500">Classificados</div>
-              <div className="mt-2 text-3xl font-bold">
-                {counts.classificados}
-              </div>
-            </div>
+    <div>
 
-            <div className="card">
-              <div className="text-sm text-slate-500">Empresas</div>
-              <div className="mt-2 text-3xl font-bold">{counts.empresas}</div>
-            </div>
-          </div>
+      <h1 className="text-3xl font-bold mb-8">
+        Dashboard Admin
+      </h1>
 
-          <div className="mt-4 grid gap-3">
-            <Link href="/admin/ofertas" className="btn-secondary">
-              Gerenciar Ofertas
-            </Link>
-            <Link href="/admin/classificados" className="btn-secondary">
-              Gerenciar Classificados
-            </Link>
-            <Link href="/admin/empresas" className="btn-secondary">
-              Gerenciar Empresas
-            </Link>
-          </div>
-        </>
-      )}
-    </AppShell>
+      <div className="grid grid-cols-3 gap-6">
+
+        <div className="bg-slate-800 p-6 rounded">
+          <h2 className="text-xl mb-2">Empresas</h2>
+          <p className="text-3xl font-bold">{empresas}</p>
+        </div>
+
+        <div className="bg-slate-800 p-6 rounded">
+          <h2 className="text-xl mb-2">Ofertas</h2>
+          <p className="text-3xl font-bold">{ofertas}</p>
+        </div>
+
+        <div className="bg-slate-800 p-6 rounded">
+          <h2 className="text-xl mb-2">Classificados</h2>
+          <p className="text-3xl font-bold">{classificados}</p>
+        </div>
+
+      </div>
+
+    </div>
+
   );
 }
