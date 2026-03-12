@@ -19,13 +19,9 @@ export default function PwaRegister() {
 
         if (!mounted) return;
 
-        async function forceUpdateIfWaiting() {
-          if (registration.waiting) {
-            registration.waiting.postMessage({ type: "SKIP_WAITING" });
-          }
+        if (registration.waiting) {
+          registration.waiting.postMessage({ type: "SKIP_WAITING" });
         }
-
-        await forceUpdateIfWaiting();
 
         registration.addEventListener("updatefound", () => {
           const installingWorker = registration.installing;

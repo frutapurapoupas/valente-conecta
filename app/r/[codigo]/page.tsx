@@ -29,9 +29,7 @@ export default async function RotaCodigoPage({ params }: Props) {
           </h1>
 
           <p className="mt-4 text-white/70">
-            Esta é uma página temporária para manter o build estável. Na próxima
-            etapa, podemos ligar esta rota à lógica real de indicação,
-            redirecionamento ou consulta no Supabase.
+            Esta é uma página temporária para manter o build estável.
           </p>
         </div>
       </div>

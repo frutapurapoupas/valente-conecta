@@ -1,232 +1,51 @@
-"use client";
-
 import Link from "next/link";
+
+const profissionais = [
+  { nome: "Eletricista Ilustrativo", categoria: "Elétrica" },
+  { nome: "Pedreiro Ilustrativo", categoria: "Construção" },
+  { nome: "Pintor Ilustrativo", categoria: "Pintura" },
+  { nome: "Encanador Ilustrativo", categoria: "Hidráulica" },
+  { nome: "Diarista Ilustrativa", categoria: "Limpeza" },
+  { nome: "Técnico de Refrigeração Ilustrativo", categoria: "Refrigeração" },
+];
 
 export default function ServicosPage() {
   return (
-    <main className="min-h-screen overflow-hidden bg-[#041022] text-white">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(245,158,11,0.14),transparent_28%),radial-gradient(circle_at_right,rgba(59,130,246,0.12),transparent_22%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.12),transparent_26%)]" />
-
-      <div className="relative z-10 min-h-screen">
-        <header className="border-b border-white/10 bg-black/10 px-4 py-6 sm:px-6 md:px-8 lg:px-10 xl:px-12">
-          <div className="mx-auto w-full max-w-[1700px]">
-            <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
-              <div className="max-w-5xl">
-                <div className="inline-flex items-center gap-3 rounded-full border border-amber-400/20 bg-amber-400/10 px-4 py-2 text-xs font-medium text-amber-200 sm:text-sm">
-                  <span className="h-2.5 w-2.5 rounded-full bg-amber-300" />
-                  Valente Conecta
-                </div>
-
-                <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl xl:text-6xl">
-                  Serviços
-                </h1>
-
-                <p className="mt-4 max-w-4xl text-sm leading-7 text-slate-200 sm:text-base md:text-lg xl:text-xl">
-                  Profissionais e prestadores locais apresentados com clareza,
-                  confiança e um visual premium.
-                </p>
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-4 py-2 text-xs text-amber-100 sm:text-sm">
-                  Profissionais locais
-                </span>
-
-                <span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-xs text-cyan-100 sm:text-sm">
-                  Contato rápido
-                </span>
-
-                <Link
-                  href="/"
-                  className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15"
-                >
-                  Voltar
-                </Link>
-              </div>
-            </div>
+    <main className="min-h-screen bg-slate-950 px-4 py-8 text-white">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-sm uppercase tracking-[0.25em] text-cyan-400">
+              Serviços e profissionais
+            </p>
+            <h1 className="mt-2 text-3xl font-bold">Profissionais da cidade</h1>
+            <p className="mt-2 text-white/70">
+              Encontre mão de obra e prestadores de serviço locais.
+            </p>
           </div>
-        </header>
 
-        <section className="px-4 py-4 sm:px-6 sm:py-5 md:px-8 md:py-6 lg:px-10 xl:px-12">
-          <div className="mx-auto w-full max-w-[1700px]">
-            <div className="rounded-[28px] border border-white/10 bg-[linear-gradient(135deg,rgba(34,24,10,0.96),rgba(8,18,36,0.98)_45%,rgba(42,32,14,0.95))] p-4 shadow-[0_24px_80px_rgba(0,0,0,0.38)] sm:p-5 md:p-6 xl:p-8">
-              <div className="grid gap-5 xl:grid-cols-[1.18fr_0.82fr] xl:items-stretch">
-                <div className="flex flex-col gap-5">
-                  <div className="rounded-[24px] border border-white/10 bg-[linear-gradient(135deg,rgba(245,158,11,0.12),rgba(59,130,246,0.08),rgba(16,185,129,0.08))] p-5 sm:p-6 md:p-7 xl:p-8">
-                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-300 sm:text-sm">
-                      módulo principal
-                    </p>
+          <Link
+            href="/"
+            className="inline-flex items-center rounded-xl border border-white/10 px-4 py-3 text-sm hover:bg-white/5"
+          >
+            Voltar à home
+          </Link>
+        </div>
 
-                    <h2 className="mt-3 text-2xl font-bold sm:text-3xl md:text-4xl xl:text-5xl">
-                      Profissionais em evidência
-                    </h2>
-
-                    <p className="mt-4 max-w-5xl text-sm leading-7 text-slate-200 sm:text-base md:text-lg xl:text-xl">
-                      Uma página pensada para valorizar os prestadores de serviço da cidade,
-                      com boa presença visual, navegação clara e proporção elegante.
-                    </p>
-
-                    <div className="mt-6 flex flex-wrap gap-2.5 sm:gap-3">
-                      <span className="rounded-full border border-amber-400/15 bg-amber-400/10 px-3 py-2 text-xs text-amber-100 sm:text-sm">
-                        Mão de obra local
-                      </span>
-                      <span className="rounded-full border border-blue-400/15 bg-blue-400/10 px-3 py-2 text-xs text-blue-100 sm:text-sm">
-                        Atendimento rápido
-                      </span>
-                      <span className="rounded-full border border-emerald-400/15 bg-emerald-400/10 px-3 py-2 text-xs text-emerald-100 sm:text-sm">
-                        Confiança e alcance
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="grid gap-5 lg:grid-cols-2">
-                    <div className="min-h-[260px] rounded-[24px] border border-amber-400/15 bg-[linear-gradient(180deg,rgba(245,158,11,0.16),rgba(255,255,255,0.03))] p-6 shadow-xl xl:min-h-[300px]">
-                      <div className="mb-6 flex items-center justify-between">
-                        <div className="flex h-14 w-14 items-center justify-center rounded-3xl border border-white/10 bg-black/20 text-2xl sm:h-16 sm:w-16 sm:text-3xl">
-                          🧱
-                        </div>
-                        <span className="text-xs text-amber-200 sm:text-sm">01</span>
-                      </div>
-
-                      <h3 className="text-xl font-bold sm:text-2xl xl:text-3xl">
-                        Construção & Obras
-                      </h3>
-
-                      <p className="mt-4 text-sm leading-7 text-slate-100 sm:text-base sm:leading-8">
-                        Pedreiros, pintores, eletricistas, encanadores e profissionais de reforma.
-                      </p>
-                    </div>
-
-                    <div className="min-h-[260px] rounded-[24px] border border-blue-400/15 bg-[linear-gradient(180deg,rgba(59,130,246,0.16),rgba(255,255,255,0.03))] p-6 shadow-xl xl:min-h-[300px]">
-                      <div className="mb-6 flex items-center justify-between">
-                        <div className="flex h-14 w-14 items-center justify-center rounded-3xl border border-white/10 bg-black/20 text-2xl sm:h-16 sm:w-16 sm:text-3xl">
-                          🚗
-                        </div>
-                        <span className="text-xs text-blue-200 sm:text-sm">02</span>
-                      </div>
-
-                      <h3 className="text-xl font-bold sm:text-2xl xl:text-3xl">
-                        Auto & Mecânica
-                      </h3>
-
-                      <p className="mt-4 text-sm leading-7 text-slate-100 sm:text-base sm:leading-8">
-                        Mecânicos, autoelétrica, borracharia e serviços ligados ao setor automotivo.
-                      </p>
-                    </div>
-
-                    <div className="min-h-[250px] rounded-[24px] border border-emerald-400/15 bg-[linear-gradient(180deg,rgba(16,185,129,0.16),rgba(255,255,255,0.03))] p-6 shadow-xl lg:col-span-2 xl:min-h-[280px]">
-                      <div className="mb-6 flex items-center justify-between">
-                        <div className="flex h-14 w-14 items-center justify-center rounded-3xl border border-white/10 bg-black/20 text-2xl sm:h-16 sm:w-16 sm:text-3xl">
-                          🛠️
-                        </div>
-                        <span className="text-xs text-emerald-200 sm:text-sm">03</span>
-                      </div>
-
-                      <h3 className="text-xl font-bold sm:text-2xl xl:text-3xl">
-                        Serviços gerais
-                      </h3>
-
-                      <p className="mt-4 max-w-4xl text-sm leading-7 text-slate-100 sm:text-base sm:leading-8">
-                        Técnicos, profissionais autônomos e prestadores de diversas áreas, com destaque para contato rápido.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="grid gap-5 xl:grid-cols-2">
-                    <div className="min-h-[180px] rounded-[22px] border border-white/10 bg-white/5 p-6">
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300 sm:text-sm">
-                        integração futura
-                      </p>
-
-                      <p className="mt-4 text-sm leading-7 text-slate-200 sm:text-base sm:leading-8 md:text-lg">
-                        Os prestadores serão listados com filtros por categoria, cidade, avaliação e disponibilidade.
-                      </p>
-                    </div>
-
-                    <div className="min-h-[180px] rounded-[22px] border border-white/10 bg-white/5 p-6">
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300 sm:text-sm">
-                        experiência visual
-                      </p>
-
-                      <p className="mt-4 text-sm leading-7 text-slate-200 sm:text-base sm:leading-8 md:text-lg">
-                        Tela proporcional, premium e vibrante, funcionando bem em notebook e celular.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <aside className="flex flex-col gap-5">
-                  <div className="rounded-[24px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] p-6 xl:min-h-[320px]">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-300 sm:text-sm">
-                      painel lateral
-                    </p>
-
-                    <h3 className="mt-3 text-xl font-bold sm:text-2xl md:text-3xl">
-                      Estrutura da área
-                    </h3>
-
-                    <div className="mt-5 space-y-4">
-                      <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
-                        <p className="text-xs text-slate-400 sm:text-sm">Foco principal</p>
-                        <p className="mt-2 text-base font-semibold sm:text-lg">
-                          Prestadores e categorias
-                        </p>
-                      </div>
-
-                      <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
-                        <p className="text-xs text-slate-400 sm:text-sm">Experiência</p>
-                        <p className="mt-2 text-base font-semibold sm:text-lg">
-                          Visual forte e confiável
-                        </p>
-                      </div>
-
-                      <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
-                        <p className="text-xs text-slate-400 sm:text-sm">Próximo encaixe</p>
-                        <p className="mt-2 text-base font-semibold sm:text-lg">
-                          Dados reais do banco
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex-1 rounded-[24px] border border-white/10 bg-[linear-gradient(135deg,rgba(245,158,11,0.14),rgba(59,130,246,0.10),rgba(16,185,129,0.10))] p-6 xl:min-h-[380px]">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300 sm:text-sm">
-                      destaque visual
-                    </p>
-
-                    <h3 className="mt-3 text-xl font-bold sm:text-2xl md:text-3xl">
-                      Página mais proporcional
-                    </h3>
-
-                    <p className="mt-4 text-sm leading-7 text-slate-100 sm:text-base sm:leading-8 md:text-lg">
-                      A tela valoriza os profissionais sem ficar exageradamente aberta, mantendo elegância e boa leitura.
-                    </p>
-
-                    <div className="mt-6 grid gap-4">
-                      <div className="rounded-2xl border border-amber-400/15 bg-amber-400/10 p-5">
-                        <p className="text-xs text-amber-100 sm:text-sm">
-                          Melhor leitura em notebook
-                        </p>
-                      </div>
-
-                      <div className="rounded-2xl border border-blue-400/15 bg-blue-400/10 p-5">
-                        <p className="text-xs text-blue-100 sm:text-sm">
-                          Organização por categoria
-                        </p>
-                      </div>
-
-                      <div className="rounded-2xl border border-emerald-400/15 bg-emerald-400/10 p-5">
-                        <p className="text-xs text-emerald-100 sm:text-sm">
-                          Responsivo no celular
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </aside>
-              </div>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {profissionais.map((item) => (
+            <div
+              key={item.nome}
+              className="rounded-2xl border border-white/10 bg-slate-900 p-5 shadow-xl"
+            >
+              <p className="text-xs uppercase tracking-widest text-cyan-400">
+                {item.categoria}
+              </p>
+              <h2 className="mt-2 text-xl font-bold">{item.nome}</h2>
+              <p className="mt-3 text-sm text-white/60">Cadastro ilustrativo</p>
             </div>
-          </div>
-        </section>
+          ))}
+        </div>
       </div>
     </main>
   );

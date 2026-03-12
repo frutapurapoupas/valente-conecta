@@ -30,8 +30,7 @@ export default async function ClassificadoDetalhePage({ params }: Props) {
 
           <p className="mt-4 text-white/70">
             Esta é uma página temporária de detalhe para garantir o funcionamento
-            do build. Na próxima etapa, ligamos esta rota ao Supabase para exibir
-            os dados reais do anúncio.
+            do build.
           </p>
         </div>
       </div>

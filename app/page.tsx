@@ -1,89 +1,176 @@
 import Link from "next/link";
-import AppShell from "@/components/AppShell";
+
+const quickLinks = [
+  {
+    href: "/ofertas",
+    emoji: "🔥",
+    title: "Ofertas",
+    description: "Promoções e oportunidades da cidade",
+  },
+  {
+    href: "/classificados",
+    emoji: "📦",
+    title: "Classificados",
+    description: "Compra, venda e anúncios locais",
+  },
+  {
+    href: "/empresas",
+    emoji: "🏢",
+    title: "Empresas",
+    description: "Encontre comércios e parceiros locais",
+  },
+  {
+    href: "/servicos",
+    emoji: "🔧",
+    title: "Profissionais",
+    description: "Eletricista, pedreiro, diarista e mais",
+  },
+  {
+    href: "/indicar",
+    emoji: "🎁",
+    title: "Indicar e ganhar",
+    description: "Convide pessoas e acompanhe seus créditos",
+  },
+  {
+    href: "/carteira",
+    emoji: "💰",
+    title: "Carteira CONECTA",
+    description: "Veja saldo, cashback e uso em parceiros",
+  },
+  {
+    href: "/publicar",
+    emoji: "📝",
+    title: "Publicar",
+    description: "Área de gestão e publicação de conteúdos",
+  },
+];
 
 export default function HomePage() {
   return (
-    <AppShell>
-      <div className="hero-card">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-sm font-semibold opacity-90">VALENTE CONECTA</p>
-            <h1 className="mt-1 text-3xl font-extrabold leading-tight">
-              O super app
-              <br />
-              da cidade
+    <main className="min-h-screen bg-slate-950 text-white">
+      <section className="border-b border-white/10 bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.18),transparent_40%),radial-gradient(circle_at_right,rgba(59,130,246,0.12),transparent_35%)]">
+        <div className="mx-auto max-w-6xl px-4 py-10 md:px-6 md:py-14">
+          <div className="max-w-3xl">
+            <p className="text-sm uppercase tracking-[0.25em] text-emerald-400">
+              Valente Conecta
+            </p>
+
+            <h1 className="mt-3 text-3xl font-bold leading-tight md:text-5xl">
+              A economia da cidade na palma da sua mão
             </h1>
-            <p className="mt-3 text-sm opacity-95">
-              Ofertas, classificados, divulgação local e programa de indicação
-              em um só lugar.
+
+            <p className="mt-4 max-w-2xl text-base leading-7 text-white/75 md:text-lg">
+              Encontre empresas, profissionais, ofertas, classificados e use a
+              moeda digital CONECTA para fortalecer o comércio local.
             </p>
           </div>
 
-          <img
-            src="/logo-valente-conecta.png"
-            alt="Valente Conecta"
-            className="h-16 w-16 rounded-2xl bg-white/90 p-2"
-          />
-        </div>
-      </div>
+          <div className="mt-8 grid gap-4 md:grid-cols-[1fr_auto]">
+            <div className="rounded-2xl border border-white/10 bg-slate-900/80 px-4 py-4 shadow-xl">
+              <p className="text-sm text-white/55">Busca rápida</p>
+              <p className="mt-2 text-sm text-white/75">
+                Empresas, profissionais, ofertas e serviços reunidos em um só lugar.
+              </p>
+            </div>
 
-      <div className="mt-4 card">
-        <div className="mb-3 flex items-center justify-between">
-          <div>
-            <h2 className="section-title">Acesso rápido</h2>
-            <p className="mt-1 text-sm text-slate-500">
-              Escolha uma área para entrar.
-            </p>
+            <Link
+              href="/carteira"
+              className="inline-flex items-center justify-center rounded-2xl bg-emerald-500 px-5 py-4 text-sm font-semibold text-slate-950 shadow-lg"
+            >
+              Ver minha carteira
+            </Link>
           </div>
-          <span className="badge">App ativo</span>
         </div>
+      </section>
 
-        <div className="quick-grid">
-          <Link href="/ofertas" className="quick-tile">
-            <div className="text-2xl">🏷️</div>
-            <div className="mt-2 font-bold">Ofertas</div>
-            <div className="mt-1 text-sm text-slate-500">
-              Promoções em destaque
-            </div>
-          </Link>
-
-          <Link href="/classificados" className="quick-tile">
-            <div className="text-2xl">📦</div>
-            <div className="mt-2 font-bold">Classificados</div>
-            <div className="mt-1 text-sm text-slate-500">
-              Compra, venda e anúncios
-            </div>
-          </Link>
-
-          <Link href="/indicar" className="quick-tile">
-            <div className="text-2xl">📲</div>
-            <div className="mt-2 font-bold">Indicar</div>
-            <div className="mt-1 text-sm text-slate-500">
-              Gere seu link e QR Code
-            </div>
-          </Link>
-
-          <Link href="/publicar" className="quick-tile">
-            <div className="text-2xl">➕</div>
-            <div className="mt-2 font-bold">Publicar</div>
-            <div className="mt-1 text-sm text-slate-500">
-              Área de gestão e cadastro
-            </div>
-          </Link>
+      <section className="mx-auto max-w-6xl px-4 py-8 md:px-6">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {quickLinks.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="rounded-2xl border border-white/10 bg-slate-900 p-5 transition hover:border-emerald-400/40 hover:bg-slate-900/90"
+            >
+              <div className="text-3xl">{item.emoji}</div>
+              <div className="mt-3 text-lg font-bold">{item.title}</div>
+              <div className="mt-2 text-sm leading-6 text-white/60">
+                {item.description}
+              </div>
+            </Link>
+          ))}
         </div>
-      </div>
+      </section>
 
-      <div className="mt-4 grid-cards">
-        <div className="card">
-          <h3 className="section-title">Programa de indicação</h3>
-          <p className="mt-2 text-sm text-slate-600">
-            Compartilhe seu QR Code ou copie o link para enviar no WhatsApp.
+      <section className="mx-auto max-w-6xl px-4 pb-8 md:px-6">
+        <div className="rounded-3xl border border-amber-400/20 bg-gradient-to-r from-amber-500/10 to-yellow-500/10 p-6 shadow-xl">
+          <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
+            Moeda digital CONECTA
           </p>
-          <Link href="/indicar" className="btn-primary mt-4">
-            Abrir tela de indicação
-          </Link>
+
+          <h2 className="mt-3 text-2xl font-bold md:text-3xl">
+            Ganhe cashback e use em estabelecimentos parceiros
+          </h2>
+
+          <p className="mt-4 max-w-3xl text-sm leading-7 text-white/75 md:text-base">
+            A CONECTA é o diferencial do projeto. Comprando em parceiros
+            participantes, o usuário acumula benefícios e pode acompanhar tudo
+            na carteira digital.
+          </p>
+
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link
+              href="/carteira"
+              className="rounded-xl bg-amber-400 px-5 py-3 text-sm font-semibold text-slate-950"
+            >
+              Ver minha carteira
+            </Link>
+
+            <Link
+              href="/empresas"
+              className="rounded-xl border border-white/10 px-5 py-3 text-sm font-semibold hover:bg-white/5"
+            >
+              Ver parceiros
+            </Link>
+          </div>
         </div>
-      </div>
-    </AppShell>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 pb-12 md:px-6">
+        <div className="grid gap-4 lg:grid-cols-3">
+          <div className="rounded-2xl border border-white/10 bg-slate-900 p-5">
+            <p className="text-sm uppercase tracking-[0.2em] text-emerald-400">
+              Empresas
+            </p>
+            <h3 className="mt-2 text-xl font-bold">Guia de empresas locais</h3>
+            <p className="mt-3 text-sm leading-6 text-white/65">
+              Descubra lojas, comércios, restaurantes, farmácias e parceiros
+              participantes em Valente e região.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-white/10 bg-slate-900 p-5">
+            <p className="text-sm uppercase tracking-[0.2em] text-cyan-400">
+              Profissionais
+            </p>
+            <h3 className="mt-2 text-xl font-bold">Serviços e mão de obra</h3>
+            <p className="mt-3 text-sm leading-6 text-white/65">
+              Encontre profissionais por categoria: eletricista, encanador,
+              pedreiro, pintor, diarista e muito mais.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-white/10 bg-slate-900 p-5">
+            <p className="text-sm uppercase tracking-[0.2em] text-fuchsia-400">
+              Gestão
+            </p>
+            <h3 className="mt-2 text-xl font-bold">Publicar e administrar</h3>
+            <p className="mt-3 text-sm leading-6 text-white/65">
+              Área voltada à publicação de conteúdo, ofertas, classificados e
+              gestão do ecossistema do app.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
   );
 }

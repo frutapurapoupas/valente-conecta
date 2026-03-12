@@ -72,7 +72,6 @@ export default function PwaInstallCard() {
 
   async function handleInstall() {
     if (!deferredPrompt) return;
-
     await deferredPrompt.prompt();
     await deferredPrompt.userChoice;
     setDeferredPrompt(null);
@@ -80,7 +79,6 @@ export default function PwaInstallCard() {
 
   async function handleUpdate() {
     if (!registration?.waiting) return;
-
     setUpdating(true);
     registration.waiting.postMessage({ type: "SKIP_WAITING" });
   }

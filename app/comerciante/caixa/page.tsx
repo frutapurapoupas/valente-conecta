@@ -96,7 +96,6 @@ export default function ComercianteCaixaPage() {
     if (empresaId) {
       carregarExtrato();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [empresaId]);
 
   const movimentos = useMemo(() => {
@@ -119,9 +118,7 @@ export default function ComercianteCaixaPage() {
       (statement as any)?.saldo ??
       0;
 
-    const numero = Number(valor || 0);
-
-    return numero.toLocaleString("pt-BR", {
+    return Number(valor || 0).toLocaleString("pt-BR", {
       style: "currency",
       currency: "BRL",
     });
@@ -246,13 +243,9 @@ export default function ComercianteCaixaPage() {
                         item?.natureza ??
                         "-";
 
-                      const valorBruto =
-                        item?.valor ??
-                        item?.amount ??
-                        item?.total ??
-                        0;
-
-                      const valor = Number(valorBruto || 0);
+                      const valor = Number(
+                        item?.valor ?? item?.amount ?? item?.total ?? 0
+                      );
 
                       return (
                         <tr
