@@ -1,74 +1,40 @@
-"use client";
-
-import { useMemo } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import AppShell from "@/components/AppShell";
+import { Suspense } from "react";
+import Link from "next/link";
+import StatusClient from "./status-client";
 
 export default function StatusPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const nome = useMemo(() => searchParams.get("nome") || "", [searchParams]);
-  const telefone = useMemo(
-    () => searchParams.get("telefone") || "",
-    [searchParams]
-  );
-  const ref = useMemo(() => searchParams.get("ref") || "", [searchParams]);
-
   return (
-    <AppShell
-      title="Cadastro concluído"
-      subtitle="Seus dados foram recebidos com sucesso."
-    >
-      <div className="grid-cards">
-        <div className="card">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="section-title">Resumo</h2>
-            <span className="badge">Sucesso</span>
+    <main className="min-h-screen bg-slate-950 px-4 py-8 text-white">
+      <div className="mx-auto max-w-4xl">
+        <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-sm uppercase tracking-[0.25em] text-emerald-400">
+              Valente Conecta
+            </p>
+            <h1 className="mt-2 text-3xl font-bold">Status</h1>
+            <p className="mt-2 text-white/70">
+              Acompanhe aqui o retorno do seu cadastro, indicação ou operação.
+            </p>
           </div>
 
-          <div className="grid gap-2 text-sm text-slate-700">
-            <div>
-              <span className="font-semibold">Nome:</span> {nome || "-"}
-            </div>
-            <div>
-              <span className="font-semibold">Telefone:</span>{" "}
-              {telefone || "-"}
-            </div>
-            <div>
-              <span className="font-semibold">Código de indicação:</span>{" "}
-              {ref || "Não informado"}
-            </div>
-          </div>
+          <Link
+            href="/"
+            className="inline-flex items-center rounded-xl border border-white/10 px-4 py-3 text-sm hover:bg-white/5"
+          >
+            Voltar ao início
+          </Link>
         </div>
 
-        <div className="card">
-          <h2 className="section-title mb-2">Próximos passos</h2>
-          <p className="text-sm text-slate-600">
-            Seu cadastro foi registrado. Se você entrou por um link de indicação,
-            ele ficará visível na conta do indicador como pendente até a
-            ativação.
-          </p>
-
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <button
-              type="button"
-              className="btn-primary"
-              onClick={() => router.push("/")}
-            >
-              Ir para início
-            </button>
-
-            <button
-              type="button"
-              className="btn-secondary"
-              onClick={() => router.push("/conta")}
-            >
-              Abrir minha conta
-            </button>
-          </div>
-        </div>
+        <Suspense
+          fallback={
+            <div className="rounded-2xl border border-white/10 bg-slate-900 p-6 shadow-xl">
+              <p className="text-white/70">Carregando status...</p>
+            </div>
+          }
+        >
+          <StatusClient />
+        </Suspense>
       </div>
-    </AppShell>
+    </main>
   );
 }
