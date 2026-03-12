@@ -67,9 +67,10 @@ export default function HomePage() {
 
           <div className="mt-8 grid gap-4 md:grid-cols-[1fr_auto]">
             <div className="rounded-2xl border border-white/10 bg-slate-900/80 px-4 py-4 shadow-xl">
-              <p className="text-sm text-white/55">Busca rápida</p>
+              <p className="text-sm text-white/55">Ecossistema local</p>
               <p className="mt-2 text-sm text-white/75">
-                Empresas, profissionais, ofertas e serviços reunidos em um só lugar.
+                Empresas, profissionais, ofertas, classificados e carteira
+                digital reunidos em um só lugar.
               </p>
             </div>
 
