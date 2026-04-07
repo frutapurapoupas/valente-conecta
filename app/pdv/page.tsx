@@ -14,6 +14,13 @@ interface Produto {
   status?: 'ativo' | 'pendente'
 }
 
+interface LojaInfo {
+  nome: string
+  endereco: string
+  cidade: string
+  telefone: string
+}
+
 export default function PDVPage() {
   const [carrinho, setCarrinho] = useState<Produto[]>([])
   const [tela, setTela] = useState<'venda' | 'checkout' | 'pagamento' | 'confirmacao'>('venda')
@@ -27,6 +34,8 @@ export default function PDVPage() {
   const [modo, setModo] = useState<'busca' | 'leitor'>('leitor')
   const [codigoLeitor, setCodigoLeitor] = useState('')
   const [confirmacao, setConfirmacao] = useState({ titulo: '', subtitulo: '', cor: '' })
+  const [mostrarNotificacao, setMostrarNotificacao] = useState(false)
+  const [mensagemNotificacao, setMensagemNotificacao] = useState('')
   
   // Estado para cadastro rápido
   const [showCadastroRapido, setShowCadastroRapido] = useState(false)
@@ -35,7 +44,20 @@ export default function PDVPage() {
   const [novoProdutoPreco, setNovoProdutoPreco] = useState('')
   const [novoProdutoQuantidade, setNovoProdutoQuantidade] = useState('1')
 
+  // Dados da loja
+  const [lojaInfo, setLojaInfo] = useState<LojaInfo>({
+    nome: 'Valente Conecta',
+    endereco: 'Rua Principal, 123 - Centro',
+    cidade: 'Coité - BA',
+    telefone: '(00) 00000-0000'
+  })
+
   useEffect(() => {
+    carregarProdutos()
+    carregarLojaInfo()
+  }, [])
+
+  const carregarProdutos = () => {
     const saved = localStorage.getItem('produtos_estoque')
     if (saved) {
       setProdutos(JSON.parse(saved))
@@ -50,7 +72,14 @@ export default function PDVPage() {
       setProdutos(exemplos)
       localStorage.setItem('produtos_estoque', JSON.stringify(exemplos))
     }
-  }, [])
+  }
+
+  const carregarLojaInfo = () => {
+    const saved = localStorage.getItem('loja_info')
+    if (saved) {
+      setLojaInfo(JSON.parse(saved))
+    }
+  }
 
   const adicionarAoCarrinho = (produto: any) => {
     setCarrinho(prev => {
@@ -75,7 +104,6 @@ export default function PDVPage() {
       adicionarAoCarrinho({ ...produto, quantidade: 1 })
       setCodigoLeitor('')
     } else {
-      // Produto não encontrado - abrir cadastro rápido
       setNovoProdutoCodigo(codigoLeitor)
       setNovoProdutoNome('')
       setNovoProdutoPreco('')
@@ -99,12 +127,10 @@ export default function PDVPage() {
       status: 'pendente'
     }
 
-    // Salvar no estoque
     const novosProdutos = [...produtos, novoProduto]
     setProdutos(novosProdutos)
     localStorage.setItem('produtos_estoque', JSON.stringify(novosProdutos))
     
-    // Notificar Admin Master
     const notificacoes = localStorage.getItem('notificacoes_admin')
     const lista = notificacoes ? JSON.parse(notificacoes) : []
     lista.push({
@@ -117,9 +143,7 @@ export default function PDVPage() {
     })
     localStorage.setItem('notificacoes_admin', JSON.stringify(lista))
     
-    // Adicionar ao carrinho
     adicionarAoCarrinho({ ...novoProduto, quantidade: parseInt(novoProdutoQuantidade) })
-    
     setShowCadastroRapido(false)
     setMensagem(`✅ ${novoProdutoNome} cadastrado e adicionado! Aguardando validação.`)
     setTimeout(() => setMensagem(''), 3000)
@@ -156,7 +180,6 @@ export default function PDVPage() {
   const voltarParaCheckout = () => setTela('checkout')
 
   const finalizarVenda = () => {
-    // Atualizar estoque
     const estoqueAtual = localStorage.getItem('produtos_estoque')
     if (estoqueAtual) {
       const estoque = JSON.parse(estoqueAtual)
@@ -172,7 +195,8 @@ export default function PDVPage() {
     if (formaPagamento === 'fiado') {
       const vendaFiada = {
         id: Date.now().toString(),
-        clienteNome, clienteTelefone,
+        clienteNome,
+        clienteTelefone,
         valor: totalCompra,
         data: new Date().toISOString(),
         vencimento: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
@@ -184,19 +208,58 @@ export default function PDVPage() {
       lista.push(vendaFiada)
       localStorage.setItem('vendas_fiadas', JSON.stringify(lista))
       
-      notificarCompraFiado(clienteNome, clienteTelefone, totalCompra, new Date(vendaFiada.vencimento))
-      setConfirmacao({ titulo: 'Venda no Fiado Registrada!', subtitulo: `${clienteNome}\nR$ ${totalCompra.toFixed(2)}`, cor: 'bg-yellow-500' })
+      // Calcular saldo restante do cliente (exemplo: limite de R$500)
+      const saldoRestante = 500 - totalCompra
+      
+      // Enviar notificação com dados completos da loja
+      notificarCompraFiado(
+        clienteNome,
+        clienteTelefone,
+        totalCompra,
+        new Date(vendaFiada.vencimento),
+        lojaInfo,
+        saldoRestante
+      )
+      
+      setMensagemNotificacao(`✅ Notificação enviada para ${clienteTelefone}`)
+      setMostrarNotificacao(true)
+      
+      setConfirmacao({
+        titulo: 'Venda no Fiado Registrada!',
+        subtitulo: `${clienteNome}\nR$ ${totalCompra.toFixed(2)}`,
+        cor: 'bg-yellow-500'
+      })
     } else if (formaPagamento === 'dinheiro') {
       const recebido = parseFloat(valorRecebido)
       const troco = recebido - totalCompra
-      if (clienteTelefone) notificarCompraConfirmada(clienteTelefone, totalCompra, 'dinheiro')
-      setConfirmacao({ titulo: 'Venda Finalizada!', subtitulo: `Total: R$ ${totalCompra.toFixed(2)}\nTroco: R$ ${troco.toFixed(2)}`, cor: 'bg-green-500' })
+      
+      if (clienteTelefone) {
+        notificarCompraConfirmada(clienteTelefone, totalCompra, 'dinheiro', lojaInfo)
+        setMensagemNotificacao(`✅ Notificação enviada`)
+        setMostrarNotificacao(true)
+      }
+      
+      setConfirmacao({
+        titulo: 'Venda Finalizada!',
+        subtitulo: `Total: R$ ${totalCompra.toFixed(2)}\nTroco: R$ ${troco.toFixed(2)}`,
+        cor: 'bg-green-500'
+      })
     } else {
-      if (clienteTelefone) notificarCompraConfirmada(clienteTelefone, totalCompra, formaPagamento)
-      setConfirmacao({ titulo: 'Venda Finalizada!', subtitulo: `R$ ${totalCompra.toFixed(2)} - ${formaPagamento.toUpperCase()}`, cor: 'bg-green-500' })
+      if (clienteTelefone) {
+        notificarCompraConfirmada(clienteTelefone, totalCompra, formaPagamento, lojaInfo)
+        setMensagemNotificacao(`✅ Notificação enviada`)
+        setMostrarNotificacao(true)
+      }
+      
+      setConfirmacao({
+        titulo: 'Venda Finalizada!',
+        subtitulo: `R$ ${totalCompra.toFixed(2)} - ${formaPagamento.toUpperCase()}`,
+        cor: 'bg-green-500'
+      })
     }
     setCarrinho([])
     setTela('confirmacao')
+    setTimeout(() => setMostrarNotificacao(false), 3000)
   }
 
   const novaVenda = () => {
@@ -207,9 +270,10 @@ export default function PDVPage() {
     setClienteTelefone('')
     setCodigoLeitor('')
     setBuscaTermo('')
+    setMostrarNotificacao(false)
   }
 
-  // Tela Cadastro Rápido
+  // TELA CADASTRO RÁPIDO
   if (showCadastroRapido) {
     return (
       <div className="min-h-screen bg-gray-100">
@@ -245,7 +309,7 @@ export default function PDVPage() {
     )
   }
 
-  // Tela Confirmação
+  // TELA CONFIRMAÇÃO
   if (tela === 'confirmacao') {
     return (
       <div className="min-h-screen bg-gray-100">
@@ -264,7 +328,7 @@ export default function PDVPage() {
     )
   }
 
-  // Tela Pagamento
+  // TELA PAGAMENTO
   if (tela === 'pagamento') {
     return (
       <div className="min-h-screen bg-gray-100">
@@ -273,9 +337,32 @@ export default function PDVPage() {
           <span className="font-bold text-xl">Pagamento</span>
         </div>
         <div className="p-4 max-w-md mx-auto">
-          <div className="bg-white rounded-2xl p-6 mb-5 text-center">
-            <p className="text-gray-500">Total a pagar</p>
-            <p className="text-4xl font-bold text-green-600">R$ {totalCompra.toFixed(2)}</p>
+          <div className="bg-white rounded-2xl p-6 mb-5">
+            <h2 className="font-bold text-lg mb-3">Itens da Compra</h2>
+            {carrinho.map(item => (
+              <div key={item.id} className="border-b pb-2 mb-2">
+                <div className="flex justify-between">
+                  <span className="font-medium">{item.nome}</span>
+                  <span className="text-green-600 font-bold">R$ {((item.preco || 0) * item.quantidade).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-xs text-gray-400 mt-1">
+                  <span>Código: <span className="font-mono">{item.codigo || 'Não informado'}</span></span>
+                  <span>Qtd: {item.quantidade}</span>
+                </div>
+                {item.status === 'pendente' && (
+                  <div className="text-xs text-yellow-500 mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    Produto pendente de validação
+                  </div>
+                )}
+              </div>
+            ))}
+            <div className="border-t pt-3 mt-2">
+              <div className="flex justify-between text-xl font-bold">
+                <span>Total</span>
+                <span className="text-green-600">R$ {totalCompra.toFixed(2)}</span>
+              </div>
+            </div>
           </div>
 
           {formaPagamento === 'dinheiro' && (
@@ -307,6 +394,7 @@ export default function PDVPage() {
             <div className="bg-white rounded-2xl p-6 space-y-4">
               <input type="text" value={clienteNome} onChange={(e) => setClienteNome(e.target.value)} className="w-full p-4 border rounded-xl" placeholder="Nome completo" />
               <input type="tel" value={clienteTelefone} onChange={(e) => setClienteTelefone(e.target.value)} className="w-full p-4 border rounded-xl" placeholder="WhatsApp" />
+              <div className="bg-blue-50 p-3 rounded-xl text-sm text-center">📱 O cliente receberá a notificação com endereço da loja e saldo disponível</div>
               <button onClick={finalizarVenda} disabled={!clienteNome || !clienteTelefone} className="w-full py-4 bg-yellow-500 text-white rounded-xl font-bold">Registrar Fiado</button>
             </div>
           )}
@@ -322,7 +410,7 @@ export default function PDVPage() {
     )
   }
 
-  // Tela Checkout
+  // TELA CHECKOUT
   if (tela === 'checkout') {
     return (
       <div className="min-h-screen bg-gray-100">
@@ -332,14 +420,26 @@ export default function PDVPage() {
         </div>
         <div className="p-4 max-w-md mx-auto">
           <div className="bg-white rounded-2xl p-6 mb-5">
-            <h2 className="font-bold text-xl mb-4">Resumo</h2>
+            <h2 className="font-bold text-xl mb-4">Resumo da Compra</h2>
             {carrinho.map(item => (
-              <div key={item.id} className="flex justify-between text-base border-b pb-3 mb-3">
-                <span>{item.nome} {item.status === 'pendente' && <span className="text-yellow-500 text-xs">(pendente)</span>} x{item.quantidade}</span>
-                <span>R$ {((item.preco || 0) * item.quantidade).toFixed(2)}</span>
+              <div key={item.id} className="border-b pb-3 mb-3">
+                <div className="flex justify-between text-base">
+                  <span className="font-medium">{item.nome}</span>
+                  <span className="text-green-600 font-bold">R$ {((item.preco || 0) * item.quantidade).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Código: <span className="font-mono">{item.codigo || 'N/A'}</span></span>
+                  <span>Qtd: {item.quantidade}</span>
+                </div>
+                {item.status === 'pendente' && (
+                  <div className="text-xs text-yellow-500 mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    Aguardando validação
+                  </div>
+                )}
               </div>
             ))}
-            <div className="border-t pt-4">
+            <div className="border-t pt-4 mt-2">
               <div className="flex justify-between text-xl font-bold">
                 <span>Total</span>
                 <span className="text-green-600">R$ {totalCompra.toFixed(2)}</span>
@@ -361,7 +461,7 @@ export default function PDVPage() {
     )
   }
 
-  // Tela Principal
+  // TELA PRINCIPAL (VENDA)
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="bg-blue-600 text-white p-4 flex justify-between items-center">
@@ -376,6 +476,12 @@ export default function PDVPage() {
 
       <div className="p-4 max-w-md mx-auto">
         {mensagem && <div className="mb-4 p-3 bg-green-100 text-green-800 rounded-xl text-center">{mensagem}</div>}
+
+        {mostrarNotificacao && (
+          <div className="fixed top-20 left-4 right-4 bg-green-500 text-white p-3 rounded-xl shadow-lg text-center animate-bounce z-50">
+            {mensagemNotificacao}
+          </div>
+        )}
 
         {modo === 'leitor' ? (
           <div className="bg-white rounded-2xl p-5">
@@ -423,7 +529,7 @@ export default function PDVPage() {
           </div>
         )}
 
-        {/* Carrinho */}
+        {/* CARRINHO */}
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden mt-4">
           <div className="bg-gray-50 p-4 border-b flex justify-between">
             <span className="font-semibold text-lg">Carrinho ({carrinho.length})</span>
@@ -442,7 +548,10 @@ export default function PDVPage() {
                   <div key={item.id} className="p-4 border-b flex items-center gap-3">
                     <div className="flex-1">
                       <p className="font-medium">{item.nome}</p>
-                      <p className="text-green-600 font-bold">R$ {(item.preco || 0).toFixed(2)}</p>
+                      <div className="flex justify-between items-center mt-1">
+                        <p className="text-green-600 font-bold">R$ {(item.preco || 0).toFixed(2)}</p>
+                        <p className="text-xs text-gray-400 font-mono">{item.codigo || '---'}</p>
+                      </div>
                       {item.status === 'pendente' && <p className="text-xs text-yellow-500">⏳ Pendente validação</p>}
                     </div>
                     <div className="flex items-center gap-3">
