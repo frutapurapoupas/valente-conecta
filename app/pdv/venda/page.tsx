@@ -566,4 +566,4 @@ export default function VendaPage() {
       </main>
     </div>
   )
-}
+}// Atualiza‡Æo for‡ada - deploy vercel 
