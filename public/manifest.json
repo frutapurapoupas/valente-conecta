@@ -1,15 +1,11 @@
 {
   "name": "Valente Conecta",
   "short_name": "Valente",
-  "description": "PDV Colaborativo com Criptomoeda - Busca inteligente, indicação e muito mais",
+  "description": "PDV Colaborativo com Criptomoeda",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "portrait",
   "theme_color": "#6366f1",
   "background_color": "#ffffff",
-  "scope": "/",
-  "lang": "pt-BR",
-  "categories": ["business", "finance", "shopping"],
   "icons": [
     {
       "src": "/icone.png",
@@ -59,23 +55,5 @@
       "type": "image/png",
       "purpose": "any"
     }
-  ],
-  "shortcuts": [
-    {
-      "name": "Buscar",
-      "short_name": "Buscar",
-      "description": "Busca inteligente de produtos",
-      "url": "/",
-      "icons": [{ "src": "/icone.png", "sizes": "96x96" }]
-    },
-    {
-      "name": "Carteira",
-      "short_name": "Carteira",
-      "description": "Ver saldo e bônus",
-      "url": "/carteira",
-      "icons": [{ "src": "/icone.png", "sizes": "96x96" }]
-    }
-  ],
-  "screenshots": [],
-  "prefer_related_applications": false
+  ]
 }
