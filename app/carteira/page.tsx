@@ -2,15 +2,32 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Wallet, Gift, Users, Building, Copy, Check, Zap, ArrowLeft, User, Clock, Lock, Unlock } from 'lucide-react'
-import { QRCodeSVG } from 'qrcode.react'
+import { Wallet, Gift, Users, Building, QrCode, Copy, Check, Zap, ArrowLeft, User, Clock, Lock, Unlock, TrendingUp, Award, Shield } from 'lucide-react'
+import { getPlanoUsuario, getUsuarioLogado } from '@/services/auth'
+
+interface Cliente {
+  id: string
+  nome: string
+  telefone: string
+  saldoFiado: number
+  limiteCredito: number
+  carteiraConecta: number
+}
 
 export default function CarteiraPage() {
   const [activeTab, setActiveTab] = useState<'saldo' | 'indicar' | 'bonus' | 'resgatar'>('saldo')
   const [copied, setCopied] = useState(false)
   const [userType, setUserType] = useState<'amigo' | 'empresa' | 'profissional'>('amigo')
-  const [qrCodeValue, setQrCodeValue] = useState('')
+  const [plano, setPlano] = useState<'gratis' | 'basico' | 'premium'>('gratis')
+  const [usuario, setUsuario] = useState<any>(null)
   
+  // Dados da loja (do usuário logado)
+  const [loja, setLoja] = useState({
+    nome: 'Valente Conecta',
+    endereco: 'Rua Principal, 123 - Centro',
+    cidade: 'Coité - BA'
+  })
+
   // Dados completos da carteira
   const [walletData, setWalletData] = useState({
     saldoDisponivel: 45.00,
@@ -42,17 +59,23 @@ export default function CarteiraPage() {
     pagamentoMensalMax: 50
   })
 
+  useEffect(() => {
+    const planoUsuario = getPlanoUsuario()
+    const usuarioLogado = getUsuarioLogado()
+    setPlano(planoUsuario)
+    setUsuario(usuarioLogado)
+    
+    // Carregar dados da loja do localStorage
+    const lojaSalva = localStorage.getItem('loja_info')
+    if (lojaSalva) {
+      setLoja(JSON.parse(lojaSalva))
+    }
+  }, [])
+
   // Calcular bônus pendentes
   const bonusPendentesLiberacao = walletData.saldoBloqueado
   const mesesParaLiberar = Math.ceil(bonusPendentesLiberacao / adminConfig.pagamentoMensalMax)
 
-  // Atualizar QR Code quando o tipo de usuário mudar
-  useEffect(() => {
-    const link = `${window.location.origin}/indique?tipo=${userType}&codigo=${Date.now()}`
-    setQrCodeValue(link)
-  }, [userType])
-
-  // Função copyToClipboard
   const copyToClipboard = () => {
     const link = `${window.location.origin}/indique?tipo=${userType}&codigo=${Date.now()}`
     navigator.clipboard.writeText(link)
@@ -75,6 +98,25 @@ export default function CarteiraPage() {
       </header>
 
       <main className="p-4 max-w-7xl mx-auto">
+        {/* Info do plano */}
+        <div className={`rounded-xl p-3 mb-4 ${plano === 'premium' ? 'bg-purple-50' : plano === 'basico' ? 'bg-blue-50' : 'bg-gray-100'}`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-gray-600" />
+              <p className="text-sm">
+                Plano: <strong className="capitalize">{plano}</strong>
+              </p>
+            </div>
+            {plano === 'gratis' && (
+              <Link href="/planos">
+                <button className="text-xs bg-blue-500 text-white px-3 py-1 rounded-full">
+                  Fazer Upgrade
+                </button>
+              </Link>
+            )}
+          </div>
+        </div>
+
         {/* Cards de Saldo */}
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white p-4 rounded-2xl">
@@ -249,28 +291,18 @@ export default function CarteiraPage() {
               </div>
             </div>
 
-            {/* QR Code REAL - Gerado dinamicamente com a biblioteca */}
             <div className="bg-white rounded-xl p-6 shadow-sm text-center">
               <div className="flex justify-center mb-4">
-                <div className="bg-white p-2 rounded-lg inline-block border border-gray-300 shadow-sm">
-                  {qrCodeValue && (
-                    <QRCodeSVG 
-                      value={qrCodeValue}
-                      size={180}
-                      bgColor="#FFFFFF"
-                      fgColor="#000000"
-                      level="H"
-                      includeMargin={true}
-                    />
-                  )}
+                <div className="bg-gradient-to-r from-yellow-400 to-amber-500 p-4 rounded-2xl inline-block">
+                  <QrCode className="w-48 h-48 text-white" />
                 </div>
               </div>
               <p className="text-sm text-gray-600 mb-2 font-mono">QR Code de indicação</p>
-              <p className="text-xs text-gray-400 mb-4">Aponte a câmera para instalar o app</p>
+              <p className="text-xs text-gray-400 mb-4">Mostre para quem você quer indicar</p>
               
               <button
                 onClick={copyToClipboard}
-                className="w-full py-3 bg-gray-900 text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-gray-800 transition"
+                className="w-full py-3 bg-gradient-to-r from-yellow-400 to-amber-500 text-white rounded-xl font-semibold flex items-center justify-center gap-2"
               >
                 {copied ? (
                   <>

@@ -1,52 +1,33 @@
-// services/notificacoes.ts - VERSÃO CORRIGIDA
+export function notificarCompraFiado(
+  clienteNome: string,
+  clienteTelefone: string,
+  total: number,
+  vencimento: Date,
+  lojaNome: string = 'Valente Conecta',
+  lojaEndereco: string = 'Rua Principal, 123 - Centro',
+  saldoFiadoDisponivel: number = 500
+): void {
+  const mensagemWhatsApp = `✅ *VALENTE CONECTA* - SUA COMPRA FOI REALIZADA COM SUCESSO!
 
-// Enviar WhatsApp sem pedir instalação
-export function enviarWhatsApp(telefone: string, mensagem: string): void {
-  if (!telefone || telefone.length < 10) {
-    console.log('Telefone inválido')
-    return
-  }
-  
-  const telefoneLimpo = telefone.replace(/\D/g, '')
-  let telefoneInternacional = telefoneLimpo
-  if (!telefoneLimpo.startsWith('55')) {
-    telefoneInternacional = `55${telefoneLimpo}`
-  }
-  
-  const mensagemCodificada = encodeURIComponent(mensagem)
-  
-  // Usar api.whatsapp.com/send (não pede instalação)
-  const linkWhatsApp = `https://api.whatsapp.com/send?phone=${telefoneInternacional}&text=${mensagemCodificada}`
-  
-  // Abrir em nova aba
-  window.open(linkWhatsApp, '_blank')
-}
+🏪 *Loja:* ${lojaNome}
+📍 *Endereço:* ${lojaEndereco}
 
-// Push notification simplificada
-export function enviarPushNotification(titulo: string, corpo: string): void {
-  if (typeof window === 'undefined') return
-  if (!('Notification' in window)) return
-  
-  if (Notification.permission === 'granted') {
-    new Notification(titulo, { body: corpo, icon: '/icone.png' })
-  }
-}
+👤 *Cliente:* ${clienteNome}
+💰 *Valor da compra:* R$ ${total.toFixed(2)}
+📅 *Data de vencimento:* ${vencimento.toLocaleDateString('pt-BR')}
 
-// Notificações
-export function notificarCompraFiado(clienteNome: string, clienteTelefone: string, total: number, vencimento: Date): void {
-  const mensagem = `🛍️ VALENTE CONECTA\n\nOlá ${clienteNome}!\nSua compra foi registrada.\nValor: R$ ${total.toFixed(2)}\nVence: ${vencimento.toLocaleDateString()}`
-  
+💳 *Saldo de fiado disponível:* R$ ${saldoFiadoDisponivel.toFixed(2)}
+
+✅ Seu pedido foi aprovado e registrado em nosso sistema.
+
+Agradecemos pela preferência! 🙏
+
+*Valente Conecta - Seu PDV Colaborativo*`
+
+  const mensagemPush = `✅ Compra realizada com sucesso!\nLoja: ${lojaNome}\nValor: R$ ${total.toFixed(2)}\nVence: ${vencimento.toLocaleDateString('pt-BR')}`
+
   if (clienteTelefone && clienteTelefone.length >= 10) {
-    enviarWhatsApp(clienteTelefone, mensagem)
+    enviarWhatsApp(clienteTelefone, mensagemWhatsApp)
   }
-  enviarPushNotification('Venda no Fiado', `R$ ${total.toFixed(2)} - ${clienteNome}`)
-}
-
-export function notificarCompraConfirmada(clienteTelefone: string, total: number, metodo: string): void {
-  const mensagem = `✅ VALENTE CONECTA\n\nCompra confirmada!\nValor: R$ ${total.toFixed(2)}\nPagamento: ${metodo}`
-  
-  if (clienteTelefone && clienteTelefone.length >= 10) {
-    enviarWhatsApp(clienteTelefone, mensagem)
-  }
-  enviarPushNotification('Compra Confirmada', `R$ ${total.toFixed(2)}`)
+  enviarPushNotification('Compra Realizada com Sucesso!', mensagemPush, { clienteNome, total, lojaNome })
 }
