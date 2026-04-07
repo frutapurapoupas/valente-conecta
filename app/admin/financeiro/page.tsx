@@ -93,7 +93,7 @@ export default function FinanceiroPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+           </table>
         </div>
       </div>
     </div>
