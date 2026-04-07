@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { 
   TrendingUp, TrendingDown, Users, Building2, DollarSign, 
-  ArrowUpRight, ArrowDownRight, Wallet, Transfer, Calendar,
-  BarChart3, PieChart, Activity, Shield, Clock, Zap
+  ArrowRightLeft, Calendar, Activity, Shield, Wallet, 
+  PieChart, BarChart3, Clock, Zap, ArrowUpRight, ArrowDownRight
 } from 'lucide-react'
 
 export default function MoedaConectaPage() {
@@ -81,7 +81,7 @@ export default function MoedaConectaPage() {
         <div className="bg-white rounded-xl p-5 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-              <Transfer className="w-6 h-6 text-purple-600" />
+              <ArrowRightLeft className="w-6 h-6 text-purple-600" />
             </div>
             <span className="text-2xl font-bold text-purple-600">{stats.transacoesMes}</span>
           </div>
@@ -115,7 +115,7 @@ export default function MoedaConectaPage() {
               <div key={trans.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                    <Transfer className="w-5 h-5 text-blue-600" />
+                    <ArrowRightLeft className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
                     <p className="font-medium">{trans.de} → {trans.para}</p>
@@ -181,7 +181,7 @@ export default function MoedaConectaPage() {
         </Link>
         <Link href="/admin/moeda-conecta/transacoes">
           <div className="bg-white rounded-xl p-4 text-center hover:shadow-md transition cursor-pointer">
-            <Transfer className="w-8 h-8 text-green-500 mx-auto mb-2" />
+            <ArrowRightLeft className="w-8 h-8 text-green-500 mx-auto mb-2" />
             <p className="font-medium">Transações</p>
             <p className="text-xs text-gray-500">Histórico completo</p>
           </div>
