@@ -1,8 +1,8 @@
 ﻿'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Camera, Search, Package, ShoppingCart, CreditCard, Users, Barcode, CheckCircle, DollarSign, QrCode, Zap, Plus, Minus, Trash2, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Camera, Search, Package, ShoppingCart, CreditCard, Users, Barcode, CheckCircle, DollarSign, QrCode, Zap, Plus, Minus, Trash2, AlertCircle, Loader2 } from 'lucide-react'
 import { notificarCompraFiado, notificarCompraConfirmada } from '@/services/notificacoes'
 
 interface Produto {
@@ -11,6 +11,7 @@ interface Produto {
   codigo: string | null
   preco: number | null
   quantidade: number
+  imagem?: string
   status?: 'ativo' | 'pendente'
 }
 
@@ -31,11 +32,16 @@ export default function PDVPage() {
   const [mensagem, setMensagem] = useState('')
   const [buscaTermo, setBuscaTermo] = useState('')
   const [produtos, setProdutos] = useState<any[]>([])
-  const [modo, setModo] = useState<'busca' | 'leitor'>('busca')
+  const [modo, setModo] = useState<'busca' | 'leitor'>('leitor')
   const [codigoLeitor, setCodigoLeitor] = useState('')
   const [confirmacao, setConfirmacao] = useState({ titulo: '', subtitulo: '', cor: '' })
   const [mostrarNotificacao, setMostrarNotificacao] = useState(false)
   const [mensagemNotificacao, setMensagemNotificacao] = useState('')
+  
+  // Estado para câmera
+  const [scanning, setScanning] = useState(false)
+  const [loadingCamera, setLoadingCamera] = useState(false)
+  const scannerRef = useRef<any>(null)
   
   // Estado para cadastro rápido
   const [showCadastroRapido, setShowCadastroRapido] = useState(false)
@@ -44,7 +50,6 @@ export default function PDVPage() {
   const [novoProdutoPreco, setNovoProdutoPreco] = useState('')
   const [novoProdutoQuantidade, setNovoProdutoQuantidade] = useState('1')
 
-  // Dados da loja
   const [lojaInfo, setLojaInfo] = useState<LojaInfo>({
     nome: 'Valente Conecta',
     endereco: 'Rua Principal, 123 - Centro',
@@ -52,9 +57,23 @@ export default function PDVPage() {
     telefone: '(00) 00000-0000'
   })
 
+  // Iniciar câmera automaticamente
   useEffect(() => {
     carregarProdutos()
     carregarLojaInfo()
+    
+    // Tentar iniciar câmera automaticamente
+    setTimeout(() => {
+      if (modo === 'leitor' && !scanning) {
+        iniciarCamera()
+      }
+    }, 1000)
+    
+    return () => {
+      if (scannerRef.current) {
+        pararCamera()
+      }
+    }
   }, [])
 
   const carregarProdutos = () => {
@@ -63,11 +82,11 @@ export default function PDVPage() {
       setProdutos(JSON.parse(saved))
     } else {
       const exemplos = [
-        { id: '1', nome: 'Arroz Integral 1kg', codigo: '7891234567890', preco: 8.90, estoque: 50, status: 'ativo' },
-        { id: '2', nome: 'Feijão Preto 1kg', codigo: '7891234567891', preco: 7.90, estoque: 30, status: 'ativo' },
-        { id: '3', nome: 'Açúcar 1kg', codigo: '7891234567892', preco: 4.50, estoque: 100, status: 'ativo' },
-        { id: '4', nome: 'Café 500g', codigo: '7891234567893', preco: 12.90, estoque: 25, status: 'ativo' },
-        { id: '5', nome: 'Óleo 900ml', codigo: '7891234567894', preco: 6.90, estoque: 40, status: 'ativo' },
+        { id: '1', nome: 'Arroz Integral 1kg', codigo: '7891234567890', preco: 8.90, estoque: 50, status: 'ativo', imagem: 'https://placehold.co/100x100/blue/white?text=Arroz' },
+        { id: '2', nome: 'Feijão Preto 1kg', codigo: '7891234567891', preco: 7.90, estoque: 30, status: 'ativo', imagem: 'https://placehold.co/100x100/green/white?text=Feijão' },
+        { id: '3', nome: 'Açúcar 1kg', codigo: '7891234567892', preco: 4.50, estoque: 100, status: 'ativo', imagem: 'https://placehold.co/100x100/yellow/white?text=Açúcar' },
+        { id: '4', nome: 'Café 500g', codigo: '7891234567893', preco: 12.90, estoque: 25, status: 'ativo', imagem: 'https://placehold.co/100x100/brown/white?text=Café' },
+        { id: '5', nome: 'Óleo 900ml', codigo: '7891234567894', preco: 6.90, estoque: 40, status: 'ativo', imagem: 'https://placehold.co/100x100/orange/white?text=Óleo' },
       ]
       setProdutos(exemplos)
       localStorage.setItem('produtos_estoque', JSON.stringify(exemplos))
@@ -81,13 +100,80 @@ export default function PDVPage() {
     }
   }
 
+  // Funções da câmera
+  const iniciarCamera = async () => {
+    setLoadingCamera(true)
+    setMensagem('📷 Iniciando câmera...')
+    
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Câmera não suportada')
+      }
+      
+      const { Html5Qrcode } = await import('html5-qrcode')
+      
+      if (scannerRef.current) {
+        await pararCamera()
+      }
+      
+      scannerRef.current = new Html5Qrcode('reader')
+      
+      await scannerRef.current.start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (decodedText: string) => {
+          processarCodigoCamera(decodedText)
+        },
+        () => {}
+      )
+      
+      setScanning(true)
+      setMensagem('✅ Câmera ativa. Aponte para o código')
+    } catch (err) {
+      console.error(err)
+      setMensagem('❌ Erro na câmera. Use busca manual.')
+    } finally {
+      setLoadingCamera(false)
+    }
+  }
+
+  const pararCamera = async () => {
+    if (scannerRef.current) {
+      try {
+        await scannerRef.current.stop()
+        scannerRef.current.clear()
+      } catch (err) {}
+      scannerRef.current = null
+    }
+    setScanning(false)
+    setMensagem('')
+  }
+
+  const processarCodigoCamera = (codigo: string) => {
+    if (!codigo) return
+    
+    const produto = produtos.find(p => p.codigo === codigo)
+    if (produto) {
+      adicionarAoCarrinho({ ...produto, quantidade: 1 })
+      setMensagem(`✅ ${produto.nome} adicionado!`)
+      setTimeout(() => setMensagem(''), 2000)
+    } else {
+      setNovoProdutoCodigo(codigo)
+      setNovoProdutoNome('')
+      setNovoProdutoPreco('')
+      setNovoProdutoQuantidade('1')
+      setShowCadastroRapido(true)
+      pararCamera()
+    }
+  }
+
   const adicionarAoCarrinho = (produto: any) => {
     setCarrinho(prev => {
       const existente = prev.find(item => item.id === produto.id)
       if (existente) {
-        return prev.map(item => item.id === produto.id ? { ...item, quantidade: item.quantidade + produto.quantidade } : item)
+        return prev.map(item => item.id === produto.id ? { ...item, quantidade: item.quantidade + 1 } : item)
       }
-      return [...prev, { ...produto, quantidade: produto.quantidade || 1 }]
+      return [...prev, { ...produto, quantidade: 1 }]
     })
     setMensagem(`✅ ${produto.nome} adicionado!`)
     setTimeout(() => setMensagem(''), 2000)
@@ -95,43 +181,7 @@ export default function PDVPage() {
     setCodigoLeitor('')
   }
 
-  // Função melhorada para buscar produtos - primeiro por código EAN, depois por nome
-  const buscarProduto = (termo: string) => {
-    if (!termo || termo.length < 2) return
-    
-    // Primeiro, tentar buscar como código EAN
-    const produtoPorCodigo = produtos.find(p => p.codigo === termo)
-    if (produtoPorCodigo) {
-      adicionarAoCarrinho({ ...produtoPorCodigo, quantidade: 1 })
-      setBuscaTermo('')
-      return
-    }
-    
-    // Se não encontrou como código, buscar por nome
-    const produtosPorNome = produtos.filter(p => p.nome.toLowerCase().includes(termo.toLowerCase()))
-    if (produtosPorNome.length > 0) {
-      setProdutosFiltrados(produtosPorNome)
-    } else {
-      // Produto não encontrado - abrir cadastro rápido
-      setNovoProdutoNome(termo)
-      setNovoProdutoCodigo('')
-      setNovoProdutoPreco('')
-      setNovoProdutoQuantidade('1')
-      setShowCadastroRapido(true)
-    }
-  }
-
-  const [produtosFiltrados, setProdutosFiltrados] = useState<any[]>([])
-  
-  // Atualizar busca enquanto digita
-  useEffect(() => {
-    if (buscaTermo.length >= 2) {
-      const filtrados = produtos.filter(p => p.nome.toLowerCase().includes(buscaTermo.toLowerCase()))
-      setProdutosFiltrados(filtrados)
-    } else {
-      setProdutosFiltrados([])
-    }
-  }, [buscaTermo, produtos])
+  const produtosFiltrados = buscaTermo.length >= 2 ? produtos.filter(p => p.nome.toLowerCase().includes(buscaTermo.toLowerCase())) : []
 
   const processarCodigo = () => {
     if (!codigoLeitor) return
@@ -140,7 +190,6 @@ export default function PDVPage() {
       adicionarAoCarrinho({ ...produto, quantidade: 1 })
       setCodigoLeitor('')
     } else {
-      // Produto não encontrado - abrir cadastro rápido com o código
       setNovoProdutoCodigo(codigoLeitor)
       setNovoProdutoNome('')
       setNovoProdutoPreco('')
@@ -161,6 +210,7 @@ export default function PDVPage() {
       codigo: novoProdutoCodigo || null,
       preco: parseFloat(novoProdutoPreco),
       estoque: parseInt(novoProdutoQuantidade) || 0,
+      imagem: 'https://placehold.co/100x100/gray/white?text=Novo',
       status: 'pendente'
     }
 
@@ -182,7 +232,7 @@ export default function PDVPage() {
     
     adicionarAoCarrinho({ ...novoProduto, quantidade: parseInt(novoProdutoQuantidade) })
     setShowCadastroRapido(false)
-    setMensagem(`✅ ${novoProdutoNome} cadastrado e adicionado! Aguardando validação.`)
+    setMensagem(`✅ ${novoProdutoNome} cadastrado e adicionado!`)
     setTimeout(() => setMensagem(''), 3000)
   }
 
@@ -206,6 +256,7 @@ export default function PDVPage() {
 
   const irParaCheckout = () => {
     if (carrinho.length === 0) { alert('Adicione produtos ao carrinho'); return }
+    pararCamera()
     setTela('checkout')
   }
 
@@ -305,8 +356,9 @@ export default function PDVPage() {
     setClienteTelefone('')
     setCodigoLeitor('')
     setBuscaTermo('')
-    setProdutosFiltrados([])
     setMostrarNotificacao(false)
+    // Reiniciar câmera
+    setTimeout(() => iniciarCamera(), 1000)
   }
 
   // TELA CADASTRO RÁPIDO
@@ -544,8 +596,18 @@ export default function PDVPage() {
           <Link href="/" className="p-2"><ArrowLeft className="w-6 h-6" /></Link>
           <span className="font-bold text-xl">PDV Valente</span>
         </div>
-        <button onClick={() => setModo(modo === 'busca' ? 'leitor' : 'busca')} className="bg-white/20 px-4 py-2 rounded-full text-sm">
-          {modo === 'busca' ? '📷 Leitor' : '🔍 Busca'}
+        <button 
+          onClick={() => {
+            if (modo === 'leitor') {
+              pararCamera()
+            } else {
+              iniciarCamera()
+            }
+            setModo(modo === 'busca' ? 'leitor' : 'busca')
+          }} 
+          className="bg-white/20 px-4 py-2 rounded-full text-sm"
+        >
+          {modo === 'busca' ? '📷 Câmera' : '🔍 Busca'}
         </button>
       </div>
 
@@ -562,24 +624,35 @@ export default function PDVPage() {
           <div className="bg-white rounded-2xl p-5">
             <div className="text-center mb-4">
               <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Camera className="w-12 h-12 text-blue-600" />
+                {scanning ? (
+                  <Camera className="w-12 h-12 text-blue-600 animate-pulse" />
+                ) : (
+                  <Camera className="w-12 h-12 text-blue-600" />
+                )}
               </div>
               <h2 className="text-xl font-bold">Leitor de Código</h2>
-              <p className="text-sm text-gray-500">Digite o código de barras</p>
+              <p className="text-sm text-gray-500">Aponte a câmera para o código de barras</p>
             </div>
-            <div className="flex gap-2">
-              <input 
-                type="text" 
-                value={codigoLeitor} 
-                onChange={(e) => setCodigoLeitor(e.target.value)} 
-                onKeyPress={(e) => e.key === 'Enter' && processarCodigo()} 
-                className="flex-1 p-4 border rounded-xl text-lg font-mono" 
-                placeholder="7891234567890" 
-                autoFocus 
-              />
-              <button onClick={processarCodigo} className="px-5 bg-blue-500 text-white rounded-xl">OK</button>
-            </div>
-            <button onClick={() => setModo('busca')} className="w-full mt-4 py-2 text-blue-500">Buscar por nome →</button>
+            
+            {!scanning ? (
+              <button 
+                onClick={iniciarCamera} 
+                disabled={loadingCamera}
+                className="w-full py-4 bg-blue-500 text-white rounded-xl font-bold flex items-center justify-center gap-2"
+              >
+                {loadingCamera ? <Loader2 className="w-5 h-5 animate-spin" /> : <Camera className="w-5 h-5" />}
+                {loadingCamera ? 'Iniciando...' : 'Iniciar Câmera'}
+              </button>
+            ) : (
+              <>
+                <div id="reader" className="w-full rounded-xl overflow-hidden mb-3" style={{ minHeight: '250px' }}></div>
+                <button onClick={pararCamera} className="w-full py-3 bg-red-500 text-white rounded-xl font-bold">Parar Câmera</button>
+              </>
+            )}
+            
+            <button onClick={() => setModo('busca')} className="w-full mt-4 py-2 text-blue-500">
+              Não consegue ler? Buscar por nome →
+            </button>
           </div>
         ) : (
           <div className="bg-white rounded-2xl p-5">
@@ -595,12 +668,43 @@ export default function PDVPage() {
                 type="text" 
                 value={buscaTermo} 
                 onChange={(e) => setBuscaTermo(e.target.value)} 
-                onKeyPress={(e) => e.key === 'Enter' && buscarProduto(buscaTermo)} 
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    const produto = produtos.find(p => p.codigo === buscaTermo || p.nome.toLowerCase().includes(buscaTermo.toLowerCase()))
+                    if (produto) {
+                      adicionarAoCarrinho({ ...produto, quantidade: 1 })
+                      setBuscaTermo('')
+                    } else if (buscaTermo.length >= 2) {
+                      setNovoProdutoNome(buscaTermo)
+                      setNovoProdutoCodigo('')
+                      setNovoProdutoPreco('')
+                      setNovoProdutoQuantidade('1')
+                      setShowCadastroRapido(true)
+                    }
+                  }
+                }} 
                 className="flex-1 p-4 border-2 rounded-xl text-base" 
-                placeholder="Ex: Arroz, 7891234567890..." 
+                placeholder="Ex: Arroz ou 7891234567890..." 
                 autoFocus 
               />
-              <button onClick={() => buscarProduto(buscaTermo)} className="px-5 bg-green-500 text-white rounded-xl">Buscar</button>
+              <button 
+                onClick={() => {
+                  const produto = produtos.find(p => p.codigo === buscaTermo || p.nome.toLowerCase().includes(buscaTermo.toLowerCase()))
+                  if (produto) {
+                    adicionarAoCarrinho({ ...produto, quantidade: 1 })
+                    setBuscaTermo('')
+                  } else if (buscaTermo.length >= 2) {
+                    setNovoProdutoNome(buscaTermo)
+                    setNovoProdutoCodigo('')
+                    setNovoProdutoPreco('')
+                    setNovoProdutoQuantidade('1')
+                    setShowCadastroRapido(true)
+                  }
+                }} 
+                className="px-5 bg-green-500 text-white rounded-xl"
+              >
+                Buscar
+              </button>
             </div>
             
             {produtosFiltrados.length > 0 && (
@@ -609,13 +713,21 @@ export default function PDVPage() {
                   <button 
                     key={produto.id} 
                     onClick={() => adicionarAoCarrinho({ ...produto, quantidade: 1 })} 
-                    className="w-full p-4 text-left hover:bg-gray-50 flex justify-between items-center border-b"
+                    className="w-full p-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b"
                   >
-                    <div>
-                      <p className="font-medium">{produto.nome}</p>
-                      <p className="text-xs text-gray-400 font-mono">{produto.codigo || 'Sem código'}</p>
+                    <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                      {produto.imagem ? (
+                        <img src={produto.imagem} alt={produto.nome} className="w-full h-full object-cover" />
+                      ) : (
+                        <Package className="w-6 h-6 text-gray-400" />
+                      )}
                     </div>
-                    <span className="text-green-600 font-bold">R$ {produto.preco.toFixed(2)}</span>
+                    <div className="flex-1">
+                      <p className="font-medium">{produto.nome}</p>
+                      <p className="text-xs text-gray-500">R$ {produto.preco.toFixed(2)}</p>
+                      {produto.codigo && <p className="text-xs text-gray-400 font-mono">{produto.codigo}</p>}
+                    </div>
+                    <span className="text-green-600 font-bold">+</span>
                   </button>
                 ))}
               </div>
@@ -652,6 +764,7 @@ export default function PDVPage() {
             <div className="p-10 text-center text-gray-400">
               <ShoppingCart className="w-16 h-16 mx-auto mb-3 opacity-50" />
               <p>Carrinho vazio</p>
+              <p className="text-xs mt-1">Use a câmera ou digite o código</p>
             </div>
           ) : (
             <>
