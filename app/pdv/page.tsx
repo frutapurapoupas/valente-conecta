@@ -31,7 +31,7 @@ export default function PDVPage() {
   const [mensagem, setMensagem] = useState('')
   const [buscaTermo, setBuscaTermo] = useState('')
   const [produtos, setProdutos] = useState<any[]>([])
-  const [modo, setModo] = useState<'busca' | 'leitor'>('leitor')
+  const [modo, setModo] = useState<'busca' | 'leitor'>('busca')
   const [codigoLeitor, setCodigoLeitor] = useState('')
   const [confirmacao, setConfirmacao] = useState({ titulo: '', subtitulo: '', cor: '' })
   const [mostrarNotificacao, setMostrarNotificacao] = useState(false)
@@ -85,9 +85,9 @@ export default function PDVPage() {
     setCarrinho(prev => {
       const existente = prev.find(item => item.id === produto.id)
       if (existente) {
-        return prev.map(item => item.id === produto.id ? { ...item, quantidade: item.quantidade + 1 } : item)
+        return prev.map(item => item.id === produto.id ? { ...item, quantidade: item.quantidade + produto.quantidade } : item)
       }
-      return [...prev, { ...produto, quantidade: 1 }]
+      return [...prev, { ...produto, quantidade: produto.quantidade || 1 }]
     })
     setMensagem(`✅ ${produto.nome} adicionado!`)
     setTimeout(() => setMensagem(''), 2000)
@@ -95,7 +95,43 @@ export default function PDVPage() {
     setCodigoLeitor('')
   }
 
-  const produtosFiltrados = buscaTermo.length >= 2 ? produtos.filter(p => p.nome.toLowerCase().includes(buscaTermo.toLowerCase())) : []
+  // Função melhorada para buscar produtos - primeiro por código EAN, depois por nome
+  const buscarProduto = (termo: string) => {
+    if (!termo || termo.length < 2) return
+    
+    // Primeiro, tentar buscar como código EAN
+    const produtoPorCodigo = produtos.find(p => p.codigo === termo)
+    if (produtoPorCodigo) {
+      adicionarAoCarrinho({ ...produtoPorCodigo, quantidade: 1 })
+      setBuscaTermo('')
+      return
+    }
+    
+    // Se não encontrou como código, buscar por nome
+    const produtosPorNome = produtos.filter(p => p.nome.toLowerCase().includes(termo.toLowerCase()))
+    if (produtosPorNome.length > 0) {
+      setProdutosFiltrados(produtosPorNome)
+    } else {
+      // Produto não encontrado - abrir cadastro rápido
+      setNovoProdutoNome(termo)
+      setNovoProdutoCodigo('')
+      setNovoProdutoPreco('')
+      setNovoProdutoQuantidade('1')
+      setShowCadastroRapido(true)
+    }
+  }
+
+  const [produtosFiltrados, setProdutosFiltrados] = useState<any[]>([])
+  
+  // Atualizar busca enquanto digita
+  useEffect(() => {
+    if (buscaTermo.length >= 2) {
+      const filtrados = produtos.filter(p => p.nome.toLowerCase().includes(buscaTermo.toLowerCase()))
+      setProdutosFiltrados(filtrados)
+    } else {
+      setProdutosFiltrados([])
+    }
+  }, [buscaTermo, produtos])
 
   const processarCodigo = () => {
     if (!codigoLeitor) return
@@ -104,6 +140,7 @@ export default function PDVPage() {
       adicionarAoCarrinho({ ...produto, quantidade: 1 })
       setCodigoLeitor('')
     } else {
+      // Produto não encontrado - abrir cadastro rápido com o código
       setNovoProdutoCodigo(codigoLeitor)
       setNovoProdutoNome('')
       setNovoProdutoPreco('')
@@ -208,10 +245,8 @@ export default function PDVPage() {
       lista.push(vendaFiada)
       localStorage.setItem('vendas_fiadas', JSON.stringify(lista))
       
-      // Calcular saldo restante do cliente (exemplo: limite de R$500)
       const saldoRestante = 500 - totalCompra
       
-      // Enviar notificação com dados completos da loja
       notificarCompraFiado(
         clienteNome,
         clienteTelefone,
@@ -270,6 +305,7 @@ export default function PDVPage() {
     setClienteTelefone('')
     setCodigoLeitor('')
     setBuscaTermo('')
+    setProdutosFiltrados([])
     setMostrarNotificacao(false)
   }
 
@@ -288,18 +324,57 @@ export default function PDVPage() {
                 <Package className="w-10 h-10 text-orange-600" />
               </div>
               <h2 className="text-xl font-bold">Produto não encontrado</h2>
-              <p className="text-sm text-gray-500">Complete o cadastro</p>
+              <p className="text-sm text-gray-500">Digite o código de barras e o nome do produto</p>
             </div>
             <div className="space-y-4">
-              <input type="text" value={novoProdutoCodigo} className="w-full p-4 border rounded-xl bg-gray-50" readOnly placeholder="Código" />
-              <input type="text" value={novoProdutoNome} onChange={(e) => setNovoProdutoNome(e.target.value)} className="w-full p-4 border rounded-xl" placeholder="Nome do produto *" autoFocus />
+              <div>
+                <label className="block text-sm font-medium mb-1">Código de barras (EAN)</label>
+                <input 
+                  type="text" 
+                  value={novoProdutoCodigo} 
+                  onChange={(e) => setNovoProdutoCodigo(e.target.value)} 
+                  className="w-full p-4 border rounded-xl text-lg font-mono" 
+                  placeholder="7891234567890" 
+                  autoFocus 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Nome do produto *</label>
+                <input 
+                  type="text" 
+                  value={novoProdutoNome} 
+                  onChange={(e) => setNovoProdutoNome(e.target.value)} 
+                  className="w-full p-4 border rounded-xl" 
+                  placeholder="Ex: Produto X" 
+                />
+              </div>
               <div className="flex gap-3">
-                <input type="number" step="0.01" value={novoProdutoPreco} onChange={(e) => setNovoProdutoPreco(e.target.value)} className="flex-1 p-4 border rounded-xl" placeholder="Preço R$ *" />
-                <input type="number" value={novoProdutoQuantidade} onChange={(e) => setNovoProdutoQuantidade(e.target.value)} className="w-24 p-4 border rounded-xl" placeholder="Qtd" />
+                <div className="flex-1">
+                  <label className="block text-sm font-medium mb-1">Preço (R$) *</label>
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    value={novoProdutoPreco} 
+                    onChange={(e) => setNovoProdutoPreco(e.target.value)} 
+                    className="w-full p-4 border rounded-xl" 
+                    placeholder="0,00" 
+                  />
+                </div>
+                <div className="w-24">
+                  <label className="block text-sm font-medium mb-1">Qtd</label>
+                  <input 
+                    type="number" 
+                    value={novoProdutoQuantidade} 
+                    onChange={(e) => setNovoProdutoQuantidade(e.target.value)} 
+                    className="w-full p-4 border rounded-xl" 
+                    placeholder="1" 
+                    min="1" 
+                  />
+                </div>
               </div>
               <div className="bg-yellow-50 p-3 rounded-xl text-sm text-yellow-800 flex items-center gap-2">
                 <AlertCircle className="w-5 h-5" />
-                Este produto será validado pelo Admin Master
+                Este produto será validado pelo Admin Master antes de aparecer no catálogo público.
               </div>
               <button onClick={cadastrarProdutoRapido} className="w-full py-4 bg-orange-500 text-white rounded-xl font-bold">Adicionar ao Carrinho</button>
             </div>
@@ -493,7 +568,15 @@ export default function PDVPage() {
               <p className="text-sm text-gray-500">Digite o código de barras</p>
             </div>
             <div className="flex gap-2">
-              <input type="text" value={codigoLeitor} onChange={(e) => setCodigoLeitor(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && processarCodigo()} className="flex-1 p-4 border rounded-xl text-lg font-mono" placeholder="7891234567890" autoFocus />
+              <input 
+                type="text" 
+                value={codigoLeitor} 
+                onChange={(e) => setCodigoLeitor(e.target.value)} 
+                onKeyPress={(e) => e.key === 'Enter' && processarCodigo()} 
+                className="flex-1 p-4 border rounded-xl text-lg font-mono" 
+                placeholder="7891234567890" 
+                autoFocus 
+              />
               <button onClick={processarCodigo} className="px-5 bg-blue-500 text-white rounded-xl">OK</button>
             </div>
             <button onClick={() => setModo('busca')} className="w-full mt-4 py-2 text-blue-500">Buscar por nome →</button>
@@ -505,15 +588,33 @@ export default function PDVPage() {
                 <Search className="w-12 h-12 text-green-600" />
               </div>
               <h2 className="text-xl font-bold">Buscar Produto</h2>
-              <p className="text-sm text-gray-500">Digite o nome do produto</p>
+              <p className="text-sm text-gray-500">Digite o nome ou código de barras</p>
             </div>
-            <input type="text" value={buscaTermo} onChange={(e) => setBuscaTermo(e.target.value)} className="w-full p-4 border-2 rounded-xl text-base" placeholder="Ex: Arroz, Feijão..." autoFocus />
+            <div className="flex gap-2">
+              <input 
+                type="text" 
+                value={buscaTermo} 
+                onChange={(e) => setBuscaTermo(e.target.value)} 
+                onKeyPress={(e) => e.key === 'Enter' && buscarProduto(buscaTermo)} 
+                className="flex-1 p-4 border-2 rounded-xl text-base" 
+                placeholder="Ex: Arroz, 7891234567890..." 
+                autoFocus 
+              />
+              <button onClick={() => buscarProduto(buscaTermo)} className="px-5 bg-green-500 text-white rounded-xl">Buscar</button>
+            </div>
             
             {produtosFiltrados.length > 0 && (
-              <div className="mt-3 border rounded-xl overflow-hidden">
+              <div className="mt-3 border rounded-xl overflow-hidden max-h-64 overflow-auto">
                 {produtosFiltrados.map(produto => (
-                  <button key={produto.id} onClick={() => adicionarAoCarrinho({ ...produto, quantidade: 1 })} className="w-full p-4 text-left hover:bg-gray-50 flex justify-between border-b">
-                    <span>{produto.nome}</span>
+                  <button 
+                    key={produto.id} 
+                    onClick={() => adicionarAoCarrinho({ ...produto, quantidade: 1 })} 
+                    className="w-full p-4 text-left hover:bg-gray-50 flex justify-between items-center border-b"
+                  >
+                    <div>
+                      <p className="font-medium">{produto.nome}</p>
+                      <p className="text-xs text-gray-400 font-mono">{produto.codigo || 'Sem código'}</p>
+                    </div>
                     <span className="text-green-600 font-bold">R$ {produto.preco.toFixed(2)}</span>
                   </button>
                 ))}
@@ -523,7 +624,18 @@ export default function PDVPage() {
             {buscaTermo.length >= 2 && produtosFiltrados.length === 0 && (
               <div className="mt-3 p-4 bg-yellow-50 rounded-xl text-center">
                 <p className="text-yellow-800 mb-2">Produto "{buscaTermo}" não encontrado</p>
-                <button onClick={() => { setNovoProdutoNome(buscaTermo); setNovoProdutoCodigo(''); setShowCadastroRapido(true) }} className="text-blue-500">Cadastrar novo →</button>
+                <button 
+                  onClick={() => {
+                    setNovoProdutoNome(buscaTermo)
+                    setNovoProdutoCodigo('')
+                    setNovoProdutoPreco('')
+                    setNovoProdutoQuantidade('1')
+                    setShowCadastroRapido(true)
+                  }} 
+                  className="text-blue-500"
+                >
+                  Cadastrar novo produto →
+                </button>
               </div>
             )}
           </div>
