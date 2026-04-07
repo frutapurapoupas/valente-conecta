@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Camera, Search, Package, ShoppingCart, CreditCard, Users, Barcode, CheckCircle, DollarSign, QrCode, Zap, Plus, Minus, Trash2, AlertCircle, Loader2 } from 'lucide-react'
+import { ArrowLeft, Camera, Search, Package, ShoppingCart, CreditCard, Users, Barcode, CheckCircle, DollarSign, QrCode, Zap, Plus, Minus, Trash2, AlertCircle, Loader2, Image as ImageIcon } from 'lucide-react'
 import { notificarCompraFiado, notificarCompraConfirmada } from '@/services/notificacoes'
 
 interface Produto {
@@ -41,6 +41,7 @@ export default function PDVPage() {
   // Estado para câmera
   const [scanning, setScanning] = useState(false)
   const [loadingCamera, setLoadingCamera] = useState(false)
+  const [cameraSuportada, setCameraSuportada] = useState(true)
   const scannerRef = useRef<any>(null)
   
   // Estado para cadastro rápido
@@ -57,17 +58,11 @@ export default function PDVPage() {
     telefone: '(00) 00000-0000'
   })
 
-  // Iniciar câmera automaticamente
+  // Verificar compatibilidade da câmera
   useEffect(() => {
     carregarProdutos()
     carregarLojaInfo()
-    
-    // Tentar iniciar câmera automaticamente
-    setTimeout(() => {
-      if (modo === 'leitor' && !scanning) {
-        iniciarCamera()
-      }
-    }, 1000)
+    verificarCamera()
     
     return () => {
       if (scannerRef.current) {
@@ -75,6 +70,26 @@ export default function PDVPage() {
       }
     }
   }, [])
+
+  const verificarCamera = async () => {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setCameraSuportada(false)
+      setMensagem('⚠️ Seu navegador não suporta câmera. Use busca manual.')
+      setModo('busca')
+      return
+    }
+    
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+      stream.getTracks().forEach(track => track.stop())
+      setCameraSuportada(true)
+    } catch (err) {
+      console.error('Erro ao acessar câmera:', err)
+      setCameraSuportada(false)
+      setMensagem('⚠️ Permissão da câmera negada. Use busca manual.')
+      setModo('busca')
+    }
+  }
 
   const carregarProdutos = () => {
     const saved = localStorage.getItem('produtos_estoque')
@@ -102,13 +117,19 @@ export default function PDVPage() {
 
   // Funções da câmera
   const iniciarCamera = async () => {
+    if (!cameraSuportada) {
+      setMensagem('⚠️ Câmera não suportada. Use busca manual.')
+      setModo('busca')
+      return
+    }
+    
     setLoadingCamera(true)
-    setMensagem('📷 Iniciando câmera...')
+    setMensagem('📷 Solicitando permissão da câmera...')
     
     try {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error('Câmera não suportada')
-      }
+      // Verificar permissão novamente
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+      stream.getTracks().forEach(track => track.stop())
       
       const { Html5Qrcode } = await import('html5-qrcode')
       
@@ -116,22 +137,46 @@ export default function PDVPage() {
         await pararCamera()
       }
       
+      const readerElement = document.getElementById('reader')
+      if (!readerElement) {
+        throw new Error('Elemento reader não encontrado')
+      }
+      
       scannerRef.current = new Html5Qrcode('reader')
       
       await scannerRef.current.start(
         { facingMode: 'environment' },
-        { fps: 10, qrbox: { width: 250, height: 250 } },
+        { 
+          fps: 10, 
+          qrbox: { width: 250, height: 250 },
+          aspectRatio: 1.0
+        },
         (decodedText: string) => {
           processarCodigoCamera(decodedText)
         },
-        () => {}
+        (errorMessage: string) => {
+          // Ignorar erros de leitura normais
+          if (!errorMessage.includes('No MultiFormat') && !errorMessage.includes('NotFoundException')) {
+            console.log('Erro de leitura:', errorMessage)
+          }
+        }
       )
       
       setScanning(true)
-      setMensagem('✅ Câmera ativa. Aponte para o código')
-    } catch (err) {
-      console.error(err)
-      setMensagem('❌ Erro na câmera. Use busca manual.')
+      setMensagem('✅ Câmera ativa. Aponte para o código de barras')
+    } catch (err: any) {
+      console.error('Erro detalhado:', err)
+      
+      if (err.name === 'NotAllowedError') {
+        setMensagem('❌ Permissão negada. Ative a câmera nas configurações do navegador.')
+      } else if (err.name === 'NotFoundError') {
+        setMensagem('❌ Nenhuma câmera encontrada no dispositivo.')
+      } else {
+        setMensagem('❌ Erro ao iniciar câmera. Use busca manual.')
+      }
+      
+      setCameraSuportada(false)
+      setModo('busca')
     } finally {
       setLoadingCamera(false)
     }
@@ -142,7 +187,9 @@ export default function PDVPage() {
       try {
         await scannerRef.current.stop()
         scannerRef.current.clear()
-      } catch (err) {}
+      } catch (err) {
+        console.log('Erro ao parar câmera:', err)
+      }
       scannerRef.current = null
     }
     setScanning(false)
@@ -151,6 +198,11 @@ export default function PDVPage() {
 
   const processarCodigoCamera = (codigo: string) => {
     if (!codigo) return
+    
+    // Feedback tátil
+    if (navigator.vibrate) {
+      navigator.vibrate(100)
+    }
     
     const produto = produtos.find(p => p.codigo === codigo)
     if (produto) {
@@ -357,8 +409,7 @@ export default function PDVPage() {
     setCodigoLeitor('')
     setBuscaTermo('')
     setMostrarNotificacao(false)
-    // Reiniciar câmera
-    setTimeout(() => iniciarCamera(), 1000)
+    setProdutosFiltrados([])
   }
 
   // TELA CADASTRO RÁPIDO
@@ -413,7 +464,7 @@ export default function PDVPage() {
                   />
                 </div>
                 <div className="w-24">
-                  <label className="block text-sm font-medium mb-1">Qtd</label>
+                  <label className="block text-sm font-medium mb-1">Quantidade</label>
                   <input 
                     type="number" 
                     value={novoProdutoQuantidade} 
@@ -596,23 +647,25 @@ export default function PDVPage() {
           <Link href="/" className="p-2"><ArrowLeft className="w-6 h-6" /></Link>
           <span className="font-bold text-xl">PDV Valente</span>
         </div>
-        <button 
-          onClick={() => {
-            if (modo === 'leitor') {
-              pararCamera()
-            } else {
-              iniciarCamera()
-            }
-            setModo(modo === 'busca' ? 'leitor' : 'busca')
-          }} 
-          className="bg-white/20 px-4 py-2 rounded-full text-sm"
-        >
-          {modo === 'busca' ? '📷 Câmera' : '🔍 Busca'}
-        </button>
+        {cameraSuportada && (
+          <button 
+            onClick={() => {
+              if (modo === 'leitor') {
+                pararCamera()
+              } else {
+                iniciarCamera()
+              }
+              setModo(modo === 'busca' ? 'leitor' : 'busca')
+            }} 
+            className="bg-white/20 px-4 py-2 rounded-full text-sm"
+          >
+            {modo === 'busca' ? '📷 Câmera' : '🔍 Busca'}
+          </button>
+        )}
       </div>
 
       <div className="p-4 max-w-md mx-auto">
-        {mensagem && <div className="mb-4 p-3 bg-green-100 text-green-800 rounded-xl text-center">{mensagem}</div>}
+        {mensagem && <div className="mb-4 p-3 bg-blue-100 text-blue-800 rounded-xl text-center">{mensagem}</div>}
 
         {mostrarNotificacao && (
           <div className="fixed top-20 left-4 right-4 bg-green-500 text-white p-3 rounded-xl shadow-lg text-center animate-bounce z-50">
@@ -620,7 +673,7 @@ export default function PDVPage() {
           </div>
         )}
 
-        {modo === 'leitor' ? (
+        {modo === 'leitor' && cameraSuportada ? (
           <div className="bg-white rounded-2xl p-5">
             <div className="text-center mb-4">
               <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
