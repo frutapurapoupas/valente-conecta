@@ -1,168 +1,470 @@
 ﻿'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Package, ShoppingCart, Settings, Box, Camera, QrCode, CreditCard, Users } from 'lucide-react'
+import { ArrowLeft, Camera, Search, Package, ShoppingCart, CreditCard, Users, Barcode, CheckCircle, DollarSign, QrCode, Zap, Plus, Minus, Trash2, AlertCircle } from 'lucide-react'
+import { notificarCompraFiado, notificarCompraConfirmada } from '@/services/notificacoes'
+
+interface Produto {
+  id: string
+  nome: string
+  codigo: string | null
+  preco: number | null
+  quantidade: number
+  status?: 'ativo' | 'pendente'
+}
 
 export default function PDVPage() {
-  const [modo, setModo] = useState<'menu' | 'estoque' | 'venda'>('menu')
+  const [carrinho, setCarrinho] = useState<Produto[]>([])
+  const [tela, setTela] = useState<'venda' | 'checkout' | 'pagamento' | 'confirmacao'>('venda')
+  const [formaPagamento, setFormaPagamento] = useState('')
+  const [valorRecebido, setValorRecebido] = useState('')
+  const [clienteNome, setClienteNome] = useState('')
+  const [clienteTelefone, setClienteTelefone] = useState('')
+  const [mensagem, setMensagem] = useState('')
+  const [buscaTermo, setBuscaTermo] = useState('')
+  const [produtos, setProdutos] = useState<any[]>([])
+  const [modo, setModo] = useState<'busca' | 'leitor'>('leitor')
+  const [codigoLeitor, setCodigoLeitor] = useState('')
+  const [confirmacao, setConfirmacao] = useState({ titulo: '', subtitulo: '', cor: '' })
+  
+  // Estado para cadastro rápido
+  const [showCadastroRapido, setShowCadastroRapido] = useState(false)
+  const [novoProdutoNome, setNovoProdutoNome] = useState('')
+  const [novoProdutoCodigo, setNovoProdutoCodigo] = useState('')
+  const [novoProdutoPreco, setNovoProdutoPreco] = useState('')
+  const [novoProdutoQuantidade, setNovoProdutoQuantidade] = useState('1')
 
-  if (modo === 'estoque') {
+  useEffect(() => {
+    const saved = localStorage.getItem('produtos_estoque')
+    if (saved) {
+      setProdutos(JSON.parse(saved))
+    } else {
+      const exemplos = [
+        { id: '1', nome: 'Arroz Integral 1kg', codigo: '7891234567890', preco: 8.90, estoque: 50, status: 'ativo' },
+        { id: '2', nome: 'Feijão Preto 1kg', codigo: '7891234567891', preco: 7.90, estoque: 30, status: 'ativo' },
+        { id: '3', nome: 'Açúcar 1kg', codigo: '7891234567892', preco: 4.50, estoque: 100, status: 'ativo' },
+        { id: '4', nome: 'Café 500g', codigo: '7891234567893', preco: 12.90, estoque: 25, status: 'ativo' },
+        { id: '5', nome: 'Óleo 900ml', codigo: '7891234567894', preco: 6.90, estoque: 40, status: 'ativo' },
+      ]
+      setProdutos(exemplos)
+      localStorage.setItem('produtos_estoque', JSON.stringify(exemplos))
+    }
+  }, [])
+
+  const adicionarAoCarrinho = (produto: any) => {
+    setCarrinho(prev => {
+      const existente = prev.find(item => item.id === produto.id)
+      if (existente) {
+        return prev.map(item => item.id === produto.id ? { ...item, quantidade: item.quantidade + 1 } : item)
+      }
+      return [...prev, { ...produto, quantidade: 1 }]
+    })
+    setMensagem(`✅ ${produto.nome} adicionado!`)
+    setTimeout(() => setMensagem(''), 2000)
+    setBuscaTermo('')
+    setCodigoLeitor('')
+  }
+
+  const produtosFiltrados = buscaTermo.length >= 2 ? produtos.filter(p => p.nome.toLowerCase().includes(buscaTermo.toLowerCase())) : []
+
+  const processarCodigo = () => {
+    if (!codigoLeitor) return
+    const produto = produtos.find(p => p.codigo === codigoLeitor)
+    if (produto) {
+      adicionarAoCarrinho({ ...produto, quantidade: 1 })
+      setCodigoLeitor('')
+    } else {
+      // Produto não encontrado - abrir cadastro rápido
+      setNovoProdutoCodigo(codigoLeitor)
+      setNovoProdutoNome('')
+      setNovoProdutoPreco('')
+      setNovoProdutoQuantidade('1')
+      setShowCadastroRapido(true)
+    }
+  }
+
+  const cadastrarProdutoRapido = () => {
+    if (!novoProdutoNome || !novoProdutoPreco) {
+      alert('Preencha nome e preço do produto')
+      return
+    }
+
+    const novoProduto = {
+      id: Date.now().toString(),
+      nome: novoProdutoNome,
+      codigo: novoProdutoCodigo || null,
+      preco: parseFloat(novoProdutoPreco),
+      estoque: parseInt(novoProdutoQuantidade) || 0,
+      status: 'pendente'
+    }
+
+    // Salvar no estoque
+    const novosProdutos = [...produtos, novoProduto]
+    setProdutos(novosProdutos)
+    localStorage.setItem('produtos_estoque', JSON.stringify(novosProdutos))
+    
+    // Notificar Admin Master
+    const notificacoes = localStorage.getItem('notificacoes_admin')
+    const lista = notificacoes ? JSON.parse(notificacoes) : []
+    lista.push({
+      id: Date.now(),
+      tipo: 'NOVO_PRODUTO_PENDENTE',
+      produto: novoProdutoNome,
+      codigo: novoProdutoCodigo,
+      preco: novoProdutoPreco,
+      data: new Date().toISOString()
+    })
+    localStorage.setItem('notificacoes_admin', JSON.stringify(lista))
+    
+    // Adicionar ao carrinho
+    adicionarAoCarrinho({ ...novoProduto, quantidade: parseInt(novoProdutoQuantidade) })
+    
+    setShowCadastroRapido(false)
+    setMensagem(`✅ ${novoProdutoNome} cadastrado e adicionado! Aguardando validação.`)
+    setTimeout(() => setMensagem(''), 3000)
+  }
+
+  const atualizarQuantidade = (id: string, delta: number) => {
+    setCarrinho(prev => {
+      return prev.map(item => {
+        if (item.id === id) {
+          const novaQuantidade = item.quantidade + delta
+          if (novaQuantidade <= 0) return null
+          return { ...item, quantidade: novaQuantidade }
+        }
+        return item
+      }).filter(Boolean) as Produto[]
+    })
+  }
+
+  const removerItem = (id: string) => setCarrinho(prev => prev.filter(item => item.id !== id))
+  const calcularTotal = () => carrinho.reduce((sum, item) => sum + ((item.preco || 0) * item.quantidade), 0)
+  const limparCarrinho = () => { if (confirm('Limpar carrinho?')) setCarrinho([]) }
+  const totalCompra = calcularTotal()
+
+  const irParaCheckout = () => {
+    if (carrinho.length === 0) { alert('Adicione produtos ao carrinho'); return }
+    setTela('checkout')
+  }
+
+  const selecionarPagamento = (forma: string) => {
+    setFormaPagamento(forma)
+    setTela('pagamento')
+  }
+
+  const voltarParaCheckout = () => setTela('checkout')
+
+  const finalizarVenda = () => {
+    // Atualizar estoque
+    const estoqueAtual = localStorage.getItem('produtos_estoque')
+    if (estoqueAtual) {
+      const estoque = JSON.parse(estoqueAtual)
+      carrinho.forEach(item => {
+        const idx = estoque.findIndex((p: any) => p.id === item.id)
+        if (idx !== -1 && estoque[idx].estoque) {
+          estoque[idx].estoque -= item.quantidade
+        }
+      })
+      localStorage.setItem('produtos_estoque', JSON.stringify(estoque))
+    }
+
+    if (formaPagamento === 'fiado') {
+      const vendaFiada = {
+        id: Date.now().toString(),
+        clienteNome, clienteTelefone,
+        valor: totalCompra,
+        data: new Date().toISOString(),
+        vencimento: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        status: 'pendente',
+        itens: [...carrinho]
+      }
+      const vendasFiadas = localStorage.getItem('vendas_fiadas')
+      const lista = vendasFiadas ? JSON.parse(vendasFiadas) : []
+      lista.push(vendaFiada)
+      localStorage.setItem('vendas_fiadas', JSON.stringify(lista))
+      
+      notificarCompraFiado(clienteNome, clienteTelefone, totalCompra, new Date(vendaFiada.vencimento))
+      setConfirmacao({ titulo: 'Venda no Fiado Registrada!', subtitulo: `${clienteNome}\nR$ ${totalCompra.toFixed(2)}`, cor: 'bg-yellow-500' })
+    } else if (formaPagamento === 'dinheiro') {
+      const recebido = parseFloat(valorRecebido)
+      const troco = recebido - totalCompra
+      if (clienteTelefone) notificarCompraConfirmada(clienteTelefone, totalCompra, 'dinheiro')
+      setConfirmacao({ titulo: 'Venda Finalizada!', subtitulo: `Total: R$ ${totalCompra.toFixed(2)}\nTroco: R$ ${troco.toFixed(2)}`, cor: 'bg-green-500' })
+    } else {
+      if (clienteTelefone) notificarCompraConfirmada(clienteTelefone, totalCompra, formaPagamento)
+      setConfirmacao({ titulo: 'Venda Finalizada!', subtitulo: `R$ ${totalCompra.toFixed(2)} - ${formaPagamento.toUpperCase()}`, cor: 'bg-green-500' })
+    }
+    setCarrinho([])
+    setTela('confirmacao')
+  }
+
+  const novaVenda = () => {
+    setTela('venda')
+    setFormaPagamento('')
+    setValorRecebido('')
+    setClienteNome('')
+    setClienteTelefone('')
+    setCodigoLeitor('')
+    setBuscaTermo('')
+  }
+
+  // Tela Cadastro Rápido
+  if (showCadastroRapido) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <header className="bg-gradient-to-r from-blue-600 to-purple-600 text-white sticky top-0 z-20">
-          <div className="flex items-center gap-3 px-4 py-3">
-            <button onClick={() => setModo('menu')} className="p-2 hover:bg-white/20 rounded-lg">
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <img src="/logo.png" alt="Logo" className="w-8 h-8" />
-            <span className="font-bold text-lg">Gestão de Estoque</span>
+      <div className="min-h-screen bg-gray-100">
+        <div className="bg-orange-500 text-white p-4 flex items-center gap-3">
+          <button onClick={() => setShowCadastroRapido(false)} className="p-2"><ArrowLeft className="w-6 h-6" /></button>
+          <span className="font-bold text-xl">Cadastro Rápido</span>
+        </div>
+        <div className="p-4 max-w-md mx-auto">
+          <div className="bg-white rounded-2xl p-6">
+            <div className="text-center mb-4">
+              <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Package className="w-10 h-10 text-orange-600" />
+              </div>
+              <h2 className="text-xl font-bold">Produto não encontrado</h2>
+              <p className="text-sm text-gray-500">Complete o cadastro</p>
+            </div>
+            <div className="space-y-4">
+              <input type="text" value={novoProdutoCodigo} className="w-full p-4 border rounded-xl bg-gray-50" readOnly placeholder="Código" />
+              <input type="text" value={novoProdutoNome} onChange={(e) => setNovoProdutoNome(e.target.value)} className="w-full p-4 border rounded-xl" placeholder="Nome do produto *" autoFocus />
+              <div className="flex gap-3">
+                <input type="number" step="0.01" value={novoProdutoPreco} onChange={(e) => setNovoProdutoPreco(e.target.value)} className="flex-1 p-4 border rounded-xl" placeholder="Preço R$ *" />
+                <input type="number" value={novoProdutoQuantidade} onChange={(e) => setNovoProdutoQuantidade(e.target.value)} className="w-24 p-4 border rounded-xl" placeholder="Qtd" />
+              </div>
+              <div className="bg-yellow-50 p-3 rounded-xl text-sm text-yellow-800 flex items-center gap-2">
+                <AlertCircle className="w-5 h-5" />
+                Este produto será validado pelo Admin Master
+              </div>
+              <button onClick={cadastrarProdutoRapido} className="w-full py-4 bg-orange-500 text-white rounded-xl font-bold">Adicionar ao Carrinho</button>
+            </div>
           </div>
-        </header>
-        <main className="p-4">
-          <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-            <Package className="w-16 h-16 mx-auto text-blue-500 mb-4" />
-            <h2 className="text-xl font-bold mb-2">Módulo em Desenvolvimento</h2>
-            <p className="text-gray-500">Em breve: gestão completa de estoque</p>
-            <button 
-              onClick={() => setModo('menu')}
-              className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg"
-            >
-              Voltar
-            </button>
-          </div>
-        </main>
+        </div>
       </div>
     )
   }
 
-  if (modo === 'venda') {
+  // Tela Confirmação
+  if (tela === 'confirmacao') {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <header className="bg-gradient-to-r from-green-600 to-teal-600 text-white sticky top-0 z-20">
-          <div className="flex items-center gap-3 px-4 py-3">
-            <button onClick={() => setModo('menu')} className="p-2 hover:bg-white/20 rounded-lg">
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <img src="/logo.png" alt="Logo" className="w-8 h-8" />
-            <span className="font-bold text-lg">PDV - Modo Venda</span>
+      <div className="min-h-screen bg-gray-100">
+        <div className={`${confirmacao.cor} text-white p-10 text-center`}>
+          <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="w-12 h-12" />
           </div>
-        </header>
-        <main className="p-4">
-          <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-            <ShoppingCart className="w-16 h-16 mx-auto text-green-500 mb-4" />
-            <h2 className="text-xl font-bold mb-2">Módulo em Desenvolvimento</h2>
-            <p className="text-gray-500">Em breve: sistema completo de vendas</p>
-            <button 
-              onClick={() => setModo('menu')}
-              className="mt-4 px-6 py-2 bg-green-500 text-white rounded-lg"
-            >
-              Voltar
-            </button>
-          </div>
-        </main>
+          <h1 className="text-3xl font-bold">{confirmacao.titulo}</h1>
+          <p className="text-lg mt-2">{confirmacao.subtitulo}</p>
+        </div>
+        <div className="p-6 max-w-md mx-auto">
+          <button onClick={novaVenda} className="w-full py-4 bg-blue-500 text-white rounded-xl font-bold text-lg mb-3">Nova Venda</button>
+          <Link href="/" className="block w-full py-4 bg-gray-200 text-gray-700 rounded-xl font-bold text-lg text-center">Início</Link>
+        </div>
       </div>
     )
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-blue-600 to-purple-600 text-white sticky top-0 z-20">
-        <div className="flex items-center gap-3 px-4 py-3">
-          <Link href="/" className="p-2 hover:bg-white/20 rounded-lg">
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <img src="/logo.png" alt="Logo" className="w-8 h-8" />
-          <span className="font-bold text-lg">PDV Colaborativo</span>
+  // Tela Pagamento
+  if (tela === 'pagamento') {
+    return (
+      <div className="min-h-screen bg-gray-100">
+        <div className="bg-green-600 text-white p-4 flex items-center gap-3">
+          <button onClick={voltarParaCheckout} className="p-2"><ArrowLeft className="w-6 h-6" /></button>
+          <span className="font-bold text-xl">Pagamento</span>
         </div>
-      </header>
+        <div className="p-4 max-w-md mx-auto">
+          <div className="bg-white rounded-2xl p-6 mb-5 text-center">
+            <p className="text-gray-500">Total a pagar</p>
+            <p className="text-4xl font-bold text-green-600">R$ {totalCompra.toFixed(2)}</p>
+          </div>
 
-      <main className="p-4 max-w-7xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">Ponto de Venda</h1>
-        
-        {/* Cards de opções */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Card Estoque */}
-          <Link href="/pdv/estoque">
-            <div className="bg-white rounded-2xl shadow-lg p-8 text-center hover:shadow-xl transition-all hover:scale-105 cursor-pointer">
-              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Package className="w-10 h-10 text-blue-600" />
-              </div>
-              <h2 className="text-xl font-bold mb-2">Estoque</h2>
-              <p className="text-gray-500 text-sm">
-                Gerencie produtos, edite preços,<br/>
-                adicione fotos e controle validade
-              </p>
-              <div className="mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded-lg text-sm">
-                Acessar Estoque →
-              </div>
-            </div>
-          </Link>
-
-          {/* Card Iniciar Venda */}
-          <Link href="/pdv/venda">
-            <div className="bg-white rounded-2xl shadow-lg p-8 text-center hover:shadow-xl transition-all hover:scale-105 cursor-pointer">
-              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <ShoppingCart className="w-10 h-10 text-green-600" />
-              </div>
-              <h2 className="text-xl font-bold mb-2">Iniciar Venda</h2>
-              <p className="text-gray-500 text-sm">
-                Use a câmera como leitor de código,<br/>
-                venda com fiado e muito mais
-              </p>
-              <div className="mt-4 inline-block px-4 py-2 bg-green-500 text-white rounded-lg text-sm">
-                Nova Venda →
-              </div>
-            </div>
-          </Link>
-        </div>
-
-        {/* Link para Gestão de Fiado */}
-        <div className="mt-6">
-          <Link href="/pdv/fiado">
-            <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white p-4 rounded-xl cursor-pointer hover:from-yellow-600 hover:to-orange-600 transition shadow-md">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <CreditCard className="w-6 h-6" />
-                  <div>
-                    <p className="font-bold">Gestão de Fiado</p>
-                    <p className="text-sm opacity-90">Controle de clientes e pagamentos</p>
-                  </div>
+          {formaPagamento === 'dinheiro' && (
+            <div className="bg-white rounded-2xl p-6 space-y-4">
+              <input type="number" step="0.01" value={valorRecebido} onChange={(e) => setValorRecebido(e.target.value)} className="w-full p-4 border rounded-xl text-center text-xl" placeholder="Valor recebido" autoFocus />
+              {valorRecebido && parseFloat(valorRecebido) >= totalCompra && (
+                <div className="p-4 bg-green-50 rounded-xl text-center">
+                  <p className="text-green-600 font-bold text-lg">Troco: R$ {(parseFloat(valorRecebido) - totalCompra).toFixed(2)}</p>
                 </div>
-                <span>→</span>
+              )}
+              <button onClick={finalizarVenda} disabled={!valorRecebido || parseFloat(valorRecebido) < totalCompra} className="w-full py-4 bg-blue-500 text-white rounded-xl font-bold">Confirmar</button>
+            </div>
+          )}
+
+          {formaPagamento === 'pix' && (
+            <div className="bg-white rounded-2xl p-6 text-center">
+              <div className="w-40 h-40 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4"><QrCode className="w-32 h-32 text-gray-600" /></div>
+              <button onClick={finalizarVenda} className="w-full py-4 bg-green-500 text-white rounded-xl font-bold">Confirmar PIX</button>
+            </div>
+          )}
+
+          {formaPagamento === 'cartao' && (
+            <div className="bg-white rounded-2xl p-6 text-center">
+              <button onClick={finalizarVenda} className="w-full py-4 bg-purple-500 text-white rounded-xl font-bold">Confirmar Cartão</button>
+            </div>
+          )}
+
+          {formaPagamento === 'fiado' && (
+            <div className="bg-white rounded-2xl p-6 space-y-4">
+              <input type="text" value={clienteNome} onChange={(e) => setClienteNome(e.target.value)} className="w-full p-4 border rounded-xl" placeholder="Nome completo" />
+              <input type="tel" value={clienteTelefone} onChange={(e) => setClienteTelefone(e.target.value)} className="w-full p-4 border rounded-xl" placeholder="WhatsApp" />
+              <button onClick={finalizarVenda} disabled={!clienteNome || !clienteTelefone} className="w-full py-4 bg-yellow-500 text-white rounded-xl font-bold">Registrar Fiado</button>
+            </div>
+          )}
+
+          {formaPagamento === 'conecta' && (
+            <div className="bg-white rounded-2xl p-6 space-y-4">
+              <input type="tel" value={clienteTelefone} onChange={(e) => setClienteTelefone(e.target.value)} className="w-full p-4 border rounded-xl" placeholder="WhatsApp" />
+              <button onClick={finalizarVenda} disabled={!clienteTelefone} className="w-full py-4 bg-purple-500 text-white rounded-xl font-bold">Pagar com Conecta</button>
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // Tela Checkout
+  if (tela === 'checkout') {
+    return (
+      <div className="min-h-screen bg-gray-100">
+        <div className="bg-green-600 text-white p-4 flex items-center gap-3">
+          <button onClick={() => setTela('venda')} className="p-2"><ArrowLeft className="w-6 h-6" /></button>
+          <span className="font-bold text-xl">Checkout</span>
+        </div>
+        <div className="p-4 max-w-md mx-auto">
+          <div className="bg-white rounded-2xl p-6 mb-5">
+            <h2 className="font-bold text-xl mb-4">Resumo</h2>
+            {carrinho.map(item => (
+              <div key={item.id} className="flex justify-between text-base border-b pb-3 mb-3">
+                <span>{item.nome} {item.status === 'pendente' && <span className="text-yellow-500 text-xs">(pendente)</span>} x{item.quantidade}</span>
+                <span>R$ {((item.preco || 0) * item.quantidade).toFixed(2)}</span>
+              </div>
+            ))}
+            <div className="border-t pt-4">
+              <div className="flex justify-between text-xl font-bold">
+                <span>Total</span>
+                <span className="text-green-600">R$ {totalCompra.toFixed(2)}</span>
               </div>
             </div>
-          </Link>
-        </div>
-
-        {/* Informações adicionais */}
-        <div className="mt-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4">
-          <div className="flex items-center gap-3">
-            <QrCode className="w-8 h-8 text-purple-600" />
-            <div>
-              <p className="font-semibold">Dica: Modo Espião disponível!</p>
-              <p className="text-sm text-gray-600">
-                Integre seu PDV atual enviando dados automaticamente para nosso sistema
-              </p>
+          </div>
+          <div className="bg-white rounded-2xl p-6">
+            <h3 className="font-bold text-lg mb-4">Pagamento</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <button onClick={() => selecionarPagamento('dinheiro')} className="p-4 border-2 rounded-xl text-center">💰 Dinheiro</button>
+              <button onClick={() => selecionarPagamento('pix')} className="p-4 border-2 rounded-xl text-center">📱 PIX</button>
+              <button onClick={() => selecionarPagamento('cartao')} className="p-4 border-2 rounded-xl text-center">💳 Cartão</button>
+              <button onClick={() => selecionarPagamento('fiado')} className="p-4 border-2 rounded-xl text-center">📝 Fiado</button>
+              <button onClick={() => selecionarPagamento('conecta')} className="col-span-2 p-4 border-2 rounded-xl text-center">🪙 Conecta</button>
             </div>
           </div>
         </div>
+      </div>
+    )
+  }
 
-        {/* Estatísticas rápidas */}
-        <div className="mt-6 grid grid-cols-2 gap-4">
-          <div className="bg-white rounded-xl p-4 shadow-sm text-center">
-            <Users className="w-6 h-6 mx-auto text-blue-500 mb-2" />
-            <p className="text-2xl font-bold">0</p>
-            <p className="text-xs text-gray-500">Clientes fiado ativos</p>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm text-center">
-            <CreditCard className="w-6 h-6 mx-auto text-yellow-500 mb-2" />
-            <p className="text-2xl font-bold">R$ 0,00</p>
-            <p className="text-xs text-gray-500">Total em débito</p>
-          </div>
+  // Tela Principal
+  return (
+    <div className="min-h-screen bg-gray-100">
+      <div className="bg-blue-600 text-white p-4 flex justify-between items-center">
+        <div className="flex items-center gap-3">
+          <Link href="/" className="p-2"><ArrowLeft className="w-6 h-6" /></Link>
+          <span className="font-bold text-xl">PDV Valente</span>
         </div>
-      </main>
+        <button onClick={() => setModo(modo === 'busca' ? 'leitor' : 'busca')} className="bg-white/20 px-4 py-2 rounded-full text-sm">
+          {modo === 'busca' ? '📷 Leitor' : '🔍 Busca'}
+        </button>
+      </div>
+
+      <div className="p-4 max-w-md mx-auto">
+        {mensagem && <div className="mb-4 p-3 bg-green-100 text-green-800 rounded-xl text-center">{mensagem}</div>}
+
+        {modo === 'leitor' ? (
+          <div className="bg-white rounded-2xl p-5">
+            <div className="text-center mb-4">
+              <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Camera className="w-12 h-12 text-blue-600" />
+              </div>
+              <h2 className="text-xl font-bold">Leitor de Código</h2>
+              <p className="text-sm text-gray-500">Digite o código de barras</p>
+            </div>
+            <div className="flex gap-2">
+              <input type="text" value={codigoLeitor} onChange={(e) => setCodigoLeitor(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && processarCodigo()} className="flex-1 p-4 border rounded-xl text-lg font-mono" placeholder="7891234567890" autoFocus />
+              <button onClick={processarCodigo} className="px-5 bg-blue-500 text-white rounded-xl">OK</button>
+            </div>
+            <button onClick={() => setModo('busca')} className="w-full mt-4 py-2 text-blue-500">Buscar por nome →</button>
+          </div>
+        ) : (
+          <div className="bg-white rounded-2xl p-5">
+            <div className="text-center mb-4">
+              <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Search className="w-12 h-12 text-green-600" />
+              </div>
+              <h2 className="text-xl font-bold">Buscar Produto</h2>
+              <p className="text-sm text-gray-500">Digite o nome do produto</p>
+            </div>
+            <input type="text" value={buscaTermo} onChange={(e) => setBuscaTermo(e.target.value)} className="w-full p-4 border-2 rounded-xl text-base" placeholder="Ex: Arroz, Feijão..." autoFocus />
+            
+            {produtosFiltrados.length > 0 && (
+              <div className="mt-3 border rounded-xl overflow-hidden">
+                {produtosFiltrados.map(produto => (
+                  <button key={produto.id} onClick={() => adicionarAoCarrinho({ ...produto, quantidade: 1 })} className="w-full p-4 text-left hover:bg-gray-50 flex justify-between border-b">
+                    <span>{produto.nome}</span>
+                    <span className="text-green-600 font-bold">R$ {produto.preco.toFixed(2)}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {buscaTermo.length >= 2 && produtosFiltrados.length === 0 && (
+              <div className="mt-3 p-4 bg-yellow-50 rounded-xl text-center">
+                <p className="text-yellow-800 mb-2">Produto "{buscaTermo}" não encontrado</p>
+                <button onClick={() => { setNovoProdutoNome(buscaTermo); setNovoProdutoCodigo(''); setShowCadastroRapido(true) }} className="text-blue-500">Cadastrar novo →</button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Carrinho */}
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden mt-4">
+          <div className="bg-gray-50 p-4 border-b flex justify-between">
+            <span className="font-semibold text-lg">Carrinho ({carrinho.length})</span>
+            {carrinho.length > 0 && <button onClick={limparCarrinho} className="text-red-500 text-sm">Limpar</button>}
+          </div>
+          
+          {carrinho.length === 0 ? (
+            <div className="p-10 text-center text-gray-400">
+              <ShoppingCart className="w-16 h-16 mx-auto mb-3 opacity-50" />
+              <p>Carrinho vazio</p>
+            </div>
+          ) : (
+            <>
+              <div className="max-h-80 overflow-auto">
+                {carrinho.map(item => (
+                  <div key={item.id} className="p-4 border-b flex items-center gap-3">
+                    <div className="flex-1">
+                      <p className="font-medium">{item.nome}</p>
+                      <p className="text-green-600 font-bold">R$ {(item.preco || 0).toFixed(2)}</p>
+                      {item.status === 'pendente' && <p className="text-xs text-yellow-500">⏳ Pendente validação</p>}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button onClick={() => atualizarQuantidade(item.id, -1)} className="w-8 h-8 bg-gray-100 rounded-full">-</button>
+                      <span className="w-8 text-center">{item.quantidade}</span>
+                      <button onClick={() => atualizarQuantidade(item.id, 1)} className="w-8 h-8 bg-gray-100 rounded-full">+</button>
+                      <button onClick={() => removerItem(item.id)} className="w-8 h-8 text-red-500">✕</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="p-5 border-t bg-gray-50">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="font-bold text-xl">Total</span>
+                  <span className="text-3xl font-bold text-green-600">R$ {totalCompra.toFixed(2)}</span>
+                </div>
+                <button onClick={irParaCheckout} className="w-full py-4 bg-green-500 text-white rounded-xl font-bold text-lg">Finalizar Compra</button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

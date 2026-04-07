@@ -1,6 +1,8 @@
 ﻿import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import '@/styles/globals.css'
+import NotificacaoBanner from '@/components/NotificacaoBanner'
+import ClientLayout from '@/components/ClientLayout'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -46,7 +48,12 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Valente Conecta" />
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <ClientLayout>
+          {children}
+        </ClientLayout>
+        <NotificacaoBanner />
+      </body>
     </html>
   )
 }

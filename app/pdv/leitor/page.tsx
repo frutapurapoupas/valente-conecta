@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Camera, Plus, Minus, Trash2, CreditCard, Scan, ShoppingCart, Smartphone, AlertCircle, Loader2, CheckCircle, Phone, User } from 'lucide-react'
+import { ArrowLeft, Camera, Plus, Minus, Trash2, CreditCard, Scan, ShoppingCart, Smartphone, AlertCircle, Loader2, CheckCircle, User } from 'lucide-react'
 
 interface ProdutoVenda {
   id: string
@@ -24,7 +24,7 @@ interface VendaFiada {
   itens: ProdutoVenda[]
 }
 
-export default function VendaPage() {
+export default function LeitorPage() {
   const [carrinho, setCarrinho] = useState<ProdutoVenda[]>([])
   const [showCheckout, setShowCheckout] = useState(false)
   const [formaPagamento, setFormaPagamento] = useState<'dinheiro' | 'pix' | 'cartao' | 'fiado' | 'conecta'>('dinheiro')
@@ -215,7 +215,6 @@ export default function VendaPage() {
       const total = calcularTotal()
       alert(`✅ Venda finalizada!\nTotal: R$ ${total.toFixed(2)}\nPagamento: ${formaPagamento.toUpperCase()}`)
       
-      // Atualizar estoque
       const estoqueAtual = localStorage.getItem('produtos_estoque')
       if (estoqueAtual) {
         const produtos = JSON.parse(estoqueAtual)
@@ -233,13 +232,8 @@ export default function VendaPage() {
   }
 
   const registrarFiado = () => {
-    // Validação
-    if (!clienteInfo.nome.trim()) {
-      alert('❌ Preencha o nome do cliente')
-      return
-    }
-    if (!clienteInfo.telefone.trim()) {
-      alert('❌ Preencha o telefone do cliente')
+    if (!clienteInfo.nome.trim() || !clienteInfo.telefone.trim()) {
+      alert('❌ Preencha nome e telefone do cliente')
       return
     }
 
@@ -250,7 +244,6 @@ export default function VendaPage() {
       return
     }
     
-    // Criar registro da venda fiada
     const novaVendaFiada: VendaFiada = {
       id: Date.now().toString(),
       clienteNome: clienteInfo.nome,
@@ -262,13 +255,11 @@ export default function VendaPage() {
       itens: [...carrinho]
     }
     
-    // Salvar no localStorage
     const vendasFiadas = localStorage.getItem('vendas_fiadas')
     const listaVendas: VendaFiada[] = vendasFiadas ? JSON.parse(vendasFiadas) : []
     listaVendas.push(novaVendaFiada)
     localStorage.setItem('vendas_fiadas', JSON.stringify(listaVendas))
     
-    // Registrar cliente no cadastro de clientes fiado
     const clientesFiado = localStorage.getItem('clientes_fiado')
     const listaClientes = clientesFiado ? JSON.parse(clientesFiado) : []
     
@@ -284,7 +275,6 @@ export default function VendaPage() {
       })
       localStorage.setItem('clientes_fiado', JSON.stringify(listaClientes))
     } else {
-      // Atualizar saldo do cliente existente
       const clientesAtualizados = listaClientes.map((c: any) => 
         c.telefone === clienteInfo.telefone 
           ? { ...c, saldoFiado: (c.saldoFiado || 0) + total }
@@ -293,7 +283,6 @@ export default function VendaPage() {
       localStorage.setItem('clientes_fiado', JSON.stringify(clientesAtualizados))
     }
     
-    // Atualizar estoque
     const estoqueAtual = localStorage.getItem('produtos_estoque')
     if (estoqueAtual) {
       const produtos = JSON.parse(estoqueAtual)
@@ -306,11 +295,9 @@ export default function VendaPage() {
       localStorage.setItem('produtos_estoque', JSON.stringify(produtos))
     }
     
-    // Mostrar mensagem de sucesso
     const dataVencimento = new Date(novaVendaFiada.vencimento).toLocaleDateString('pt-BR')
-    alert(`✅ Venda no fiado registrada com sucesso!\n\n📋 Cliente: ${clienteInfo.nome}\n💰 Total: R$ ${total.toFixed(2)}\n📅 Vence em: ${dataVencimento}\n\n📱 Uma notificação foi enviada para ${clienteInfo.telefone}`)
+    alert(`✅ Venda no fiado registrada!\n\n📋 Cliente: ${clienteInfo.nome}\n💰 Total: R$ ${total.toFixed(2)}\n📅 Vence em: ${dataVencimento}\n\n📱 Notificação enviada para ${clienteInfo.telefone}`)
     
-    // Fechar modal e resetar
     setFiadoRegistrado(true)
     setShowFiadoModal(false)
     setClienteInfo({ nome: '', telefone: '' })
@@ -372,29 +359,26 @@ export default function VendaPage() {
             <h3 className="font-bold mb-3">Forma de Pagamento</h3>
             <div className="grid grid-cols-2 gap-3 mb-5">
               {[
-                { id: 'dinheiro', label: '💰 Dinheiro', color: 'green' },
-                { id: 'pix', label: '📱 PIX', color: 'blue' },
-                { id: 'cartao', label: '💳 Cartão', color: 'purple' },
-                { id: 'fiado', label: '📝 Fiado', color: 'yellow' },
-                { id: 'conecta', label: '🪙 Conecta', color: 'indigo' }
+                { id: 'dinheiro', label: '💰 Dinheiro' },
+                { id: 'pix', label: '📱 PIX' },
+                { id: 'cartao', label: '💳 Cartão' },
+                { id: 'fiado', label: '📝 Fiado' },
+                { id: 'conecta', label: '🪙 Conecta' }
               ].map(metodo => (
                 <button
                   key={metodo.id}
                   onClick={() => setFormaPagamento(metodo.id as any)}
                   className={`p-3 rounded-xl text-center transition border-2 ${
                     formaPagamento === metodo.id
-                      ? `border-${metodo.color}-500 bg-${metodo.color}-50`
+                      ? 'border-green-500 bg-green-50'
                       : 'border-gray-200'
                   }`}
                 >
-                  <span className="text-xl">{metodo.label}</span>
+                  {metodo.label}
                 </button>
               ))}
             </div>
-            <button
-              onClick={finalizarVenda}
-              className="w-full py-3 bg-green-600 text-white rounded-xl font-bold text-lg"
-            >
+            <button onClick={finalizarVenda} className="w-full py-3 bg-green-600 text-white rounded-xl font-bold">
               Confirmar Pagamento
             </button>
           </div>
@@ -415,58 +399,32 @@ export default function VendaPage() {
         </header>
         <main className="p-4 max-w-md mx-auto">
           <div className="bg-white rounded-xl p-5 shadow-sm">
-            <div className="text-center mb-5">
-              <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3">
+            <div className="text-center mb-4">
+              <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-2">
                 <User className="w-8 h-8 text-yellow-600" />
               </div>
               <h2 className="text-xl font-bold">Dados do Cliente</h2>
-              <p className="text-sm text-gray-500">Preencha as informações para registrar o fiado</p>
             </div>
-            
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Nome completo</label>
-                <input
-                  type="text"
-                  value={clienteInfo.nome}
-                  onChange={(e) => setClienteInfo({...clienteInfo, nome: e.target.value})}
-                  className="w-full px-4 py-3 border rounded-xl text-lg"
-                  placeholder="Digite o nome do cliente"
-                  autoFocus
-                />
+              <input
+                type="text"
+                value={clienteInfo.nome}
+                onChange={(e) => setClienteInfo({...clienteInfo, nome: e.target.value})}
+                className="w-full px-4 py-3 border rounded-xl text-lg"
+                placeholder="Nome completo"
+                autoFocus
+              />
+              <input
+                type="tel"
+                value={clienteInfo.telefone}
+                onChange={(e) => setClienteInfo({...clienteInfo, telefone: e.target.value})}
+                className="w-full px-4 py-3 border rounded-xl text-lg"
+                placeholder="(00) 00000-0000"
+              />
+              <div className="bg-yellow-50 rounded-xl p-3 text-sm text-yellow-800">
+                <p>📝 O cliente receberá uma notificação com o valor e data de vencimento</p>
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">WhatsApp</label>
-                <input
-                  type="tel"
-                  value={clienteInfo.telefone}
-                  onChange={(e) => setClienteInfo({...clienteInfo, telefone: e.target.value})}
-                  className="w-full px-4 py-3 border rounded-xl text-lg"
-                  placeholder="(00) 00000-0000"
-                />
-              </div>
-
-              <div className="bg-yellow-50 rounded-xl p-4 text-sm text-yellow-800">
-                <p className="font-semibold mb-2">📝 Informações importantes:</p>
-                <ul className="space-y-1 text-xs">
-                  <li>✓ O cliente receberá uma notificação via WhatsApp</li>
-                  <li>✓ Vencimento em 30 dias</li>
-                  <li>✓ O cliente poderá pagar via PIX, dinheiro ou cartão</li>
-                </ul>
-              </div>
-
-              <div className="bg-gray-50 rounded-xl p-3">
-                <div className="flex justify-between text-sm">
-                  <span>Total da compra:</span>
-                  <span className="font-bold text-green-600">R$ {calcularTotal().toFixed(2)}</span>
-                </div>
-              </div>
-
-              <button
-                onClick={registrarFiado}
-                className="w-full py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-xl font-bold text-lg"
-              >
+              <button onClick={registrarFiado} className="w-full py-3 bg-yellow-500 text-white rounded-xl font-bold">
                 Registrar Fiado
               </button>
             </div>
@@ -476,7 +434,7 @@ export default function VendaPage() {
     )
   }
 
-  // Tela principal do PDV
+  // Tela principal
   return (
     <div className="min-h-screen bg-gray-100">
       <header className="bg-blue-600 text-white p-4 sticky top-0 flex justify-between items-center">
@@ -484,25 +442,33 @@ export default function VendaPage() {
           <Link href="/pdv" className="p-1">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <span className="font-bold text-lg">PDV - Leitor</span>
+          <span className="font-bold text-lg">Leitor de Códigos</span>
         </div>
-        <button
-          onClick={() => {
-            if (modo === 'camera' && scanning) pararCamera()
-            setModo(modo === 'camera' ? 'manual' : 'camera')
-          }}
-          className="bg-white/20 px-3 py-1.5 rounded-full text-sm"
-        >
-          {modo === 'camera' ? '⌨️ Manual' : '📷 Câmera'}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              if (modo === 'camera' && scanning) pararCamera()
+              setModo(modo === 'camera' ? 'manual' : 'camera')
+            }}
+            className="bg-white/20 px-3 py-1.5 rounded-full text-sm"
+          >
+            {modo === 'camera' ? '⌨️ Manual' : '📷 Câmera'}
+          </button>
+          <Link href="/pdv/venda-busca" className="bg-white/20 px-3 py-1.5 rounded-full text-sm">
+            🔍 Busca
+          </Link>
+        </div>
       </header>
 
       <main className="p-4 max-w-lg mx-auto">
-        {/* Área do Leitor */}
         <div className="bg-white rounded-xl p-5 mb-4 shadow-sm">
           <div className="text-center mb-4">
             <div className="w-20 h-20 mx-auto bg-blue-100 rounded-full flex items-center justify-center mb-3">
-              {modo === 'camera' ? <Camera className="w-10 h-10 text-blue-600" /> : <Smartphone className="w-10 h-10 text-blue-600" />}
+              {modo === 'camera' ? (
+                <Camera className="w-10 h-10 text-blue-600" />
+              ) : (
+                <Smartphone className="w-10 h-10 text-blue-600" />
+              )}
             </div>
             <h2 className="text-lg font-bold">
               {modo === 'camera' ? 'Leitor por Câmera' : 'Entrada Manual'}
