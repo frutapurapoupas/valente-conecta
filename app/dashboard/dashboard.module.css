@@ -1,0 +1,60 @@
+.container { 
+  width: 100%; max-width: 480px; min-height: 100vh; background: #f1f5f9; 
+  margin: 0 auto; display: flex; flex-direction: column; position: relative;
+}
+
+/* Marca d'água (Logo) */
+.container::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 180px; 
+  height: 70px;
+  background: url('/logo.png') no-repeat center;
+  background-size: contain;
+  opacity: 1;
+  z-index: 99; 
+  pointer-events: none;
+}
+
+.header { 
+  background: white; padding: 90px 20px 25px 20px; 
+  border-radius: 0 0 35px 35px; position: relative; z-index: 1;
+}
+
+.searchBar { 
+  display: flex; align-items: center; background: #f8fafc; padding: 12px 15px; 
+  border-radius: 18px; border: 1px solid #e2e8f0; gap: 10px;
+}
+
+.searchBar input { flex: 1; background: transparent; border: none; outline: none; font-size: 14px; color: #1e293b; }
+
+.walletCard { 
+  margin: 20px; padding: 25px; background: #1e293b; 
+  border-radius: 30px; display: flex; justify-content: space-between; color: white;
+}
+
+.label { font-size: 9px; font-weight: 800; opacity: 0.5; text-transform: uppercase; display: block; }
+.valor { font-size: 24px; font-weight: 900; color: #10b981; }
+
+.referralCard {
+  margin: 0 20px 20px 20px; padding: 25px; cursor: pointer;
+  background: linear-gradient(135deg, #FFD700, #B8860B);
+  border-radius: 30px; display: flex; justify-content: center; 
+  border: 2px solid #FFD700;
+}
+
+.referralText { font-size: 18px; font-weight: 900; color: #4d3a00; text-transform: uppercase; }
+
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 0 20px 20px 20px; }
+
+.menuBtn { 
+  display: flex; flex-direction: column; align-items: center; cursor: pointer;
+  gap: 8px; background: white; padding: 18px 5px; border-radius: 22px; 
+}
+
+.iconSquare { width: 48px; height: 48px; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
+
+.menuBtn span { font-size: 9px; font-weight: 800; color: #475569; text-transform: uppercase; text-align: center; }
