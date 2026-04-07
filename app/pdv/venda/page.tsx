@@ -289,6 +289,11 @@ export default function VendaPage() {
     }
   }
 
+  // Função para parar a câmera (placeholder)
+  const pararCamera = () => {
+    // Implementação futura
+  }
+
   // ============================================
   // RENDERIZAÇÃO
   // ============================================
@@ -427,7 +432,7 @@ export default function VendaPage() {
             <Link href="/pdv" className="p-2 hover:bg-white/20 rounded-lg">
               <ArrowLeft className="w-5 h-5" />
             </Link>
-            <span className="font-bold text-lg">PDV - Leitor de Códigos</span>
+            <span className="font-bold text-lg">PDV - Leitor de Códigos - VERSÃO FINAL</span>
           </div>
           <div className="flex gap-2">
             <button
@@ -566,4 +571,4 @@ export default function VendaPage() {
       </main>
     </div>
   )
-}// Atualiza��o for�ada - deploy vercel 
+}
