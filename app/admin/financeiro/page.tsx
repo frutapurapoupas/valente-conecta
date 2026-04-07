@@ -1,7 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { DollarSign, TrendingUp, TrendingDown, Users, Calendar, Download, Search, Filter, CreditCard, Banknote, QrCode } from 'lucide-react'
+import { 
+  DollarSign, TrendingUp, TrendingDown, Users, Calendar, 
+  Download, Search, Filter, CreditCard, Banknote, QrCode, 
+  Clock, CheckCircle, XCircle, AlertCircle 
+} from 'lucide-react'
 
 interface Transacao {
   id: string
@@ -13,7 +17,7 @@ interface Transacao {
   plano: string
 }
 
-export default function AdminFinanceiro() {
+export default function FinanceiroPage() {
   const [transacoes, setTransacoes] = useState<Transacao[]>([
     { id: '1', usuario: 'Padaria do Zé', tipo: 'pix', valor: 49.90, status: 'pago', data: '01/04/2026', plano: 'Básico' },
     { id: '2', usuario: 'Maria Personal', tipo: 'cartao', valor: 99.90, status: 'pago', data: '28/03/2026', plano: 'Premium' },
@@ -37,7 +41,6 @@ export default function AdminFinanceiro() {
         </button>
       </div>
 
-      {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-white rounded-xl p-4 shadow-sm">
           <div className="flex items-center justify-between mb-2">
@@ -65,7 +68,6 @@ export default function AdminFinanceiro() {
         </div>
       </div>
 
-      {/* Tabela de Transações */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="p-4 border-b flex justify-between items-center">
           <h2 className="font-bold">Histórico de Transações</h2>
