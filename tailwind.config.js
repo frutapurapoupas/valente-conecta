@@ -1,19 +1,13 @@
 ﻿/** @type {import('tailwindcss').Config} */
 module.exports = {
+  content: [
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./admin/**/*.{js,ts,jsx,tsx,mdx}", // Adicione esta linha especificamente
+  ],
   theme: {
-    extend: {
-      fontSize: {
-        '8xl': '6rem',
-        '9xl': '8rem',
-      },
-      borderRadius: {
-        '60': '60px',
-      },
-      spacing: {
-        '16': '4rem',
-        '20': '5rem',
-        '500': '500px',
-      }
-    },
+    extend: {},
   },
+  plugins: [],
 }
