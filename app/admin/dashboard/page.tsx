@@ -1,141 +1,101 @@
 ﻿'use client'
 
-import React from 'react'
-import Link from 'next/link'
-import { 
-  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  BarChart, Bar, PieChart, Pie, Cell
-} from 'recharts'
-import { 
-  LayoutDashboard, Users, Building2, ShoppingBag, 
-  Tag, DollarSign, LogOut, MapPin, TrendingUp 
-} from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 
-// DADOS FICTÍCIOS PARA A APRESENTAÇÃO
-const dataAcessos = [
-  { name: '10h', v: 400 }, { name: '12h', v: 1100 }, { name: '14h', v: 800 },
-  { name: '16h', v: 1500 }, { name: '18h', v: 2100 }
-]
+export default function Dashboard() {
+  const router = useRouter()
+  const [mounted, setMounted] = useState(false)
 
-const dataSetores = [
-  { name: 'Alimentação', value: 45 },
-  { name: 'Serviços', value: 30 },
-  { name: 'Saúde', value: 25 },
-]
-const COLORS = ['#6366F1', '#10B981', '#F59E0B']
+  useEffect(() => {
+    setMounted(true)
+    const isLogged = localStorage.getItem('admin_logged')
+    if (!isLogged) {
+      router.push('/admin/login')
+    }
+  }, [router])
 
-export default function AdminDashboard() {
+  if (!mounted) return null
+
   return (
-    <div className="flex min-h-screen bg-black text-white selection:bg-indigo-500">
-      
-      {/* SIDEBAR */}
-      <aside className="w-64 bg-zinc-950 border-r border-zinc-800 flex flex-col shrink-0">
-        <div className="p-8 border-b border-zinc-900">
-          <h2 className="text-xl font-black text-indigo-500 italic uppercase tracking-tighter">Valente</h2>
-          <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Admin Master</p>
-        </div>
+    <div className="min-h-screen bg-black text-white font-sans">
+      {/* Container Principal com largura limitada e escala interna */}
+      <div className="max-w-[1400px] mx-auto p-4 md:p-6 lg:p-8">
         
-        <nav className="flex-1 p-4 space-y-1">
-          {[
-            { label: 'Dashboard', icon: LayoutDashboard, href: '/admin/dashboard', active: true },
-            { label: 'Usuários', icon: Users, href: '/admin/usuarios' },
-            { label: 'Empresas', icon: Building2, href: '/admin/empresas' },
-            { label: 'Catálogo', icon: ShoppingBag, href: '/admin/catalogo' },
-            { label: 'Ofertas', icon: Tag, href: '/admin/ofertas' },
-            { label: 'Financeiro', icon: DollarSign, href: '/admin/financeiro' },
-          ].map((item) => (
-            <Link key={item.label} href={item.href} className={`flex items-center gap-3 p-3 rounded-xl transition-all ${item.active ? 'bg-indigo-600 text-white' : 'text-zinc-500 hover:bg-zinc-900 hover:text-white'}`}>
-              <item.icon size={20} />
-              <span className="font-bold text-xs uppercase">{item.label}</span>
-            </Link>
-          ))}
-        </nav>
-
-        <div className="p-4 border-t border-zinc-900">
-          <button className="flex items-center gap-3 text-red-500 font-bold p-3 w-full hover:bg-red-500/10 rounded-xl transition-all">
-            <LogOut size={20} /> <span className="text-xs uppercase">Sair</span>
-          </button>
-        </div>
-      </aside>
-
-      {/* ÁREA PRINCIPAL */}
-      <main className="flex-1 p-10 overflow-y-auto bg-black">
-        <header className="mb-10">
-          <h1 className="text-5xl font-black uppercase tracking-tight text-white">Painel Master</h1>
-          <div className="flex items-center gap-2 text-indigo-400 font-bold mt-2">
-            <MapPin size={18} className="text-red-600" />
-            <span className="text-sm tracking-widest uppercase">Valente, Bahia</span>
+        {/* HEADER DO DASHBOARD */}
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-black italic text-white tracking-tighter uppercase">
+              Dashboard <span className="text-yellow-400">Master</span>
+            </h1>
+            <p className="text-zinc-500 font-bold text-xs uppercase tracking-widest">Sincronizado com Supabase Real-Time</p>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <button className="bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-xl text-xs font-black uppercase transition-all">
+              Exportar BI
+            </button>
+            <button 
+              onClick={() => { localStorage.removeItem('admin_logged'); router.push('/admin/login'); }}
+              className="bg-red-500/10 hover:bg-red-500/20 text-red-500 px-4 py-2 rounded-xl text-xs font-black uppercase transition-all border border-red-500/20"
+            >
+              Sair
+            </button>
           </div>
         </header>
 
-        {/* GRÁFICOS */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
-          
-          {/* ACESSOS HOJE */}
-          <div className="bg-zinc-900 p-6 rounded-3xl border border-zinc-800">
-            <h3 className="text-white font-black uppercase text-sm tracking-widest mb-6 border-l-4 border-indigo-500 pl-3">Acessos em Tempo Real</h3>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={dataAcessos}>
-                  <defs>
-                    <linearGradient id="colorV" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#6366F1" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#6366F1" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="name" stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} />
-                  <Tooltip contentStyle={{ backgroundColor: '#18181b', border: 'none', borderRadius: '12px', color: '#fff' }} />
-                  <Area type="monotone" dataKey="v" stroke="#6366F1" strokeWidth={3} fillOpacity={1} fill="url(#colorV)" />
-                </AreaChart>
-              </ResponsiveContainer>
+        {/* GRID DE KPIS (CARDS) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <StatCard title="Receita de Planos" value="R$ 12.450,00" trend="+12%" color="text-green-400" />
+          <StatCard title="Acessos Hoje" value="1.254" trend="Valente-BA" color="text-yellow-400" />
+          <StatCard title="Indicações Pendentes" value="125" trend="Urgente" color="text-red-500" />
+          <StatCard title="Saúde Mensal" value="+R$ 4.250" trend="Bônus" color="text-blue-400" />
+        </div>
+
+        {/* ÁREA DE INTELIGÊNCIA COMERCIAL */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 bg-zinc-900 border-2 border-zinc-800 rounded-40 p-6 shadow-xl">
+            <h3 className="text-lg font-black uppercase italic mb-6">Cruzamento de Vendas e Estoque</h3>
+            <div className="h-[300px] bg-zinc-800/30 rounded-3xl flex items-center justify-center border border-zinc-800 border-dashed">
+              <p className="text-zinc-600 font-bold uppercase text-xs">Gráfico de Inteligência Comercial (Carregando...)</p>
             </div>
           </div>
 
-          {/* SETORES */}
-          <div className="bg-zinc-900 p-6 rounded-3xl border border-zinc-800">
-            <h3 className="text-white font-black uppercase text-sm tracking-widest mb-6 border-l-4 border-emerald-500 pl-3">Distribuição de Lojas</h3>
-            <div className="h-64 flex items-center">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={dataSetores} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
-                    {dataSetores.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="space-y-2 pr-8">
-                {dataSetores.map((item, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[i] }} />
-                    <span className="text-[10px] font-bold uppercase text-zinc-400">{item.name}</span>
-                  </div>
-                ))}
-              </div>
+          <div className="bg-zinc-900 border-2 border-zinc-800 rounded-40 p-6 shadow-xl">
+            <h3 className="text-lg font-black uppercase italic mb-6">Radar de Bairros</h3>
+            <div className="space-y-4">
+              <BairroRow nome="Centro" porcentagem={85} />
+              <BairroRow nome="Araci" porcentagem={62} />
+              <BairroRow nome="Monsenhor" porcentagem={45} />
+              <BairroRow nome="Santa Rita" porcentagem={30} />
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  )
+}
 
-        {/* ATALHOS RÁPIDOS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Link href="/admin/usuarios" className="bg-zinc-900 p-8 rounded-2xl border border-zinc-800 hover:border-indigo-500 transition-all flex items-center justify-between group">
-            <div>
-              <Users size={32} className="text-indigo-500 mb-2" />
-              <h3 className="text-white font-black uppercase text-xl">Usuários</h3>
-            </div>
-            <span className="text-indigo-500 font-bold opacity-0 group-hover:opacity-100 transition-all">GERENCIAR →</span>
-          </Link>
+function StatCard({ title, value, trend, color }: any) {
+  return (
+    <div className="bg-zinc-900 border-2 border-zinc-800 p-6 rounded-30 hover:border-zinc-700 transition-all group">
+      <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest mb-2 group-hover:text-yellow-400 transition-colors">{title}</p>
+      <h2 className="text-2xl font-black text-white mb-1">{value}</h2>
+      <p className={`text-[10px] font-bold uppercase ${color}`}>{trend}</p>
+    </div>
+  )
+}
 
-          <Link href="/admin/empresas" className="bg-zinc-900 p-8 rounded-2xl border border-zinc-800 hover:border-emerald-500 transition-all flex items-center justify-between group">
-            <div>
-              <Building2 size={32} className="text-emerald-500 mb-2" />
-              <h3 className="text-white font-black uppercase text-xl">Empresas</h3>
-            </div>
-            <span className="text-emerald-500 font-bold opacity-0 group-hover:opacity-100 transition-all">GERENCIAR →</span>
-          </Link>
-        </div>
-      </main>
+function BairroRow({ nome, porcentagem }: any) {
+  return (
+    <div className="space-y-1">
+      <div className="flex justify-between text-[10px] font-black uppercase italic">
+        <span>{nome}</span>
+        <span className="text-yellow-400">{porcentagem}%</span>
+      </div>
+      <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+        <div className="bg-yellow-400 h-full rounded-full" style={{ width: `${porcentagem}%` }}></div>
+      </div>
     </div>
   )
 }

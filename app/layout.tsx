@@ -1,27 +1,27 @@
-﻿import './globals.css';
-import type { Metadata } from 'next';
+﻿import type { Metadata, Viewport } from "next";
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: 'Valente Conecta - Admin Master',
-  description: 'Sistema de Inteligência e Conexão Local',
+  title: "Valente Conecta - Master Admin",
+  description: "Marketplace Inteligente",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 0.8,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR">
-      <head>
-        {/* Otimização para dispositivos móveis (Celular/Tablet) */}
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
-      </head>
-      <body className="antialiased">
-        {/* O container principal que garante o fundo gradiente em todas as páginas */}
-        <main className="min-h-screen">
-          {children}
-        </main>
+    <html lang="pt-br">
+      <body className="antialiased bg-black text-white">
+        {children}
       </body>
     </html>
   );
