@@ -1,77 +1,51 @@
 ﻿'use client'
-
-import React from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
-import { 
-  LayoutDashboard, Users, Building2, ShoppingBag, 
-  Tag, DollarSign, LogOut, Settings 
-} from 'lucide-react'
+import { usePathname } from 'next/navigation'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname()
+
   const menuItems = [
-    { label: 'Dashboard', icon: LayoutDashboard, href: '/admin/dashboard' },
-    { label: 'Usuários', icon: Users, href: '/admin/usuarios' },
-    { label: 'Empresas', icon: Building2, href: '/admin/empresas' },
-    { label: 'Catálogo', icon: ShoppingBag, href: '/admin/catalogo' },
-    { label: 'Ofertas', icon: Tag, href: '/admin/ofertas' },
-    { label: 'Financeiro', icon: DollarSign, href: '/admin/financeiro' },
-    { label: 'Configurações', icon: Settings, href: '/admin/configuracoes' },
+    { name: 'Dashboard', path: '/admin/dashboard', icon: '📊' },
+    { name: 'Financeiro', path: '/admin/financeiro', icon: '💰' },
+    { name: 'Usuários', path: '/admin/usuarios', icon: '👥' },
+    { name: 'Voltar', path: '/', icon: '🏠' },
   ]
 
   return (
-    <div className="flex min-h-screen bg-black text-white selection:bg-indigo-500">
-      
-      {/* SIDEBAR COM LOGO E TEXTO LEGÍVEL */}
-      <aside className="w-80 bg-zinc-950 border-r-2 border-zinc-900 flex flex-col shrink-0">
-        
-        {/* LOCAL DA LOGOMARCA */}
-        <div className="p-10 flex flex-col items-center border-b-2 border-zinc-900">
-          <div className="relative w-32 h-32 mb-4">
-            <Image 
-              src="/logo.png" 
-              alt="Valente Conecta Logo" 
-              fill
-              className="object-contain"
-              priority
-            />
+    <div className="min-h-screen bg-black flex flex-col">
+      {/* MENU RESPONSIVO: Barra fixa no topo para Mobile / Lateral ou Estilizada para Desktop */}
+      <nav className="no-print bg-zinc-900/50 backdrop-blur-md border-b-2 border-zinc-800 p-4 sticky top-0 z-[300]">
+        <div className="max-w-[1400px] mx-auto flex justify-between items-center">
+          <div className="text-yellow-400 font-black italic text-2xl tracking-tighter">
+            VALENTE <span className="text-white">CONECTA</span>
           </div>
-          <h2 className="text-2xl font-black text-white tracking-tighter italic uppercase">
-            Valente <span className="text-indigo-500">Conecta</span>
-          </h2>
-          <p className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.3em] mt-2">
-            Painel Administrativo
-          </p>
+          
+          <div className="flex gap-2 md:gap-6">
+            {menuItems.map((item) => {
+              const isActive = pathname === item.path
+              return (
+                <Link 
+                  key={item.path} 
+                  href={item.path}
+                  className={`px-3 py-2 md:px-6 md:py-3 rounded-xl text-xs md:text-xl font-black uppercase italic transition-all flex items-center gap-2 ${
+                    isActive 
+                      ? 'bg-yellow-400 text-black shadow-[0_0_20px_rgba(250,204,21,0.3)]' 
+                      : 'bg-zinc-800 text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  <span>{item.icon}</span>
+                  <span className={`${isActive ? 'block' : 'hidden md:block'}`}>{item.name}</span>
+                </Link>
+              )
+            })}
+          </div>
         </div>
-        
-        {/* MENU DE NAVEGAÇÃO (TEXTOS DOBRADOS) */}
-        <nav className="flex-1 p-6 space-y-3">
-          {menuItems.map((item) => (
-            <Link key={item.href} href={item.href} className="group block">
-              <div className="flex items-center gap-5 p-4 rounded-2xl transition-all hover:bg-white hover:text-black group-active:scale-95">
-                <item.icon size={28} strokeWidth={2.5} />
-                <span className="text-xl font-black uppercase tracking-tight">
-                  {item.label}
-                </span>
-              </div>
-            </Link>
-          ))}
-        </nav>
+      </nav>
 
-        {/* RODAPÉ DA SIDEBAR */}
-        <div className="p-6 border-t-2 border-zinc-900">
-          <button className="flex items-center gap-5 text-red-500 hover:bg-red-500/10 p-5 w-full rounded-2xl transition-all">
-            <LogOut size={28} strokeWidth={2.5} />
-            <span className="text-xl font-black uppercase tracking-tight italic">Sair</span>
-          </button>
-        </div>
-      </aside>
-
-      {/* ÁREA DO CONTEÚDO (AS PÁGINAS QUE FIZEMOS ANTES) */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1">
         {children}
       </main>
-
     </div>
   )
 }
