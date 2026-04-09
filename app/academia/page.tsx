@@ -2,264 +2,142 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Dumbbell, Calendar, Clock, MapPin, Target, Heart, TrendingUp, Camera, CheckCircle, AlertCircle, Zap, Users, Activity } from 'lucide-react'
+import { ArrowLeft, Dumbbell, MapPin, CheckCircle, Settings, LayoutDashboard, TrendingUp } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 
 export default function AcademiaPage() {
-  const [isRegistered, setIsRegistered] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [isCheckIn, setIsCheckIn] = useState(false)
-  const [checkInTime, setCheckInTime] = useState<Date | null>(null)
   const [elapsedTime, setElapsedTime] = useState(0)
-  const [treinoHoje, setTreinoHoje] = useState<any>(null)
-  const [evolucaoSemanal, setEvolucaoSemanal] = useState({
-    peso: -1.2,
-    cintura: -2,
-    gordura: -1.5
-  })
+  const [checkInTime, setCheckInTime] = useState<Date | null>(null)
 
   useEffect(() => {
-    // Verificar se usuário já tem cadastro
-    const saved = localStorage.getItem('academia_cadastro')
+    // 1. Validar se é você (Admin Master)
+    const checkAdmin = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user?.email === 'seu-email-admin@valente.com') setIsAdmin(true)
+    }
+    checkAdmin()
+
+    // 2. Recuperar Check-in ativo
+    const saved = localStorage.getItem('academia_checkin')
     if (saved) {
-      setIsRegistered(true)
+      const { startTime } = JSON.parse(saved)
+      setCheckInTime(new Date(startTime))
+      setIsCheckIn(true)
     }
+  }, [])
 
-    // Verificar se está em check-in
-    const savedCheckIn = localStorage.getItem('academia_checkin')
-    if (savedCheckIn) {
-      const checkInData = JSON.parse(savedCheckIn)
-      const startTime = new Date(checkInData.startTime)
-      const now = new Date()
-      const diff = Math.floor((now.getTime() - startTime.getTime()) / 1000 / 60)
-      if (diff < 240) { // 4 horas máximo
-        setIsCheckIn(true)
-        setCheckInTime(startTime)
+  useEffect(() => {
+    let interval: any
+    if (isCheckIn && checkInTime) {
+      interval = setInterval(() => {
+        const diff = Math.floor((new Date().getTime() - checkInTime.getTime()) / 1000 / 60)
         setElapsedTime(diff)
-      } else {
-        localStorage.removeItem('academia_checkin')
-      }
+      }, 60000)
     }
-
-    // Timer para atualizar tempo
-    const interval = setInterval(() => {
-      if (isCheckIn && checkInTime) {
-        const now = new Date()
-        const diff = Math.floor((now.getTime() - checkInTime.getTime()) / 1000 / 60)
-        setElapsedTime(diff)
-      }
-    }, 60000)
-
     return () => clearInterval(interval)
   }, [isCheckIn, checkInTime])
 
-  const fazerCheckIn = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const now = new Date()
-          localStorage.setItem('academia_checkin', JSON.stringify({
-            startTime: now.toISOString(),
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          }))
-          setIsCheckIn(true)
-          setCheckInTime(now)
-          setElapsedTime(0)
-          alert('✅ Check-in realizado! Seu treino começou agora.')
-        },
-        (error) => {
-          alert('❌ Ative sua localização para fazer check-in')
-        }
-      )
+  const handleAction = () => {
+    if (!isCheckIn) {
+      const now = new Date()
+      localStorage.setItem('academia_checkin', JSON.stringify({ startTime: now.toISOString() }))
+      setCheckInTime(now)
+      setIsCheckIn(true)
     } else {
-      alert('❌ Seu navegador não suporta geolocalização')
-    }
-  }
-
-  const fazerCheckOut = () => {
-    if (checkInTime && elapsedTime >= 5) {
       localStorage.removeItem('academia_checkin')
       setIsCheckIn(false)
-      setCheckInTime(null)
-      
-      // Registrar tempo no histórico
-      const historico = localStorage.getItem('academia_historico')
-      const novoRegistro = {
-        data: new Date().toISOString(),
-        tempoMinutos: elapsedTime,
-        calorias: Math.round(elapsedTime * 7)
-      }
-      const historicoArray = historico ? JSON.parse(historico) : []
-      historicoArray.push(novoRegistro)
-      localStorage.setItem('academia_historico', JSON.stringify(historicoArray))
-      
-      alert(`✅ Check-out realizado! Você treinou por ${elapsedTime} minutos.`)
-    } else if (elapsedTime < 5) {
-      alert('⏳ Tempo mínimo de treino é 5 minutos')
+      alert(`Treino de ${elapsedTime}min registrado no Financeiro!`)
     }
-  }
-
-  if (!isRegistered) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <header className="bg-gradient-to-r from-purple-500 to-pink-500 text-white sticky top-0 z-20">
-          <div className="flex items-center gap-3 px-4 py-3">
-            <Link href="/" className="p-2 hover:bg-white/20 rounded-lg">
-              <ArrowLeft className="w-5 h-5" />
-            </Link>
-            <img src="/logo.png" alt="Logo" className="w-8 h-8" />
-            <span className="font-bold text-lg">Academia Valente</span>
-          </div>
-        </header>
-        <main className="p-4">
-          <div className="bg-white rounded-2xl p-6 text-center mb-6">
-            <Dumbbell className="w-20 h-20 text-purple-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold mb-2">Bem-vindo à Academia!</h1>
-            <p className="text-gray-500 mb-6">Complete seu cadastro para começar</p>
-            <Link href="/academia/cadastro">
-              <button className="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-semibold">
-                Iniciar Cadastro
-              </button>
-            </Link>
-          </div>
-        </main>
-      </div>
-    )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-purple-500 to-pink-500 text-white sticky top-0 z-20">
-        <div className="flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="p-2 hover:bg-white/20 rounded-lg">
-              <ArrowLeft className="w-5 h-5" />
-            </Link>
-            <img src="/logo.png" alt="Logo" className="w-8 h-8" />
-            <span className="font-bold text-lg">Academia</span>
+    <div className="min-h-screen pb-24 text-slate-900">
+      {/* Header com degradê profissional */}
+      <header className="bg-gradient-to-br from-indigo-700 to-purple-800 text-white p-6 rounded-b-[3rem] shadow-2xl">
+        <div className="flex justify-between items-center mb-8">
+          <Link href="/"><ArrowLeft className="w-6 h-6" /></Link>
+          <h1 className="font-black text-xl tracking-tighter italic">VALENTE FITNESS</h1>
+          {isAdmin && <Settings className="text-yellow-400 w-6 h-6" />}
+        </div>
+
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 text-center">
+          <p className="text-xs uppercase tracking-widest mb-1 opacity-70 font-bold">Status do Treino</p>
+          <div className="text-4xl font-black mb-4">
+            {isCheckIn ? `${elapsedTime} MIN` : "OFFLINE"}
           </div>
-          <Link href="/academia/evolucao">
-            <button className="bg-white/20 px-3 py-1 rounded-full text-sm">
-              📊 Evolução
-            </button>
-          </Link>
+          <button 
+            onClick={handleAction}
+            className={`w-full py-4 rounded-2xl font-black shadow-lg transition-all active:scale-95 ${
+              isCheckIn ? 'bg-red-500 text-white' : 'bg-white text-indigo-700'
+            }`}
+          >
+            {isCheckIn ? 'FINALIZAR TREINO' : 'COMEÇAR AGORA'}
+          </button>
         </div>
       </header>
 
-      <main className="p-4 max-w-7xl mx-auto">
-        {/* Check-in/Check-out */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
-          {!isCheckIn ? (
-            <button
-              onClick={fazerCheckIn}
-              className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-bold text-lg flex items-center justify-center gap-2"
-            >
-              <MapPin className="w-5 h-5" />
-              Fazer Check-in
-            </button>
-          ) : (
-            <div className="text-center">
-              <div className="inline-block bg-green-100 rounded-full p-3 mb-3">
-                <CheckCircle className="w-8 h-8 text-green-500" />
-              </div>
-              <p className="font-bold text-lg">Você está treinando!</p>
-              <p className="text-3xl font-bold text-purple-600 my-2">
-                {Math.floor(elapsedTime / 60)}h {elapsedTime % 60}min
-              </p>
-              <button
-                onClick={fazerCheckOut}
-                className="mt-4 px-6 py-2 bg-red-500 text-white rounded-lg"
-              >
-                Finalizar Treino
-              </button>
+      <main className="p-6 space-y-6">
+        {/* Bloco Admin Master (Apenas para você) */}
+        {isAdmin && (
+          <section className="bg-slate-900 text-white p-5 rounded-3xl shadow-xl">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <h2 className="font-bold text-sm uppercase tracking-widest">Painel Admin Master</h2>
             </div>
-          )}
-        </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Link href="/admin/financeiro" className="bg-white/10 p-4 rounded-2xl flex flex-col items-center gap-2 hover:bg-white/20">
+                <TrendingUp className="text-green-400" />
+                <span className="text-[10px] font-bold">FINANCEIRO</span>
+              </Link>
+              <Link href="/admin/usuarios" className="bg-white/10 p-4 rounded-2xl flex flex-col items-center gap-2 hover:bg-white/20">
+                <LayoutDashboard className="text-blue-400" />
+                <span className="text-[10px] font-bold">USUÁRIOS</span>
+              </Link>
+            </div>
+          </section>
+        )}
 
-        {/* Treino de Hoje */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="font-bold text-lg">🏋️ Treino de Hoje</h2>
-            <Link href="/academia/treino">
-              <button className="text-purple-500 text-sm">Ver todos →</button>
-            </Link>
+        {/* Ficha de Treino Estilizada */}
+        <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="font-black text-lg">TREINO DO DIA</h3>
+            <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-black">SÉRIE A</span>
           </div>
-          
-          <div className="space-y-3">
-            <div className="flex justify-between items-center p-3 bg-purple-50 rounded-xl">
-              <div>
-                <p className="font-semibold">Supino Reto</p>
-                <p className="text-xs text-gray-500">4 séries x 12 repetições</p>
+          <div className="space-y-4">
+            {['Supino Reto', 'Puxada Frontal', 'Leg Press 45'].map((item, i) => (
+              <div key={i} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center font-bold">
+                    {i+1}
+                  </div>
+                  <div>
+                    <p className="font-bold text-sm uppercase">{item}</p>
+                    <p className="text-xs text-slate-400 font-medium">4 séries x 12 reps</p>
+                  </div>
+                </div>
+                <CheckCircle className="text-slate-200 w-6 h-6" />
               </div>
-              <span className="text-purple-600 font-bold">30kg</span>
-            </div>
-            <div className="flex justify-between items-center p-3 bg-purple-50 rounded-xl">
-              <div>
-                <p className="font-semibold">Puxada Frontal</p>
-                <p className="text-xs text-gray-500">4 séries x 12 repetições</p>
-              </div>
-              <span className="text-purple-600 font-bold">40kg</span>
-            </div>
-            <div className="flex justify-between items-center p-3 bg-purple-50 rounded-xl">
-              <div>
-                <p className="font-semibold">Agachamento</p>
-                <p className="text-xs text-gray-500">4 séries x 10 repetições</p>
-              </div>
-              <span className="text-purple-600 font-bold">50kg</span>
-            </div>
+            ))}
           </div>
-        </div>
-
-        {/* Estatísticas Rápidas */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div className="bg-white rounded-xl p-4 text-center">
-            <Calendar className="w-8 h-8 text-blue-500 mx-auto mb-2" />
-            <p className="text-2xl font-bold">8</p>
-            <p className="text-xs text-gray-500">Treinos este mês</p>
-          </div>
-          <div className="bg-white rounded-xl p-4 text-center">
-            <Clock className="w-8 h-8 text-green-500 mx-auto mb-2" />
-            <p className="text-2xl font-bold">320</p>
-            <p className="text-xs text-gray-500">Minutos totais</p>
-          </div>
-        </div>
-
-        {/* Evolução Semanal */}
-        <div className="bg-white rounded-2xl shadow-sm p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="font-bold text-lg">📈 Evolução da Semana</h2>
-            <Link href="/academia/evolucao">
-              <button className="text-purple-500 text-sm">Ver detalhes →</button>
-            </Link>
-          </div>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Peso</span>
-              <span className="text-green-600 font-semibold">
-                {evolucaoSemanal.peso > 0 ? '+' : ''}{evolucaoSemanal.peso}kg
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Cintura</span>
-              <span className="text-green-600 font-semibold">
-                {evolucaoSemanal.cintura > 0 ? '+' : ''}{evolucaoSemanal.cintura}cm
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">% Gordura</span>
-              <span className="text-green-600 font-semibold">
-                {evolucaoSemanal.gordura > 0 ? '+' : ''}{evolucaoSemanal.gordura}%
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Banner de 30 dias grátis */}
-        <div className="mt-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white p-4 rounded-xl text-center">
-          <p className="font-bold">🎁 Você está no período grátis!</p>
-          <p className="text-sm opacity-90">Após 30 dias: R$ 9,90/mês</p>
         </div>
       </main>
+
+      {/* Navegação Inferior para Admin e User */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-slate-100 p-4 flex justify-around items-center z-50">
+        <Link href="/" className="flex flex-col items-center text-slate-400">
+          <LayoutDashboard size={20} />
+          <span className="text-[8px] font-bold mt-1">HOME</span>
+        </Link>
+        <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-indigo-200 shadow-xl -mt-10 border-4 border-white">
+          <Dumbbell className="text-white" size={24} />
+        </div>
+        <Link href={isAdmin ? "/admin" : "/perfil"} className={`flex flex-col items-center ${isAdmin ? 'text-red-500' : 'text-slate-400'}`}>
+          <Settings size={20} />
+          <span className="text-[8px] font-bold mt-1 uppercase">{isAdmin ? 'ADMIN' : 'PERFIL'}</span>
+        </Link>
+      </nav>
     </div>
   )
 }

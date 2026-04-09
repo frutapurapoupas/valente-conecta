@@ -1,28 +1,25 @@
-﻿import type { Metadata, Viewport } from "next";
-import "./globals.css";
+﻿import './globals.css'
+import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: "Valente Conecta - Master Admin",
-  description: "Marketplace Inteligente",
-};
+  title: 'Valente Conecta',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Valente Conecta',
+  },
+}
 
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 0.8,
-  maximumScale: 1,
-  userScalable: false,
-};
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-br">
-      <body className="antialiased bg-black text-white">
+      <head>
+        <link rel="apple-touch-icon" href="/icon-192.png" />
+      </head>
+      <body className="antialiased bg-gray-50">
         {children}
       </body>
     </html>
-  );
+  )
 }
