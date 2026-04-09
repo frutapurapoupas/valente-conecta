@@ -1,143 +1,115 @@
 ﻿'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
 
-export default function GerenciarUsuarios() {
-  const [filter, setFilter] = useState('ativos')
-  const [bairroSearch, setBairroSearch] = useState('')
-  const [showInviteMenu, setShowInviteMenu] = useState(false)
-  
-  const [usuarios, setUsuarios] = useState([
-    { 
-      id: 1, nome: 'JOÃO SILVA PINTO', whatsapp: '75999990000', 
-      cpf: '000.000.000-00', email: '', bairro: 'CENTRO', 
-      endereco: 'RUA CENTRAL, 10, VALENTE-BA',
-      plano: 'PRIME', status: 'ativo' 
-    },
-    { 
-      id: 2, nome: 'MARIA DAS DORES', whatsapp: '75988881111', 
-      cpf: '111.111.111-11', email: 'MARIA@EMAIL.COM', bairro: 'MERCADO', 
-      endereco: 'AV. GETÚLIO VARGAS, VALENTE-BA',
-      plano: 'NENHUM', status: 'cancelado' 
-    }
-  ])
+export default function GestaoUsuarios() {
+  const [usuarios, setUsuarios] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [filtroBairro, setFiltroBairro] = useState('TODOS')
+  const [busca, setBusca] = useState('')
 
-  const sendWhatsAppInvite = () => {
-    const msg = encodeURIComponent("OLÁ! VENHA FAZER PARTE DO VALENTE CONECTA. CADASTRE-SE PELO LINK: https://valenteconecta.com.br/cadastro");
-    window.open(`https://wa.me/?text=${msg}`, '_blank');
+  useEffect(() => {
+    fetchUsuarios()
+  }, [])
+
+  async function fetchUsuarios() {
+    setLoading(true)
+    const { data, error } = await supabase
+      .from('usuarios')
+      .select('*')
+      .order('created_at', { ascending: false })
+    
+    if (data) setUsuarios(data)
+    setLoading(false)
   }
 
-  const filteredUsers = usuarios.filter(u => {
-    const matchesBairro = u.bairro.toUpperCase().includes(bairroSearch.toUpperCase());
-    const matchesStatus = filter === 'todos' ? true : (filter === 'ativos' ? (u.status === 'ativo' || u.status === 'pendente') : u.status === filter);
-    return matchesBairro && matchesStatus;
+  const usuariosFiltrados = usuarios.filter(u => {
+    const matchBairro = filtroBairro === 'TODOS' || u.bairro === filtroBairro
+    const matchBusca = u.nome?.toLowerCase().includes(busca.toLowerCase()) || u.telefone?.includes(busca)
+    return matchBairro && matchBusca
   })
 
+  const enviarWhatsapp = (telefone: string, nome: string) => {
+    const msg = `Olá ${nome}, aqui é o Admin do Valente Conecta. Seu acesso está liberado! Instale o app pelo link: https://valente-conecta.vercel.app`
+    window.open(`https://wa.me/55${telefone.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`, '_blank')
+  }
+
   return (
-    <div className="min-h-screen bg-black text-white p-12 font-sans origin-top-left scale-50 w-[200%]">
-      
-      <header className="flex justify-between items-center mb-16">
-        <div>
-          <h1 className="text-7xl font-black uppercase italic tracking-tighter">Gestão de <span className="text-yellow-400">Usuários</span></h1>
-          <p className="text-zinc-500 text-2xl font-bold uppercase tracking-[0.3em]">Base de Dados Valente Conecta</p>
-        </div>
-        
-        <div className="relative">
-          <button 
-            onClick={() => setShowInviteMenu(!showInviteMenu)}
-            className="bg-yellow-400 text-black px-12 py-6 rounded-25 font-black text-3xl uppercase hover:bg-white transition-all shadow-2xl"
-          >
-            + Novo Usuário / Indicação
-          </button>
+    <div className="min-h-screen bg-black text-white p-4 md:p-10 antialiased font-sans">
+      {/* ESCALA 0.55 NO DESKTOP / 100% NO MOBILE */}
+      <div className="md:origin-top-left md:scale-[0.55] md:w-[181.8%]">
+        <header className="mb-8 md:mb-12 border-b-4 border-zinc-900 pb-6 md:pb-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+          <div>
+            <h1 className="text-5xl md:text-9xl font-black uppercase italic tracking-tighter leading-none">
+              Usuários <span className="text-yellow-400">Master</span>
+            </h1>
+            <p className="text-zinc-500 text-lg md:text-4xl font-bold uppercase tracking-[0.2em] md:tracking-[0.4em] mt-2 italic">Controle de Acessos Valente-BA</p>
+          </div>
+          
+          <div className="w-full md:w-auto flex flex-col md:flex-row gap-4">
+            <input 
+              placeholder="BUSCAR NOME OU CELULAR..." 
+              value={busca}
+              onChange={e => setBusca(e.target.value)}
+              className="bg-zinc-900 border-4 border-zinc-800 p-4 md:p-6 rounded-2xl text-xl md:text-3xl font-black uppercase outline-none focus:border-yellow-400 transition-all w-full md:w-[400px]"
+            />
+            <select 
+              value={filtroBairro}
+              onChange={e => setFiltroBairro(e.target.value)}
+              className="bg-yellow-400 text-black border-4 border-yellow-500 p-4 md:p-6 rounded-2xl text-xl md:text-3xl font-black uppercase outline-none"
+            >
+              <option value="TODOS">TODOS OS BAIRROS</option>
+              <option value="CENTRO">CENTRO</option>
+              <option value="ARACI">ARACI</option>
+              <option value="BRASILÂNDIA">BRASILÂNDIA</option>
+              <option value="SANTA RITA">SANTA RITA</option>
+            </select>
+          </div>
+        </header>
 
-          {showInviteMenu && (
-            <div className="absolute right-0 mt-4 bg-zinc-900 border-4 border-zinc-800 p-6 rounded-30 w-[450px] z-50 shadow-2xl">
-              <button onClick={sendWhatsAppInvite} className="w-full text-left p-6 hover:bg-zinc-800 text-green-500 font-black text-2xl uppercase border-b border-zinc-800">
-                📱 Enviar Link via WhatsApp
-              </button>
-              <button onClick={() => alert('GERANDO QR CODE DE INDICAÇÃO...')} className="w-full text-left p-6 hover:bg-zinc-800 text-white font-black text-2xl uppercase">
-                🔳 Abrir QR Code Indicação
-              </button>
-            </div>
+        <section className="bg-white text-black p-4 md:p-12 rounded-3xl md:rounded-60 shadow-2xl">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b-4 border-zinc-200 text-zinc-400 font-black uppercase text-xl md:text-2xl italic">
+                  <th className="p-4">Cadastro</th>
+                  <th className="p-4">Nome / Bairro</th>
+                  <th className="p-4">Telefone</th>
+                  <th className="p-4 text-center">Status</th>
+                  <th className="p-4 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter">
+                {usuariosFiltrados.map((u) => (
+                  <tr key={u.id} className="border-b-2 border-zinc-100 hover:bg-zinc-50 transition-colors">
+                    <td className="p-4 text-zinc-300 text-sm md:text-xl font-mono">
+                      {new Date(u.created_at).toLocaleDateString('pt-BR')}
+                    </td>
+                    <td className="p-4">
+                      <div className="text-zinc-900">{u.nome}</div>
+                      <div className="text-xs md:text-xl text-blue-600 font-bold uppercase tracking-widest">{u.bairro || 'NÃO INFORMADO'}</div>
+                    </td>
+                    <td className="p-4 font-mono text-zinc-500">{u.telefone}</td>
+                    <td className="p-4 text-center text-sm md:text-xl">
+                      <span className="bg-green-100 text-green-700 px-4 py-1 rounded-full border-2 border-green-200">ATIVO</span>
+                    </td>
+                    <td className="p-4 text-right">
+                      <button 
+                        onClick={() => enviarWhatsapp(u.telefone, u.nome)}
+                        className="bg-green-500 text-white px-6 py-3 rounded-xl text-lg md:text-2xl font-black uppercase shadow-lg hover:bg-black transition-all"
+                      >
+                        Convite WP
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {usuariosFiltrados.length === 0 && (
+            <div className="text-center py-20 text-4xl font-black text-zinc-200 uppercase italic">Nenhum usuário encontrado.</div>
           )}
-        </div>
-      </header>
-
-      <div className="flex flex-col gap-8 mb-12">
-        <div className="flex gap-6">
-          {['ativos', 'cancelados', 'desligados', 'todos'].map(f => (
-            <button key={f} onClick={() => setFilter(f)} className={`px-10 py-4 rounded-full text-2xl font-black uppercase border-4 transition-all ${filter === f ? 'bg-white text-black border-white' : 'border-zinc-800 text-zinc-500'}`}>
-              {f}
-            </button>
-          ))}
-        </div>
-        
-        <div className="flex items-center gap-6 bg-zinc-900 border-4 border-zinc-800 p-6 rounded-30 w-full max-w-3xl">
-          <span className="text-4xl text-zinc-500 font-black">LOUPE</span>
-          <input 
-            type="text" 
-            placeholder="BUSCAR POR BAIRRO (CENTRO, APARECIDA, ETC...)" 
-            value={bairroSearch}
-            onChange={(e) => setBairroSearch(e.target.value.toUpperCase())}
-            className="bg-transparent w-full text-3xl font-black uppercase outline-none placeholder:text-zinc-700"
-          />
-        </div>
-      </div>
-
-      <div className="bg-zinc-900 rounded-60 border-4 border-zinc-800 overflow-hidden shadow-2xl">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-zinc-800 text-zinc-400 text-xl font-black uppercase italic">
-              <th className="p-8">Identificação / CPF</th>
-              <th className="p-8">Localização / Bairro</th>
-              <th className="p-8">Contato / WhatsApp</th>
-              <th className="p-8">E-mail / Atualização</th>
-              <th className="p-8">Plano</th>
-              <th className="p-8 text-right">Status</th>
-            </tr>
-          </thead>
-          <tbody className="text-3xl font-black uppercase italic tracking-tighter">
-            {filteredUsers.map(u => (
-              <tr key={u.id} className="border-b-2 border-zinc-800 hover:bg-black/50 transition-colors">
-                <td className="p-8">
-                  <div className="text-white text-4xl">{u.nome}</div>
-                  <div className="text-yellow-400 text-xl mt-1 tracking-[0.2em]">{u.cpf}</div>
-                </td>
-                <td className="p-8">
-                  <div className="text-blue-400 text-2xl font-black mb-1">{u.bairro}</div>
-                  <div className="text-zinc-500 text-lg font-bold">{u.endereco}</div>
-                </td>
-                <td className="p-8 text-green-500 font-mono tracking-widest">{u.whatsapp}</td>
-                <td className="p-8">
-                  {u.email ? (
-                    <span className="text-zinc-400 text-xl font-bold">{u.email}</span>
-                  ) : (
-                    <button className="bg-zinc-800 text-[14px] px-6 py-3 rounded-15 text-yellow-400 border-2 border-yellow-400/30 animate-pulse">
-                      📩 SOLICITAR ATUALIZAÇÃO (MENSAL)
-                    </button>
-                  )}
-                </td>
-                <td className="p-8">
-                   <div className={u.plano !== 'NENHUM' ? 'text-green-500' : 'text-zinc-600'}>
-                     {u.plano} {u.plano !== 'NENHUM' ? '✅' : '❌'}
-                   </div>
-                </td>
-                <td className="p-8 text-right">
-                  <select 
-                    defaultValue={u.status} 
-                    className={`bg-black border-4 p-4 rounded-20 text-2xl font-black uppercase outline-none 
-                      ${u.status === 'ativo' ? 'border-green-600 text-green-500' : 
-                        u.status === 'pendente' ? 'border-yellow-600 text-yellow-500' : 'border-red-600 text-red-500'}`}
-                  >
-                    <option value="ativo">ATIVO</option>
-                    <option value="pendente">PENDENTE VALIDAÇÃO</option>
-                    <option value="cancelado">CANCELADO</option>
-                    <option value="desligado">DESLIGADO</option>
-                  </select>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        </section>
       </div>
     </div>
   )
