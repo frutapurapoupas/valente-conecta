@@ -1,53 +1,55 @@
 ﻿'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
 
 export default function DashboardMaster() {
-  const [periodo, setPeriodo] = useState('semanal')
-  const dadosSemanais = [
-    { dia: 'SEG', valor: 1200 }, { dia: 'TER', valor: 2100 }, { dia: 'QUA', valor: 1800 },
-    { dia: 'QUI', valor: 2400 }, { dia: 'SEX', valor: 3200 }, { dia: 'SAB', valor: 4100 }, { dia: 'DOM', valor: 1500 }
-  ]
+  const [totalSaidas, setTotalSaidas] = useState(0)
+  const [totalUsuarios, setTotalUsuarios] = useState(0)
+
+  useEffect(() => {
+    async function loadStats() {
+      // Soma saídas reais do banco
+      const { data: fin } = await supabase.from('financeiro').select('valor')
+      if (fin) setTotalSaidas(fin.reduce((acc, d) => acc + (parseFloat(d.valor) || 0), 0))
+      
+      // Conta usuários reais do banco
+      const { count } = await supabase.from('usuarios').select('*', { count: 'exact', head: true })
+      if (count) setTotalUsuarios(count || 0)
+    }
+    loadStats()
+  }, [])
 
   return (
-    <div className="min-h-screen bg-black text-white antialiased selection:bg-yellow-400 font-sans">
-      <div className="origin-top-left scale-[0.55] w-[181.8%] p-10">
-        <header className="flex justify-between items-end mb-12 border-b-4 border-zinc-900 pb-10">
-          <div>
-            <h1 className="text-8xl font-black uppercase italic tracking-tighter leading-none">Dashboard <span className="text-yellow-400">Master</span></h1>
-            <p className="text-zinc-500 text-3xl font-bold uppercase tracking-[0.4em] mt-2 italic">Sincronização: <span className="text-green-500 font-black">Tempo Semanal</span></p>
-          </div>
-          <div className="flex gap-4">
-            <button onClick={() => setPeriodo('semanal')} className={`px-10 py-4 rounded-full text-2xl font-black uppercase border-4 ${periodo === 'semanal' ? 'bg-yellow-400 text-black border-yellow-400' : 'border-zinc-800 text-zinc-500'}`}>Semanal</button>
-            <button onClick={() => setPeriodo('mensal')} className={`px-10 py-4 rounded-full text-2xl font-black uppercase border-4 ${periodo === 'mensal' ? 'bg-white text-black border-white' : 'border-zinc-800 text-zinc-500'}`}>Mensal</button>
-          </div>
+    <div className="min-h-screen bg-black text-white p-10 antialiased font-sans overflow-x-hidden">
+      <div className="origin-top-left scale-[0.55] w-[181.8%]">
+        <header className="mb-12 border-b-4 border-zinc-900 pb-10">
+          <h1 className="text-9xl font-black uppercase italic tracking-tighter leading-none">
+            Dashboard <span className="text-yellow-400">Master</span>
+          </h1>
+          <p className="text-zinc-500 text-4xl font-bold uppercase tracking-[0.4em] mt-2 italic">Valente Conecta Official</p>
         </header>
 
+        {/* CARDS COM ORIGEM DOS VALORES */}
         <div className="grid grid-cols-4 gap-8 mb-16">
-          <StatCard title="Receita (Semana)" value="R$ 16.300,00" color="text-white" origin="VALENTE-BA" />
-          <StatCard title="Acessos Hoje" value="1.254" color="text-yellow-400" origin="DADOS REAIS" />
-          <StatCard title="Indicações" value="125" color="text-white" origin="RECENTES" />
-          <StatCard title="Saldo Semanal" value="+R$ 4.250" color="text-green-500" origin="BÔNUS" />
+          <StatCard title="Receita de Planos" value="R$ 12.450" color="text-white" origin="VALENTE-BA" />
+          <StatCard title="Usuários Ativos" value={totalUsuarios.toLocaleString()} color="text-white" origin="SUPABASE AUTH" />
+          <StatCard title="Saídas Mensais" value={`R$ ${totalSaidas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`} color="text-red-500" origin="BANCO REAL" />
+          <StatCard title="Saldo em Conta" value="R$ 4.250" color="text-green-500" origin="SICOOB" />
         </div>
 
         <div className="grid grid-cols-3 gap-10">
-          <div className="col-span-2 bg-zinc-900/50 border-4 border-zinc-800 p-10 rounded-60 relative overflow-hidden">
-            <h3 className="text-3xl font-black uppercase italic mb-10 text-zinc-400 text-center tracking-widest">Cruzamento de Vendas e Estoque (7 Dias)</h3>
-            <div className="h-[400px] flex items-end justify-between gap-6 px-4 border-b-4 border-zinc-800">
-              {dadosSemanais.map((d, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center group">
-                  <div className="w-full bg-yellow-400 rounded-t-15 transition-all group-hover:bg-white" style={{ height: `${(d.valor / 4100) * 100}%` }}></div>
-                  <span className="mt-4 text-xl font-black text-zinc-600 uppercase italic">{d.dia}</span>
-                </div>
-              ))}
-            </div>
+          <div className="col-span-2 bg-zinc-900 border-4 border-zinc-800 rounded-60 p-12 h-[600px] flex items-center justify-center relative overflow-hidden">
+             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
+             <p className="text-zinc-500 font-black uppercase italic text-5xl animate-pulse">Cruzamento de Vendas e Estoque</p>
           </div>
-          <div className="bg-zinc-900 border-4 border-zinc-800 p-10 rounded-60">
-            <h3 className="text-3xl font-black uppercase italic mb-8 border-b-2 border-zinc-800 pb-4 text-center">Radar de Bairros</h3>
-            <div className="space-y-8">
-              <BairroProgress label="Centro" percent="87%" />
-              <BairroProgress label="Araci" percent="62%" />
-              <BairroProgress label="Brasilandia" percent="45%" />
-              <BairroProgress label="Santa Rita" percent="30%" />
+          
+          <div className="bg-zinc-900 border-4 border-zinc-800 rounded-60 p-10">
+            <h3 className="text-5xl font-black uppercase italic mb-10 border-b-4 border-yellow-400 pb-4 inline-block">Radar Bairros</h3>
+            <div className="space-y-10 mt-6">
+              <BarraProgresso bairro="CENTRO" perc={45} color="bg-yellow-400" />
+              <BarraProgresso bairro="ARACI" perc={82} color="bg-yellow-400" />
+              <BarraProgresso bairro="BRASILÂNDIA" perc={63} color="bg-yellow-400" />
+              <BarraProgresso bairro="SANTA RITA" perc={30} color="bg-yellow-400" />
             </div>
           </div>
         </div>
@@ -58,20 +60,23 @@ export default function DashboardMaster() {
 
 function StatCard({ title, value, color, origin }: any) {
   return (
-    <div className="bg-zinc-900 border-4 border-zinc-800 p-8 rounded-40">
-      <p className="text-zinc-500 font-black uppercase text-xl mb-2 tracking-widest italic">{title}</p>
-      <p className={`text-6xl font-black ${color} italic tracking-tighter leading-none mb-4`}>{value}</p>
-      <p className="text-zinc-700 font-black text-lg uppercase tracking-[0.2em]">{origin}</p>
+    <div className="bg-zinc-900 border-4 border-zinc-800 p-10 rounded-50 hover:border-yellow-400 transition-all">
+      <p className="text-zinc-500 font-black uppercase text-2xl mb-2 tracking-widest italic">{title}</p>
+      <p className={`text-7xl font-black ${color} italic tracking-tighter leading-none mb-6`}>{value}</p>
+      <p className="text-zinc-700 font-black text-xl uppercase tracking-[0.3em] border-t border-zinc-800 pt-4">{origin}</p>
     </div>
   )
 }
 
-function BairroProgress({ label, percent }: any) {
+function BarraProgresso({ bairro, perc, color }: any) {
   return (
     <div>
-      <div className="flex justify-between text-xl font-black uppercase mb-2 italic"><span>{label}</span><span className="text-yellow-400 font-black">{percent}</span></div>
-      <div className="w-full bg-black h-4 rounded-full border border-zinc-800 overflow-hidden">
-        <div className="h-full bg-yellow-400 transition-all duration-1000" style={{ width: percent }}></div>
+      <div className="flex justify-between text-2xl font-black uppercase italic mb-3">
+        <span>{bairro}</span>
+        <span className="text-yellow-400">{perc}%</span>
+      </div>
+      <div className="w-full bg-black h-6 rounded-full border-2 border-zinc-800 p-1">
+        <div className={`${color} h-full rounded-full`} style={{ width: `${perc}%` }}></div>
       </div>
     </div>
   )
