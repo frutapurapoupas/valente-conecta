@@ -2,132 +2,177 @@
 import { useState } from 'react'
 
 export default function Financeiro() {
-  const [viewDetail, setViewDetail] = useState<string | null>(null)
   const [selectedMonth, setSelectedMonth] = useState('2026-04')
-  const [prolabore, setProlabore] = useState(3500)
-
-  // Simulação de dados para visualização
-  const despesasVariaveis = [
-    { id: 1, nome: 'Energia Co-working', valor: 250, vencimento: '2026-04-15', status: 'pendente' },
-    { id: 2, nome: 'Impostos Simples', valor: 450, vencimento: '2026-04-10', status: 'alerta' },
-  ]
+  const [showAddExpense, setShowAddExpense] = useState(false)
+  
+  // Lista de Despesas Reais Conforme Solicitado
+  const [despesas, setDespesas] = useState([
+    { id: 1, cat: 'Fixa', nome: 'Pró-labore', valor: 3500, venc: '05', doc: 'DOC-001', status: 'pago' },
+    { id: 2, cat: 'Fixa', nome: 'Aluguel Escritório', valor: 100, venc: '10', doc: 'AL-99', status: 'pago' },
+    { id: 3, cat: 'Fixa', nome: 'Hospedagem / Servidor', valor: 300, venc: '15', doc: 'VRC-88', status: 'pendente' },
+    { id: 4, cat: 'Fixa', nome: 'Banco de Dados (Supabase)', valor: 200, venc: '15', doc: 'SUPA-1', status: 'pendente' },
+    { id: 5, cat: 'Fixa', nome: 'Domínio + DNS', valor: 50, venc: '20', doc: 'REG-BA', status: 'pago' },
+    { id: 12, cat: 'Variável', nome: 'Taxas Transações (PIX/Cartão)', valor: 850, venc: '30', doc: 'GATE-7', status: 'alerta' },
+    { id: 15, cat: 'Variável', nome: 'Tráfego Pago (Campanhas)', valor: 1200, venc: '25', doc: 'FB-ADS', status: 'pendente', parc: '1/1' },
+  ])
 
   return (
-    <div className="min-h-screen bg-black text-white overflow-x-hidden font-sans">
+    <div className="min-h-screen bg-black text-white font-sans">
       <div className="origin-top-left scale-50 w-[200%] p-12">
         
-        {/* HEADER COM FILTRO */}
+        {/* HEADER */}
         <header className="mb-12 flex justify-between items-center">
           <div>
-            <h1 className="text-6xl font-black uppercase italic tracking-tighter text-white">
-              Financeiro <span className="text-yellow-400">Master</span>
-            </h1>
-            <p className="text-zinc-500 text-xl font-bold uppercase tracking-[0.3em]">Gestão de Fluxo Valente Conecta</p>
+            <h1 className="text-7xl font-black uppercase italic tracking-tighter">Financeiro <span className="text-yellow-400">Master</span></h1>
+            <p className="text-zinc-500 text-2xl font-bold uppercase tracking-[0.3em]">Valente Conecta v3.5</p>
           </div>
-          <div className="flex gap-4 items-center">
+          <div className="flex gap-6 items-center bg-zinc-900 p-6 rounded-30 border-2 border-zinc-800">
+             <span className="text-2xl font-black uppercase italic text-zinc-500">Período:</span>
              <input 
-                type="month" 
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(e.target.value)}
-                className="bg-zinc-900 border-4 border-yellow-400 p-6 rounded-25 text-2xl font-black uppercase outline-none text-yellow-400"
+                type="month" value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)}
+                className="bg-black border-2 border-yellow-400 p-4 rounded-15 text-3xl font-black text-yellow-400 outline-none"
              />
-             <div className="flex gap-3">
-                <button className="bg-zinc-800 p-6 rounded-20 hover:bg-zinc-700 transition-all text-3xl">🖨️</button>
-                <button className="bg-zinc-800 p-6 rounded-20 hover:bg-zinc-700 transition-all text-green-400 font-black text-xl">XLS</button>
-                <button className="bg-zinc-800 p-6 rounded-20 hover:bg-zinc-700 transition-all text-red-400 font-black text-xl">PDF</button>
-             </div>
           </div>
         </header>
 
         {/* 3 CARDS SUPERIORES */}
         <div className="grid grid-cols-3 gap-8 mb-12">
-          <StatCard title="Entradas (Mês)" value="R$ 12.450,00" color="text-white" onDetail={() => setViewDetail('entradas')} />
-          <StatCard title="Saídas (Mês)" value="R$ 6.850,00" color="text-red-500" onDetail={() => setViewDetail('saidas')} />
-          <StatCard title="Projeção Próximo Mês" value="R$ 18.200,00" color="text-yellow-400" onDetail={() => setViewDetail('projecao')} />
+          <StatCard title="Entradas (Mês)" value="R$ 12.450,00" color="text-white" />
+          <StatCard title="Saídas (Mês)" value="R$ 8.400,00" color="text-red-500" />
+          <StatCard title="Projeção Próximo Mês" value="R$ 18.200,00" color="text-yellow-400" />
         </div>
 
         <div className="grid grid-cols-2 gap-10 mb-12">
-          
-          {/* RECEBIMENTOS POR TIPO (TEXTOS MAXIMIZADOS) */}
+          {/* RECEBIMENTOS POR TIPO */}
           <section className="bg-zinc-900 border-4 border-zinc-800 p-12 rounded-60 shadow-2xl">
-            <h3 className="text-4xl font-black uppercase italic mb-10 text-yellow-400 border-b-4 border-zinc-800 pb-6">Recebimentos por Tipo</h3>
-            <div className="space-y-14">
+            <h3 className="text-4xl font-black uppercase italic mb-10 text-yellow-400 border-b-4 border-zinc-800 pb-6">Faturamento Sintético</h3>
+            <div className="space-y-12">
               <FaturamentoRow label="Desbloqueios de Contato" valor="4.200,00" perc="35%" />
               <FaturamentoRow label="Planos de Assinatura" valor="6.800,00" perc="55%" />
               <FaturamentoRow label="Publicidade e Banners" valor="1.450,00" perc="10%" />
             </div>
           </section>
 
-          {/* CENTRO DE CUSTOS (TEXTOS MAXIMIZADOS) */}
+          {/* CENTRO DE CUSTOS & INCLUIR DESPESA */}
           <section className="bg-zinc-900 border-4 border-zinc-800 p-12 rounded-60 shadow-2xl">
-            <h3 className="text-4xl font-black uppercase italic mb-10 text-red-500 border-b-4 border-zinc-800 pb-6">Centro de Custos</h3>
-            
-            <div className="mb-14">
-               <h4 className="text-zinc-500 font-black uppercase text-3xl mb-8 italic tracking-tighter">Despesas Fixas (Recorrentes)</h4>
-               <div className="flex items-center justify-between bg-zinc-800 p-8 rounded-30 border-2 border-zinc-700">
-                  <span className="font-black text-3xl uppercase italic text-white">Prolabore Admin Master</span>
-                  <div className="flex items-center gap-4">
-                    <span className="text-4xl font-black text-zinc-600 italic">R$</span>
-                    <input 
-                      type="number" 
-                      value={prolabore} 
-                      onChange={(e) => setProlabore(Number(e.target.value))}
-                      className="bg-black border-4 border-yellow-400 rounded-20 p-4 w-56 text-center text-4xl font-black text-yellow-400 outline-none"
-                    />
-                  </div>
-               </div>
+            <div className="flex justify-between items-center mb-10 border-b-4 border-zinc-800 pb-6">
+                <h3 className="text-4xl font-black uppercase italic text-red-500">Custos Reais</h3>
+                <button 
+                    onClick={() => setShowAddExpense(true)}
+                    className="bg-red-600 hover:bg-white hover:text-red-600 text-white px-8 py-4 rounded-20 font-black text-2xl uppercase transition-all animate-pulse"
+                >
+                    + Incluir Despesa
+                </button>
             </div>
-
-            <div className="space-y-8">
-               <h4 className="text-zinc-500 font-black uppercase text-3xl mb-4 italic tracking-tighter">Despesas Variáveis (Mês Atual)</h4>
-               
-               {/* Energia */}
-               <div className="flex items-center justify-between p-8 rounded-30 border-4 border-zinc-800 bg-zinc-800/50">
-                  <div>
-                    <p className="font-black uppercase text-3xl italic text-white mb-2">Energia Co-working</p>
-                    <p className="text-xl text-zinc-500 font-bold uppercase tracking-widest">Vence em: 2026-04-15</p>
-                  </div>
-                  <p className="text-5xl font-black text-white tracking-tighter text-right">R$ 250,00</p>
-               </div>
-
-               {/* Impostos com Alerta */}
-               <div className="flex items-center justify-between p-8 rounded-30 border-4 border-red-500 bg-red-500/10 shadow-[0_0_30px_rgba(239,68,68,0.15)]">
-                  <div>
-                    <p className="font-black uppercase text-3xl italic text-red-500 mb-2">Impostos Simples</p>
-                    <p className="text-xl text-zinc-400 font-bold uppercase">Vence em: 2026-04-10</p>
-                    <span className="text-2xl font-black text-red-500 animate-pulse uppercase block mt-3">⚠️ Atualizar Valor!</span>
-                  </div>
-                  <p className="text-5xl font-black text-red-500 tracking-tighter text-right">R$ 450,00</p>
-               </div>
-
-               <button className="w-full border-4 border-dashed border-zinc-700 p-8 rounded-30 text-zinc-500 font-black uppercase text-3xl hover:border-yellow-400 hover:text-yellow-400 transition-all bg-zinc-900/50">
-                 + Incluir Despesa
-               </button>
+            
+            <div className="h-[400px] overflow-y-auto space-y-4 pr-4 custom-scrollbar">
+                {despesas.map(d => (
+                    <div key={d.id} className="flex justify-between items-center bg-black/50 p-6 rounded-25 border-2 border-zinc-800 group hover:border-red-500 transition-all">
+                        <div>
+                            <p className="text-2xl font-black uppercase italic leading-none mb-1">{d.nome}</p>
+                            <span className="text-sm font-bold text-zinc-500 uppercase tracking-widest">{d.cat} | Venc. Dia {d.venc}</span>
+                        </div>
+                        <p className="text-4xl font-black text-white italic">R$ {d.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p>
+                    </div>
+                ))}
             </div>
           </section>
         </div>
 
-        {/* MODAL DE EXTRATO */}
-        {viewDetail && (
-          <div className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-20">
-            <div className="bg-zinc-900 border-[10px] border-yellow-400 w-full h-full rounded-60 p-24 overflow-y-auto relative shadow-[0_0_100px_rgba(250,204,21,0.2)]">
-              <button onClick={() => setViewDetail(null)} className="absolute top-12 right-12 text-7xl font-black text-zinc-600 hover:text-white transition-colors">✕</button>
-              <h2 className="text-7xl font-black uppercase italic mb-4">Extrato: <span className="text-yellow-400">{viewDetail}</span></h2>
-              <p className="text-zinc-500 text-3xl font-bold mb-16 uppercase tracking-[0.2em]">Detalhamento de origem e filtros temporais</p>
-              
-              <div className="space-y-6">
-                {[1,2,3,4,5].map(i => (
-                  <div key={i} className="flex justify-between items-center p-10 bg-zinc-800 rounded-40 border-l-[15px] border-yellow-400 hover:bg-zinc-750 transition-all">
-                    <div className="space-y-2">
-                      <span className="text-4xl font-black uppercase italic">Item de Origem #{i}</span>
-                      <p className="text-zinc-500 text-xl font-bold uppercase">Referência: ID-VALENTE-{i}2026</p>
+        {/* FLUXO DE CAIXA DETALHADO (EXTRATO) */}
+        <section className="bg-zinc-900 border-4 border-zinc-800 p-12 rounded-60 shadow-2xl">
+            <header className="flex justify-between items-center mb-10 border-b-4 border-zinc-800 pb-6">
+                <h3 className="text-5xl font-black uppercase italic">Fluxo de Caixa <span className="text-yellow-400">Detalhado</span></h3>
+                <div className="flex gap-4">
+                    <button className="bg-green-600 text-white px-6 py-3 rounded-15 font-black text-xl uppercase">Excel</button>
+                    <button className="bg-zinc-100 text-black px-6 py-3 rounded-15 font-black text-xl uppercase">Impressora / PDF</button>
+                </div>
+            </header>
+
+            <table className="w-full text-left">
+                <thead className="text-zinc-500 font-black uppercase text-xl">
+                    <tr className="border-b-2 border-zinc-800">
+                        <th className="p-6">Tipo</th>
+                        <th className="p-6">Doc. Origem</th>
+                        <th className="p-6 text-center">Parcela</th>
+                        <th className="p-6">Vencimento</th>
+                        <th className="p-6">Valor</th>
+                        <th className="p-6">Observação</th>
+                        <th className="p-6 text-right">Status</th>
+                    </tr>
+                </thead>
+                <tbody className="text-3xl font-black uppercase italic tracking-tighter">
+                    {despesas.map(d => (
+                        <tr key={d.id} className="border-b border-zinc-800 hover:bg-white/5 transition-colors">
+                            <td className="p-6 text-zinc-400 text-xl">{d.cat}</td>
+                            <td className="p-6"><input type="text" defaultValue={d.doc} className="bg-transparent border-b border-zinc-700 outline-none focus:border-yellow-400 w-full" /></td>
+                            <td className="p-6 text-center text-zinc-500">{d.parc || '1/1'}</td>
+                            <td className="p-6">{d.venc}/{selectedMonth.split('-')[1]}</td>
+                            <td className="p-6 text-red-500">R$ {d.valor.toFixed(2)}</td>
+                            <td className="p-6"><input type="text" placeholder="Add nota..." className="bg-transparent border-b border-zinc-800 text-sm outline-none w-full italic" /></td>
+                            <td className="p-6 text-right">
+                                <span className={`px-4 py-2 rounded-lg text-sm ${d.status === 'pago' ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}`}>
+                                    {d.status}
+                                </span>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </section>
+
+        {/* MODAL INTUITIVO PARA INCLUIR DESPESA */}
+        {showAddExpense && (
+            <div className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-20">
+                <div className="bg-zinc-900 border-[10px] border-red-600 w-[1200px] rounded-60 p-20 shadow-2xl relative">
+                    <button onClick={() => setShowAddExpense(false)} className="absolute top-10 right-10 text-6xl text-zinc-500 hover:text-white transition-all">✕</button>
+                    <h2 className="text-6xl font-black uppercase italic mb-10 text-red-500">Lançar Nova Despesa</h2>
+                    
+                    <div className="grid grid-cols-2 gap-10">
+                        <div className="space-y-6">
+                            <label className="block text-2xl font-black uppercase italic">Nome da Despesa</label>
+                            <input type="text" placeholder="Ex: Servidor AWS" className="w-full bg-black border-4 border-zinc-800 p-6 rounded-25 text-3xl outline-none focus:border-red-600" />
+                            
+                            <div className="grid grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-xl font-black uppercase italic mb-2">Valor (R$)</label>
+                                    <input type="number" className="w-full bg-black border-4 border-zinc-800 p-6 rounded-25 text-3xl text-red-500 font-black outline-none" />
+                                </div>
+                                <div>
+                                    <label className="block text-xl font-black uppercase italic mb-2">Vencimento</label>
+                                    <input type="date" className="w-full bg-black border-4 border-zinc-800 p-6 rounded-25 text-2xl outline-none" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-6">
+                            <label className="block text-2xl font-black uppercase italic">Documento Origem / NF</label>
+                            <input type="text" placeholder="Nº da Nota ou Boleto" className="w-full bg-black border-4 border-zinc-800 p-6 rounded-25 text-3xl outline-none" />
+                            
+                            <div className="grid grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-xl font-black uppercase italic mb-2">Parcelas</label>
+                                    <select className="w-full bg-black border-4 border-zinc-800 p-6 rounded-25 text-2xl outline-none">
+                                        <option>1/1 (À vista)</option>
+                                        <option>Parcelado</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xl font-black uppercase italic mb-2">Categoria</label>
+                                    <select className="w-full bg-black border-4 border-zinc-800 p-6 rounded-25 text-2xl outline-none italic font-bold">
+                                        <option>Fixa</option>
+                                        <option>Variável</option>
+                                        <option>Imposto</option>
+                                        <option>Marketing</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <span className="text-5xl font-black text-green-400">+ R$ 2.400,00</span>
-                  </div>
-                ))}
-              </div>
+                    
+                    <button className="w-full mt-12 bg-red-600 p-10 rounded-30 text-4xl font-black uppercase italic hover:bg-white hover:text-red-600 transition-all">Confirmar Lançamento</button>
+                </div>
             </div>
-          </div>
         )}
 
       </div>
@@ -135,35 +180,24 @@ export default function Financeiro() {
   )
 }
 
-function StatCard({ title, value, color, onDetail }: any) {
+function StatCard({ title, value, color }: any) {
   return (
-    <div className="bg-zinc-900 border-4 border-zinc-800 p-12 rounded-60 flex flex-col justify-between group hover:border-zinc-500 transition-all shadow-xl">
-      <div>
-        <p className="text-zinc-500 font-black uppercase mb-6 text-2xl tracking-tighter">{title}</p>
-        <p className={`text-8xl font-black ${color} tracking-tighter italic mb-4`}>{value}</p>
-      </div>
-      <button 
-        onClick={onDetail}
-        className="mt-10 w-full bg-zinc-800 hover:bg-yellow-400 hover:text-black p-8 rounded-25 font-black uppercase text-2xl transition-all shadow-lg border-2 border-zinc-700 flex items-center justify-center gap-4 group-hover:scale-[1.02]"
-      >
-        <span>Ver Detalhes / Estrato</span>
-        <span className="text-3xl">→</span>
-      </button>
+    <div className="bg-zinc-900 border-4 border-zinc-800 p-12 rounded-60 flex flex-col justify-between shadow-xl">
+      <p className="text-zinc-500 font-black uppercase mb-6 text-2xl tracking-tighter">{title}</p>
+      <p className={`text-8xl font-black ${color} tracking-tighter italic`}>{value}</p>
     </div>
   )
 }
 
 function FaturamentoRow({ label, valor, perc }: any) {
   return (
-    <div className="space-y-5">
-      <div className="flex justify-between font-black uppercase italic items-end gap-4">
-        <span className="text-3xl text-zinc-300 leading-none">{label}</span>
-        <span className="text-5xl text-yellow-400 tracking-tighter leading-none">
-          R$ {valor} <span className="text-2xl text-zinc-600 ml-2">({perc})</span>
-        </span>
+    <div className="space-y-4">
+      <div className="flex justify-between font-black uppercase italic items-end">
+        <span className="text-3xl text-zinc-300">{label}</span>
+        <span className="text-5xl text-yellow-400 tracking-tighter">R$ {valor} <span className="text-2xl opacity-40">({perc})</span></span>
       </div>
       <div className="w-full bg-zinc-800 h-8 rounded-full overflow-hidden border-2 border-zinc-700 shadow-inner">
-        <div className="bg-yellow-400 h-full rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] transition-all duration-1000" style={{ width: perc }}></div>
+        <div className="bg-yellow-400 h-full rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)]" style={{ width: perc }}></div>
       </div>
     </div>
   )
