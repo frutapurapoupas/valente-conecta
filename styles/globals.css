@@ -2,34 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  body {
-    @apply bg-gray-50 text-gray-900;
-  }
-}
+body { @apply bg-black text-white antialiased overflow-x-hidden; }
+button { @apply active:scale-95 transition-transform duration-75; }
+input { @apply caret-valente; }
 
-@layer components {
-  .btn-primary {
-    @apply bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition;
-  }
-  .card {
-    @apply bg-white rounded-xl shadow-sm p-4;
-  }
-}
-
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  @apply bg-gray-100;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-gray-400 rounded-full;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-500;
-}
+/* Forçar Padrão GG em arredondamentos */
+.rounded-60 { border-radius: 60px !important; }

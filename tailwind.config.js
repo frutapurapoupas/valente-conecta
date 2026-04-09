@@ -1,12 +1,19 @@
 ﻿/** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: [
-    './pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
-    './app/**/*.{js,ts,jsx,tsx,mdx}',
-  ],
   theme: {
-    extend: {},
+    extend: {
+      fontSize: {
+        '8xl': '6rem',
+        '9xl': '8rem',
+      },
+      borderRadius: {
+        '60': '60px',
+      },
+      spacing: {
+        '16': '4rem',
+        '20': '5rem',
+        '500': '500px',
+      }
+    },
   },
-  plugins: [],
 }

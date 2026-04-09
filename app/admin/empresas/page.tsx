@@ -1,52 +1,116 @@
 'use client'
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { ArrowLeft, Building2, Users, MapPin, Phone, Mail, Star, Eye } from 'lucide-react'
+import React from 'react'
+import { Building2, MapPin, FileText, CreditCard, AlertCircle, ArrowUpRight } from 'lucide-react'
 
-export default function EmpresasPage() {
-  const [empresas] = useState([
-    { id: 1, nome: 'Padaria do Zé', endereco: 'Rua das Flores, 123', telefone: '(11) 98888-8888', rating: 4.8 },
-    { id: 2, nome: 'Supermercado Valente', endereco: 'Av. Paulista, 1000', telefone: '(11) 96666-6666', rating: 4.7 },
-    { id: 3, nome: 'Academia Fitness', endereco: 'Rua Augusta, 500', telefone: '(11) 95555-5555', rating: 4.9 },
-  ])
+export default function GestaoEmpresasMaster() {
+  const empresas = [
+    { 
+      nome: "Valente Cereais", 
+      cnpj: "12.345.678/0001-90", 
+      local: "Centro - Valente", 
+      plano: "Gold", 
+      taxa: "10%", 
+      status: "Pendente" 
+    },
+    { 
+      nome: "APAEB Posto de Vendas", 
+      cnpj: "98.765.432/0001-21", 
+      local: "Centro - Valente", 
+      plano: "Black", 
+      taxa: "8%", 
+      status: "Pendente" 
+    },
+    { 
+      nome: "Supermercado São Domingos", 
+      cnpj: "45.678.912/0001-33", 
+      local: "Centro - Valente", 
+      plano: "Silver", 
+      taxa: "15%", 
+      status: "Pendente" 
+    },
+    { 
+      nome: "Mercadinho Bom Preço", 
+      cnpj: "11.222.333/0001-44", 
+      local: "Centro - Valente", 
+      plano: "Gold", 
+      taxa: "10%", 
+      status: "Pendente" 
+    }
+  ]
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <header className="bg-purple-600 text-white p-4 sticky top-0">
-        <div className="flex items-center gap-3">
-          <Link href="/" className="p-2 hover:bg-white/20 rounded-lg">
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <span className="font-bold text-lg">Empresas Parceiras</span>
+    <div className="min-h-screen bg-black text-white p-12">
+      <header className="mb-16 border-b-4 border-zinc-900 pb-10 flex justify-between items-end">
+        <div>
+          <div className="flex items-center gap-6 text-indigo-500 mb-4">
+            <Building2 size={64} />
+            <h1 className="text-8xl font-black uppercase italic tracking-tighter">Empresas</h1>
+          </div>
+          <p className="text-2xl text-zinc-500 font-bold uppercase tracking-[0.3em]">Auditoria de Contratos e Planos de Comissão</p>
         </div>
+        <button className="bg-white text-black font-black px-12 py-6 rounded-3xl text-2xl hover:bg-indigo-500 hover:text-white transition-all italic">
+          + Cadastrar Empresa
+        </button>
       </header>
 
-      <main className="p-4 max-w-7xl mx-auto">
-        <div className="grid gap-4">
-          {empresas.map(empresa => (
-            <div key={empresa.id} className="bg-white rounded-xl p-4 shadow-sm">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-bold text-lg">{empresa.nome}</h3>
-                  <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
-                    <MapPin className="w-4 h-4" />
-                    <span>{empresa.endereco}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
-                    <Phone className="w-4 h-4" />
-                    <span>{empresa.telefone}</span>
+      <div className="space-y-12">
+        {empresas.map((emp) => (
+          <div key={emp.cnpj} className="bg-zinc-900/40 rounded-[60px] border-4 border-zinc-900 p-12 flex flex-col xl:flex-row justify-between items-center group hover:border-indigo-500 transition-all">
+            
+            {/* LADO ESQUERDO: IDENTIDADE E FISCAL */}
+            <div className="flex-1 space-y-6">
+              <h2 className="text-6xl font-black uppercase italic group-hover:text-indigo-400 leading-none">{emp.nome}</h2>
+              
+              <div className="flex flex-wrap gap-6">
+                <div className="bg-black px-6 py-4 rounded-2xl border border-zinc-800 flex items-center gap-4">
+                  <FileText className="text-zinc-600" size={24} />
+                  <div>
+                    <p className="text-[10px] font-black text-zinc-500 uppercase">Registro CNPJ</p>
+                    <p className="text-3xl font-mono font-black">{emp.cnpj}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-1 text-yellow-500">
-                  <Star className="w-4 h-4 fill-yellow-500" />
-                  <span className="font-medium">{empresa.rating}</span>
+                
+                <div className="flex items-center gap-4 text-zinc-400 px-6 py-4">
+                  <MapPin size={32} className="text-indigo-500" />
+                  <span className="text-3xl font-black uppercase italic tracking-tighter">{emp.local}</span>
                 </div>
               </div>
             </div>
-          ))}
-        </div>
-      </main>
+
+            {/* LADO DIREITO: O CARD DE PLANO (ESTRATÉGICO) */}
+            <div className="flex items-center gap-10 mt-12 xl:mt-0">
+              
+              {/* CARD DE PLANO INTEGRADO */}
+              <div className="bg-black p-8 rounded-[40px] border-2 border-zinc-800 flex items-center gap-8 min-w-[380px] shadow-2xl">
+                <div className="bg-indigo-600 p-6 rounded-[30px] shadow-[0_0_20px_rgba(79,70,229,0.4)]">
+                  <CreditCard size={48} className="text-white" />
+                </div>
+                <div>
+                  <p className="text-zinc-500 font-black text-xs uppercase mb-1">Contrato Vigente</p>
+                  <p className="text-5xl font-black uppercase italic text-white tracking-tighter">
+                    {emp.plano} <span className="text-emerald-500 text-3xl">({emp.taxa})</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* STATUS DE VALIDAÇÃO MASTER */}
+              <div className="flex flex-col items-center gap-4">
+                <div className={`px-10 py-6 rounded-[30px] font-black uppercase text-2xl flex items-center gap-4 shadow-xl ${
+                  emp.status === 'Pendente' ? 'bg-amber-500 text-black animate-pulse' : 'bg-emerald-500 text-black'
+                }`}>
+                  <AlertCircle size={32} />
+                  {emp.status}
+                </div>
+                <button className="bg-zinc-800 hover:bg-indigo-600 p-6 rounded-full transition-all group/btn">
+                  <ArrowUpRight size={40} className="group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
+                </button>
+              </div>
+
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

@@ -1,275 +1,123 @@
 'use client'
 
-import { useState } from 'react'
-import { Search, Package, Image, CheckCircle, XCircle, Eye, Edit, Trash2, Upload, Filter, Clock, AlertCircle } from 'lucide-react'
+import React, { useState } from 'react'
+import { Database, Filter, CheckCircle, AlertCircle, TrendingUp, Box, Calendar } from 'lucide-react'
 
-interface Produto {
-  id: string
-  nome: string
-  codigo: string
-  empresaId: string
-  empresaNome: string
-  preco: number
-  quantidade: number
-  categoria: string
-  status: 'aprovado' | 'pendente' | 'rejeitado'
-  fotos: string[]
-  dataCadastro: string
-  fornecedor?: string
-  validade?: string
-}
+export default function CatalogoLogisticaMaster() {
+  const [filtroLoja, setFiltroLoja] = useState('Todas')
+  
+  // MENTALIZAÇÃO DO RELATÓRIO DIÁRIO: Vendas de Hoje + Saldo Atual
+  const DATA_HOJE = "08/04/2026"
 
-export default function AdminCatalogo() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [filtroStatus, setFiltroStatus] = useState<'todos' | 'aprovado' | 'pendente' | 'rejeitado'>('todos')
-  const [showModal, setShowModal] = useState(false)
-  const [produtoSelecionado, setProdutoSelecionado] = useState<Produto | null>(null)
-
-  const [produtos, setProdutos] = useState<Produto[]>([
+  const ITENS_PLANILHA = [
     { 
-      id: '1', 
-      nome: 'Arroz Integral 1kg', 
-      codigo: '7891234567890',
-      empresaId: '1',
-      empresaNome: 'Supermercado Valente',
-      preco: 8.90,
-      quantidade: 50,
-      categoria: 'Alimentação',
-      status: 'aprovado',
-      fotos: ['/produto1.jpg'],
-      dataCadastro: '01/04/2026',
-      fornecedor: 'Distribuidora A',
-      validade: '2025-12-31'
+      id: 1, nome: "Feijão Preto Dona Tica 500g", preco: 3.09, status: "Sincronizado", 
+      loja: "Valente Cereais", ean: "7891234567890", ncm: "0713.33.19",
+      vendidoHoje: 45, estoqueSaldo: 120 
     },
     { 
-      id: '2', 
-      nome: 'Feijão Preto 1kg', 
-      codigo: '7891234567891',
-      empresaId: '1',
-      empresaNome: 'Supermercado Valente',
-      preco: 7.90,
-      quantidade: 30,
-      categoria: 'Alimentação',
-      status: 'aprovado',
-      fotos: ['/produto2.jpg'],
-      dataCadastro: '01/04/2026',
-      fornecedor: 'Distribuidora A',
-      validade: '2025-10-15'
+      id: 2, nome: "Óleo de Soja 900ml", preco: 5.99, status: "Sincronizado", 
+      loja: "Mercadinho Bom Preço", ean: "7890001112223", ncm: "1507.90.11",
+      vendidoHoje: 82, estoqueSaldo: 14 
     },
     { 
-      id: '3', 
-      nome: 'Pão Francês', 
-      codigo: '7891234567892',
-      empresaId: '2',
-      empresaNome: 'Padaria do Zé',
-      preco: 0.80,
-      quantidade: 200,
-      categoria: 'Padaria',
-      status: 'pendente',
-      fotos: [],
-      dataCadastro: '05/04/2026'
-    },
-    { 
-      id: '4', 
-      nome: 'Café 500g', 
-      codigo: '7891234567893',
-      empresaId: '1',
-      empresaNome: 'Supermercado Valente',
-      preco: 12.90,
-      quantidade: 25,
-      categoria: 'Bebidas',
-      status: 'aprovado',
-      fotos: ['/produto4.jpg'],
-      dataCadastro: '28/03/2026',
-      fornecedor: 'Distribuidora C',
-      validade: '2025-08-10'
-    },
-  ])
-
-  const produtosFiltrados = produtos.filter(p => {
-    if (filtroStatus !== 'todos' && p.status !== filtroStatus) return false
-    if (searchTerm && !p.nome.toLowerCase().includes(searchTerm.toLowerCase()) && !p.empresaNome.toLowerCase().includes(searchTerm.toLowerCase())) return false
-    return true
-  })
-
-  const aprovarProduto = (id: string) => {
-    setProdutos(produtos.map(p => p.id === id ? { ...p, status: 'aprovado' } : p))
-    alert('✅ Produto aprovado e publicado no catálogo!')
-  }
-
-  const rejeitarProduto = (id: string) => {
-    setProdutos(produtos.map(p => p.id === id ? { ...p, status: 'rejeitado' } : p))
-    alert('❌ Produto rejeitado. Notificação enviada ao lojista.')
-  }
-
-  const getStatusBadge = (status: string) => {
-    switch(status) {
-      case 'aprovado': return <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Aprovado</span>
-      case 'pendente': return <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full text-xs flex items-center gap-1"><Clock className="w-3 h-3" /> Pendente</span>
-      case 'rejeitado': return <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-xs flex items-center gap-1"><XCircle className="w-3 h-3" /> Rejeitado</span>
-      default: return null
+      id: 3, nome: "Arroz Integral 1kg", preco: 4.80, status: "Pendente", 
+      loja: "Valente Cereais", ean: "7894445556661", ncm: "1006.20.10",
+      vendidoHoje: 12, estoqueSaldo: 200 
     }
-  }
+  ]
+
+  const lojas = ["Todas", "Valente Cereais", "Mercadinho Bom Preço", "São Domingos"]
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
+    <div className="p-12 bg-black min-h-screen text-white">
+      {/* HEADER COM STATUS DIÁRIO */}
+      <header className="mb-16 border-b-4 border-zinc-900 pb-10 flex justify-between items-end">
         <div>
-          <h1 className="text-2xl font-bold">Catálogo de Produtos</h1>
-          <p className="text-gray-500">Gerencie e aprove produtos para o catálogo online</p>
-        </div>
-        <div className="flex gap-2">
-          <button className="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-green-600">
-            <Upload className="w-5 h-5" />
-            Importar em Lote
-          </button>
-        </div>
-      </div>
-
-      {/* Estatísticas */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-xl p-4 shadow-sm text-center">
-          <Package className="w-8 h-8 text-blue-500 mx-auto mb-2" />
-          <p className="text-2xl font-bold">{produtos.length}</p>
-          <p className="text-sm text-gray-500">Total de Produtos</p>
-        </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm text-center">
-          <Clock className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
-          <p className="text-2xl font-bold">{produtos.filter(p => p.status === 'pendente').length}</p>
-          <p className="text-sm text-gray-500">Aguardando Aprovação</p>
-        </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm text-center">
-          <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
-          <p className="text-2xl font-bold">{produtos.filter(p => p.status === 'rejeitado').length}</p>
-          <p className="text-sm text-gray-500">Rejeitados</p>
-        </div>
-      </div>
-
-      {/* Filtros */}
-      <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
-        <div className="flex flex-wrap gap-3">
-          <div className="flex-1 min-w-[200px]">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Buscar por produto ou empresa..."
-                className="w-full pl-9 pr-4 py-2 border rounded-lg text-sm"
-              />
-            </div>
+          <div className="flex items-center gap-6 text-indigo-500 mb-4">
+            <Database size={64} />
+            <h1 className="text-7xl font-black uppercase italic tracking-tighter">Inventário & Vendas</h1>
           </div>
-          <div className="flex gap-2">
-            {['todos', 'pendente', 'aprovado', 'rejeitado'].map(status => (
-              <button
-                key={status}
-                onClick={() => setFiltroStatus(status as any)}
-                className={`px-4 py-2 rounded-lg text-sm capitalize ${
-                  filtroStatus === status 
-                    ? 'bg-blue-500 text-white' 
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {status === 'todos' ? 'Todos' : status}
-              </button>
+          <div className="flex gap-4 items-center">
+            <Calendar className="text-zinc-500" size={24} />
+            <p className="text-2xl text-zinc-500 font-bold uppercase tracking-[0.3em]">Relatório Diário: <span className="text-white">{DATA_HOJE}</span></p>
+          </div>
+        </div>
+        
+        <div className="flex gap-6 bg-zinc-900 p-6 rounded-[30px] border-2 border-zinc-800 shadow-2xl">
+          <Filter className="text-indigo-500" size={40} />
+          <select 
+            onChange={(e) => setFiltroLoja(e.target.value)}
+            className="bg-transparent text-3xl font-black uppercase outline-none cursor-pointer text-white"
+          >
+            {lojas.map(l => <option key={l} value={l} className="bg-black">{l}</option>)}
+          </select>
+        </div>
+      </header>
+
+      {/* TABELA COM DADOS DE MOVIMENTAÇÃO */}
+      <div className="bg-zinc-950 rounded-[60px] border-4 border-zinc-900 overflow-hidden">
+        <table className="w-full text-left border-collapse">
+          <thead className="bg-zinc-900 text-zinc-500 font-black uppercase text-xl tracking-widest">
+            <tr>
+              <th className="p-10">Produto / Especificações</th>
+              <th className="p-10 text-center">Vendas (Hoje)</th>
+              <th className="p-10 text-center">Saldo Estoque</th>
+              <th className="p-10 text-right">Preço</th>
+              <th className="p-10 text-center">Sincronismo</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y-2 divide-zinc-900">
+            {ITENS_PLANILHA.filter(i => filtroLoja === 'Todas' || i.loja === filtroLoja).map((item) => (
+              <tr key={item.id} className="hover:bg-zinc-900/60 transition-all group">
+                {/* IDENTIFICAÇÃO TÉCNICA */}
+                <td className="p-10">
+                  <p className="text-4xl font-black uppercase italic mb-4 group-hover:text-indigo-400">{item.nome}</p>
+                  <div className="flex gap-4">
+                    <span className="bg-black border border-zinc-800 px-4 py-2 rounded-lg text-zinc-500 font-mono text-xl uppercase">EAN {item.ean}</span>
+                    <span className="bg-black border border-zinc-800 px-4 py-2 rounded-lg text-indigo-500 font-mono text-xl uppercase">NCM {item.ncm}</span>
+                  </div>
+                </td>
+
+                {/* VENDAS HOJE - DESTAQUE EM VERDE */}
+                <td className="p-10 text-center">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="flex items-center gap-3 text-emerald-500">
+                      <TrendingUp size={32} />
+                      <p className="text-6xl font-black font-mono">{item.vendidoHoje}</p>
+                    </div>
+                    <span className="text-xs font-black uppercase text-zinc-600 italic">Unidades Saídas</span>
+                  </div>
+                </td>
+
+                {/* SALDO ESTOQUE - ALERTA SE BAIXO */}
+                <td className="p-10 text-center">
+                  <div className={`flex flex-col items-center gap-2 ${item.estoqueSaldo < 20 ? 'text-red-500 animate-pulse' : 'text-white'}`}>
+                    <div className="flex items-center gap-3">
+                      <Box size={32} />
+                      <p className="text-6xl font-black font-mono">{item.estoqueSaldo}</p>
+                    </div>
+                    <span className="text-xs font-black uppercase text-zinc-600 italic">Disponível em Loja</span>
+                  </div>
+                </td>
+
+                <td className="p-10 text-right">
+                  <p className="text-6xl font-black text-white font-mono italic">R$ {item.preco.toFixed(2)}</p>
+                  <p className="text-xs text-zinc-500 font-black uppercase">{item.loja}</p>
+                </td>
+
+                <td className="p-10 text-center">
+                  <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-black uppercase text-sm ${
+                    item.status === 'Sincronizado' ? 'bg-emerald-500 text-black' : 'bg-amber-500 text-black animate-pulse'
+                  }`}>
+                    {item.status}
+                  </div>
+                </td>
+              </tr>
             ))}
-          </div>
-        </div>
+          </tbody>
+        </table>
       </div>
-
-      {/* Lista de Produtos */}
-      <div className="space-y-3">
-        {produtosFiltrados.map(produto => (
-          <div key={produto.id} className="bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition">
-            <div className="flex justify-between items-start">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2 flex-wrap">
-                  <h3 className="font-bold text-lg">{produto.nome}</h3>
-                  {getStatusBadge(produto.status)}
-                  <span className="text-sm text-gray-500">Código: {produto.codigo}</span>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
-                  <div>
-                    <p className="text-gray-500">Empresa</p>
-                    <p className="font-medium">{produto.empresaNome}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500">Preço</p>
-                    <p className="font-bold text-green-600">R$ {produto.preco.toFixed(2)}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500">Estoque</p>
-                    <p>{produto.quantidade} unidades</p>
-                  </div>
-                </div>
-                {produto.fornecedor && (
-                  <p className="text-xs text-gray-500 mt-2">Fornecedor: {produto.fornecedor}</p>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <button onClick={() => { setProdutoSelecionado(produto); setShowModal(true) }} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg">
-                  <Eye className="w-5 h-5" />
-                </button>
-                {produto.status === 'pendente' && (
-                  <>
-                    <button onClick={() => aprovarProduto(produto.id)} className="p-2 text-green-500 hover:bg-green-50 rounded-lg" title="Aprovar">
-                      <CheckCircle className="w-5 h-5" />
-                    </button>
-                    <button onClick={() => rejeitarProduto(produto.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg" title="Rejeitar">
-                      <XCircle className="w-5 h-5" />
-                    </button>
-                  </>
-                )}
-                <button className="p-2 text-orange-500 hover:bg-orange-50 rounded-lg">
-                  <Edit className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Modal de Detalhes */}
-      {showModal && produtoSelecionado && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-white rounded-2xl w-full max-w-md">
-            <div className="p-4 border-b flex justify-between items-center">
-              <h2 className="text-xl font-bold">{produtoSelecionado.nome}</h2>
-              <button onClick={() => setShowModal(false)} className="p-1 hover:bg-gray-100 rounded-lg">
-                ✕
-              </button>
-            </div>
-            <div className="p-4 space-y-3">
-              <div className="bg-gray-100 rounded-lg p-4 text-center">
-                <Image className="w-12 h-12 mx-auto text-gray-400 mb-2" />
-                <p className="text-sm text-gray-500">Fotos do produto</p>
-                <p className="text-xs text-gray-400">{produtoSelecionado.fotos.length} foto(s)</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Código de barras</p>
-                <p className="font-mono">{produtoSelecionado.codigo}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Categoria</p>
-                <p>{produtoSelecionado.categoria}</p>
-              </div>
-              {produtoSelecionado.validade && (
-                <div>
-                  <p className="text-sm text-gray-500">Validade</p>
-                  <p className={new Date(produtoSelecionado.validade) < new Date() ? 'text-red-500' : ''}>
-                    {produtoSelecionado.validade}
-                  </p>
-                </div>
-              )}
-              <div className="border-t pt-3 mt-2">
-                <p className="text-sm text-gray-500">Data de cadastro</p>
-                <p>{produtoSelecionado.dataCadastro}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

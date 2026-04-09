@@ -1,0 +1,53 @@
+# Criar arquivo HTML de teste
+@"
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Valente Conecta - Teste</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        h1 { color: #333; font-size: 48px; margin-bottom: 20px; }
+        p { color: #666; font-size: 24px; margin-bottom: 30px; }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        button:hover { background: #5a67d8; }
+        .status { color: green; margin-top: 20px; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Valente Conecta</h1>
+        <p>Servidor está rodando normalmente!</p>
+        <button onclick="alert('Funcionando! ✅')">Testar Clique</button>
+        <div class="status" id="status"></div>
+    </div>
+    <script>
+        document.getElementById('status').innerHTML = '✅ Servidor online em ' + new Date().toLocaleString();
+    </script>
+</body>
+</html>
+"@ | Out-File -FilePath c:\valente_conecta\public\teste.html -Encoding UTF8
+
+Write-Host "✅ Arquivo teste.html criado" -ForegroundColor Green

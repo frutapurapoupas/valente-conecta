@@ -1,170 +1,151 @@
-'use client'
+﻿'use client'
 
-import { useState } from 'react'
-import { Search, MoreVertical, CheckCircle, XCircle, AlertCircle, Eye, Ban, RefreshCw, UserPlus } from 'lucide-react'
+import React, { useState } from 'react'
+import { Users, Smartphone, Wallet, Eye, MapPin, Search, UserPlus, ShieldCheck } from 'lucide-react'
 
-interface Usuario {
-  id: string
-  nome: string
-  email: string
-  telefone: string
-  tipo: 'fisica' | 'juridica'
-  plano: 'gratis' | 'basico' | 'premium'
-  status: 'ativo' | 'suspenso' | 'pendente'
-  dataCadastro: string
-  ultimoAcesso: string
-}
-
-export default function AdminUsuarios() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [filtroStatus, setFiltroStatus] = useState<'todos' | 'ativo' | 'suspenso' | 'pendente'>('todos')
-
-  const [usuarios, setUsuarios] = useState<Usuario[]>([
-    { id: '1', nome: 'João Silva', email: 'joao@email.com', telefone: '(11) 99999-9999', tipo: 'fisica', plano: 'gratis', status: 'ativo', dataCadastro: '01/04/2026', ultimoAcesso: 'Hoje' },
-    { id: '2', nome: 'Padaria do Zé', email: 'contato@padariadoze.com', telefone: '(11) 98888-8888', tipo: 'juridica', plano: 'basico', status: 'ativo', dataCadastro: '28/03/2026', ultimoAcesso: 'Ontem' },
-    { id: '3', nome: 'Maria Santos', email: 'maria@email.com', telefone: '(11) 97777-7777', tipo: 'fisica', plano: 'premium', status: 'suspenso', dataCadastro: '15/03/2026', ultimoAcesso: 'Há 5 dias' },
-    { id: '4', nome: 'Academia Fitness', email: 'contato@academiafitness.com', telefone: '(11) 96666-6666', tipo: 'juridica', plano: 'premium', status: 'ativo', dataCadastro: '10/03/2026', ultimoAcesso: 'Hoje' },
-    { id: '5', nome: 'Carlos Pereira', email: 'carlos@email.com', telefone: '(11) 95555-5555', tipo: 'fisica', plano: 'gratis', status: 'pendente', dataCadastro: '05/04/2026', ultimoAcesso: 'Nunca' },
+export default function GestaoUsuariosMaster() {
+  // DADOS QUE O SISTEMA JÁ "SABE" SOBRE VALENTE
+  const [usuarios] = useState([
+    { 
+      id: 1, nome: "João Silva", local: "Centro, Valente", 
+      aparelho: "iPhone 15", saldoMoedas: 150, 
+      desbloqueios: 12, status: "Online", ultimaAtividade: "Agora" 
+    },
+    { 
+      id: 2, nome: "Maria Oliveira", local: "Bairro Manteiga, Valente", 
+      aparelho: "Samsung S23", saldoMoedas: 25, 
+      desbloqueios: 45, status: "Ausente", ultimaAtividade: "15min atrás" 
+    },
+    { 
+      id: 3, nome: "Carlos Souza", local: "Zona Rural, Valente", 
+      aparelho: "Xiaomi Note 12", saldoMoedas: 0, 
+      desbloqueios: 2, status: "Offline", ultimaAtividade: "2 dias atrás" 
+    }
   ])
 
-  const usuariosFiltrados = usuarios.filter(u => {
-    if (filtroStatus !== 'todos' && u.status !== filtroStatus) return false
-    if (searchTerm && !u.nome.toLowerCase().includes(searchTerm.toLowerCase()) && !u.email.toLowerCase().includes(searchTerm.toLowerCase())) return false
-    return true
-  })
-
-  const alterarStatus = (id: string, novoStatus: 'ativo' | 'suspenso' | 'pendente') => {
-    setUsuarios(usuarios.map(u => u.id === id ? { ...u, status: novoStatus } : u))
-    alert(`✅ Status do usuário alterado para ${novoStatus}`)
-  }
-
-  const alterarPlano = (id: string, novoPlano: 'gratis' | 'basico' | 'premium') => {
-    setUsuarios(usuarios.map(u => u.id === id ? { ...u, plano: novoPlano } : u))
-    alert(`✅ Plano alterado para ${novoPlano.toUpperCase()}`)
-  }
-
-  const getStatusBadge = (status: string) => {
-    switch(status) {
-      case 'ativo': return <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Ativo</span>
-      case 'suspenso': return <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-xs flex items-center gap-1"><XCircle className="w-3 h-3" /> Suspenso</span>
-      case 'pendente': return <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full text-xs flex items-center gap-1"><AlertCircle className="w-3 h-3" /> Pendente</span>
-      default: return null
-    }
-  }
-
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
+    <div className="p-12 bg-black min-h-screen text-white font-sans">
+      
+      {/* HEADER MASTER USUÁRIOS */}
+      <header className="mb-16 border-b-4 border-zinc-900 pb-10 flex justify-between items-end">
         <div>
-          <h1 className="text-2xl font-bold">Gestão de Usuários</h1>
-          <p className="text-gray-500">Gerencie todos os usuários da plataforma</p>
+          <div className="flex items-center gap-6 text-indigo-500 mb-4">
+            <Users size={72} strokeWidth={2.5} />
+            <h1 className="text-8xl font-black uppercase italic tracking-tighter italic text-white leading-none">Usuários</h1>
+          </div>
+          <p className="text-2xl text-zinc-500 font-bold uppercase tracking-[0.3em]">Gestão de Acessos e Carteira de Créditos</p>
         </div>
-        <button className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-600">
-          <UserPlus className="w-5 h-5" />
-          Novo Usuário
-        </button>
-      </div>
 
-      {/* Filtros */}
-      <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
-        <div className="flex flex-wrap gap-3">
-          <div className="flex-1 min-w-[200px]">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Buscar por nome ou email..."
-                className="w-full pl-9 pr-4 py-2 border rounded-lg text-sm"
-              />
-            </div>
+        <div className="flex gap-4">
+          <div className="relative group">
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-indigo-500" size={30} />
+            <input 
+              type="text" 
+              placeholder="BUSCAR POR NOME OU BAIRRO..." 
+              className="bg-zinc-900 border-2 border-zinc-800 rounded-3xl py-6 pl-20 pr-10 text-xl font-black uppercase outline-none focus:border-indigo-500 transition-all w-[400px]"
+            />
           </div>
-          <div className="flex gap-2">
-            {['todos', 'ativo', 'suspenso', 'pendente'].map(status => (
-              <button
-                key={status}
-                onClick={() => setFiltroStatus(status as any)}
-                className={`px-4 py-2 rounded-lg text-sm capitalize ${
-                  filtroStatus === status 
-                    ? 'bg-blue-500 text-white' 
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {status}
-              </button>
-            ))}
-          </div>
+          <button className="bg-white text-black font-black px-10 py-6 rounded-3xl text-xl hover:bg-indigo-500 hover:text-white transition-all flex items-center gap-4">
+            <UserPlus size={30} /> CADASTRAR
+          </button>
+        </div>
+      </header>
+
+      {/* MÉTRICAS RÁPIDAS (RESUMO DA BASE) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+        <div className="bg-zinc-900/50 p-8 rounded-[40px] border-2 border-zinc-800">
+          <p className="text-zinc-500 font-black uppercase text-sm tracking-widest mb-2">Total na Base</p>
+          <p className="text-6xl font-black italic">1.240 <span className="text-indigo-500 text-2xl">Ativos</span></p>
+        </div>
+        <div className="bg-zinc-900/50 p-8 rounded-[40px] border-2 border-zinc-800">
+          <p className="text-zinc-500 font-black uppercase text-sm tracking-widest mb-2">Moedas em Circulação</p>
+          <p className="text-6xl font-black italic text-emerald-500">8.450 <span className="text-white text-2xl">₵</span></p>
+        </div>
+        <div className="bg-zinc-900/50 p-8 rounded-[40px] border-2 border-zinc-800">
+          <p className="text-zinc-500 font-black uppercase text-sm tracking-widest mb-2">Contatos Desbloqueados</p>
+          <p className="text-6xl font-black italic text-amber-500">312 <span className="text-white text-2xl text-right font-sans">Hoje</span></p>
         </div>
       </div>
 
-      {/* Tabela de Usuários */}
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="text-left p-4 text-sm font-semibold">Usuário</th>
-                <th className="text-left p-4 text-sm font-semibold">Contato</th>
-                <th className="text-left p-4 text-sm font-semibold">Tipo</th>
-                <th className="text-left p-4 text-sm font-semibold">Plano</th>
-                <th className="text-left p-4 text-sm font-semibold">Status</th>
-                <th className="text-left p-4 text-sm font-semibold">Último Acesso</th>
-                <th className="text-left p-4 text-sm font-semibold">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {usuariosFiltrados.map(usuario => (
-                <tr key={usuario.id} className="hover:bg-gray-50">
-                  <td className="p-4">
+      {/* LISTAGEM GG DE USUÁRIOS */}
+      <div className="bg-zinc-950 rounded-[60px] border-4 border-zinc-900 overflow-hidden shadow-2xl">
+        <table className="w-full text-left">
+          <thead className="bg-zinc-900 text-zinc-500 font-black uppercase text-xl tracking-widest">
+            <tr>
+              <th className="p-10">Perfil / Localização</th>
+              <th className="p-10">Tecnologia</th>
+              <th className="p-10 text-center">Carteira (Moedas)</th>
+              <th className="p-10 text-center">Uso do App</th>
+              <th className="p-10 text-right">Status</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y-2 divide-zinc-900">
+            {usuarios.map((user) => (
+              <tr key={user.id} className="hover:bg-zinc-900/60 transition-all group">
+                {/* IDENTIFICAÇÃO DO USUÁRIO */}
+                <td className="p-10">
+                  <div className="flex items-center gap-6">
+                    <div className="w-20 h-20 bg-indigo-500 rounded-full flex items-center justify-center text-black text-3xl font-black">
+                      {user.nome.charAt(0)}
+                    </div>
                     <div>
-                      <p className="font-medium">{usuario.nome}</p>
-                      <p className="text-xs text-gray-500">ID: {usuario.id}</p>
+                      <p className="text-4xl font-black uppercase italic leading-none group-hover:text-indigo-400 transition-colors">{user.nome}</p>
+                      <p className="text-zinc-500 font-bold uppercase mt-2 flex items-center gap-2 tracking-tighter">
+                        <MapPin size={18} /> {user.local}
+                      </p>
                     </div>
-                  </td>
-                  <td className="p-4">
-                    <p className="text-sm">{usuario.email}</p>
-                    <p className="text-xs text-gray-500">{usuario.telefone}</p>
-                  </td>
-                  <td className="p-4">
-                    <span className={`px-2 py-0.5 rounded-full text-xs ${usuario.tipo === 'juridica' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
-                      {usuario.tipo === 'juridica' ? 'PJ' : 'PF'}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    <select
-                      value={usuario.plano}
-                      onChange={(e) => alterarPlano(usuario.id, e.target.value as any)}
-                      className="text-sm border rounded-lg px-2 py-1"
-                    >
-                      <option value="gratis">Grátis</option>
-                      <option value="basico">Básico</option>
-                      <option value="premium">Premium</option>
-                    </select>
-                  </td>
-                  <td className="p-4">{getStatusBadge(usuario.status)}</td>
-                  <td className="p-4 text-sm text-gray-500">{usuario.ultimoAcesso}</td>
-                  <td className="p-4">
-                    <div className="flex gap-2">
-                      <button className="p-1 text-blue-500 hover:bg-blue-50 rounded" title="Visualizar">
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      {usuario.status === 'ativo' ? (
-                        <button onClick={() => alterarStatus(usuario.id, 'suspenso')} className="p-1 text-orange-500 hover:bg-orange-50 rounded" title="Suspender">
-                          <Ban className="w-4 h-4" />
-                        </button>
-                      ) : usuario.status === 'suspenso' ? (
-                        <button onClick={() => alterarStatus(usuario.id, 'ativo')} className="p-1 text-green-500 hover:bg-green-50 rounded" title="Reativar">
-                          <RefreshCw className="w-4 h-4" />
-                        </button>
-                      ) : null}
+                  </div>
+                </td>
+
+                {/* DISPOSITIVO USADO */}
+                <td className="p-10">
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-3 text-zinc-300">
+                      <Smartphone size={24} />
+                      <span className="text-2xl font-black uppercase tracking-tighter">{user.aparelho}</span>
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    <span className="text-[10px] font-black text-zinc-600 uppercase">Valente Conecta App v2.4</span>
+                  </div>
+                </td>
+
+                {/* CARTEIRA / MOEDAS (MONETIZAÇÃO) */}
+                <td className="p-10 text-center">
+                  <div className="bg-black inline-flex flex-col items-center p-6 rounded-[30px] border border-zinc-800 min-w-[150px]">
+                    <div className="flex items-center gap-3 text-emerald-500 mb-1">
+                      <Wallet size={32} />
+                      <p className="text-5xl font-black font-mono tracking-tighter">{user.saldoMoedas}</p>
+                    </div>
+                    <span className="text-[10px] font-black uppercase text-zinc-500">Saldo Atual</span>
+                  </div>
+                </td>
+
+                {/* HISTÓRICO DE DESBLOQUEIOS (CONSUMO) */}
+                <td className="p-10 text-center">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="flex items-center gap-3 text-amber-500">
+                      <Eye size={32} />
+                      <p className="text-5xl font-black font-mono">{user.desbloqueios}</p>
+                    </div>
+                    <span className="text-[10px] font-black uppercase text-zinc-600 italic">Contatos Borrados Vistos</span>
+                  </div>
+                </td>
+
+                {/* STATUS DE ATIVIDADE */}
+                <td className="p-10 text-right">
+                   <div className="flex flex-col items-end gap-2">
+                      <div className={`flex items-center gap-3 px-6 py-2 rounded-full font-black uppercase text-xs ${
+                        user.status === 'Online' ? 'bg-emerald-500 text-black' : 'bg-zinc-800 text-zinc-500'
+                      }`}>
+                        <div className={`w-3 h-3 rounded-full ${user.status === 'Online' ? 'bg-black animate-pulse' : 'bg-zinc-600'}`} />
+                        {user.status}
+                      </div>
+                      <span className="text-sm font-bold text-zinc-600 uppercase italic italic">{user.ultimaAtividade}</span>
+                   </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   )
