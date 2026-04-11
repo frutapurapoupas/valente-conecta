@@ -14,6 +14,7 @@ export type SearchResult = {
   name: string        // nome da loja / profissional
   foto: string        // avatar colorido ou URL de foto
   categoria: string   // tipo: Mercado, Pedreiro, etc.
+  planoAtivo: boolean // true = plano pago ativo → contatos visíveis por padrão
   // ── Privado (só após desbloqueio pago)
   price: string
   location: string
@@ -82,6 +83,7 @@ export function useHomePage() {
     const rawResults: Omit<SearchResult, 'locked'>[] = [
       {
         id: 1, name: 'Mercadinho São José', foto: 'MS', categoria: 'Supermercado',
+        planoAtivo: true,
         price: 'R$ 25,00', location: '500m', store: 'Mercadinho São José', distance: 0.5,
         distanciaDetalhada: '500m do centro', bairro: 'Centro',
         endereco: 'Rua XV de Novembro, 128 — Centro, Valente, BA',
@@ -90,6 +92,7 @@ export function useHomePage() {
       },
       {
         id: 2, name: 'Borracharia do Baixinho', foto: 'BB', categoria: 'Borracharia',
+        planoAtivo: false,
         price: 'R$ 32,00', location: '1.2km', store: 'Borracharia do Baixinho', distance: 1.2,
         distanciaDetalhada: '1,2km do centro', bairro: 'Bairro Novo',
         endereco: 'Av. Principal, 45 — Bairro Novo, Valente, BA',
@@ -98,6 +101,7 @@ export function useHomePage() {
       },
       {
         id: 3, name: 'Farmácia Popular', foto: 'FP', categoria: 'Farmácia',
+        planoAtivo: false,
         price: 'R$ 18,00', location: '800m', store: 'Farmácia Popular', distance: 0.8,
         distanciaDetalhada: '800m do centro', bairro: 'Centro',
         endereco: 'Praça da Matriz, 12 — Centro, Valente, BA',
@@ -106,9 +110,13 @@ export function useHomePage() {
       },
     ]
 
+    // locked = sem plano pago ativo E ainda não desbloqueado manualmente pelo usuário
+    const calcLocked = (r: Omit<SearchResult, 'locked'>) =>
+      !r.planoAtivo && !unlockedIds.includes(r.id)
+
     if (welcomeSearchesLeft > 0) {
-      // Bônus de boas-vindas — contatos desbloqueados
-      setSearchResults(rawResults.map(r => ({ ...r, locked: false })))
+      // Bônus de boas-vindas — consulta grátis, mas contatos dependem do plano do negócio
+      setSearchResults(rawResults.map(r => ({ ...r, locked: calcLocked(r) })))
       const newCount = welcomeSearchesLeft - 1
       setWelcomeSearchesLeft(newCount)
       localStorage.setItem('welcomeSearchesLeft', String(newCount))
@@ -118,11 +126,8 @@ export function useHomePage() {
           : `🎁 Bônus de boas-vindas: ${newCount} consulta(s) restante(s).`
       )
     } else {
-      // Bônus esgotado — contatos bloqueados
-      setSearchResults(rawResults.map(r => ({
-        ...r,
-        locked: !unlockedIds.includes(r.id),
-      })))
+      // Bônus esgotado — contatos dependem do plano do negócio
+      setSearchResults(rawResults.map(r => ({ ...r, locked: calcLocked(r) })))
       addNotification('🔒 Desbloqueie o contato por R$ 1,00 para ver telefone e endereço.')
     }
   }
