@@ -55,7 +55,7 @@ export default function PerfilCatalogoPage() {
     formProfissional, updateProfissional,
     horarios, updateHorario,
     statusAberto, toggleStatusAberto,
-    avisoAtipico, setAvisoAtipico, avisoAtipicoAtivo, publicarAvisoAtipico,
+    avisoAtipicoAtivo, publicarAvisoAtipico,
     itensCatalogo,
     showAddItem, setShowAddItem,
     showCatalogoOnline, setShowCatalogoOnline,
@@ -279,46 +279,31 @@ export default function PerfilCatalogoPage() {
             <div className={`rounded-2xl p-5 shadow-sm border-2 transition-all ${
               avisoAtipicoAtivo ? 'bg-amber-50 border-amber-400' : 'bg-white border-gray-200'
             }`}>
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <p className="font-bold text-gray-800 flex items-center gap-2">
-                    <AlertTriangle className={`w-5 h-5 ${avisoAtipicoAtivo ? 'text-amber-500' : 'text-gray-400'}`} />
-                    Aviso de Horário Atípico
-                  </p>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    Aparece para todos na busca, mesmo sem plano pago
-                  </p>
-                </div>
+              <div className="mb-3">
+                <p className="font-bold text-gray-800 flex items-center gap-2">
+                  <AlertTriangle className={`w-5 h-5 ${avisoAtipicoAtivo ? 'text-amber-500' : 'text-gray-400'}`} />
+                  Horário Especial
+                </p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Aparece para todos na busca, mesmo sem plano pago
+                </p>
               </div>
-              <textarea
-                value={avisoAtipico}
-                onChange={e => setAvisoAtipico(e.target.value)}
-                disabled={avisoAtipicoAtivo}
-                placeholder="Ex: Hoje abrimos das 14h às 18h — feriado municipal"
-                rows={2}
-                className={`w-full px-4 py-3 border-2 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all ${
-                  avisoAtipicoAtivo
-                    ? 'bg-amber-50 border-amber-300 text-amber-800'
-                    : 'border-gray-200'
-                }`}
-              />
               <button
                 onClick={publicarAvisoAtipico}
-                disabled={!avisoAtipicoAtivo && !avisoAtipico.trim()}
-                className={`mt-3 w-full py-3 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-all active:scale-95 ${
+                className={`w-full py-5 rounded-2xl font-black text-xl flex items-center justify-center gap-3 transition-all active:scale-95 ${
                   avisoAtipicoAtivo
-                    ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                    : 'bg-amber-400 text-white hover:bg-amber-500 disabled:opacity-40 disabled:cursor-not-allowed'
+                    ? 'bg-amber-400 text-white shadow-lg shadow-amber-200'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
                 {avisoAtipicoAtivo
-                  ? <><X className="w-4 h-4" /> Remover Aviso</>
-                  : <><AlertTriangle className="w-4 h-4" /> Publicar Aviso</>
+                  ? <><X className="w-6 h-6" /> REMOVER AVISO</>
+                  : <><AlertTriangle className="w-6 h-6" /> ESTOU ABERTO — HORÁRIO ESPECIAL</>
                 }
               </button>
               {avisoAtipicoAtivo && (
-                <p className="text-xs text-amber-700 text-center mt-2 font-bold">
-                  ⚠️ Aviso ativo — clientes vão ver essa mensagem na busca
+                <p className="text-xs text-amber-700 text-center mt-3 font-bold">
+                  ⚠️ Aviso ativo — clientes estão sendo avisados na busca
                 </p>
               )}
             </div>

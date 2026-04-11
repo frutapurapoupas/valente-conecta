@@ -5,10 +5,9 @@ import Link from 'next/link'
 import {
   Search, Wallet, QrCode, Bell, Menu, X, Zap, Dumbbell,
   ShoppingBag, Gift, Lock, MapPin, Phone, Mail, Navigation,
-  Settings2, PlayCircle, ChevronRight, TrendingDown,
-  Building2, User, Package, Loader2, Users, Download, AlertTriangle,
+  ChevronRight, TrendingDown,
+  Building2, Loader2, AlertTriangle,
 } from 'lucide-react'
-import { QRCodeSVG } from 'qrcode.react'
 import { useHomePage } from '@/hooks/useHomePage'
 
 export default function HomePage() {
@@ -31,8 +30,6 @@ export default function HomePage() {
     notifications,
     recentActivity,
     generateQRCode,
-    showDemoModal, setShowDemoModal,
-    tipoDemo, setTipoDemo,
   } = useHomePage()
 
   return (
@@ -233,101 +230,8 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* DEMO + ADMIN */}
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={() => setShowDemoModal(true)}
-            className="bg-zinc-900 border border-violet-500/30 text-white p-4 rounded-2xl flex flex-col items-center gap-2 hover:border-violet-500/60 transition-all active:scale-95"
-          >
-            <PlayCircle className="w-7 h-7 text-violet-400" />
-            <span className="font-black text-base">Demo</span>
-            <span className="text-sm text-zinc-500">Simular usuário</span>
-          </button>
-          <Link href="/admin/login">
-            <div className="bg-zinc-900 border border-zinc-700 text-white p-4 rounded-2xl flex flex-col items-center gap-2 hover:border-zinc-500 transition-all active:scale-95 h-full justify-center">
-              <Settings2 className="w-7 h-7 text-zinc-400" />
-              <span className="font-black text-base">Admin</span>
-              <span className="text-sm text-zinc-500">Painel completo</span>
-            </div>
-          </Link>
-        </div>
 
       </main>
-
-      {/* ── MODAL DEMO ── */}
-      {showDemoModal && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70">
-          <div className="bg-zinc-900 border-t border-zinc-800 rounded-t-3xl w-full max-w-md p-6 space-y-3">
-            <div className="flex justify-between items-center mb-1">
-              <div>
-                <h2 className="text-lg font-black text-white">Modo Demonstração</h2>
-                <p className="text-sm text-zinc-500">Simule a experiência de cada perfil</p>
-              </div>
-              <button onClick={() => setShowDemoModal(false)} className="p-2 hover:bg-zinc-800 rounded-xl">
-                <X className="w-5 h-5 text-zinc-400" />
-              </button>
-            </div>
-
-            {([
-              { label: 'Usuário Geral', desc: 'Busca, carteira, indicações', href: '/', icon: <Users className="w-6 h-6 text-zinc-400" /> },
-              { label: 'Empresa / Loja', desc: 'PDV, estoque, perfil', href: '/pdv/colaborativo', icon: <Building2 className="w-6 h-6 text-blue-400" /> },
-              { label: 'Profissional Liberal', desc: 'Catálogo, serviços, planos', href: '/profissional/catalogo', icon: <User className="w-6 h-6 text-violet-400" /> },
-              { label: 'Ambulante / PDV Móvel', desc: 'Vendas rápidas, localização', href: '/ambulantes', icon: <span className="text-2xl">🛵</span> },
-              { label: 'Academia', desc: 'Treino, check-in, metas', href: '/academia', icon: <Dumbbell className="w-6 h-6 text-purple-400" /> },
-            ]).map(item => (
-              <Link key={item.label} href={item.href} onClick={() => setShowDemoModal(false)}>
-                <div className="flex items-center gap-4 p-4 bg-zinc-800 border border-zinc-700 rounded-2xl hover:border-zinc-500 transition-all active:scale-95">
-                  <div className="w-10 h-10 bg-zinc-700 rounded-xl flex items-center justify-center flex-shrink-0">
-                    {item.icon}
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-black text-base text-white">{item.label}</p>
-                    <p className="text-sm text-zinc-500">{item.desc}</p>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-zinc-600" />
-                </div>
-              </Link>
-            ))}
-
-            <div className="p-4 bg-zinc-800 border border-indigo-500/30 rounded-2xl space-y-3">
-              <Link href="/admin/master" onClick={() => setShowDemoModal(false)}>
-                <div className="flex items-center gap-4 hover:opacity-80 transition-all active:scale-95">
-                  <Settings2 className="w-6 h-6 text-indigo-400 flex-shrink-0" />
-                  <div className="flex-1">
-                    <p className="font-black text-base text-white">Admin Master</p>
-                    <p className="text-sm text-zinc-500">Dashboard com todos os dados</p>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-zinc-600" />
-                </div>
-              </Link>
-              <div className="flex flex-col items-center gap-2 pt-2 border-t border-zinc-700">
-                <p className="text-xs text-zinc-500">Escaneie para acessar o painel</p>
-                <div className="bg-white p-2 rounded-xl">
-                  <QRCodeSVG
-                    value={typeof window !== 'undefined' ? `${window.location.origin}/admin/master` : 'https://valente-conecta-pied.vercel.app/admin/master'}
-                    size={140}
-                    fgColor="#000000"
-                    bgColor="#ffffff"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="border-t border-zinc-800 pt-3">
-              <Link href="/instalar" onClick={() => setShowDemoModal(false)}>
-                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/30 rounded-2xl hover:border-yellow-500/60 transition-all active:scale-95">
-                  <Download className="w-6 h-6 text-yellow-400" />
-                  <div className="flex-1">
-                    <p className="font-black text-base text-white">Instalar no Celular</p>
-                    <p className="text-sm text-zinc-500">QR Code para cada perfil</p>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-zinc-600" />
-                </div>
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ── MODAL BUSCA ── */}
       {showSearchModal && (
