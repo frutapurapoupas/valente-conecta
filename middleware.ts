@@ -2,17 +2,26 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  const url = request.nextUrl.clone();
-  
-  if (url.pathname.startsWith('/admin-master')) {
-    const userIp = request.ip || request.headers.get('x-forwarded-for') || "";
-    // No seu teste local, o IP pode vir como ::1 ou 127.0.0.1
-    const AUTHORIZED_IPS = ["127.0.0.1", "::1", "192.168.1.10"]; // Adicione seu IP aqui
+  if (request.nextUrl.pathname.startsWith('/admin-master')) {
+    const basicAuth = request.headers.get('authorization')
 
-    if (!AUTHORIZED_IPS.some(ip => userIp.includes(ip))) {
-      url.pathname = '/login-comum';
-      return NextResponse.redirect(url);
+    const user = process.env.ADMIN_MASTER_USER ?? 'master'
+    const pass = process.env.ADMIN_MASTER_PASS ?? 'VC@master2026'
+    const expected = 'Basic ' + Buffer.from(`${user}:${pass}`).toString('base64')
+
+    if (basicAuth !== expected) {
+      return new NextResponse('Acesso restrito', {
+        status: 401,
+        headers: {
+          'WWW-Authenticate': 'Basic realm="Admin Master — Valente Conecta"',
+        },
+      })
     }
   }
-  return NextResponse.next();
+
+  return NextResponse.next()
+}
+
+export const config = {
+  matcher: ['/admin-master/:path*'],
 }
