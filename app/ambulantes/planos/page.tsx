@@ -25,13 +25,13 @@ const PLANOS: Plano[] = [
     nome: 'Grátis',
     preco: 'R$ 0',
     precoNum: 0,
-    descricao: 'Para começar a mostrar seu trabalho',
+    descricao: 'Para começar a vender na rua',
     cor: 'border-zinc-700',
     icone: <Star className="w-5 h-5 text-zinc-400" />,
     destaque: false,
     beneficios: [
       'Perfil público básico',
-      'Catálogo de serviços visível (preços borrados)',
+      'Catálogo de produtos visível (preços borrados)',
       'Desbloqueio de preços por pagamento',
       'Sem contatos visíveis',
     ],
@@ -41,16 +41,16 @@ const PLANOS: Plano[] = [
     nome: 'Básico',
     preco: 'R$ 15,00/mês',
     precoNum: 15,
-    descricao: 'Ideal para profissionais autônomos',
-    cor: 'border-violet-500/40',
-    icone: <Zap className="w-5 h-5 text-violet-400" />,
+    descricao: 'Para ambulantes em crescimento',
+    cor: 'border-amber-500/40',
+    icone: <Zap className="w-5 h-5 text-amber-400" />,
     destaque: true,
     beneficios: [
       'Tudo do plano Grátis',
       'Preços visíveis para todos',
-      'Telefone e e-mail visíveis',
+      'Telefone e WhatsApp visíveis',
       'Badge "Verificado ✓" no perfil',
-      'Prioridade na busca',
+      'Prioridade na busca local',
     ],
   },
   {
@@ -58,32 +58,29 @@ const PLANOS: Plano[] = [
     nome: 'Premium',
     preco: 'R$ 25,00/mês',
     precoNum: 25,
-    descricao: 'Para profissionais que querem crescer',
+    descricao: 'Para ambulantes que querem crescer',
     cor: 'border-yellow-500/40',
     icone: <Crown className="w-5 h-5 text-yellow-400" />,
     destaque: false,
     beneficios: [
       'Tudo do plano Básico',
-      'Catálogo ilimitado',
-      'Posição de destaque na busca',
+      'Catálogo ilimitado de produtos',
+      'Destaque na busca e no mapa',
       'Relatórios de visitas ao perfil',
       'Suporte prioritário',
-      'Link personalizado do perfil',
     ],
   },
 ]
 
-// Plano ativo do profissional logado (em produção viria do contexto de auth)
 const PLANO_ATUAL = 'gratuito'
 
-export default function PlanosPage() {
+export default function AmbulantePlanosPage() {
   const [assinando, setAssinando] = useState<string | null>(null)
   const [assinado, setAssinado] = useState<string | null>(null)
 
   async function handleAssinar(planoId: string) {
     if (planoId === 'gratuito') return
     setAssinando(planoId)
-    // TODO: integrar gateway de pagamento
     await new Promise(r => setTimeout(r, 1500))
     setAssinando(null)
     setAssinado(planoId)
@@ -97,13 +94,13 @@ export default function PlanosPage() {
       {/* HEADER */}
       <header className="sticky top-0 z-30 bg-zinc-950/95 backdrop-blur border-b border-zinc-900 px-4 py-3 flex items-center gap-3">
         <Link
-          href="/profissional/meu-catalogo"
+          href="/ambulantes"
           className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 transition-all flex-shrink-0"
         >
           <ArrowLeft className="w-4 h-4 text-zinc-400" />
         </Link>
         <div>
-          <h1 className="text-lg font-black text-white leading-none">Planos</h1>
+          <h1 className="text-lg font-black text-white leading-none">Planos Ambulante</h1>
           <p className="text-sm text-zinc-500">Escolha o plano ideal para você</p>
         </div>
       </header>
@@ -119,7 +116,7 @@ export default function PlanosPage() {
             </p>
             <p className="text-sm text-zinc-500 mt-0.5">
               {planoAtivo === 'gratuito'
-                ? 'Faça upgrade para liberar contatos e crescer mais'
+                ? 'Faça upgrade para liberar contatos e aparecer mais'
                 : 'Seu plano está ativo e funcionando'}
             </p>
           </div>
@@ -135,17 +132,16 @@ export default function PlanosPage() {
             <div
               key={plano.id}
               className={`bg-zinc-900 border-2 rounded-2xl overflow-hidden transition-all ${
-                plano.destaque ? plano.cor + ' shadow-lg shadow-violet-500/10' : plano.cor
+                plano.destaque ? plano.cor + ' shadow-lg shadow-amber-500/10' : plano.cor
               } ${ativo ? 'ring-2 ring-emerald-500/40' : ''}`}
             >
               {plano.destaque && (
-                <div className="bg-violet-600 text-white text-sm font-black uppercase text-center py-1.5 tracking-widest">
+                <div className="bg-amber-500 text-black text-sm font-black uppercase text-center py-1.5 tracking-widest">
                   Mais popular
                 </div>
               )}
 
               <div className="p-5 space-y-4">
-                {/* Nome + preço */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-2">
                     <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center flex-shrink-0">
@@ -159,17 +155,15 @@ export default function PlanosPage() {
                   <p className="text-xl font-black text-white flex-shrink-0 text-right leading-tight">{plano.preco}</p>
                 </div>
 
-                {/* Benefícios */}
                 <ul className="space-y-2">
                   {plano.beneficios.map((b, i) => (
                     <li key={i} className="flex items-start gap-2">
-                      <CheckCircle2 className={`w-4 h-4 flex-shrink-0 mt-0.5 ${plano.destaque ? 'text-violet-400' : plano.id === 'premium' ? 'text-yellow-400' : 'text-zinc-500'}`} />
+                      <CheckCircle2 className={`w-4 h-4 flex-shrink-0 mt-0.5 ${plano.destaque ? 'text-amber-400' : plano.id === 'premium' ? 'text-yellow-400' : 'text-zinc-500'}`} />
                       <span className="text-base text-zinc-300">{b}</span>
                     </li>
                   ))}
                 </ul>
 
-                {/* Botão */}
                 {ativo ? (
                   <div className="flex items-center justify-center gap-2 bg-emerald-500/15 text-emerald-400 py-3 rounded-xl font-black uppercase text-base">
                     <CheckCircle2 className="w-4 h-4" /> Plano atual
@@ -188,7 +182,7 @@ export default function PlanosPage() {
                     disabled={!!assinando}
                     className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-black uppercase text-base transition-all disabled:opacity-50 ${
                       plano.destaque
-                        ? 'bg-violet-600 hover:bg-violet-500 text-white'
+                        ? 'bg-amber-500 hover:bg-amber-400 text-black'
                         : 'bg-yellow-500 hover:bg-yellow-400 text-black'
                     }`}
                   >
@@ -203,9 +197,6 @@ export default function PlanosPage() {
           )
         })}
 
-        <p className="text-center text-sm text-zinc-600 pb-4">
-          Pagamento seguro. Cancele quando quiser.
-        </p>
       </main>
     </div>
   )

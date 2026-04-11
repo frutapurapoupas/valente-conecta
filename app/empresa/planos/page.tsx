@@ -52,6 +52,8 @@ const PLANOS: Plano[] = [
       'Contatos visíveis para todos (sem custo)',
       'Badge "Verificado ✓" no perfil',
       'Prioridade na busca local',
+      'Controle de estoque com relatório de custo e venda',
+      'Exibição de patrimônio total (custo e valor de venda)',
       '🎁 20 dias grátis de boas-vindas',
     ],
   },
