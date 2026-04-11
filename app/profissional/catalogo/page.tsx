@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import {
   ArrowLeft, Save, Plus, Trash2, X, Globe, Star, Package,
-  Building2, User, Clock, Bell, BellOff, Camera, Check
+  Building2, User, Clock, Bell, BellOff, Camera, Check, AlertTriangle
 } from 'lucide-react'
 import { usePerfilEmpresarial, TIPOS_PROFISSIONAL, CATEGORIAS_EMPRESA } from '@/hooks/usePerfilEmpresarial'
 
@@ -55,6 +55,7 @@ export default function PerfilCatalogoPage() {
     formProfissional, updateProfissional,
     horarios, updateHorario,
     statusAberto, toggleStatusAberto,
+    avisoAtipico, setAvisoAtipico, avisoAtipicoAtivo, publicarAvisoAtipico,
     itensCatalogo,
     showAddItem, setShowAddItem,
     showCatalogoOnline, setShowCatalogoOnline,
@@ -105,7 +106,7 @@ export default function PerfilCatalogoPage() {
             {([
               { id: 'perfil', label: 'Perfil' },
               { id: 'catalogo', label: isEmpresa ? 'Produtos' : 'Serviços' },
-              ...(isEmpresa ? [{ id: 'horarios', label: 'Horários' }] : []),
+              { id: 'horarios', label: 'Horários' },
             ] as { id: typeof aba; label: string }[]).map(tab => (
               <button
                 key={tab.id}
@@ -271,10 +272,60 @@ export default function PerfilCatalogoPage() {
           </>
         )}
 
-        {/* ── ABA HORÁRIOS (empresa) ── */}
-        {aba === 'horarios' && isEmpresa && perfilSalvo && (
+        {/* ── ABA HORÁRIOS ── */}
+        {aba === 'horarios' && perfilSalvo && (
           <>
-            <div className={`rounded-2xl p-5 shadow-sm border-2 ${statusAberto ? 'bg-green-50 border-green-400' : 'bg-white border-gray-200'}`}>
+            {/* Aviso de horário atípico — disponível para todos os negócios */}
+            <div className={`rounded-2xl p-5 shadow-sm border-2 transition-all ${
+              avisoAtipicoAtivo ? 'bg-amber-50 border-amber-400' : 'bg-white border-gray-200'
+            }`}>
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="font-bold text-gray-800 flex items-center gap-2">
+                    <AlertTriangle className={`w-5 h-5 ${avisoAtipicoAtivo ? 'text-amber-500' : 'text-gray-400'}`} />
+                    Aviso de Horário Atípico
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Aparece para todos na busca, mesmo sem plano pago
+                  </p>
+                </div>
+              </div>
+              <textarea
+                value={avisoAtipico}
+                onChange={e => setAvisoAtipico(e.target.value)}
+                disabled={avisoAtipicoAtivo}
+                placeholder="Ex: Hoje abrimos das 14h às 18h — feriado municipal"
+                rows={2}
+                className={`w-full px-4 py-3 border-2 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all ${
+                  avisoAtipicoAtivo
+                    ? 'bg-amber-50 border-amber-300 text-amber-800'
+                    : 'border-gray-200'
+                }`}
+              />
+              <button
+                onClick={publicarAvisoAtipico}
+                disabled={!avisoAtipicoAtivo && !avisoAtipico.trim()}
+                className={`mt-3 w-full py-3 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-all active:scale-95 ${
+                  avisoAtipicoAtivo
+                    ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                    : 'bg-amber-400 text-white hover:bg-amber-500 disabled:opacity-40 disabled:cursor-not-allowed'
+                }`}
+              >
+                {avisoAtipicoAtivo
+                  ? <><X className="w-4 h-4" /> Remover Aviso</>
+                  : <><AlertTriangle className="w-4 h-4" /> Publicar Aviso</>
+                }
+              </button>
+              {avisoAtipicoAtivo && (
+                <p className="text-xs text-amber-700 text-center mt-2 font-bold">
+                  ⚠️ Aviso ativo — clientes vão ver essa mensagem na busca
+                </p>
+              )}
+            </div>
+
+            {isEmpresa && (
+              <>
+                <div className={`rounded-2xl p-5 shadow-sm border-2 ${statusAberto ? 'bg-green-50 border-green-400' : 'bg-white border-gray-200'}`}>
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <p className="font-bold text-gray-800">Status de Funcionamento</p>
@@ -341,6 +392,8 @@ export default function PerfilCatalogoPage() {
                 <Save className="w-4 h-4" /> Salvar Horários
               </button>
             </div>
+              </>
+            )}
           </>
         )}
       </main>

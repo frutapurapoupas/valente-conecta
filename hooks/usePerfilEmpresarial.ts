@@ -92,6 +92,10 @@ export function usePerfilEmpresarial() {
   const [statusAberto, setStatusAberto] = useState(false)
   const [mensagemExcepcional, setMensagemExcepcional] = useState('')
 
+  // Aviso de horário atípico
+  const [avisoAtipico, setAvisoAtipico] = useState('')
+  const [avisoAtipicoAtivo, setAvisoAtipicoAtivo] = useState(false)
+
   // Catálogo
   const [itensCatalogo, setItensCatalogo] = useState<ItemCatalogo[]>([])
   const [showAddItem, setShowAddItem] = useState(false)
@@ -170,6 +174,15 @@ export function usePerfilEmpresarial() {
     }
   }
 
+  const publicarAvisoAtipico = () => {
+    if (avisoAtipicoAtivo) {
+      setAvisoAtipicoAtivo(false)
+      setAvisoAtipico('')
+    } else if (avisoAtipico.trim()) {
+      setAvisoAtipicoAtivo(true)
+    }
+  }
+
   const nomePrincipal = tipoNegocio === 'empresa'
     ? formEmpresa.nomeFantasia
     : formProfissional.nome
@@ -182,6 +195,7 @@ export function usePerfilEmpresarial() {
     formProfissional, updateProfissional,
     horarios, updateHorario,
     statusAberto, mensagemExcepcional, toggleStatusAberto,
+    avisoAtipico, setAvisoAtipico, avisoAtipicoAtivo, publicarAvisoAtipico,
     itensCatalogo,
     showAddItem, setShowAddItem,
     showCatalogoOnline, setShowCatalogoOnline,

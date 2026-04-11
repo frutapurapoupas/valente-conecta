@@ -14,6 +14,9 @@ export type SearchResult = {
   name: string        // nome da loja / profissional
   foto: string        // avatar colorido ou URL de foto
   categoria: string   // tipo: Mercado, Pedreiro, etc.
+  produto: string     // produto / serviço em destaque (visível para todos)
+  estaAberto: boolean // funcionando agora?
+  avisoHorario?: string | null // aviso de horário atípico (visível para todos, mesmo sem plano)
   planoAtivo: boolean // true = plano pago ativo → contatos visíveis por padrão
   // ── Privado (só após desbloqueio pago)
   price: string
@@ -83,8 +86,9 @@ export function useHomePage() {
     const rawResults: Omit<SearchResult, 'locked'>[] = [
       {
         id: 1, name: 'Mercadinho São José', foto: 'MS', categoria: 'Supermercado',
+        produto: 'Feijão Carioca 1kg', estaAberto: true, avisoHorario: null,
         planoAtivo: true,
-        price: 'R$ 25,00', location: '500m', store: 'Mercadinho São José', distance: 0.5,
+        price: 'R$ 8,50', location: '500m', store: 'Mercadinho São José', distance: 0.5,
         distanciaDetalhada: '500m do centro', bairro: 'Centro',
         endereco: 'Rua XV de Novembro, 128 — Centro, Valente, BA',
         coordenadas: '-11.4050,-39.3140',
@@ -92,6 +96,8 @@ export function useHomePage() {
       },
       {
         id: 2, name: 'Borracharia do Baixinho', foto: 'BB', categoria: 'Borracharia',
+        produto: 'Troca de pneu e alinhamento', estaAberto: false,
+        avisoHorario: 'Hoje abrimos às 14h — festejo na cidade',
         planoAtivo: false,
         price: 'R$ 32,00', location: '1.2km', store: 'Borracharia do Baixinho', distance: 1.2,
         distanciaDetalhada: '1,2km do centro', bairro: 'Bairro Novo',
@@ -101,8 +107,9 @@ export function useHomePage() {
       },
       {
         id: 3, name: 'Farmácia Popular', foto: 'FP', categoria: 'Farmácia',
+        produto: 'Dipirona 500mg', estaAberto: true, avisoHorario: null,
         planoAtivo: false,
-        price: 'R$ 18,00', location: '800m', store: 'Farmácia Popular', distance: 0.8,
+        price: 'R$ 3,20', location: '800m', store: 'Farmácia Popular', distance: 0.8,
         distanciaDetalhada: '800m do centro', bairro: 'Centro',
         endereco: 'Praça da Matriz, 12 — Centro, Valente, BA',
         coordenadas: '-11.4060,-39.3145',

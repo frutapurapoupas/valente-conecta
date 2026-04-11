@@ -6,7 +6,7 @@ import {
   Search, Wallet, QrCode, Bell, Menu, X, Zap, Dumbbell,
   ShoppingBag, Gift, Lock, MapPin, Phone, Mail, Navigation,
   Settings2, PlayCircle, ChevronRight, TrendingDown,
-  Building2, User, Package, Loader2, Users, Download,
+  Building2, User, Package, Loader2, Users, Download, AlertTriangle,
 } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
 import { useHomePage } from '@/hooks/useHomePage'
@@ -359,12 +359,19 @@ export default function HomePage() {
                   <p className="text-sm text-zinc-500 font-bold uppercase">{searchResults.length} resultado(s) próximos a você</p>
                   {searchResults.map(result => (
                     <div key={result.id} className="bg-zinc-800 border border-zinc-700 rounded-2xl overflow-hidden">
+                      {/* ── Cabeçalho ── */}
                       <div className="p-4 flex items-center gap-3">
                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
                           <span className="text-white font-black text-sm">{result.foto}</span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-black text-base text-white">{result.name}</p>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-black text-base text-white">{result.name}</p>
+                            {result.estaAberto
+                              ? <span className="text-xs bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">● Aberto</span>
+                              : <span className="text-xs bg-red-500/20 text-red-400 font-bold px-2 py-0.5 rounded-full border border-red-500/30">● Fechado</span>
+                            }
+                          </div>
                           <span className="inline-block text-xs bg-blue-500/20 text-blue-400 font-bold px-2 py-0.5 rounded-full border border-blue-500/20">
                             {result.categoria}
                           </span>
@@ -372,6 +379,21 @@ export default function HomePage() {
                         {result.locked && <Lock className="w-5 h-5 text-zinc-600 flex-shrink-0" />}
                       </div>
 
+                      {/* ── Info pública: produto + preço + aviso ── */}
+                      <div className="px-4 pb-3 space-y-2 border-t border-zinc-700/50 pt-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-sm text-zinc-300 flex-1 min-w-0 truncate">{result.produto}</span>
+                          <span className="text-sm font-black text-blue-300 flex-shrink-0">{result.price}</span>
+                        </div>
+                        {result.avisoHorario && (
+                          <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/30 rounded-xl px-3 py-2">
+                            <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                            <span className="text-xs text-amber-300 font-bold">{result.avisoHorario}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* ── Seção de contato (bloqueada ou liberada) ── */}
                       {result.locked ? (
                         <div className="px-4 pb-4 space-y-2 border-t border-zinc-700 pt-3">
                           <div className="flex flex-col gap-1">
