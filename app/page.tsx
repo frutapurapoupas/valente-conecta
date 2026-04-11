@@ -6,7 +6,7 @@ import {
   Search, Wallet, QrCode, Bell, Menu, X, Zap, Dumbbell,
   ShoppingBag, Gift, Lock, MapPin, Phone, Mail, Navigation,
   ChevronRight, TrendingDown,
-  Building2, Loader2, AlertTriangle,
+  Building2, Loader2, AlertTriangle, Crown,
 } from 'lucide-react'
 import { useHomePage } from '@/hooks/useHomePage'
 
@@ -83,6 +83,7 @@ export default function HomePage() {
               { label: 'Anúncios', href: '/anuncios' },
               { label: 'Carteira', href: '/carteira' },
               { label: 'Indique e Ganhe', href: '/indique' },
+              { label: 'Meus Planos', href: '/usuario/planos' },
             ].map(item => (
               <Link
                 key={item.href}
@@ -210,6 +211,18 @@ export default function HomePage() {
               <div>
                 <p className="font-black text-base text-white">Carteira</p>
                 <p className="text-sm text-zinc-500">Moeda Conecta</p>
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/usuario/planos">
+            <div className="bg-zinc-900 border border-yellow-500/20 rounded-2xl p-4 flex flex-col gap-3 hover:border-yellow-500/40 transition-all active:scale-95">
+              <div className="w-10 h-10 bg-yellow-500/15 border border-yellow-500/20 rounded-xl flex items-center justify-center">
+                <Crown className="w-5 h-5 text-yellow-400" />
+              </div>
+              <div>
+                <p className="font-black text-base text-white">Meus Planos</p>
+                <p className="text-sm text-zinc-500">Grátis · Multi-Cidade</p>
               </div>
             </div>
           </Link>

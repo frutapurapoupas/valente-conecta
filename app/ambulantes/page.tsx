@@ -5,7 +5,7 @@ import Link from 'next/link'
 import {
   ArrowLeft, MapPin, Phone, Navigation, Star,
   MessageCircle, Search, Filter, Clock,
-  ChevronDown, Package, Loader2, Lock,
+  ChevronDown, Package, Loader2, Lock, Crown,
 } from 'lucide-react'
 
 // ─── Tipos ──────────────────────────────────────────────────────────────────
@@ -157,9 +157,12 @@ export default function AmbulantesPag() {
           <h1 className="text-xl font-black text-white leading-none">Ambulantes</h1>
           <p className="text-sm text-zinc-500">Vendedores e feirantes de Valente</p>
         </div>
-        <span className="text-sm font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full">
-          {disponiveis} disponíveis
-        </span>
+        <Link
+          href="/ambulantes/planos"
+          className="flex items-center gap-1.5 px-3 py-2 bg-amber-500/10 border border-amber-500/30 rounded-xl text-sm font-black text-amber-400 hover:bg-amber-500/20 transition-all flex-shrink-0"
+        >
+          <Crown className="w-4 h-4" /> Planos
+        </Link>
       </header>
 
       <main className="max-w-2xl mx-auto px-4 pt-5 space-y-4">
