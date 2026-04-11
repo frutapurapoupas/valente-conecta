@@ -33,6 +33,7 @@ export type SearchResult = {
 }
 
 export type TipoDemo = 'empresa' | 'profissional' | 'ambulante' | 'usuario' | null
+export type TipoUsuario = 'usuario_geral' | 'lojista' | 'profissional' | 'ambulante' | null
 
 const WELCOME_SEARCHES = 5
 const UNLOCK_PRICE = 1.00 // R$ — configurável pelo Admin Master
@@ -58,6 +59,8 @@ export function useHomePage() {
   const [notifications, setNotifications] = useState<string[]>([])
   const [showDemoModal, setShowDemoModal] = useState(false)
   const [tipoDemo, setTipoDemo] = useState<TipoDemo>(null)
+  const [tipoUsuario, setTipoUsuarioState] = useState<TipoUsuario>(null)
+  const [showOnboarding, setShowOnboarding] = useState(false)
 
   const recentActivity: ActivityItem[] = INITIAL_ACTIVITY
 
@@ -68,6 +71,12 @@ export function useHomePage() {
     if (savedBalance) setBalance(parseFloat(savedBalance))
     const savedUnlocked = localStorage.getItem('unlockedContacts')
     if (savedUnlocked) setUnlockedIds(JSON.parse(savedUnlocked))
+    const savedTipo = localStorage.getItem('tipoUsuario') as TipoUsuario
+    if (savedTipo) {
+      setTipoUsuarioState(savedTipo)
+    } else {
+      setShowOnboarding(true)
+    }
   }, [])
 
   const addNotification = (message: string) => {
@@ -161,9 +170,23 @@ export function useHomePage() {
     }, 1500)
   }
 
-  const generateQRCode = () => {
+  const confirmarTipoUsuario = (tipo: TipoUsuario) => {
+    if (!tipo) {
+      localStorage.removeItem('tipoUsuario')
+      setTipoUsuarioState(null)
+      setShowOnboarding(true)
+      return
+    }
+    localStorage.setItem('tipoUsuario', tipo)
+    setTipoUsuarioState(tipo)
+    setShowOnboarding(false)
+  }
+
+  const gerarQRCode = () => {
     addNotification('📱 QR Code gerado! Mostre ao estabelecimento.')
   }
+
+  const generateQRCode = gerarQRCode
 
   return {
     isMenuOpen, setIsMenuOpen,
@@ -177,6 +200,7 @@ export function useHomePage() {
     handleUnlockContact, confirmUnlockPayment,
     balance, notifications, recentActivity,
     generateQRCode,
+    tipoUsuario, showOnboarding, confirmarTipoUsuario,
     // demo mode
     showDemoModal, setShowDemoModal,
     tipoDemo, setTipoDemo,

@@ -6,8 +6,9 @@ import {
   Search, Wallet, QrCode, Bell, Menu, X, Zap, Dumbbell,
   ShoppingBag, Gift, Lock, MapPin, Phone, Mail, Navigation,
   ChevronRight, TrendingDown,
-  Building2, Loader2, AlertTriangle, Crown,
+  Building2, Loader2, AlertTriangle, Crown, User, Store, Bike,
 } from 'lucide-react'
+import type { TipoUsuario } from '@/hooks/useHomePage'
 import { useHomePage } from '@/hooks/useHomePage'
 
 export default function HomePage() {
@@ -30,6 +31,7 @@ export default function HomePage() {
     notifications,
     recentActivity,
     generateQRCode,
+    tipoUsuario, showOnboarding, confirmarTipoUsuario,
   } = useHomePage()
 
   return (
@@ -52,6 +54,13 @@ export default function HomePage() {
               <Wallet className="w-4 h-4 text-emerald-400" />
               <span className="font-black text-base text-emerald-400">R$ {balance.toFixed(2)}</span>
             </div>
+            <button
+              onClick={() => confirmarTipoUsuario(null)}
+              className="p-2 bg-zinc-900 border border-zinc-800 rounded-xl"
+              title="Trocar perfil"
+            >
+              <User className="w-5 h-5 text-zinc-400" />
+            </button>
             <button className="p-2 bg-zinc-900 border border-zinc-800 rounded-xl relative">
               <Bell className="w-5 h-5 text-zinc-400" />
               {notifications.length > 0 && (
@@ -141,92 +150,62 @@ export default function HomePage() {
           <QrCode className="w-5 h-5 text-white/70" />
         </Link>
 
-        {/* ACESSO RÁPIDO */}
-        <div className="grid grid-cols-2 gap-3">
-          <Link href="/explorar">
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex flex-col gap-3 hover:border-zinc-600 transition-all active:scale-95">
-              <div className="w-10 h-10 bg-indigo-500/15 border border-indigo-500/20 rounded-xl flex items-center justify-center">
-                <Search className="w-5 h-5 text-indigo-400" />
-              </div>
-              <div>
-                <p className="font-black text-base text-white">Explorar</p>
-                <p className="text-sm text-zinc-500">Serviços e lojas</p>
-              </div>
+        {/* ACESSO RÁPIDO — dinâmico por tipo de usuário */}
+        {(() => {
+          type Card = { href: string; label: string; sub: string; border: string; bg: string; icon: React.ReactNode }
+          const CARDS: Record<NonNullable<TipoUsuario>, Card[]> = {
+            usuario_geral: [
+              { href: '/explorar',       label: 'Explorar',       sub: 'Serviços e lojas',      border: 'border-indigo-500/20', bg: 'bg-indigo-500/15', icon: <Search className="w-5 h-5 text-indigo-400" /> },
+              { href: '/oferta',         label: 'Ofertas',        sub: 'Preços reduzidos',       border: 'border-red-500/20',    bg: 'bg-red-500/15',    icon: <TrendingDown className="w-5 h-5 text-red-400" /> },
+              { href: '/ambulantes',     label: 'Ambulantes',     sub: 'Feirantes e vendedores', border: 'border-amber-500/20',  bg: 'bg-amber-500/15',  icon: <span className="text-xl">🛵</span> },
+              { href: '/academia',       label: 'Academia',       sub: 'A partir de grátis',     border: 'border-purple-500/20', bg: 'bg-purple-500/15', icon: <Dumbbell className="w-5 h-5 text-purple-400" /> },
+              { href: '/carteira',       label: 'Carteira',       sub: 'Moeda Conecta',          border: 'border-emerald-500/20',bg: 'bg-emerald-500/15',icon: <Wallet className="w-5 h-5 text-emerald-400" /> },
+              { href: '/usuario/planos', label: 'Meus Planos',    sub: 'Grátis · Multi-Cidade',  border: 'border-yellow-500/20', bg: 'bg-yellow-500/15', icon: <Crown className="w-5 h-5 text-yellow-400" /> },
+            ],
+            lojista: [
+              { href: '/pdv/colaborativo',    label: 'PDV Colaborativo', sub: 'Vendas e estoque',       border: 'border-blue-500/20',   bg: 'bg-blue-500/15',   icon: <ShoppingBag className="w-5 h-5 text-blue-400" /> },
+              { href: '/profissional/catalogo', label: 'Catálogo',       sub: 'Produtos e horários',    border: 'border-indigo-500/20', bg: 'bg-indigo-500/15', icon: <Store className="w-5 h-5 text-indigo-400" /> },
+              { href: '/empresa/planos',       label: 'Planos da Loja',  sub: 'Básico · Premium',       border: 'border-yellow-500/20', bg: 'bg-yellow-500/15', icon: <Crown className="w-5 h-5 text-yellow-400" /> },
+              { href: '/carteira',             label: 'Carteira',        sub: 'Moeda Conecta',          border: 'border-emerald-500/20',bg: 'bg-emerald-500/15',icon: <Wallet className="w-5 h-5 text-emerald-400" /> },
+              { href: '/oferta',               label: 'Ofertas',         sub: 'Criar promoções',        border: 'border-red-500/20',    bg: 'bg-red-500/15',    icon: <TrendingDown className="w-5 h-5 text-red-400" /> },
+              { href: '/anuncios',             label: 'Anúncios',        sub: 'Divulgue sua loja',      border: 'border-violet-500/20', bg: 'bg-violet-500/15', icon: <Zap className="w-5 h-5 text-violet-400" /> },
+            ],
+            profissional: [
+              { href: '/profissional/catalogo', label: 'Meu Perfil',       sub: 'Catálogo e horários',  border: 'border-violet-500/20', bg: 'bg-violet-500/15', icon: <User className="w-5 h-5 text-violet-400" /> },
+              { href: '/profissional/planos',   label: 'Planos',           sub: 'Básico · Premium',     border: 'border-yellow-500/20', bg: 'bg-yellow-500/15', icon: <Crown className="w-5 h-5 text-yellow-400" /> },
+              { href: '/carteira',              label: 'Carteira',         sub: 'Moeda Conecta',        border: 'border-emerald-500/20',bg: 'bg-emerald-500/15',icon: <Wallet className="w-5 h-5 text-emerald-400" /> },
+              { href: '/explorar',              label: 'Explorar',         sub: 'Ver outros serviços',  border: 'border-indigo-500/20', bg: 'bg-indigo-500/15', icon: <Search className="w-5 h-5 text-indigo-400" /> },
+              { href: '/anuncios',              label: 'Anúncios',         sub: 'Divulgue seu serviço', border: 'border-violet-500/20', bg: 'bg-violet-500/20', icon: <Zap className="w-5 h-5 text-violet-400" /> },
+              { href: '/oferta',                label: 'Ofertas',          sub: 'Criar promoções',      border: 'border-red-500/20',    bg: 'bg-red-500/15',    icon: <TrendingDown className="w-5 h-5 text-red-400" /> },
+            ],
+            ambulante: [
+              { href: '/ambulantes',          label: 'Minha Página',    sub: 'Como aparece para clientes', border: 'border-amber-500/20', bg: 'bg-amber-500/15', icon: <Bike className="w-5 h-5 text-amber-400" /> },
+              { href: '/ambulantes/planos',   label: 'Planos',          sub: 'Básico · Premium',           border: 'border-yellow-500/20',bg: 'bg-yellow-500/15',icon: <Crown className="w-5 h-5 text-yellow-400" /> },
+              { href: '/carteira',            label: 'Carteira',        sub: 'Moeda Conecta',              border: 'border-emerald-500/20',bg: 'bg-emerald-500/15',icon: <Wallet className="w-5 h-5 text-emerald-400" /> },
+              { href: '/explorar',            label: 'Explorar',        sub: 'Ver outros serviços',        border: 'border-indigo-500/20', bg: 'bg-indigo-500/15', icon: <Search className="w-5 h-5 text-indigo-400" /> },
+              { href: '/profissional/catalogo',label: 'Meu Catálogo',   sub: 'Produtos e horários',        border: 'border-violet-500/20', bg: 'bg-violet-500/15', icon: <Store className="w-5 h-5 text-violet-400" /> },
+              { href: '/anuncios',            label: 'Anúncios',        sub: 'Divulgue sua banca',         border: 'border-violet-500/20', bg: 'bg-violet-500/20', icon: <Zap className="w-5 h-5 text-violet-400" /> },
+            ],
+          }
+          const cards = tipoUsuario ? CARDS[tipoUsuario] : CARDS.usuario_geral
+          return (
+            <div className="grid grid-cols-2 gap-3">
+              {cards.map(c => (
+                <Link key={c.href + c.label} href={c.href}>
+                  <div className={`bg-zinc-900 border ${c.border} rounded-2xl p-4 flex flex-col gap-3 hover:opacity-80 transition-all active:scale-95`}>
+                    <div className={`w-10 h-10 ${c.bg} border ${c.border} rounded-xl flex items-center justify-center`}>
+                      {c.icon}
+                    </div>
+                    <div>
+                      <p className="font-black text-base text-white">{c.label}</p>
+                      <p className="text-sm text-zinc-500">{c.sub}</p>
+                    </div>
+                  </div>
+                </Link>
+              ))}
             </div>
-          </Link>
-
-          <Link href="/oferta">
-            <div className="bg-zinc-900 border border-red-500/20 rounded-2xl p-4 flex flex-col gap-3 hover:border-red-500/40 transition-all active:scale-95">
-              <div className="w-10 h-10 bg-red-500/15 border border-red-500/20 rounded-xl flex items-center justify-center">
-                <TrendingDown className="w-5 h-5 text-red-400" />
-              </div>
-              <div>
-                <p className="font-black text-base text-white">Ofertas</p>
-                <p className="text-sm text-zinc-500">Preços reduzidos</p>
-              </div>
-            </div>
-          </Link>
-
-          <Link href="/ambulantes">
-            <div className="bg-zinc-900 border border-amber-500/20 rounded-2xl p-4 flex flex-col gap-3 hover:border-amber-500/40 transition-all active:scale-95">
-              <div className="w-10 h-10 bg-amber-500/15 border border-amber-500/20 rounded-xl flex items-center justify-center">
-                <span className="text-xl">🛵</span>
-              </div>
-              <div>
-                <p className="font-black text-base text-white">Ambulantes</p>
-                <p className="text-sm text-zinc-500">Feirantes e vendedores</p>
-              </div>
-            </div>
-          </Link>
-
-          <Link href="/academia">
-            <div className="bg-zinc-900 border border-purple-500/20 rounded-2xl p-4 flex flex-col gap-3 hover:border-purple-500/40 transition-all active:scale-95">
-              <div className="w-10 h-10 bg-purple-500/15 border border-purple-500/20 rounded-xl flex items-center justify-center">
-                <Dumbbell className="w-5 h-5 text-purple-400" />
-              </div>
-              <div>
-                <p className="font-black text-base text-white">Academia</p>
-                <p className="text-sm text-zinc-500">A partir de grátis</p>
-              </div>
-            </div>
-          </Link>
-
-          <Link href="/pdv/colaborativo">
-            <div className="bg-zinc-900 border border-blue-500/20 rounded-2xl p-4 flex flex-col gap-3 hover:border-blue-500/40 transition-all active:scale-95">
-              <div className="w-10 h-10 bg-blue-500/15 border border-blue-500/20 rounded-xl flex items-center justify-center">
-                <ShoppingBag className="w-5 h-5 text-blue-400" />
-              </div>
-              <div>
-                <p className="font-black text-base text-white">Minha Loja</p>
-                <p className="text-sm text-zinc-500">PDV e estoque</p>
-              </div>
-            </div>
-          </Link>
-
-          <Link href="/carteira">
-            <div className="bg-zinc-900 border border-emerald-500/20 rounded-2xl p-4 flex flex-col gap-3 hover:border-emerald-500/40 transition-all active:scale-95">
-              <div className="w-10 h-10 bg-emerald-500/15 border border-emerald-500/20 rounded-xl flex items-center justify-center">
-                <Wallet className="w-5 h-5 text-emerald-400" />
-              </div>
-              <div>
-                <p className="font-black text-base text-white">Carteira</p>
-                <p className="text-sm text-zinc-500">Moeda Conecta</p>
-              </div>
-            </div>
-          </Link>
-
-          <Link href="/usuario/planos">
-            <div className="bg-zinc-900 border border-yellow-500/20 rounded-2xl p-4 flex flex-col gap-3 hover:border-yellow-500/40 transition-all active:scale-95">
-              <div className="w-10 h-10 bg-yellow-500/15 border border-yellow-500/20 rounded-xl flex items-center justify-center">
-                <Crown className="w-5 h-5 text-yellow-400" />
-              </div>
-              <div>
-                <p className="font-black text-base text-white">Meus Planos</p>
-                <p className="text-sm text-zinc-500">Grátis · Multi-Cidade</p>
-              </div>
-            </div>
-          </Link>
-        </div>
+          )
+        })()}
 
         {/* ATIVIDADE RECENTE */}
         {recentActivity.length > 0 && (
@@ -385,6 +364,38 @@ export default function HomePage() {
             <button onClick={() => setShowUnlockModal(false)} className="w-full p-3 text-base text-zinc-500 hover:text-zinc-300 transition-colors">
               Cancelar
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ONBOARDING — escolha de perfil na primeira visita */}
+      {showOnboarding && (
+        <div className="fixed inset-0 z-50 bg-zinc-950 flex flex-col items-center justify-center p-6 gap-8">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-indigo-500/20 border border-indigo-500/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Zap className="w-8 h-8 text-indigo-400" />
+            </div>
+            <h1 className="text-2xl font-black text-white mb-2">Como você vai usar o<br />Valente Conecta?</h1>
+            <p className="text-zinc-400 text-sm">Escolha seu perfil para personalizar a tela inicial</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 w-full max-w-sm">
+            {([
+              { tipo: 'usuario_geral' as const, emoji: '🔍', label: 'Consumidor',     sub: 'Busco produtos e serviços na cidade', border: 'border-blue-500/40',    hover: 'hover:border-blue-400',    bg: 'bg-blue-500/10' },
+              { tipo: 'lojista'       as const, emoji: '🏪', label: 'Lojista',         sub: 'Tenho uma loja ou comércio',          border: 'border-amber-500/40',   hover: 'hover:border-amber-400',   bg: 'bg-amber-500/10' },
+              { tipo: 'profissional'  as const, emoji: '👷', label: 'Profissional',    sub: 'Ofereço serviços autônomos',          border: 'border-violet-500/40',  hover: 'hover:border-violet-400',  bg: 'bg-violet-500/10' },
+              { tipo: 'ambulante'     as const, emoji: '🛵', label: 'Ambulante',       sub: 'Vendo na rua ou em feiras',           border: 'border-emerald-500/40', hover: 'hover:border-emerald-400', bg: 'bg-emerald-500/10' },
+            ] as const).map(opt => (
+              <button
+                key={opt.tipo}
+                onClick={() => confirmarTipoUsuario(opt.tipo)}
+                className={`${opt.bg} border ${opt.border} ${opt.hover} rounded-2xl p-4 flex flex-col items-center gap-2 text-center transition-all active:scale-95`}
+              >
+                <span className="text-3xl">{opt.emoji}</span>
+                <p className="font-black text-white text-base">{opt.label}</p>
+                <p className="text-xs text-zinc-400 leading-tight">{opt.sub}</p>
+              </button>
+            ))}
           </div>
         </div>
       )}
