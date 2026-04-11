@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 
 const AM_KEY = 'am_auth_ok'
-const SENHA_CORRETA = 'VC@master2026'
+const SENHA_CORRETA = 'vc2026'
 
 export default function AdminMasterGate({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = useState<'loading' | 'locked' | 'open'>('loading')
