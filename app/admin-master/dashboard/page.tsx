@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { TrendingUp, Map, Clock, AlertTriangle, Users, Building2, ShoppingBag } from 'lucide-react'
+import Link from 'next/link'
+import { TrendingUp, AlertTriangle, Users, Building2, ShoppingBag, Wallet } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 export default function DashboardMaster() {
@@ -55,6 +56,20 @@ export default function DashboardMaster() {
           </div>
         </div>
       )}
+
+      {/* Acesso rápido — universo pessoal */}
+      <Link href="/admin-master/financeiro-pessoal" className="block mb-8">
+        <div className="bg-gradient-to-r from-emerald-900/40 to-indigo-900/40 border border-emerald-500/30 rounded-2xl p-6 flex items-center gap-5 hover:border-emerald-400/50 transition-all group">
+          <div className="w-16 h-16 bg-emerald-500/20 border border-emerald-500/30 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-500/30 transition-all">
+            <Wallet size={32} className="text-emerald-400" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-black uppercase text-white">Finanças Pessoais</h2>
+            <p className="text-emerald-400/70 text-sm font-bold mt-0.5">Pró-labore · Despesas · Faturas recorrentes · Controle PF</p>
+          </div>
+          <div className="ml-auto text-zinc-600 group-hover:text-zinc-400 transition-all text-3xl font-black">→</div>
+        </div>
+      </Link>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="bg-zinc-900 p-8 rounded-2xl border border-zinc-800">
