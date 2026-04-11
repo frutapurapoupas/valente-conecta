@@ -1,5 +1,6 @@
 ﻿'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import {
   Search, Wallet, QrCode, Bell, Menu, X, Zap, Dumbbell,
@@ -7,9 +8,13 @@ import {
   Settings2, PlayCircle, ChevronRight, TrendingDown,
   Building2, User, Package, Loader2, Users, Download,
 } from 'lucide-react'
+import { QRCodeSVG } from 'qrcode.react'
 import { useHomePage } from '@/hooks/useHomePage'
 
 export default function HomePage() {
+  const [showQRIndique, setShowQRIndique] = useState<boolean>(false)
+  const indiqueLinkBase = typeof window !== 'undefined' ? `${window.location.origin}/indique?codigo=USER123` : 'https://valente-conecta-pied.vercel.app/indique?codigo=USER123'
+
   const {
     isMenuOpen, setIsMenuOpen,
     showSearchModal, setShowSearchModal,
@@ -128,8 +133,8 @@ export default function HomePage() {
         </div>
 
         {/* INDIQUE E GANHE */}
-        <Link href="/indique">
-          <div className="bg-gradient-to-r from-yellow-500 to-amber-500 rounded-2xl p-5 flex items-center gap-4 active:scale-95 transition-all">
+        <div className="bg-gradient-to-r from-yellow-500 to-amber-500 rounded-2xl overflow-hidden">
+          <button onClick={() => setShowQRIndique(v => !v)} className="w-full p-5 flex items-center gap-4 active:scale-95 transition-all text-left">
             <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0">
               <Gift className="w-6 h-6 text-white" />
             </div>
@@ -137,9 +142,22 @@ export default function HomePage() {
               <p className="font-black text-lg text-white">Indique e Ganhe</p>
               <p className="text-base text-yellow-100">Até R$ 50/mês indicando amigos</p>
             </div>
-            <ChevronRight className="w-5 h-5 text-white/70" />
-          </div>
-        </Link>
+            <QrCode className={`w-5 h-5 text-white/70 transition-transform ${showQRIndique ? 'rotate-90' : ''}`} />
+          </button>
+          {showQRIndique && (
+            <div className="bg-white/10 border-t border-white/20 p-5 flex flex-col items-center gap-3">
+              <p className="text-sm text-yellow-100 font-bold text-center">Compartilhe seu QR Code e ganhe por cada indicação</p>
+              <div className="bg-white p-3 rounded-2xl shadow-lg">
+                <QRCodeSVG value={indiqueLinkBase} size={180} fgColor="#000000" bgColor="#ffffff" />
+              </div>
+              <p className="text-xs text-yellow-200 text-center break-all px-2">{indiqueLinkBase}</p>
+              <button
+                onClick={() => navigator.clipboard?.writeText(indiqueLinkBase)}
+                className="px-5 py-2.5 bg-white/20 border border-white/30 rounded-xl text-sm font-black text-white active:scale-95 transition-all"
+              >Copiar link</button>
+            </div>
+          )}
+        </div>
 
         {/* ACESSO RÁPIDO */}
         <div className="grid grid-cols-2 gap-3">
@@ -267,10 +285,11 @@ export default function HomePage() {
             </div>
 
             {([
-              { label: 'Empresa / Loja', desc: 'PDV, estoque, perfil', href: '/pdv/colaborativo', icon: <Building2 className="w-6 h-6 text-blue-400" /> },
-              { label: 'Profissional Liberal', desc: 'Perfil, catálogo, planos', href: '/profissional/catalogo', icon: <User className="w-6 h-6 text-violet-400" /> },
-              { label: 'Ambulante / PDV Móvel', desc: 'Vendas rápidas', href: '/ambulantes', icon: <span className="text-2xl">🛵</span> },
               { label: 'Usuário Geral', desc: 'Busca, carteira, indicações', href: '/', icon: <Users className="w-6 h-6 text-zinc-400" /> },
+              { label: 'Empresa / Loja', desc: 'PDV, estoque, perfil', href: '/pdv/colaborativo', icon: <Building2 className="w-6 h-6 text-blue-400" /> },
+              { label: 'Profissional Liberal', desc: 'Catálogo, serviços, planos', href: '/profissional/catalogo', icon: <User className="w-6 h-6 text-violet-400" /> },
+              { label: 'Ambulante / PDV Móvel', desc: 'Vendas rápidas, localização', href: '/ambulantes', icon: <span className="text-2xl">🛵</span> },
+              { label: 'Academia', desc: 'Treino, check-in, metas', href: '/academia', icon: <Dumbbell className="w-6 h-6 text-purple-400" /> },
             ]).map(item => (
               <Link key={item.label} href={item.href} onClick={() => setShowDemoModal(false)}>
                 <div className="flex items-center gap-4 p-4 bg-zinc-800 border border-zinc-700 rounded-2xl hover:border-zinc-500 transition-all active:scale-95">
@@ -286,16 +305,29 @@ export default function HomePage() {
               </Link>
             ))}
 
-            <Link href="/admin/master" onClick={() => setShowDemoModal(false)}>
-              <div className="flex items-center gap-4 p-4 bg-zinc-800 border border-indigo-500/30 rounded-2xl hover:border-indigo-500/60 transition-all active:scale-95">
-                <Settings2 className="w-6 h-6 text-indigo-400" />
-                <div className="flex-1">
-                  <p className="font-black text-base text-white">Admin Master</p>
-                  <p className="text-sm text-zinc-500">Dashboard com todos os dados</p>
+            <div className="p-4 bg-zinc-800 border border-indigo-500/30 rounded-2xl space-y-3">
+              <Link href="/admin/master" onClick={() => setShowDemoModal(false)}>
+                <div className="flex items-center gap-4 hover:opacity-80 transition-all active:scale-95">
+                  <Settings2 className="w-6 h-6 text-indigo-400 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="font-black text-base text-white">Admin Master</p>
+                    <p className="text-sm text-zinc-500">Dashboard com todos os dados</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-zinc-600" />
                 </div>
-                <ChevronRight className="w-5 h-5 text-zinc-600" />
+              </Link>
+              <div className="flex flex-col items-center gap-2 pt-2 border-t border-zinc-700">
+                <p className="text-xs text-zinc-500">Escaneie para acessar o painel</p>
+                <div className="bg-white p-2 rounded-xl">
+                  <QRCodeSVG
+                    value={typeof window !== 'undefined' ? `${window.location.origin}/admin/master` : 'https://valente-conecta-pied.vercel.app/admin/master'}
+                    size={140}
+                    fgColor="#000000"
+                    bgColor="#ffffff"
+                  />
+                </div>
               </div>
-            </Link>
+            </div>
 
             <div className="border-t border-zinc-800 pt-3">
               <Link href="/instalar" onClick={() => setShowDemoModal(false)}>
