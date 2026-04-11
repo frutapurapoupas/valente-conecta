@@ -114,6 +114,8 @@ export function useAdminConfiguracoes() {
   const [novaCidade, setNovaCidade] = useState('')
   const [salvando,   setSalvando]   = useState(false)
   const [salvoOk,    setSalvoOk]    = useState<string | null>(null)
+  const [testandoWebhook, setTestando] = useState(false)
+  const [testeOk,         setTesteOk]  = useState<boolean | null>(null)
 
   // ── Carrega do banco no mount ─────────────────────────────────────
   useEffect(() => {
@@ -180,6 +182,29 @@ export function useAdminConfiguracoes() {
     setTimeout(() => setSalvoOk(null), 2500)
   }
 
+  async function testarWebhook() {
+    if (!integracoes.webhookUrl?.startsWith('https://')) return
+    setTestando(true)
+    setTesteOk(null)
+    try {
+      const res = await fetch('/api/webhook/dispatch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          evento: 'teste_webhook',
+          webhookUrl: integracoes.webhookUrl,
+          dados: { mensagem: 'Teste de conexão — Valente Conecta', timestamp: new Date().toISOString() },
+        }),
+      })
+      setTesteOk(res.ok)
+    } catch {
+      setTesteOk(false)
+    } finally {
+      setTestando(false)
+      setTimeout(() => setTesteOk(null), 4000)
+    }
+  }
+
   return {
     aba, setAba,
     geral, updateGeral,
@@ -189,5 +214,6 @@ export function useAdminConfiguracoes() {
     moderacao, updateModeracao,
     integracoes, updateIntegracoes,
     salvando, salvoOk, salvar,
+    testarWebhook, testandoWebhook, testeOk,
   }
 }

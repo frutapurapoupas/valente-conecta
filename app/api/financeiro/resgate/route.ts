@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { dispatchWebhook } from '@/lib/webhookDispatch';
 
 export async function POST(req: Request) {
   const { valor, origem, cpf } = await req.json();
@@ -16,5 +17,6 @@ export async function POST(req: Request) {
     }
   }
 
+  await dispatchWebhook('resgate_pix', { valor, origem, cpf })
   return NextResponse.json({ success: true, message: "Resgate enviado para processamento Pix." });
 }

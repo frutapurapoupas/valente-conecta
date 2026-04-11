@@ -83,6 +83,7 @@ export default function ConfiguracoesPage() {
     moderacao, updateModeracao,
     integracoes, updateIntegracoes,
     salvando, salvoOk, salvar,
+    testarWebhook, testandoWebhook, testeOk,
   } = useAdminConfiguracoes()
 
   const ABAS = [
@@ -405,6 +406,18 @@ export default function ConfiguracoesPage() {
               <Campo label="URL do webhook (POST)">
                 <InputField value={integracoes.webhookUrl} onChange={v => updateIntegracoes('webhookUrl', v)} placeholder="https://..." />
               </Campo>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={testarWebhook}
+                  disabled={!integracoes.webhookUrl?.startsWith('https://') || testandoWebhook}
+                  className="flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-500 disabled:opacity-40 rounded-xl text-sm font-black text-white transition-all active:scale-95"
+                >
+                  <RefreshCw className={`w-4 h-4 ${testandoWebhook ? 'animate-spin' : ''}`} />
+                  {testandoWebhook ? 'Enviando...' : 'Testar webhook'}
+                </button>
+                {testeOk === true  && <span className="text-xs font-black text-emerald-400">✓ Make recebeu!</span>}
+                {testeOk === false && <span className="text-xs font-black text-red-400">✗ Falhou — verifique a URL</span>}
+              </div>
               <p className="text-xs text-zinc-600">Recebe eventos de novas transações, cadastros e aprovações em tempo real.</p>
             </section>
 

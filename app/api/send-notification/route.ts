@@ -1,5 +1,6 @@
 // app/api/send-notification/route.ts
 import { NextRequest, NextResponse } from 'next/server'
+import { dispatchWebhook } from '@/lib/webhookDispatch'
 
 // Configuração do Firebase Admin (servidor)
 // Você precisa baixar a chave da conta de serviço do Firebase
@@ -22,6 +23,7 @@ export async function POST(request: NextRequest) {
     // admin.initializeApp({ credential: admin.credential.cert(serviceAccount) })
     // await admin.messaging().send({ token, notification: { title: titulo, body: corpo }, data: dados })
     
+    await dispatchWebhook('nova_venda', { token: token.substring(0, 20), titulo, corpo, dados })
     return NextResponse.json({ success: true, message: 'Notificação enviada (simulação)' })
   } catch (error) {
     console.error('Erro ao enviar notificação:', error)

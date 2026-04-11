@@ -12,8 +12,7 @@ import { QRCodeSVG } from 'qrcode.react'
 import { useHomePage } from '@/hooks/useHomePage'
 
 export default function HomePage() {
-  const [showQRIndique, setShowQRIndique] = useState<boolean>(false)
-  const indiqueLinkBase = typeof window !== 'undefined' ? `${window.location.origin}/indique?codigo=USER123` : 'https://valente-conecta-pied.vercel.app/indique?codigo=USER123'
+
 
   const {
     isMenuOpen, setIsMenuOpen,
@@ -133,31 +132,16 @@ export default function HomePage() {
         </div>
 
         {/* INDIQUE E GANHE */}
-        <div className="bg-gradient-to-r from-yellow-500 to-amber-500 rounded-2xl overflow-hidden">
-          <button onClick={() => setShowQRIndique(v => !v)} className="w-full p-5 flex items-center gap-4 active:scale-95 transition-all text-left">
-            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0">
-              <Gift className="w-6 h-6 text-white" />
-            </div>
-            <div className="flex-1">
-              <p className="font-black text-lg text-white">Indique e Ganhe</p>
-              <p className="text-base text-yellow-100">Até R$ 50/mês indicando amigos</p>
-            </div>
-            <QrCode className={`w-5 h-5 text-white/70 transition-transform ${showQRIndique ? 'rotate-90' : ''}`} />
-          </button>
-          {showQRIndique && (
-            <div className="bg-white/10 border-t border-white/20 p-5 flex flex-col items-center gap-3">
-              <p className="text-sm text-yellow-100 font-bold text-center">Compartilhe seu QR Code e ganhe por cada indicação</p>
-              <div className="bg-white p-3 rounded-2xl shadow-lg">
-                <QRCodeSVG value={indiqueLinkBase} size={180} fgColor="#000000" bgColor="#ffffff" />
-              </div>
-              <p className="text-xs text-yellow-200 text-center break-all px-2">{indiqueLinkBase}</p>
-              <button
-                onClick={() => navigator.clipboard?.writeText(indiqueLinkBase)}
-                className="px-5 py-2.5 bg-white/20 border border-white/30 rounded-xl text-sm font-black text-white active:scale-95 transition-all"
-              >Copiar link</button>
-            </div>
-          )}
-        </div>
+        <Link href="/carteira?tab=indicar" className="bg-gradient-to-r from-yellow-500 to-amber-500 rounded-2xl p-5 flex items-center gap-4 active:scale-95 transition-all">
+          <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0">
+            <Gift className="w-6 h-6 text-white" />
+          </div>
+          <div className="flex-1">
+            <p className="font-black text-lg text-white">Indique e Ganhe</p>
+            <p className="text-base text-yellow-100">Até R$ 50/mês indicando amigos</p>
+          </div>
+          <QrCode className="w-5 h-5 text-white/70" />
+        </Link>
 
         {/* ACESSO RÁPIDO */}
         <div className="grid grid-cols-2 gap-3">
