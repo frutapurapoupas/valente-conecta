@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
   Search, Wallet, QrCode, Bell, Menu, X, Zap, Dumbbell,
@@ -33,6 +33,19 @@ export default function HomePage() {
     generateQRCode,
     tipoUsuario, showOnboarding, confirmarTipoUsuario,
   } = useHomePage()
+
+  // splash antes do onboarding
+  const [splashFase, setSplashFase] = useState<'logo' | 'pergunta' | 'saindo' | 'pronto'>(
+    () => (typeof window !== 'undefined' && localStorage.getItem('tipoUsuario') ? 'pronto' : 'logo')
+  )
+
+  useEffect(() => {
+    if (splashFase === 'pronto') return
+    const t1 = setTimeout(() => setSplashFase('pergunta'), 1800)   // logo por 1.8s
+    const t2 = setTimeout(() => setSplashFase('saindo'),  3800)   // pergunta por 2s
+    const t3 = setTimeout(() => setSplashFase('pronto'),  4400)   // fade out 0.6s
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white pb-24">
@@ -368,8 +381,34 @@ export default function HomePage() {
         </div>
       )}
 
+      {/* SPLASH — primeira visita */}
+      {splashFase !== 'pronto' && (
+        <div className={`fixed inset-0 z-[60] bg-zinc-950 flex flex-col items-center justify-center gap-6 transition-opacity duration-500 ${
+          splashFase === 'saindo' ? 'opacity-0' : 'opacity-100'
+        }`}>
+          {/* logo */}
+          <div className={`flex flex-col items-center gap-4 transition-all duration-700 ${
+            splashFase === 'logo' ? 'opacity-100 scale-100' : splashFase === 'pergunta' ? 'opacity-60 scale-90' : 'opacity-0 scale-75'
+          }`}>
+            <div className="w-24 h-24 bg-yellow-400 rounded-3xl flex items-center justify-center shadow-2xl shadow-yellow-500/30">
+              <Zap className="w-14 h-14 text-black fill-black" />
+            </div>
+            <p className="text-3xl font-black text-white tracking-tight">Valente Conecta</p>
+            <p className="text-zinc-500 text-sm font-medium">Conectando sua cidade</p>
+          </div>
+
+          {/* mensagem de boas-vindas */}
+          <div className={`text-center px-6 transition-all duration-500 ${
+            splashFase === 'pergunta' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+          }`}>
+            <p className="text-xl font-black text-white mb-2">Bem-vindo(a)! 👋</p>
+            <p className="text-zinc-400 text-base">Como você planeja usar o<br /><span className="text-yellow-400 font-black">Valente Conecta</span>?</p>
+          </div>
+        </div>
+      )}
+
       {/* ONBOARDING — escolha de perfil na primeira visita */}
-      {showOnboarding && (
+      {showOnboarding && splashFase === 'pronto' && (
         <div className="fixed inset-0 z-50 bg-zinc-950 flex flex-col items-center justify-center p-6 gap-8">
           <div className="text-center">
             <div className="w-16 h-16 bg-indigo-500/20 border border-indigo-500/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
