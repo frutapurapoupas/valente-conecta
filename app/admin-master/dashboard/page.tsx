@@ -58,7 +58,7 @@ export default function DashboardMaster() {
       )}
 
       {/* Acesso rápido — universo pessoal */}
-      <Link href="/admin-master/financeiro-pessoal" className="block mb-8">
+      <a href="/admin-master/financeiro-pessoal" className="block mb-8">
         <div className="bg-gradient-to-r from-emerald-900/40 to-indigo-900/40 border border-emerald-500/30 rounded-2xl p-6 flex items-center gap-5 hover:border-emerald-400/50 transition-all group">
           <div className="w-16 h-16 bg-emerald-500/20 border border-emerald-500/30 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-500/30 transition-all">
             <Wallet size={32} className="text-emerald-400" />
@@ -69,7 +69,7 @@ export default function DashboardMaster() {
           </div>
           <div className="ml-auto text-zinc-600 group-hover:text-zinc-400 transition-all text-3xl font-black">→</div>
         </div>
-      </Link>
+      </a>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="bg-zinc-900 p-8 rounded-2xl border border-zinc-800">
