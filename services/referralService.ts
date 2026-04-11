@@ -11,7 +11,7 @@ export interface ReferralBonus {
 export async function processReferral(referrerId: string, referredType: string) {
   // Busca valores configurados pelo Admin Master
   const { data: config } = await supabase.from('admin_configs').select('referral_rates').single()
-  const bonus = config.referral_rates[referredType]
+  const bonus = config?.referral_rates?.[referredType]
 
   // Adiciona ao saldo de bônus acumulado do usuário
   await supabase.rpc('increment_referral_balance', { 
@@ -31,7 +31,7 @@ export async function processMonthlyBonusPayout() {
     .select('id, referral_balance')
     .gt('referral_balance', 0)
 
-  for (const user of usersWithBonus) {
+  for (const user of (usersWithBonus ?? [])) {
     const payoutAmount = Math.min(user.referral_balance, 50) // Máximo de R$ 50/mês
     
     // Transfere para a carteira ativa e subtrai do saldo de bônus

@@ -1,143 +1,288 @@
-﻿'use client'
+'use client'
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { ArrowLeft, Dumbbell, MapPin, CheckCircle, Settings, LayoutDashboard, TrendingUp } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { useState, useEffect, useRef } from 'react'
+import {
+  CheckCircle, ChevronRight, Flame, MapPin, Plus, Minus,
+  TrendingUp, BookOpen, Target, Trophy, Star, AlarmClock
+} from 'lucide-react'
+import AcademiaHeader from '@/components/academia/Header'
+import BottomNav from '@/components/academia/BottomNav'
+import AdminPanel from '@/components/academia/AdminPanel'
+import NotificationPermission from '@/components/academia/NotificationPermission'
+
+// Coordenadas da academia (configuradas pelo admin)
+const GYM_LAT = -23.5505
+const GYM_LNG = -46.6333
+const GYM_RADIUS = 150 // metros
+
+function calcDist(lat1: number, lng1: number, lat2: number, lng2: number) {
+  const R = 6371000
+  const p1 = lat1 * Math.PI / 180, p2 = lat2 * Math.PI / 180
+  const dp = (lat2 - lat1) * Math.PI / 180, dl = (lng2 - lng1) * Math.PI / 180
+  const a = Math.sin(dp / 2) ** 2 + Math.cos(p1) * Math.cos(p2) * Math.sin(dl / 2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
+interface Exercicio {
+  id: number; nome: string; series: number; reps: number
+  carga: number; metaCarga: number; feito: boolean
+}
+
+const TREINO_INICIAL: Exercicio[] = [
+  { id: 1, nome: 'Supino Reto',     series: 4, reps: 12, carga: 60, metaCarga: 80,  feito: false },
+  { id: 2, nome: 'Puxada Frontal',  series: 3, reps: 15, carga: 55, metaCarga: 70,  feito: false },
+  { id: 3, nome: 'Desenvolvimento', series: 3, reps: 12, carga: 40, metaCarga: 60,  feito: false },
+  { id: 4, nome: 'Rosca Direta',    series: 3, reps: 15, carga: 25, metaCarga: 35,  feito: false },
+  { id: 5, nome: 'Agachamento',     series: 4, reps: 10, carga: 80, metaCarga: 100, feito: false },
+]
+
+const METAS_ALUNO = [
+  { label: 'Peso corporal',  valor: '78 kg', meta: '72 kg', pct: 40, cor: 'bg-blue-500' },
+  { label: 'Treinos/semana', valor: '3x',    meta: '5x',    pct: 60, cor: 'bg-violet-500' },
+  { label: 'Carga no supino', valor: '60 kg', meta: '80 kg', pct: 75, cor: 'bg-emerald-500' },
+]
+
+const INCENTIVOS = [
+  { emoji: '\uD83D\uDD25', txt: '5 treinos consecutivos \u2014 voc\u00ea est\u00e1 em chamas!', cor: 'amber' },
+  { emoji: '\uD83C\uDFAF', txt: 'Supino a 75\u0025 da meta de carga. Continue!', cor: 'violet' },
+  { emoji: '\u2B50', txt: '12 treinos esse m\u00eas \u2014 recorde pessoal!', cor: 'blue' },
+]
 
 export default function AcademiaPage() {
-  const [isAdmin, setIsAdmin] = useState(false)
+  const [isAdmin] = useState(false)
   const [isCheckIn, setIsCheckIn] = useState(false)
   const [elapsedTime, setElapsedTime] = useState(0)
-  const [checkInTime, setCheckInTime] = useState<Date | null>(null)
+  const [geoStatus, setGeoStatus] = useState<'idle' | 'watching' | 'dentro' | 'fora' | 'erro'>('idle')
+  const [chegadaTs, setChegadaTs] = useState<number | null>(null)
+  const [exercicios, setExercicios] = useState<Exercicio[]>(TREINO_INICIAL)
+  const [incentIdx, setIncentIdx] = useState(0)
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const autoCheckRef = useRef<NodeJS.Timeout | null>(null)
 
+  // --- Geolocalização ---
   useEffect(() => {
-    // 1. Validar se é você (Admin Master)
-    const checkAdmin = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user?.email === 'seu-email-admin@valente.com') setIsAdmin(true)
-    }
-    checkAdmin()
+    if (!navigator.geolocation) { setGeoStatus('erro'); return }
+    setGeoStatus('watching')
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        const dist = calcDist(pos.coords.latitude, pos.coords.longitude, GYM_LAT, GYM_LNG)
+        const dentro = dist <= GYM_RADIUS
+        setGeoStatus(dentro ? 'dentro' : 'fora')
+        if (dentro && chegadaTs === null) setChegadaTs(Date.now())
+        if (!dentro) {
+          setChegadaTs(null)
+          if (isCheckIn) { setIsCheckIn(false); setElapsedTime(0) }
+          if (autoCheckRef.current) { clearTimeout(autoCheckRef.current); autoCheckRef.current = null }
+        }
+      },
+      () => setGeoStatus('erro'),
+      { enableHighAccuracy: true, maximumAge: 30000 }
+    )
+    return () => navigator.geolocation.clearWatch(watchId)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-    // 2. Recuperar Check-in ativo
-    const saved = localStorage.getItem('academia_checkin')
-    if (saved) {
-      const { startTime } = JSON.parse(saved)
-      setCheckInTime(new Date(startTime))
-      setIsCheckIn(true)
+  // Auto check-in após 5 min na academia
+  useEffect(() => {
+    if (geoStatus === 'dentro' && !isCheckIn && chegadaTs !== null) {
+      autoCheckRef.current = setTimeout(() => setIsCheckIn(true), 5 * 60 * 1000)
+      return () => { if (autoCheckRef.current) clearTimeout(autoCheckRef.current) }
     }
+  }, [geoStatus, isCheckIn, chegadaTs])
+
+  // Timer de treino (por minuto)
+  useEffect(() => {
+    if (isCheckIn) {
+      intervalRef.current = setInterval(() => setElapsedTime(t => t + 1), 60000)
+    } else {
+      if (intervalRef.current) clearInterval(intervalRef.current)
+    }
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
+  }, [isCheckIn])
+
+  // Rotação de incentivos
+  useEffect(() => {
+    const t = setInterval(() => setIncentIdx(i => (i + 1) % INCENTIVOS.length), 4000)
+    return () => clearInterval(t)
   }, [])
 
-  useEffect(() => {
-    let interval: any
-    if (isCheckIn && checkInTime) {
-      interval = setInterval(() => {
-        const diff = Math.floor((new Date().getTime() - checkInTime.getTime()) / 1000 / 60)
-        setElapsedTime(diff)
-      }, 60000)
-    }
-    return () => clearInterval(interval)
-  }, [isCheckIn, checkInTime])
-
-  const handleAction = () => {
-    if (!isCheckIn) {
-      const now = new Date()
-      localStorage.setItem('academia_checkin', JSON.stringify({ startTime: now.toISOString() }))
-      setCheckInTime(now)
-      setIsCheckIn(true)
-    } else {
-      localStorage.removeItem('academia_checkin')
-      setIsCheckIn(false)
-      alert(`Treino de ${elapsedTime}min registrado no Financeiro!`)
-    }
+  function handleActionClick() {
+    setIsCheckIn(v => !v)
+    if (isCheckIn) setElapsedTime(0)
   }
 
+  function toggleExercicio(id: number) {
+    setExercicios(ex => ex.map(e => e.id === id ? { ...e, feito: !e.feito } : e))
+  }
+
+  function alterarCarga(id: number, delta: number) {
+    setExercicios(ex => ex.map(e => e.id === id ? { ...e, carga: Math.max(0, e.carga + delta) } : e))
+  }
+
+  const totalFeitos = exercicios.filter(e => e.feito).length
+  const pctFeitos = Math.round((totalFeitos / exercicios.length) * 100)
+  const incent = INCENTIVOS[incentIdx]
+  const corMap: Record<string, string> = { amber: 'bg-amber-50 border-amber-200 text-amber-800', violet: 'bg-violet-50 border-violet-200 text-violet-800', blue: 'bg-blue-50 border-blue-200 text-blue-800' }
+
+  const geoLabel = geoStatus === 'dentro' ? '\uD83D\uDCCD Voc\u00ea est\u00e1 na academia'
+    : geoStatus === 'watching' ? '\uD83D\uDCCD Detectando localiza\u00e7\u00e3o...'
+    : geoStatus === 'fora' ? '\uD83D\uDCCD Fora da academia'
+    : geoStatus === 'erro' ? '\uD83D\uDCCD GPS indispon\u00edvel'
+    : '\uD83D\uDCCD Aguardando GPS'
+
+  const geoColor = geoStatus === 'dentro' ? 'bg-emerald-100 text-emerald-700'
+    : geoStatus === 'erro' ? 'bg-red-100 text-red-600'
+    : 'bg-slate-100 text-slate-500'
+
   return (
-    <div className="min-h-screen pb-24 text-slate-900">
-      {/* Header com degradê profissional */}
-      <header className="bg-gradient-to-br from-indigo-700 to-purple-800 text-white p-6 rounded-b-[3rem] shadow-2xl">
-        <div className="flex justify-between items-center mb-8">
-          <Link href="/"><ArrowLeft className="w-6 h-6" /></Link>
-          <h1 className="font-black text-xl tracking-tighter italic">VALENTE FITNESS</h1>
-          {isAdmin && <Settings className="text-yellow-400 w-6 h-6" />}
-        </div>
+    <div className="min-h-screen bg-slate-50 pb-28">
+      <NotificationPermission />
+      <AcademiaHeader isAdmin={isAdmin} isCheckIn={isCheckIn} elapsedTime={elapsedTime} onActionClick={handleActionClick} />
 
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 text-center">
-          <p className="text-xs uppercase tracking-widest mb-1 opacity-70 font-bold">Status do Treino</p>
-          <div className="text-4xl font-black mb-4">
-            {isCheckIn ? `${elapsedTime} MIN` : "OFFLINE"}
-          </div>
-          <button 
-            onClick={handleAction}
-            className={`w-full py-4 rounded-2xl font-black shadow-lg transition-all active:scale-95 ${
-              isCheckIn ? 'bg-red-500 text-white' : 'bg-white text-indigo-700'
-            }`}
-          >
-            {isCheckIn ? 'FINALIZAR TREINO' : 'COMEÇAR AGORA'}
-          </button>
-        </div>
-      </header>
-
-      <main className="p-6 space-y-6">
-        {/* Bloco Admin Master (Apenas para você) */}
-        {isAdmin && (
-          <section className="bg-slate-900 text-white p-5 rounded-3xl shadow-xl">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              <h2 className="font-bold text-sm uppercase tracking-widest">Painel Admin Master</h2>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Link href="/admin/financeiro" className="bg-white/10 p-4 rounded-2xl flex flex-col items-center gap-2 hover:bg-white/20">
-                <TrendingUp className="text-green-400" />
-                <span className="text-[10px] font-bold">FINANCEIRO</span>
-              </Link>
-              <Link href="/admin/usuarios" className="bg-white/10 p-4 rounded-2xl flex flex-col items-center gap-2 hover:bg-white/20">
-                <LayoutDashboard className="text-blue-400" />
-                <span className="text-[10px] font-bold">USUÁRIOS</span>
-              </Link>
-            </div>
-          </section>
+      {/* Banner de geolocalização */}
+      <div className={`mx-4 mt-3 px-4 py-2 rounded-2xl flex items-center gap-2 text-sm font-semibold ${geoColor}`}>
+        <MapPin className="w-4 h-4 flex-shrink-0" />
+        <span>{geoLabel}</span>
+        {geoStatus === 'dentro' && !isCheckIn && (
+          <span className="ml-auto text-xs opacity-70">Check-in autom\u00e1tico em 5 min</span>
         )}
+      </div>
 
-        {/* Ficha de Treino Estilizada */}
-        <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="font-black text-lg">TREINO DO DIA</h3>
-            <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-black">SÉRIE A</span>
+      <main className="max-w-2xl mx-auto px-4 pt-4 space-y-4">
+
+        {/* Incentivo rotativo */}
+        <div className={`border rounded-2xl px-4 py-3 flex items-center gap-3 transition-all ${corMap[incent.cor]}`}>
+          <span className="text-2xl">{incent.emoji}</span>
+          <p className="text-sm font-bold">{incent.txt}</p>
+        </div>
+
+        {/* Stats rápidos */}
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { icon: <Flame className="w-5 h-5 text-amber-500" />, val: '5', label: 'dias seguidos' },
+            { icon: <Trophy className="w-5 h-5 text-yellow-500" />, val: '12', label: 'treinos/m\u00eas' },
+            { icon: <AlarmClock className="w-5 h-5 text-indigo-500" />, val: `${pctFeitos}%`, label: 'treino hoje' },
+          ].map(s => (
+            <div key={s.label} className="bg-white rounded-2xl p-4 text-center shadow-sm border border-slate-100">
+              <div className="flex justify-center mb-1">{s.icon}</div>
+              <p className="font-black text-xl text-gray-800">{s.val}</p>
+              <p className="text-xs text-gray-500 leading-tight">{s.label}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Treino do dia */}
+        <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="font-black text-lg text-gray-800">TREINO DO DIA</h3>
+            <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-black">S\u00c9RIE A</span>
           </div>
-          <div className="space-y-4">
-            {['Supino Reto', 'Puxada Frontal', 'Leg Press 45'].map((item, i) => (
-              <div key={i} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center font-bold">
-                    {i+1}
+
+          {/* Barra de progresso do treino */}
+          <div className="space-y-1">
+            <div className="flex justify-between text-xs text-gray-500 font-semibold">
+              <span>{totalFeitos}/{exercicios.length} exerc\u00edcios</span>
+              <span>{pctFeitos}%</span>
+            </div>
+            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-full bg-indigo-600 rounded-full transition-all" style={{ width: `${pctFeitos}%` }} />
+            </div>
+          </div>
+
+          {exercicios.map(ex => (
+            <div key={ex.id} className={`rounded-2xl border p-4 space-y-3 transition-all ${ex.feito ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200'}`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm ${ex.feito ? 'bg-emerald-500 text-white' : 'bg-indigo-600 text-white'}`}>
+                    {ex.feito ? <CheckCircle className="w-5 h-5" /> : ex.id}
                   </div>
                   <div>
-                    <p className="font-bold text-sm uppercase">{item}</p>
-                    <p className="text-xs text-slate-400 font-medium">4 séries x 12 reps</p>
+                    <p className="font-bold text-sm text-gray-800">{ex.nome}</p>
+                    <p className="text-xs text-slate-400">{ex.series} s\u00e9ries \u00d7 {ex.reps} reps</p>
                   </div>
                 </div>
-                <CheckCircle className="text-slate-200 w-6 h-6" />
+                <button onClick={() => toggleExercicio(ex.id)} className={`text-xs font-black px-3 py-1.5 rounded-xl transition-all active:scale-95 ${ex.feito ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600'}`}>
+                  {ex.feito ? 'FEITO' : 'MARCAR'}
+                </button>
+              </div>
+              {/* Controle de carga */}
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-gray-500 font-semibold w-12">Carga:</span>
+                <button onClick={() => alterarCarga(ex.id, -2.5)} className="w-8 h-8 bg-slate-200 rounded-xl flex items-center justify-center active:scale-90 transition-all">
+                  <Minus className="w-4 h-4 text-gray-600" />
+                </button>
+                <span className="font-black text-base text-gray-800 w-16 text-center">{ex.carga} kg</span>
+                <button onClick={() => alterarCarga(ex.id, 2.5)} className="w-8 h-8 bg-slate-200 rounded-xl flex items-center justify-center active:scale-90 transition-all">
+                  <Plus className="w-4 h-4 text-gray-600" />
+                </button>
+                <div className="flex-1">
+                  <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                    <div className="h-full bg-indigo-400 rounded-full transition-all" style={{ width: `${Math.min(100, Math.round((ex.carga / ex.metaCarga) * 100))}%` }} />
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-0.5">meta: {ex.metaCarga} kg</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Metas do aluno */}
+        <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 space-y-4">
+          <h3 className="font-black text-lg text-gray-800 flex items-center gap-2">
+            <Target className="w-5 h-5 text-violet-500" /> Minhas Metas
+          </h3>
+          {METAS_ALUNO.map(m => (
+            <div key={m.label} className="space-y-1.5">
+              <div className="flex justify-between text-sm">
+                <span className="font-semibold text-gray-700">{m.label}</span>
+                <span className="font-black text-gray-800">{m.valor} <span className="text-xs text-gray-400 font-normal">\u2192 {m.meta}</span></span>
+              </div>
+              <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                <div className={`h-full rounded-full transition-all ${m.cor}`} style={{ width: `${m.pct}%` }} />
+              </div>
+              <p className="text-xs text-gray-400 text-right">{m.pct}% da meta</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Evolu\u00e7\u00e3o de Cargas + Biblioteca */}
+        <div className="grid grid-cols-2 gap-3">
+          <button className="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center gap-2 shadow-sm active:scale-95 transition-all">
+            <TrendingUp className="w-6 h-6 text-indigo-500" />
+            <p className="font-bold text-sm text-gray-700">Hist\u00f3rico de Cargas</p>
+            <p className="text-xs text-gray-400 text-center">Veja sua evolu\u00e7\u00e3o</p>
+          </button>
+          <button className="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center gap-2 shadow-sm active:scale-95 transition-all">
+            <BookOpen className="w-6 h-6 text-violet-500" />
+            <p className="font-bold text-sm text-gray-700">Biblioteca</p>
+            <p className="text-xs text-gray-400 text-center">Exerc\u00edcios e t\u00e9cnicas</p>
+          </button>
+        </div>
+
+        {/* Conquistas */}
+        <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
+          <h3 className="font-black text-base text-gray-800 flex items-center gap-2 mb-3">
+            <Star className="w-5 h-5 text-yellow-400" /> Conquistas
+          </h3>
+          <div className="flex gap-3 overflow-x-auto pb-1">
+            {[
+              { emoji: '\uD83C\uDFC6', nome: 'Primeiro Treino', ok: true },
+              { emoji: '\uD83D\uDD25', nome: '5 dias seguidos', ok: true },
+              { emoji: '\uD83D\uDCAA', nome: '10 treinos', ok: true },
+              { emoji: '\u2B50', nome: '20 treinos', ok: false },
+              { emoji: '\uD83C\uDFC5', nome: '30 treinos', ok: false },
+            ].map(c => (
+              <div key={c.nome} className={`flex-shrink-0 flex flex-col items-center gap-1 w-16 p-2 rounded-2xl border ${c.ok ? 'bg-yellow-50 border-yellow-200' : 'bg-slate-50 border-slate-200 opacity-40'}`}>
+                <span className="text-2xl">{c.emoji}</span>
+                <p className="text-[9px] font-bold text-center text-gray-600 leading-tight">{c.nome}</p>
               </div>
             ))}
           </div>
         </div>
+
+        {isAdmin && <AdminPanel />}
       </main>
 
-      {/* Navegação Inferior para Admin e User */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-slate-100 p-4 flex justify-around items-center z-50">
-        <Link href="/" className="flex flex-col items-center text-slate-400">
-          <LayoutDashboard size={20} />
-          <span className="text-[8px] font-bold mt-1">HOME</span>
-        </Link>
-        <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-indigo-200 shadow-xl -mt-10 border-4 border-white">
-          <Dumbbell className="text-white" size={24} />
-        </div>
-        <Link href={isAdmin ? "/admin" : "/perfil"} className={`flex flex-col items-center ${isAdmin ? 'text-red-500' : 'text-slate-400'}`}>
-          <Settings size={20} />
-          <span className="text-[8px] font-bold mt-1 uppercase">{isAdmin ? 'ADMIN' : 'PERFIL'}</span>
-        </Link>
-      </nav>
+      <BottomNav isAdmin={isAdmin} />
     </div>
   )
 }

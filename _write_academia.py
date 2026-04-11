@@ -1,0 +1,224 @@
+import codecs
+
+content = """\
+'use client'
+
+import { useState, useEffect, useRef } from 'react'
+import Link from 'next/link'
+import {
+  CheckCircle2, ChevronRight,
+  BarChart3, Bell, ClipboardList,
+  ShieldCheck, Zap, Gift,
+} from 'lucide-react'
+import AcademiaHeader from '@/components/academia/Header'
+import TrainingCard from '@/components/academia/TrainingCard'
+import BottomNav from '@/components/academia/BottomNav'
+import AdminPanel from '@/components/academia/AdminPanel'
+import NotificationPermission from '@/components/academia/NotificationPermission'
+
+const TREINO_MOCK = [
+  { id: 1, name: 'Supino Reto', series: 4, reps: 12 },
+  { id: 2, name: 'Puxada Frontal', series: 3, reps: 15 },
+  { id: 3, name: 'Desenvolvimento', series: 3, reps: 12 },
+  { id: 4, name: 'Rosca Direta', series: 3, reps: 15 },
+  { id: 5, name: 'Agachamento', series: 4, reps: 10 },
+]
+
+const PLANOS = [
+  {
+    id: 'gratuito',
+    nome: 'Gr\u00e1tis',
+    preco: 'R$ 0',
+    periodo: 'para sempre',
+    destaque: false,
+    cor: 'from-gray-500 to-gray-600',
+    itens: [
+      'At\u00e9 30 alunos cadastrados',
+      'Agenda b\u00e1sica de aulas',
+      'Check-in digital por QR Code',
+      'Sem cart\u00e3o de cr\u00e9dito',
+    ],
+    cta: 'Come\u00e7ar Gr\u00e1tis',
+  },
+  {
+    id: 'basico',
+    nome: 'B\u00e1sico',
+    preco: 'R$ 9,90',
+    periodo: 'por m\u00eas \u00b7 pr\u00e9-pago',
+    destaque: true,
+    cor: 'from-purple-600 to-violet-700',
+    itens: [
+      'Alunos ilimitados',
+      'Controle de pagamentos e inadimpl\u00eancia',
+      'Notifica\u00e7\u00f5es autom\u00e1ticas de vencimento',
+      'Relat\u00f3rios de frequ\u00eancia e evolu\u00e7\u00e3o',
+      'App personalizado para seus alunos',
+      '\U0001f381 20 dias gr\u00e1tis de boas-vindas',
+    ],
+    cta: 'Assinar por R$ 9,90/m\u00eas',
+  },
+]
+
+export default function AcademiaPage() {
+  const [isAdmin] = useState(false)
+  const [isCheckIn, setIsCheckIn] = useState(false)
+  const [elapsedTime, setElapsedTime] = useState(0)
+  const [showPlanos, setShowPlanos] = useState(false)
+  const [planoSelecionado, setPlanoSelecionado] = useState<string | null>(null)
+  const [showModal, setShowModal] = useState(false)
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    if (isCheckIn) {
+      intervalRef.current = setInterval(() => setElapsedTime(t => t + 1), 60000)
+    } else {
+      if (intervalRef.current) clearInterval(intervalRef.current)
+      setElapsedTime(0)
+    }
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
+  }, [isCheckIn])
+
+  function handleActionClick() { setIsCheckIn(v => !v) }
+  function handleAssinar(id: string) { setPlanoSelecionado(id); setShowModal(true) }
+
+  return (
+    <div className="min-h-screen bg-slate-50 pb-28">
+      <NotificationPermission />
+      <AcademiaHeader isAdmin={isAdmin} isCheckIn={isCheckIn} elapsedTime={elapsedTime} onActionClick={handleActionClick} />
+
+      <main className="max-w-2xl mx-auto px-4 pt-6 space-y-5">
+        <TrainingCard items={TREINO_MOCK} />
+        {isAdmin && <AdminPanel />}
+
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { icon: <ShieldCheck className="w-5 h-5 text-violet-500" />, val: '100%', label: 'digital' },
+            { icon: <Bell className="w-5 h-5 text-amber-500" />, val: 'Auto', label: 'avisos' },
+            { icon: <BarChart3 className="w-5 h-5 text-emerald-500" />, val: 'Live', label: 'relat\u00f3rios' },
+          ].map(s => (
+            <div key={s.label} className="bg-white rounded-2xl p-4 text-center shadow-sm border border-slate-100">
+              <div className="flex justify-center mb-1">{s.icon}</div>
+              <p className="font-black text-xl text-gray-800">{s.val}</p>
+              <p className="text-xs text-gray-500">{s.label}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 space-y-4">
+          <h2 className="font-black text-gray-800 text-lg flex items-center gap-2">
+            <Zap className="w-5 h-5 text-violet-500" /> Ferramentas dispon\u00edveis
+          </h2>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { icon: '\U0001f465', titulo: 'Gest\u00e3o de Alunos', desc: 'Cadastro e hist\u00f3rico' },
+              { icon: '\U0001f4c5', titulo: 'Agenda de Aulas', desc: 'Turmas e professores' },
+              { icon: '\u2705', titulo: 'Check-in Digital', desc: 'QR Code na entrada' },
+              { icon: '\U0001f4b3', titulo: 'Pagamentos', desc: 'Mensalidades e pend\u00eancias' },
+              { icon: '\U0001f4ca', titulo: 'Relat\u00f3rios', desc: 'Progresso e desempenho' },
+              { icon: '\U0001f4f2', titulo: 'App do Aluno', desc: 'Treinos no celular' },
+            ].map(f => (
+              <div key={f.titulo} className="bg-slate-50 rounded-xl p-3 flex items-start gap-2 border border-slate-100">
+                <span className="text-xl flex-shrink-0">{f.icon}</span>
+                <div>
+                  <p className="font-bold text-sm text-gray-800 leading-tight">{f.titulo}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{f.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 space-y-3">
+          <h2 className="font-black text-gray-800 text-lg flex items-center gap-2">
+            <ClipboardList className="w-5 h-5 text-violet-500" /> Como funciona
+          </h2>
+          {[
+            { n: '1', txt: 'Cadastre sua academia no app em minutos' },
+            { n: '2', txt: 'Seus alunos fazem check-in pelo QR Code ao entrar' },
+            { n: '3', txt: 'O sistema controla presen\u00e7as e pagamentos automaticamente' },
+            { n: '4', txt: 'Acesse relat\u00f3rios e m\u00e9tricas em tempo real' },
+          ].map(step => (
+            <div key={step.n} className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center font-black text-sm text-white flex-shrink-0">{step.n}</div>
+              <p className="text-base text-gray-700">{step.txt}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+          <button onClick={() => setShowPlanos(v => !v)} className="w-full flex items-center justify-between p-5">
+            <div className="flex items-center gap-2">
+              <Gift className="w-5 h-5 text-violet-500" />
+              <span className="font-black text-gray-800 text-lg">Planos</span>
+              <span className="text-xs bg-amber-100 text-amber-700 font-black px-2 py-0.5 rounded-full">Gr\u00e1tis dispon\u00edvel</span>
+            </div>
+            <ChevronRight className={`w-5 h-5 text-gray-400 transition-transform ${showPlanos ? 'rotate-90' : ''}`} />
+          </button>
+          {showPlanos && (
+            <div className="px-5 pb-5 space-y-4 border-t border-slate-100 pt-4">
+              {PLANOS.map(p => (
+                <div key={p.id} className={`rounded-2xl overflow-hidden border ${p.destaque ? 'border-violet-400 shadow-md' : 'border-slate-200'}`}>
+                  <div className={`bg-gradient-to-r ${p.cor} p-4`}>
+                    {p.destaque && <span className="inline-block bg-white text-purple-700 text-xs font-black px-3 py-1 rounded-full mb-2">MAIS POPULAR</span>}
+                    <div className="flex items-end justify-between">
+                      <div>
+                        <p className="font-black text-xl text-white">{p.nome}</p>
+                        <p className="text-white/70 text-xs">{p.periodo}</p>
+                      </div>
+                      <p className="text-4xl font-black text-white">{p.preco}</p>
+                    </div>
+                  </div>
+                  <div className="bg-white p-4 space-y-3">
+                    <ul className="space-y-1.5">
+                      {p.itens.map(item => (
+                        <li key={item} className="flex items-center gap-2 text-base text-gray-700">
+                          <CheckCircle2 className="w-4 h-4 text-violet-500 flex-shrink-0" />{item}
+                        </li>
+                      ))}
+                    </ul>
+                    <button onClick={() => handleAssinar(p.id)} className={`w-full py-3.5 rounded-xl font-bold text-base text-white flex items-center justify-center gap-2 active:scale-95 transition-all bg-gradient-to-r ${p.cor}`}>
+                      {p.cta} <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="bg-gradient-to-r from-violet-600 to-indigo-700 rounded-2xl p-5 text-center space-y-3">
+          <p className="text-lg font-black text-white">Voc\u00ea tem uma academia ou est\u00fadio?</p>
+          <p className="text-base text-violet-200">Cadastre seu neg\u00f3cio e use todas as ferramentas gratuitamente.</p>
+          <Link href="/profissional/catalogo" className="block w-full py-3.5 bg-white text-violet-700 rounded-xl font-black text-base uppercase active:scale-95 transition-all">
+            Cadastrar Minha Academia
+          </Link>
+        </div>
+      </main>
+
+      <BottomNav isAdmin={isAdmin} />
+
+      {showModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center">
+          <div className="bg-white rounded-t-3xl w-full max-w-md p-6 space-y-4">
+            <h2 className="text-xl font-black text-gray-800">Come\u00e7ar agora</h2>
+            <p className="text-sm text-gray-500">
+              {planoSelecionado === 'gratuito' ? 'Plano gratuito, sem cart\u00e3o.' : 'Pr\u00e9-pago: R$ 9,90/m\u00eas \u00b7 \U0001f381 20 dias gr\u00e1tis.'}
+            </p>
+            <input placeholder="Nome da academia / est\u00fadio" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-400" />
+            <input type="tel" placeholder="Celular (WhatsApp)" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-400" />
+            <input type="email" placeholder="E-mail" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-400" />
+            <button className="w-full py-4 bg-gradient-to-r from-violet-600 to-indigo-700 text-white rounded-2xl font-black text-lg active:scale-95 transition-all">
+              {planoSelecionado === 'gratuito' ? '\U0001f381 Ativar Plano Gr\u00e1tis' : '\u2705 Assinar por R$ 9,90/m\u00eas'}
+            </button>
+            <button onClick={() => setShowModal(false)} className="w-full py-3 text-sm text-gray-500 hover:text-gray-700">Cancelar</button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+"""
+
+with open('c:/valente_conecta/app/academia/page.tsx', 'w', encoding='utf-8') as f:
+    f.write(content)
+print('ok')

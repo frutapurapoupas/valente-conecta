@@ -1,9 +1,10 @@
 {
   "name": "Valente Conecta",
   "short_name": "Valente",
+  "description": "Plataforma colaborativa de Valente, BA",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#09090b",
   "theme_color": "#6366f1",
   "icons": [
     {
@@ -16,6 +17,43 @@
       "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Usuário Geral",
+      "short_name": "Início",
+      "description": "Busca, carteira, ofertas",
+      "url": "/",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Empresa / Loja",
+      "short_name": "Minha Loja",
+      "description": "PDV, estoque, catálogo",
+      "url": "/pdv/colaborativo",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Ambulante",
+      "short_name": "Ambulante",
+      "description": "Vendas rápidas e catálogo móvel",
+      "url": "/ambulantes",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Profissional Liberal",
+      "short_name": "Profissional",
+      "description": "Perfil, catálogo e planos",
+      "url": "/profissional/catalogo",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Admin Master",
+      "short_name": "Admin",
+      "description": "Painel administrativo completo",
+      "url": "/admin/login",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
   ]
 }

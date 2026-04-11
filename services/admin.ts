@@ -54,7 +54,7 @@ async function getTransactionsLastMonth(): Promise<Transaction[]> {
   const { data } = await supabase
     .from('transactions')
     .select('*')
-    .gte('createdAt', lastMonth.toISOString())
+    .gte('created_at', lastMonth.toISOString())
   
   return data || []
 }
@@ -64,10 +64,10 @@ async function getRecentActivities(): Promise<Activity[]> {
   yesterday.setDate(yesterday.getDate() - 1)
   
   const [newUsers, newCompanies, pendingProductsList, newOffers] = await Promise.all([
-    supabase.from('users').select('id, name, createdAt').gte('createdAt', yesterday.toISOString()).limit(10),
-    supabase.from('companies').select('id, nomeFantasia, createdAt').gte('createdAt', yesterday.toISOString()).limit(10),
-    supabase.from('products').select('id, name, createdAt, status').in('status', ['pending_completion', 'pending_sync']).limit(10),
-    supabase.from('offers').select('id, title, createdAt, status').eq('status', 'pending').limit(10)
+    supabase.from('users').select('id, name, created_at').gte('created_at', yesterday.toISOString()).limit(10),
+    supabase.from('companies').select('id, nome_fantasia, created_at').gte('created_at', yesterday.toISOString()).limit(10),
+    supabase.from('products').select('id, name, created_at, status').in('status', ['pending_completion', 'pending_sync']).limit(10),
+    supabase.from('offers').select('id, title, created_at, status').eq('status', 'pending').limit(10)
   ])
 
   const activities: Activity[] = []
@@ -79,7 +79,7 @@ async function getRecentActivities(): Promise<Activity[]> {
       description: `Novo usuário: ${u.name}`,
       userId: u.id,
       userName: u.name,
-      timestamp: u.createdAt
+      timestamp: u.created_at
     })
   })
 
@@ -87,10 +87,10 @@ async function getRecentActivities(): Promise<Activity[]> {
     activities.push({
       id: c.id,
       type: 'company_register',
-      description: `Nova empresa: ${c.nomeFantasia}`,
+      description: `Nova empresa: ${c.nome_fantasia}`,
       userId: c.id,
-      userName: c.nomeFantasia,
-      timestamp: c.createdAt
+      userName: c.nome_fantasia,
+      timestamp: c.created_at
     })
   })
 
@@ -99,7 +99,7 @@ async function getRecentActivities(): Promise<Activity[]> {
       id: p.id,
       type: 'product_pending',
       description: `Produto pendente: ${p.name} (${p.status === 'pending_completion' ? 'complementação' : 'sincronização'})`,
-      timestamp: p.createdAt
+      timestamp: p.created_at
     })
   })
 
@@ -108,7 +108,7 @@ async function getRecentActivities(): Promise<Activity[]> {
       id: o.id,
       type: 'offer_created',
       description: `Nova oferta aguardando moderação: ${o.title}`,
-      timestamp: o.createdAt
+      timestamp: o.created_at
     })
   })
 
@@ -121,10 +121,10 @@ export async function getUsers(filters?: { role?: string, approved?: boolean, bl
   let query = supabase.from('users').select('*')
   
   if (filters?.role) query = query.eq('role', filters.role)
-  if (filters?.approved !== undefined) query = query.eq('approved', filters.approved)
-  if (filters?.blocked !== undefined) query = query.eq('blocked', filters.blocked)
+  if (filters?.approved !== undefined) query = query.eq('aprovado', filters.approved)
+  if (filters?.blocked !== undefined) query = query.eq('bloqueado', filters.blocked)
   
-  const { data, error } = await query.order('createdAt', { ascending: false })
+  const { data, error } = await query.order('created_at', { ascending: false })
   if (error) throw new Error(error.message)
   return data || []
 }
@@ -132,7 +132,7 @@ export async function getUsers(filters?: { role?: string, approved?: boolean, bl
 export async function approveUser(userId: string): Promise<void> {
   const { error } = await supabase
     .from('users')
-    .update({ approved: true })
+    .update({ aprovado: true })
     .eq('id', userId)
   
   if (error) throw new Error(error.message)
@@ -143,7 +143,7 @@ export async function approveUser(userId: string): Promise<void> {
 export async function blockUser(userId: string, blocked: boolean): Promise<void> {
   const { error } = await supabase
     .from('users')
-    .update({ blocked })
+    .update({ bloqueado: blocked })
     .eq('id', userId)
   
   if (error) throw new Error(error.message)
@@ -152,17 +152,17 @@ export async function blockUser(userId: string, blocked: boolean): Promise<void>
 export async function updateUserSaldo(userId: string, amount: number, operation: 'add' | 'subtract'): Promise<void> {
   const { data: user } = await supabase
     .from('users')
-    .select('saldoConecta')
+    .select('saldo_conecta')
     .eq('id', userId)
     .single()
   
   const newSaldo = operation === 'add' 
-    ? (user?.saldoConecta || 0) + amount 
-    : (user?.saldoConecta || 0) - amount
+    ? (user?.saldo_conecta || 0) + amount 
+    : (user?.saldo_conecta || 0) - amount
   
   const { error } = await supabase
     .from('users')
-    .update({ saldoConecta: newSaldo })
+    .update({ saldo_conecta: newSaldo })
     .eq('id', userId)
   
   if (error) throw new Error(error.message)
@@ -174,7 +174,7 @@ export async function getCompanies(): Promise<Company[]> {
   const { data, error } = await supabase
     .from('companies')
     .select('*')
-    .order('createdAt', { ascending: false })
+    .order('created_at', { ascending: false })
   
   if (error) throw new Error(error.message)
   return data || []
@@ -206,7 +206,7 @@ export async function createOrUpdateCompany(company: Partial<Company>): Promise<
 export async function approveCompany(companyId: string): Promise<void> {
   const { error } = await supabase
     .from('companies')
-    .update({ approved: true })
+    .update({ aprovado: true })
     .eq('id', companyId)
   
   if (error) throw new Error(error.message)
@@ -217,7 +217,7 @@ export async function approveCompany(companyId: string): Promise<void> {
 export async function updateCompanyPlan(companyId: string, plano: string, validade: string): Promise<void> {
   const { error } = await supabase
     .from('companies')
-    .update({ plano, planoValidade: validade })
+    .update({ plan: plano, plano_validade: validade })
     .eq('id', companyId)
   
   if (error) throw new Error(error.message)
@@ -228,9 +228,9 @@ export async function updateCompanyPlan(companyId: string, plano: string, valida
 export async function getPendingProducts(): Promise<Product[]> {
   const { data, error } = await supabase
     .from('products')
-    .select('*, empresas(nomeFantasia)')
+    .select('*, empresas(nome_fantasia)')
     .in('status', ['pending_completion', 'pending_sync'])
-    .order('createdAt', { ascending: true })
+    .order('created_at', { ascending: true })
   
   if (error) throw new Error(error.message)
   return data || []
@@ -261,12 +261,12 @@ export async function rejectProduct(productId: string, reason: string): Promise<
   
   const { data: product } = await supabase
     .from('products')
-    .select('createdBy')
+    .select('company_id')
     .eq('id', productId)
     .single()
   
-  if (product?.createdBy) {
-    await notifyUser(product.createdBy, 'product_rejected', { reason })
+  if (product?.company_id) {
+    await notifyUser(product.company_id, 'product_rejected', { reason })
   }
 }
 
@@ -288,7 +288,7 @@ export async function getPendingOffers(): Promise<Offer[]> {
     .from('offers')
     .select('*, users(name)')
     .eq('status', 'pending')
-    .order('createdAt', { ascending: true })
+    .order('created_at', { ascending: true })
   
   if (error) throw new Error(error.message)
   return data || []
@@ -313,12 +313,12 @@ export async function rejectOffer(offerId: string, reason: string): Promise<void
   
   const { data: offer } = await supabase
     .from('offers')
-    .select('userId')
+    .select('user_id')
     .eq('id', offerId)
     .single()
   
-  if (offer?.userId) {
-    await notifyUser(offer.userId, 'offer_rejected', { reason })
+  if (offer?.user_id) {
+    await notifyUser(offer.user_id, 'offer_rejected', { reason })
   }
 }
 
@@ -332,7 +332,7 @@ export async function getTransactionsForCompensation(cidade?: string): Promise<T
   
   if (cidade) query = query.eq('cidade', cidade)
   
-  const { data, error } = await query.order('createdAt', { ascending: true })
+  const { data, error } = await query.order('created_at', { ascending: true })
   
   if (error) throw new Error(error.message)
   return data || []
@@ -343,7 +343,7 @@ export async function compensateTransactions(transactionIds: string[]): Promise<
   
   const { error } = await supabase
     .from('transactions')
-    .update({ compensated: true, compensationDate: now })
+    .update({ compensated: true, compensation_date: now })
     .in('id', transactionIds)
   
   if (error) throw new Error(error.message)
@@ -375,13 +375,30 @@ export async function getAdminConfig(): Promise<AdminConfig> {
     }
   }
   
-  return data
+  return {
+    maxPhotosPerProduct: data.max_fotos_por_produto ?? 2,
+    extraConsultaValue: data.valor_consulta_extra ?? 1,
+    unlockOtherCityValue: data.valor_desbloqueio_cidade ?? 30,
+    carouselImages: data.imagens_carrossel ?? [],
+    bonusIndicacaoUser: data.bonus_indicacao_usuario ?? 1,
+    bonusIndicacaoCompany: data.bonus_indicacao_empresa ?? 2,
+    freeDailyQueries: data.consultas_gratis_dia ?? 5
+  }
 }
 
 export async function updateAdminConfig(config: Partial<AdminConfig>): Promise<void> {
+  const dbData: Record<string, unknown> = {}
+  if (config.maxPhotosPerProduct !== undefined) dbData.max_fotos_por_produto = config.maxPhotosPerProduct
+  if (config.extraConsultaValue !== undefined) dbData.valor_consulta_extra = config.extraConsultaValue
+  if (config.unlockOtherCityValue !== undefined) dbData.valor_desbloqueio_cidade = config.unlockOtherCityValue
+  if (config.carouselImages !== undefined) dbData.imagens_carrossel = config.carouselImages
+  if (config.bonusIndicacaoUser !== undefined) dbData.bonus_indicacao_usuario = config.bonusIndicacaoUser
+  if (config.bonusIndicacaoCompany !== undefined) dbData.bonus_indicacao_empresa = config.bonusIndicacaoCompany
+  if (config.freeDailyQueries !== undefined) dbData.consultas_gratis_dia = config.freeDailyQueries
+
   const { error } = await supabase
     .from('admin_config')
-    .update(config)
+    .update(dbData)
     .eq('id', 1)
   
   if (error) throw new Error(error.message)
@@ -393,11 +410,11 @@ async function notifyUser(userId: string, type: string, extra?: any): Promise<vo
   console.log(`Notificando usuário ${userId} sobre ${type}`, extra)
   
   await supabase.from('notifications').insert({
-    userId,
+    user_id: userId,
     type,
     data: extra,
     read: false,
-    createdAt: new Date().toISOString()
+    created_at: new Date().toISOString()
   })
 }
 
@@ -419,7 +436,7 @@ export async function unlockCityForUser(userId: string, cidade: string, days: nu
   const { error } = await supabase
     .from('user_city_access')
     .upsert({
-      userId,
+      user_id: userId,
       cidade,
       validade: validade.toISOString()
     })

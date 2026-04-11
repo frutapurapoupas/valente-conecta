@@ -1,78 +1,144 @@
 ﻿'use client'
-import { useState, useEffect } from 'react'
+
+import { useState } from 'react'
+import { useAdminUsuarios } from '@/hooks/useAdminUsuarios'
+import { Users, Search, ShieldCheck, Building2, User, Loader2, CheckCircle2, Ban } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import { Dumbbell, CheckCircle2, Clock } from 'lucide-react' // Ícones para o status
 
-export default function UsuariosMaster() {
-  const [usuarios, setUsuarios] = useState<any[]>([])
-  const [filtro, setFiltro] = useState('TODOS')
+const ROLE_LABEL: Record<string, string> = {
+  admin_master: 'Admin',
+  company:      'Empresa',
+  user:         'Usuário',
+}
+const ROLE_COR: Record<string, string> = {
+  admin_master: 'bg-yellow-500/15 text-yellow-400',
+  company:      'bg-indigo-500/15 text-indigo-400',
+  user:         'bg-zinc-700 text-zinc-400',
+}
+const STATUS_COR: Record<string, string> = {
+  active:  'bg-emerald-500',
+  blocked: 'bg-red-500',
+  pending: 'bg-amber-500',
+}
 
-  useEffect(() => { fetch() }, [])
-  
-  async function fetch() {
-    const { data } = await supabase.from('usuarios').select('*').order('created_at', { ascending: false })
-    if (data) setUsuarios(data)
+export default function UsuariosPage() {
+  const { users, loading } = useAdminUsuarios()
+  const [filtro, setFiltro] = useState('')
+  const [acao, setAcao] = useState<string | null>(null)
+
+  const filtrados = users.filter(u => {
+    if (!filtro.trim()) return true
+    const q = filtro.toLowerCase()
+    return (u.name ?? '').toLowerCase().includes(q) ||
+           (u.email ?? '').toLowerCase().includes(q) ||
+           (u.role ?? '').toLowerCase().includes(q)
+  })
+
+  async function toggleBloquear(id: string, bloqueado: boolean) {
+    setAcao(id)
+    await supabase.from('users').update({ status: bloqueado ? 'active' : 'blocked' }).eq('id', id)
+    setAcao(null)
+    window.location.reload()
   }
 
-  // NOVA FUNÇÃO: Liberar/Bloquear acesso pontualmente
-  async function alternarAcessoAcademia(id: string, statusAtual: string) {
-    const novoStatus = statusAtual === 'liberado' ? 'pendente' : 'liberado'
-    const { error } = await supabase
-      .from('usuarios')
-      .update({ status_academia: novoStatus })
-      .eq('id', id)
-    
-    if (!error) fetch() // Atualiza a lista na tela
-  }
+  if (loading) return (
+    <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+      <Loader2 className="w-6 h-6 text-zinc-500 animate-spin" />
+    </div>
+  )
 
   return (
-    <div className="min-h-screen bg-black text-white p-4 md:p-10 font-sans">
-      <header className="mb-10 border-b-4 border-zinc-900 pb-10">
-        <h1 className="text-5xl md:text-8xl font-black uppercase italic tracking-tighter">
-          Usuários & <span className="text-yellow-400">Empresas</span>
-        </h1>
-        {/* Filtros mantidos... */}
+    <div className="min-h-screen bg-zinc-950 text-white">
+      {/* HEADER */}
+      <header className="sticky top-0 z-30 bg-zinc-950/95 backdrop-blur border-b border-zinc-900 px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Users className="w-5 h-5 text-indigo-400" />
+          <div>
+            <h1 className="text-2xl font-black uppercase italic text-white leading-none">Usuários</h1>
+            <p className="text-sm text-zinc-600 font-bold uppercase tracking-widest">{users.length} cadastrados</p>
+          </div>
+        </div>
+        <div className="flex gap-2 text-sm font-bold">
+          <span className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-1.5 text-zinc-400">{users.filter(u => u.role === 'company').length} <span className="text-zinc-600">empresas</span></span>
+          <span className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-1.5 text-zinc-400">{users.filter(u => !u.role || u.role === 'user').length} <span className="text-zinc-600">usuários</span></span>
+          <span className="bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-1.5 text-red-400">{users.filter(u => u.status === 'blocked').length} <span className="text-red-600">bloqueados</span></span>
+        </div>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {usuarios.filter(u => filtro === 'TODOS' || u.bairro === filtro).map(u => (
-          <div key={u.id} className="bg-zinc-900 p-6 rounded-3xl border-2 border-zinc-800 flex flex-col justify-between">
-            <div>
-              <div className="flex justify-between items-start">
-                <p className="text-zinc-500 font-bold text-xs uppercase">{u.bairro}</p>
-                {/* Badge de Status da Academia */}
-                {u.status_academia === 'liberado' ? (
-                  <span className="bg-green-500/10 text-green-500 text-[10px] font-black px-2 py-1 rounded-full flex items-center gap-1">
-                    <CheckCircle2 size={12} /> ACADEMIA OK
-                  </span>
-                ) : (
-                  <span className="bg-zinc-800 text-zinc-500 text-[10px] font-black px-2 py-1 rounded-full flex items-center gap-1">
-                    <Clock size={12} /> PENDENTE
-                  </span>
+      <main className="max-w-3xl mx-auto p-4 space-y-4 pb-20">
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
+          <input
+            placeholder="Buscar por nome, email ou tipo..."
+            value={filtro}
+            onChange={e => setFiltro(e.target.value)}
+            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-4 py-3 text-base text-white placeholder:text-zinc-600 focus:border-indigo-500/50 outline-none"
+          />
+        </div>
+
+        {/* Lista */}
+        <section className="space-y-2">
+          {filtrados.length === 0 && (
+            <p className="text-center text-zinc-600 text-base py-12">Nenhum usuário encontrado</p>
+          )}
+          {filtrados.map(u => {
+            const role = u.role ?? 'user'
+            const bloqueado = u.status === 'blocked'
+            return (
+              <div
+                key={u.id}
+                className={`bg-zinc-900 border rounded-2xl p-3 flex items-center gap-3 ${bloqueado ? 'border-red-500/20 opacity-60' : 'border-zinc-800'}`}
+              >
+                {/* Avatar */}
+                <div className="w-12 h-12 rounded-xl bg-zinc-800 flex items-center justify-center flex-shrink-0">
+                  {role === 'admin_master' ? <ShieldCheck className="w-5 h-5 text-yellow-400" />
+                   : role === 'company'    ? <Building2   className="w-5 h-5 text-indigo-400" />
+                   :                        <User         className="w-5 h-5 text-zinc-500" />}
+                </div>
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="font-black text-lg text-white truncate">{u.name ?? 'Sem nome'}</p>
+                    <span className={`text-sm font-black uppercase px-2 py-0.5 rounded-full flex-shrink-0 ${ROLE_COR[role] ?? ROLE_COR.user}`}>
+                      {ROLE_LABEL[role] ?? role}
+                    </span>
+                  </div>
+                  <p className="text-base text-zinc-500 truncate">{u.email ?? '—'}</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className={`w-2 h-2 rounded-full flex-shrink-0 ${STATUS_COR[u.status ?? 'active'] ?? 'bg-zinc-600'}`} />
+                    <span className="text-base text-zinc-600 capitalize">{u.status ?? 'active'}</span>
+                    {u.saldo_conecta != null && (
+                      <span className="text-base text-yellow-500 font-bold">{Number(u.saldo_conecta).toFixed(0)} ✦</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Ação */}
+                {role !== 'admin_master' && (
+                  <button
+                    onClick={() => toggleBloquear(u.id, bloqueado)}
+                    disabled={acao === u.id}
+                    className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-black uppercase transition-all disabled:opacity-50 ${
+                      bloqueado
+                        ? 'bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25'
+                        : 'bg-red-500/10 text-red-400 hover:bg-red-500/20'
+                    }`}
+                  >
+                    {acao === u.id
+                      ? <Loader2 className="w-3 h-3 animate-spin" />
+                      : bloqueado
+                        ? <><CheckCircle2 className="w-3 h-3" /> Ativar</>
+                        : <><Ban className="w-3 h-3" /> Bloquear</>
+                    }
+                  </button>
                 )}
               </div>
-              <h3 className="text-2xl font-black uppercase italic">{u.nome}</h3>
-              <p className="text-yellow-400 font-mono mb-4">{u.telefone}</p>
-            </div>
-
-            <div className="space-y-2">
-              <button 
-                onClick={() => alternarAcessoAcademia(u.id, u.status_academia)}
-                className={`w-full p-3 rounded-xl font-black uppercase italic text-sm flex items-center justify-center gap-2 transition ${
-                  u.status_academia === 'liberado' ? 'bg-red-900/50 text-red-500 border border-red-500' : 'bg-white text-black'
-                }`}
-              >
-                <Dumbbell size={16} />
-                {u.status_academia === 'liberado' ? 'Bloquear Academia' : 'Liberar Academia'}
-              </button>
-              
-              <button onClick={() => window.open(`https://wa.me/55${u.telefone.replace(/\D/g,'')}`)} className="w-full bg-green-600 p-3 rounded-xl font-black uppercase italic text-sm">
-                WhatsApp
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+            )
+          })}
+        </section>
+      </main>
     </div>
   )
 }

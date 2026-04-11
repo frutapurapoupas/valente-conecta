@@ -7,7 +7,7 @@ export interface Transaction {
   amount: number
   type: 'WELCOME_BONUS' | 'PURCHASE' | 'REFERRAL' | 'COMPENSATION' | 'OFFER_UNLOCK'
   description: string
-  cidade_base: string
+  cidade_base: string  // coluna 'cidade' no DB
   created_at: string
 }
 
@@ -21,7 +21,7 @@ export async function createWelcomeBonus(userId: string, amount: number = 10, ci
     amount: amount,
     type: 'WELCOME_BONUS',
     description: 'Bônus de boas-vindas Valente Conecta',
-    cidade_base: city
+    cidade: city
   })
 
   if (error) throw new Error(`Erro ao gerar bônus: ${error.message}`)

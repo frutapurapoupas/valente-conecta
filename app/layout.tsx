@@ -1,24 +1,29 @@
-﻿import './globals.css'
-import { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
+import './globals.css'
+import ClientLayout from '@/components/ClientLayout'
 
 export const metadata: Metadata = {
   title: 'Valente Conecta',
+  description: 'Plataforma de PDV Colaborativo',
   manifest: '/manifest.json',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'black-translucent',
-    title: 'Valente Conecta',
-  },
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <html lang="pt-br">
+    <html lang="pt-BR">
       <head>
+        <meta name="theme-color" content="#6366f1" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Valente Conecta" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
-      <body className="antialiased bg-gray-50">
-        {children}
+      <body>
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   )

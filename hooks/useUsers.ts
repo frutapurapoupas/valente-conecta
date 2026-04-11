@@ -21,8 +21,8 @@ export function useUsers() {
     }
   }, [])
 
-  const handleApprove = async (userId: string, approved: boolean) => {
-    await approveUser(userId, approved)
+  const handleApprove = async (userId: string, _approved: boolean) => {
+    await approveUser(userId)
     await fetchUsers()
   }
 

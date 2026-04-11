@@ -1,3 +1,5 @@
+import { supabase } from '@/lib/supabase'
+
 /**
  * Realiza o pagamento de um produto usando saldo de bônus
  */
@@ -5,7 +7,7 @@ export async function payWithBonus(senderId: string, merchantId: string, amount:
   // 1. Verifica se o usuário tem saldo de bônus suficiente
   const { data: user } = await supabase.from('users').select('referral_balance').eq('id', senderId).single();
   
-  if (user.referral_balance < amount) {
+  if (!user || user.referral_balance < amount) {
     throw new Error("Saldo de bônus insuficiente.");
   }
 

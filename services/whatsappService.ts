@@ -1,3 +1,7 @@
+function generateToken(phone: string): string {
+  return Buffer.from(`${phone}-${Date.now()}`).toString('base64url')
+}
+
 /**
  * Envia o link de acesso personalizado e instruções de instalação
  */

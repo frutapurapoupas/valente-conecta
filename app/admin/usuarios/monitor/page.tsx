@@ -1,41 +1,11 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import { Users, Wallet, Lock, Gift, Coins, ArrowUpRight, ShieldCheck, Search } from 'lucide-react'
+import { useAdminMonitor } from '@/hooks/useAdminMonitor'
 
 export default function GestaoFinanceiraUsuariosMaster() {
-  const [usuarios] = useState([
-    { 
-      id: 1, 
-      nome: "João Silva", 
-      local: "Centro, Valente",
-      bonusIndicacao: 150.00,
-      outrosBonus: 25.00,
-      saldoCarteira: 175.00,
-      saldoBloqueado: 50.00,
-      status: "Verificado"
-    },
-    { 
-      id: 2, 
-      nome: "Maria Oliveira", 
-      local: "Bairro Manteiga, Valente",
-      bonusIndicacao: 320.00,
-      outrosBonus: 80.00,
-      saldoCarteira: 400.00,
-      saldoBloqueado: 120.00,
-      status: "Em Auditoria"
-    },
-    { 
-      id: 3, 
-      nome: "Carlos Souza", 
-      local: "Zona Rural, Valente",
-      bonusIndicacao: 20.00,
-      outrosBonus: 0.00,
-      saldoCarteira: 20.00,
-      saldoBloqueado: 0.00,
-      status: "Verificado"
-    }
-  ])
+  const { usuarios } = useAdminMonitor()
 
   return (
     <div className="min-h-screen bg-black text-white p-12">

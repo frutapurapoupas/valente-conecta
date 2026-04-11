@@ -1,11 +1,27 @@
-'use client'
+﻿'use client'
 
-import { useState } from 'react'
-import { Search, MapPin, Zap, Clock, Star } from 'lucide-react'
+import { Search, MapPin, Zap, Star, ChevronDown, Lock, Unlock, X, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
 import ProfessionalCard from '@/components/services/ProfessionalStatus'
+import { useExplorarPage } from '@/hooks/useExplorarPage'
+import { useDesbloquearCidade } from '@/hooks/useDesbloquearCidade'
 
 export default function ExplorarPage() {
-  const [activeFilter, setActiveFilter] = useState('todos')
+  const { activeFilter, setActiveFilter, categorias } = useExplorarPage()
+  const {
+    cidadeAtiva,
+    cidades,
+    modalAberto,
+    cidadeSelecionada,
+    saldoConectas,
+    custo,
+    desbloqueando,
+    erro,
+    abrirSeletor,
+    fecharModal,
+    selecionarCidade,
+    confirmarDesbloqueio,
+    diasRestantes,
+  } = useDesbloquearCidade()
 
   return (
     <div className="min-h-screen bg-dark-1 pb-24">
@@ -14,9 +30,16 @@ export default function ExplorarPage() {
         <div className="flex justify-between items-center">
           <div>
             <p className="text-gray-500 text-sm font-bold uppercase tracking-widest">Você está em</p>
-            <h2 className="text-2xl font-black text-white flex items-center gap-2">
-              <MapPin className="text-secondary w-5 h-5" /> VALENTE, BA
-            </h2>
+            <button
+              onClick={abrirSeletor}
+              className="flex items-center gap-1.5 group"
+            >
+              <MapPin className="text-secondary w-5 h-5" />
+              <h2 className="text-2xl font-black text-white uppercase">
+                {cidadeAtiva.nome}
+              </h2>
+              <ChevronDown className="text-gray-500 w-4 h-4 group-hover:text-secondary transition-colors mt-0.5" />
+            </button>
           </div>
           <div className="w-12 h-12 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center">
              <Zap className="text-yellow-500 fill-yellow-500" />
@@ -35,7 +58,7 @@ export default function ExplorarPage() {
 
         {/* FILTROS DE CATEGORIA RÁPIDOS */}
         <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
-          {['Todos', 'Borracharia', 'Manicure', 'Aluguel', 'Fretes', 'Mecânico'].map((cat) => (
+          {categorias.map((cat) => (
             <button 
               key={cat}
               onClick={() => setActiveFilter(cat.toLowerCase())}
@@ -61,7 +84,6 @@ export default function ExplorarPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-4">
-          {/* Aqui mapeamos os profissionais que estão com is_online: true */}
           <ProfessionalCard pro={{
             name: 'Borracharia do Baixinho',
             category: 'Borracharia 24h',
@@ -80,7 +102,6 @@ export default function ExplorarPage() {
         </h3>
         
         <div className="grid grid-cols-2 gap-4">
-          {/* Exemplo de card de oferta com o Paywall de R$ 1,00 */}
           <div className="bg-dark-2 rounded-3xl border border-white/5 p-4 space-y-3">
              <div className="aspect-square bg-gray-800 rounded-2xl overflow-hidden grayscale-[0.5]">
                 <img src="/casa-aluguel.jpg" className="w-full h-full object-cover opacity-50" />
@@ -93,6 +114,102 @@ export default function ExplorarPage() {
           </div>
         </div>
       </section>
+
+      {/* ═══ MODAL: SELETOR DE CIDADE ═══════════════════════════════════ */}
+      {modalAberto && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-t-3xl w-full max-w-md p-6 space-y-5">
+
+            {/* Header modal */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-black text-white text-lg">Escolher cidade</h3>
+                <p className="text-xs text-zinc-500 mt-0.5">
+                  Saldo: <span className="text-yellow-400 font-black">{saldoConectas} ✦</span>
+                </p>
+              </div>
+              <button onClick={fecharModal} className="p-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 transition-colors">
+                <X className="w-5 h-5 text-zinc-400" />
+              </button>
+            </div>
+
+            {/* Lista de cidades */}
+            <div className="space-y-2">
+              {cidades.map(c => {
+                const dias = diasRestantes(c.validadeAte)
+                const isAtiva = c.id === cidadeAtiva.id
+                const isSelecionada = cidadeSelecionada?.id === c.id
+
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => selecionarCidade(c)}
+                    className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all text-left ${
+                      isAtiva
+                        ? 'border-yellow-400/40 bg-yellow-400/5'
+                        : isSelecionada
+                        ? 'border-indigo-500/50 bg-indigo-500/10'
+                        : 'border-zinc-800 bg-zinc-800/40 hover:border-zinc-700'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <MapPin className={`w-4 h-4 flex-shrink-0 ${isAtiva ? 'text-yellow-400' : c.desbloqueada ? 'text-emerald-400' : 'text-zinc-600'}`} />
+                      <div>
+                        <p className={`font-bold text-sm ${isAtiva ? 'text-yellow-400' : 'text-white'}`}>
+                          {c.nome}
+                          {isAtiva && <span className="ml-2 text-[10px] font-black text-yellow-500/80 uppercase">atual</span>}
+                        </p>
+                        {c.desbloqueada && dias != null && !isAtiva && (
+                          <p className="text-[10px] text-emerald-400/70">Desbloqueada · {dias}d restantes</p>
+                        )}
+                        {!c.desbloqueada && (
+                          <p className="text-[10px] text-zinc-600">{custo} ✦ por 30 dias</p>
+                        )}
+                      </div>
+                    </div>
+                    {c.desbloqueada
+                      ? <Unlock className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                      : <Lock className="w-4 h-4 text-zinc-600 flex-shrink-0" />
+                    }
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Painel de confirmação de desbloqueio */}
+            {cidadeSelecionada && !cidadeSelecionada.desbloqueada && (
+              <div className="bg-indigo-500/10 border border-indigo-500/30 rounded-2xl p-4 space-y-3">
+                <p className="text-sm font-bold text-indigo-300">
+                  Desbloquear <span className="text-white">{cidadeSelecionada.nome}</span> por 30 dias?
+                </p>
+                <div className="flex items-center gap-2 text-xs text-zinc-400">
+                  <span>Custo:</span>
+                  <span className="font-black text-yellow-400 text-base">{custo} ✦</span>
+                  <span className="text-zinc-600 ml-1">→ restará {saldoConectas - custo} ✦</span>
+                </div>
+                {erro && (
+                  <div className="flex items-center gap-2 text-xs text-red-400">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                    {erro}
+                  </div>
+                )}
+                <button
+                  onClick={confirmarDesbloqueio}
+                  disabled={desbloqueando || saldoConectas < custo}
+                  className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white py-3 rounded-xl text-sm font-black uppercase flex items-center justify-center gap-2 transition-all"
+                >
+                  {desbloqueando
+                    ? <><Loader2 className="w-4 h-4 animate-spin" /> Desbloqueando...</>
+                    : <><Unlock className="w-4 h-4" /> Confirmar desbloqueio</>
+                  }
+                </button>
+              </div>
+            )}
+
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }

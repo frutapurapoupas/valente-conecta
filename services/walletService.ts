@@ -1,3 +1,9 @@
+import { supabase } from '@/lib/supabase'
+
+async function notifyReceiver(_receiverId: string, _amount: number): Promise<void> {
+  // TODO: integrar com pushNotification / WhatsApp
+}
+
 /**
  * Realiza a transferência de bônus entre usuários ou para prestadores
  */
@@ -5,7 +11,7 @@ export async function transferBonus(senderId: string, receiverId: string, amount
   // 1. Verifica se quem envia tem saldo suficiente
   const { data: sender } = await supabase.from('users').select('referral_balance').eq('id', senderId).single();
   
-  if (sender.referral_balance < amount) {
+  if (!sender || sender.referral_balance < amount) {
     throw new Error("Saldo de bônus insuficiente para esta transferência.");
   }
 

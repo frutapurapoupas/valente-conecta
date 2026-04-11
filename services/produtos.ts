@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/db/supabase'
+import { supabase } from '@/lib/supabase'
 
 export interface Produto {
   id: string
@@ -12,6 +12,9 @@ export interface Produto {
   fonte_origem: 'manual' | 'leitor' | 'crowdsourcing' | 'integracao'
   created_at: string
   updated_at: string
+  em_promocao?: boolean
+  preco_anterior?: number
+  preco_atualizado_em?: string
 }
 
 export interface NotificacaoAdmin {
@@ -38,7 +41,7 @@ export async function buscarProdutosPorNome(nome: string, limite: number = 10): 
     .from('produtos')
     .select('*')
     .ilike('nome', `${nome}%`)
-    .eq('status', 'ativo')
+    .or('status.eq.ativo,and(status.eq.pendente_validacao,estoque.gt.0)')
     .order('nome')
     .limit(limite)
   

@@ -1,3 +1,18 @@
+function triggerSecurityLock(): void {
+  // TODO: implementar bloqueio de sessão
+  console.warn('[Security] Session locked')
+}
+
+function sendSecurityAlert(message: string): void {
+  // TODO: integrar com WhatsApp/Email
+  console.warn('[Security] Alert:', message)
+}
+
+async function sendWhatsAppAlert(message: string): Promise<void> {
+  // TODO: integrar com Evolution API
+  console.warn('[Security] WhatsApp alert:', message)
+}
+
 const AUTHORIZED_DEVICES = [
   'ID_DO_SEU_CELULAR',
   'ID_DO_SEU_TABLET',

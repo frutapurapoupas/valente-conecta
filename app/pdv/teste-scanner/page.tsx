@@ -1,27 +1,11 @@
 'use client'
-import React, { useState } from 'react';
+import React from 'react';
 import CameraScanner from '@/components/pdv/CameraScanner';
 import ModalVinculoManual from '@/components/pdv/ModalVinculoManual';
-import { useScanner } from '@/lib/hooks/useScanner';
+import { useTesteScannerPage } from '@/hooks/useTesteScannerPage';
 
 export default function PaginaTesteReal() {
-  // Substitua pelo ID de uma empresa real do seu banco para o teste
-  const { processarBip, modalAberto, setModalAberto, codigoDesconhecido } = useScanner('ID_DA_EMPRESA_AQUI');
-  const [carrinho, setCarrinho] = useState<any[]>([]);
-  const [ultimoBip, setUltimoBip] = useState('');
-
-  const handleScan = async (codigo: string) => {
-    if (codigo === ultimoBip) return; // Evita bipar o mesmo item várias vezes por segundo
-    setUltimoBip(codigo);
-    
-    const res = await processarBip(codigo);
-    
-    if (res?.sucesso) {
-      setCarrinho((prev) => [res.produto, ...prev]);
-      // Feedback sonoro ou visual de sucesso
-      navigator.vibrate?.(100); 
-    }
-  };
+  const { carrinho, ultimoBip, setUltimoBip, handleScan, modalAberto, setModalAberto, codigoDesconhecido } = useTesteScannerPage()
 
   return (
     <div className="min-h-screen bg-black text-white p-6 font-mono">

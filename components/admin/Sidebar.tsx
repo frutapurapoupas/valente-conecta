@@ -2,16 +2,17 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Users, Building2, Package, Megaphone, DollarSign, Settings, LogOut, Sparkles } from 'lucide-react'
+import { LayoutDashboard, Users, Building2, Package, Megaphone, DollarSign, Settings, LogOut, Sparkles, Briefcase } from 'lucide-react'
 
 const menuItems = [
-  { label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-  { label: 'Usuários', href: '/admin/usuarios', icon: Users },
-  { label: 'Empresas', href: '/admin/empresas', icon: Building2 },
-  { label: 'Catálogo', href: '/admin/catalogo', icon: Package },
-  { label: 'Ofertas', href: '/admin/ofertas', icon: Megaphone },
-  { label: 'Financeiro', href: '/admin/financeiro', icon: DollarSign },
-  { label: 'Configurações', href: '/admin/configuracoes', icon: Settings },
+  { label: 'Dashboard',       href: '/admin/dashboard',      icon: LayoutDashboard },
+  { label: 'Usuários',        href: '/admin/usuarios',        icon: Users },
+  { label: 'Empresas',        href: '/admin/empresas',        icon: Building2 },
+  { label: 'Profissionais',   href: '/admin/profissionais',   icon: Briefcase },
+  { label: 'Catálogo',        href: '/admin/catalogo',        icon: Package },
+  { label: 'Ofertas',         href: '/admin/ofertas',         icon: Megaphone },
+  { label: 'Financeiro',      href: '/admin/financeiro',      icon: DollarSign },
+  { label: 'Configurações',   href: '/admin/configuracoes',   icon: Settings },
 ]
 
 export default function Sidebar() {

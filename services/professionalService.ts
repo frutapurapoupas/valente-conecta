@@ -1,3 +1,5 @@
+import { supabase } from '@/lib/supabase'
+
 export interface ProfessionalCatalog {
   userId: string
   daily_rate: number     // Valor da diária

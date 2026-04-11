@@ -1,211 +1,76 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Plus, Edit, Trash2, Camera, Package, Search, AlertCircle, X, Save, Upload, AlertTriangle } from 'lucide-react'
-
-interface Produto {
-  id: string
-  nome: string
-  codigo: string
-  preco: number
-  quantidade: number
-  foto?: string
-  fornecedor?: string
-  precoCompra?: number
-  validade?: string
-  pendenteAprovacao?: boolean
-  dataCadastro?: string
-}
+import { ArrowLeft, Plus, Edit, Trash2, Package, Search, AlertCircle, X, Save, Upload, AlertTriangle, Globe, Star, TrendingDown, FileText } from 'lucide-react'
+import { useEstoquePage } from '@/hooks/useEstoquePage'
+import ExtratoEstoque from './_ExtratoEstoque'
 
 export default function EstoquePage() {
-  const [produtos, setProdutos] = useState<Produto[]>([])
-  const [searchTerm, setSearchTerm] = useState('')
-  const [showModal, setShowModal] = useState(false)
-  const [editando, setEditando] = useState<Produto | null>(null)
-  const [planoPago, setPlanoPago] = useState(false) // Simular - verificar plano do usuário
-  const [formData, setFormData] = useState({
-    nome: '',
-    codigo: '',
-    preco: '',
-    quantidade: '',
-    fornecedor: '',
-    precoCompra: '',
-    validade: ''
-  })
+  const {
+    produtos,
+    searchTerm,
+    setSearchTerm,
+    showModal,
+    setShowModal,
+    editando,
+    planoPago,
+    formData,
+    updateFormData,
+    handleSubmit,
+    handleEdit,
+    handleDelete,
+    abrirNovoProduto,
+    produtosFiltrados,
+    produtosVencidos,
+    produtosProximosVencer,
+    showCatalogo,
+    setShowCatalogo,
+    produtosAprovados,
+  } = useEstoquePage()
 
-  useEffect(() => {
-    // Carregar produtos do localStorage
-    const saved = localStorage.getItem('produtos_estoque')
-    if (saved) {
-      setProdutos(JSON.parse(saved))
-    } else {
-      // Produtos de exemplo
-      const exemplos: Produto[] = [
-        { 
-          id: '1', 
-          nome: 'Arroz Integral 1kg', 
-          codigo: '7891234567890', 
-          preco: 8.90, 
-          quantidade: 50, 
-          fornecedor: 'Distribuidora A', 
-          precoCompra: 6.50, 
-          validade: '2025-12-31',
-          dataCadastro: new Date().toISOString()
-        },
-        { 
-          id: '2', 
-          nome: 'Feijão Preto 1kg', 
-          codigo: '7891234567891', 
-          preco: 7.90, 
-          quantidade: 30, 
-          fornecedor: 'Distribuidora A', 
-          precoCompra: 5.80, 
-          validade: '2025-10-15',
-          dataCadastro: new Date().toISOString()
-        },
-        { 
-          id: '3', 
-          nome: 'Açúcar 1kg', 
-          codigo: '7891234567892', 
-          preco: 4.50, 
-          quantidade: 100, 
-          fornecedor: 'Distribuidora B', 
-          precoCompra: 3.20, 
-          validade: '2026-01-20',
-          dataCadastro: new Date().toISOString()
-        },
-        { 
-          id: '4', 
-          nome: 'Café 500g', 
-          codigo: '7891234567893', 
-          preco: 12.90, 
-          quantidade: 25, 
-          fornecedor: 'Distribuidora C', 
-          precoCompra: 9.50, 
-          validade: '2025-08-10',
-          dataCadastro: new Date().toISOString()
-        }
-      ]
-      setProdutos(exemplos)
-      localStorage.setItem('produtos_estoque', JSON.stringify(exemplos))
-    }
-  }, [])
-
-  const handleSubmit = () => {
-    if (!formData.nome || !formData.codigo || !formData.preco || !formData.quantidade) {
-      alert('Preencha os campos obrigatórios: Nome, Código, Preço e Quantidade')
-      return
-    }
-
-    const novoProduto: Produto = {
-      id: editando?.id || Date.now().toString(),
-      nome: formData.nome,
-      codigo: formData.codigo,
-      preco: parseFloat(formData.preco),
-      quantidade: parseInt(formData.quantidade),
-      fornecedor: formData.fornecedor || undefined,
-      precoCompra: formData.precoCompra ? parseFloat(formData.precoCompra) : undefined,
-      validade: formData.validade || undefined,
-      pendenteAprovacao: !editando, // Se for novo, precisa de aprovação do Admin Master
-      dataCadastro: editando?.dataCadastro || new Date().toISOString()
-    }
-
-    let novosProdutos
-    if (editando) {
-      novosProdutos = produtos.map(p => p.id === editando.id ? novoProduto : p)
-    } else {
-      novosProdutos = [...produtos, novoProduto]
-    }
-
-    setProdutos(novosProdutos)
-    localStorage.setItem('produtos_estoque', JSON.stringify(novosProdutos))
-    
-    // Alertar Admin Master se for produto novo
-    if (!editando) {
-      alert('✅ Produto adicionado! Aguardando aprovação do Admin Master para publicação no catálogo.')
-    } else {
-      alert('✅ Produto atualizado com sucesso!')
-    }
-    
-    // Atualizar catálogo automático
-    const catalogo = localStorage.getItem('catalogo_automatico')
-    const novoCatalogo = catalogo ? JSON.parse(catalogo) : []
-    const indexCatalogo = novoCatalogo.findIndex((p: any) => p.codigo === formData.codigo)
-    if (indexCatalogo !== -1) {
-      novoCatalogo[indexCatalogo] = { ...novoProduto, dataAtualizacao: new Date().toISOString() }
-    } else {
-      novoCatalogo.push({ ...novoProduto, dataCadastro: new Date().toISOString() })
-    }
-    localStorage.setItem('catalogo_automatico', JSON.stringify(novoCatalogo))
-    
-    setShowModal(false)
-    setEditando(null)
-    setFormData({ nome: '', codigo: '', preco: '', quantidade: '', fornecedor: '', precoCompra: '', validade: '' })
-  }
-
-  const handleEdit = (produto: Produto) => {
-    setEditando(produto)
-    setFormData({
-      nome: produto.nome,
-      codigo: produto.codigo,
-      preco: produto.preco.toString(),
-      quantidade: produto.quantidade.toString(),
-      fornecedor: produto.fornecedor || '',
-      precoCompra: produto.precoCompra?.toString() || '',
-      validade: produto.validade || ''
-    })
-    setShowModal(true)
-  }
-
-  const handleDelete = (id: string) => {
-    if (confirm('Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita.')) {
-      const novosProdutos = produtos.filter(p => p.id !== id)
-      setProdutos(novosProdutos)
-      localStorage.setItem('produtos_estoque', JSON.stringify(novosProdutos))
-      
-      // Remover do catálogo automático
-      const catalogo = localStorage.getItem('catalogo_automatico')
-      if (catalogo) {
-        const catalogoArray = JSON.parse(catalogo)
-        const novoCatalogo = catalogoArray.filter((p: any) => p.id !== id)
-        localStorage.setItem('catalogo_automatico', JSON.stringify(novoCatalogo))
-      }
-      
-      alert('✅ Produto excluído com sucesso!')
-    }
-  }
-
-  const produtosFiltrados = produtos.filter(p => 
-    p.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.codigo.includes(searchTerm)
-  )
-
-  const produtosVencidos = produtos.filter(p => p.validade && new Date(p.validade) < new Date())
-  const produtosProximosVencer = produtos.filter(p => {
-    if (!p.validade) return false
-    const diasRestantes = Math.ceil((new Date(p.validade).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
-    return diasRestantes <= 30 && diasRestantes > 0
-  })
+  const [mostrarExtrato, setMostrarExtrato] = useState(false)
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
+      {mostrarExtrato && (
+        <ExtratoEstoque
+          produtos={produtosFiltrados}
+          onClose={() => setMostrarExtrato(false)}
+        />
+      )}
       <header className="bg-gradient-to-r from-blue-600 to-purple-600 text-white sticky top-0 z-20">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
-            <Link href="/pdv" className="p-2 hover:bg-white/20 rounded-lg">
+            <Link href="/pdv/colaborativo" className="p-2 hover:bg-white/20 rounded-lg">
               <ArrowLeft className="w-5 h-5" />
             </Link>
             <img src="/logo.png" alt="Logo" className="w-8 h-8" />
             <span className="font-bold text-lg">Estoque</span>
           </div>
-          <button
-            onClick={() => { setEditando(null); setFormData({ nome: '', codigo: '', preco: '', quantidade: '', fornecedor: '', precoCompra: '', validade: '' }); setShowModal(true) }}
-            className="bg-white/20 px-3 py-1 rounded-full text-sm flex items-center gap-1"
-          >
-            <Plus className="w-4 h-4" />
-            Novo Produto
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setMostrarExtrato(true)}
+              className="bg-white/20 px-3 py-1 rounded-full text-sm flex items-center gap-1 hover:bg-white/30 transition"
+            >
+              <FileText className="w-4 h-4" />
+              Extrato
+            </button>
+            <button
+              onClick={() => setShowCatalogo(true)}
+              className="bg-white/20 px-3 py-1 rounded-full text-sm flex items-center gap-1 hover:bg-white/30 transition"
+            >
+              <Globe className="w-4 h-4" />
+              Catálogo
+            </button>
+            <button
+              onClick={abrirNovoProduto}
+              className="bg-white/20 px-3 py-1 rounded-full text-sm flex items-center gap-1 hover:bg-white/30 transition"
+            >
+              <Plus className="w-4 h-4" />
+              Novo
+            </button>
+          </div>
         </div>
       </header>
 
@@ -292,7 +157,7 @@ export default function EstoquePage() {
               <Package className="w-12 h-12 mx-auto text-gray-400 mb-2" />
               <p className="text-gray-500">Nenhum produto encontrado</p>
               <button
-                onClick={() => { setEditando(null); setFormData({ nome: '', codigo: '', preco: '', quantidade: '', fornecedor: '', precoCompra: '', validade: '' }); setShowModal(true) }}
+                onClick={abrirNovoProduto}
                 className="mt-3 text-blue-500 text-sm"
               >
                 + Adicionar primeiro produto
@@ -309,13 +174,24 @@ export default function EstoquePage() {
                       {produto.pendenteAprovacao && (
                         <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">Aguardando aprovação</span>
                       )}
+                      {produto.emPromocao && (
+                        <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <TrendingDown className="w-3 h-3" /> Em promoção
+                        </span>
+                      )}
                       {produto.validade && new Date(produto.validade) < new Date() && planoPago && (
                         <span className="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded-full">Vencido</span>
                       )}
                     </div>
                     <p className="text-xs text-gray-500">Código: {produto.codigo}</p>
                     <div className="flex flex-wrap gap-4 mt-2">
-                      <p className="text-sm">Preço: <span className="font-bold text-green-600">R$ {produto.preco.toFixed(2)}</span></p>
+                      <div className="flex items-center gap-1.5 text-sm">
+                        <span>Preço:</span>
+                        {produto.emPromocao && produto.precoAnterior != null && (
+                          <span className="text-gray-400 line-through text-xs">R$ {produto.precoAnterior.toFixed(2)}</span>
+                        )}
+                        <span className={`font-bold ${produto.emPromocao ? 'text-red-600' : 'text-green-600'}`}>R$ {produto.preco.toFixed(2)}</span>
+                      </div>
                       <p className="text-sm">Estoque: <span className={`font-bold ${produto.quantidade < 10 ? 'text-red-500' : 'text-gray-700'}`}>{produto.quantidade} un</span></p>
                       {planoPago && produto.fornecedor && (
                         <p className="text-xs text-gray-500">Fornecedor: {produto.fornecedor}</p>
@@ -359,7 +235,7 @@ export default function EstoquePage() {
                 <input
                   type="text"
                   value={formData.nome}
-                  onChange={(e) => setFormData({...formData, nome: e.target.value})}
+                  onChange={(e) => updateFormData('nome', e.target.value)}
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Ex: Arroz Integral"
                 />
@@ -369,7 +245,7 @@ export default function EstoquePage() {
                 <input
                   type="text"
                   value={formData.codigo}
-                  onChange={(e) => setFormData({...formData, codigo: e.target.value})}
+                  onChange={(e) => updateFormData('codigo', e.target.value)}
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="7891234567890"
                 />
@@ -381,7 +257,7 @@ export default function EstoquePage() {
                     type="number"
                     step="0.01"
                     value={formData.preco}
-                    onChange={(e) => setFormData({...formData, preco: e.target.value})}
+                    onChange={(e) => updateFormData('preco', e.target.value)}
                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="0,00"
                   />
@@ -391,7 +267,7 @@ export default function EstoquePage() {
                   <input
                     type="number"
                     value={formData.quantidade}
-                    onChange={(e) => setFormData({...formData, quantidade: e.target.value})}
+                    onChange={(e) => updateFormData('quantidade', e.target.value)}
                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="0"
                   />
@@ -420,7 +296,7 @@ export default function EstoquePage() {
                     <input
                       type="text"
                       value={formData.fornecedor}
-                      onChange={(e) => setFormData({...formData, fornecedor: e.target.value})}
+                      onChange={(e) => updateFormData('fornecedor', e.target.value)}
                       className={`w-full px-4 py-2 border rounded-lg ${!planoPago ? 'bg-gray-50' : ''}`}
                       placeholder="Digite o fornecedor"
                       disabled={!planoPago}
@@ -433,7 +309,7 @@ export default function EstoquePage() {
                         type="number"
                         step="0.01"
                         value={formData.precoCompra}
-                        onChange={(e) => setFormData({...formData, precoCompra: e.target.value})}
+                        onChange={(e) => updateFormData('precoCompra', e.target.value)}
                         className={`w-full px-4 py-2 border rounded-lg ${!planoPago ? 'bg-gray-50' : ''}`}
                         placeholder="0,00"
                         disabled={!planoPago}
@@ -444,7 +320,7 @@ export default function EstoquePage() {
                       <input
                         type="date"
                         value={formData.validade}
-                        onChange={(e) => setFormData({...formData, validade: e.target.value})}
+                        onChange={(e) => updateFormData('validade', e.target.value)}
                         className={`w-full px-4 py-2 border rounded-lg ${!planoPago ? 'bg-gray-50' : ''}`}
                         disabled={!planoPago}
                       />
@@ -472,6 +348,73 @@ export default function EstoquePage() {
                 <Save className="w-5 h-5" />
                 {editando ? 'Salvar Alterações' : 'Adicionar Produto'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Catálogo Online */}
+      {showCatalogo && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center">
+          <div className="bg-white w-full max-w-lg rounded-t-3xl max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between px-5 py-4 border-b">
+              <div>
+                <h2 className="text-lg font-bold flex items-center gap-2">
+                  <Globe className="w-5 h-5 text-blue-500" /> Como aparece na internet
+                </h2>
+                <p className="text-xs text-gray-400">{produtosAprovados.length} produto(s) publicado(s) no catálogo</p>
+              </div>
+              <button onClick={() => setShowCatalogo(false)} className="p-2 hover:bg-gray-100 rounded-xl">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Simulação visual do catálogo público */}
+            <div className="overflow-y-auto flex-1 p-4">
+              {/* Header fake de loja */}
+              <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-4 mb-4 text-white text-center">
+                <div className="w-14 h-14 bg-white/30 rounded-full mx-auto mb-2 flex items-center justify-center">
+                  <Package className="w-8 h-8" />
+                </div>
+                <p className="font-bold">Minha Loja</p>
+                <p className="text-xs text-blue-200">Valente, BA · Catálogo Online</p>
+              </div>
+
+              {produtosAprovados.length === 0 ? (
+                <div className="text-center py-10 text-gray-400">
+                  <Globe className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                  <p className="font-semibold">Nenhum produto publicado ainda</p>
+                  <p className="text-xs mt-1">Produtos aguardam aprovação do Admin Master para aparecer aqui.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  {produtosAprovados.map(p => (
+                    <div key={p.id} className="bg-white border border-gray-100 rounded-2xl p-3 shadow-sm">
+                      <div className="w-full h-24 bg-gray-100 rounded-xl mb-3 flex items-center justify-center">
+                        {p.foto
+                          ? <img src={p.foto} className="w-full h-full object-cover rounded-xl" />
+                          : <Package className="w-8 h-8 text-gray-300" />
+                        }
+                      </div>
+                      <p className="font-semibold text-sm leading-tight text-gray-800">{p.nome}</p>
+                      <p className="text-green-600 font-bold mt-1">R$ {p.preco.toFixed(2)}</p>
+                      {p.quantidade < 10 && (
+                        <span className="text-[10px] text-orange-500 font-bold">Últimas unidades</span>
+                      )}
+                      <div className="mt-2 flex items-center gap-1">
+                        {[1,2,3,4,5].map(s => <Star key={s} className="w-3 h-3 text-amber-400 fill-amber-400" />)}
+                      </div>
+                      <button className="mt-2 w-full text-xs bg-blue-600 text-white rounded-lg py-1.5 font-bold">
+                        Ver detalhes
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <p className="text-center text-xs text-gray-400 mt-6 pb-2">
+                Este é um preview de como os clientes veem seu catálogo no app e no site.
+              </p>
             </div>
           </div>
         </div>

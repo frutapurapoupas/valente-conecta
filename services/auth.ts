@@ -68,6 +68,7 @@ export function loginPorTelefone(telefone: string): Usuario | null {
 
 // Verificar plano do usuário
 export function getPlanoUsuario(): 'gratis' | 'basico' | 'premium' {
+  if (typeof window === 'undefined') return 'gratis'
   const usuarioLogado = localStorage.getItem('usuario_logado')
   if (!usuarioLogado) return 'gratis'
   

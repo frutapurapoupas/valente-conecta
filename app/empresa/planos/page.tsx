@@ -1,0 +1,235 @@
+'use client'
+
+import { useState } from 'react'
+import Link from 'next/link'
+import {
+  ArrowLeft, CheckCircle2, Zap, Crown, Store,
+  Lock, Loader2, ShieldCheck, Wrench,
+} from 'lucide-react'
+
+interface Plano {
+  id: string
+  nome: string
+  preco: string
+  precoNum: number
+  descricao: string
+  cor: string
+  icone: React.ReactNode
+  destaque: boolean
+  beneficios: string[]
+}
+
+const PLANOS: Plano[] = [
+  {
+    id: 'gratuito',
+    nome: 'Grátis',
+    preco: 'R$ 0',
+    precoNum: 0,
+    descricao: 'Para colocar sua loja no mapa',
+    cor: 'border-zinc-700',
+    icone: <Store className="w-5 h-5 text-zinc-400" />,
+    destaque: false,
+    beneficios: [
+      'Perfil público da loja',
+      'Até 5 produtos no catálogo',
+      'Status aberto/fechado',
+      'Contatos visíveis apenas com desbloqueio (R$ 5,90)',
+      'Sem destaque na busca',
+    ],
+  },
+  {
+    id: 'basico',
+    nome: 'Básico',
+    preco: 'R$ 29,90/mês',
+    precoNum: 29.9,
+    descricao: 'Para lojas e comércios locais · pré-pago',
+    cor: 'border-blue-500/40',
+    icone: <Zap className="w-5 h-5 text-blue-400" />,
+    destaque: false,
+    beneficios: [
+      'Tudo do plano Grátis',
+      'Até 50 produtos no catálogo',
+      'Contatos visíveis para todos (sem custo)',
+      'Badge "Verificado ✓" no perfil',
+      'Prioridade na busca local',
+      '🎁 20 dias grátis de boas-vindas',
+    ],
+  },
+  {
+    id: 'premium',
+    nome: 'Premium',
+    preco: 'R$ 49,90/mês',
+    precoNum: 49.9,
+    descricao: 'Para lojas que querem crescer · pré-pago',
+    cor: 'border-yellow-500/40',
+    icone: <Crown className="w-5 h-5 text-yellow-400" />,
+    destaque: true,
+    beneficios: [
+      'Tudo do plano Básico',
+      'Catálogo ilimitado de produtos',
+      'Inteligência comercial e relatórios',
+      'Destaque no carrossel e publicidade',
+      'PDV completo (vendas, estoque, fiado)',
+      '🎁 20 dias grátis de boas-vindas',
+    ],
+  },
+  {
+    id: 'fisco',
+    nome: 'Fisco',
+    preco: 'R$ 99,90/mês',
+    precoNum: 99.9,
+    descricao: 'Módulo fiscal e contábil · pré-pago',
+    cor: 'border-emerald-500/40',
+    icone: <Wrench className="w-5 h-5 text-emerald-400" />,
+    destaque: false,
+    beneficios: [
+      'Tudo do plano Premium',
+      'Módulo fiscal e contábil completo',
+      'Emissão de relatórios tributários',
+      'Integração com dados de movimento',
+      'Suporte prioritário',
+      '🎁 20 dias grátis de boas-vindas',
+    ],
+  },
+]
+
+// Plano ativo da empresa logada (em produção viria do contexto de auth)
+const PLANO_ATUAL = 'gratuito'
+
+export default function EmpresaPlanosPage() {
+  const [assinando, setAssinando] = useState<string | null>(null)
+  const [assinado, setAssinado] = useState<string | null>(null)
+
+  async function handleAssinar(planoId: string) {
+    if (planoId === 'gratuito') return
+    setAssinando(planoId)
+    // TODO: integrar gateway de pagamento
+    await new Promise(r => setTimeout(r, 1500))
+    setAssinando(null)
+    setAssinado(planoId)
+  }
+
+  const planoAtivo = assinado ?? PLANO_ATUAL
+
+  return (
+    <div className="min-h-screen bg-zinc-950 text-white font-sans pb-24">
+
+      {/* HEADER */}
+      <header className="sticky top-0 z-30 bg-zinc-950/95 backdrop-blur border-b border-zinc-900 px-4 py-3 flex items-center gap-3">
+        <Link
+          href="/pdv/colaborativo"
+          className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 transition-all flex-shrink-0"
+        >
+          <ArrowLeft className="w-4 h-4 text-zinc-400" />
+        </Link>
+        <div>
+          <h1 className="text-lg font-black text-white leading-none">Planos da Loja</h1>
+          <p className="text-sm text-zinc-500">Escolha o plano ideal para seu negócio</p>
+        </div>
+      </header>
+
+      <main className="max-w-2xl mx-auto px-4 pt-6 space-y-4">
+
+        {/* Plano atual */}
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex items-center gap-3">
+          <ShieldCheck className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+          <div>
+            <p className="text-base font-black text-white leading-none">
+              Plano atual: <span className="text-emerald-400 capitalize">{planoAtivo}</span>
+            </p>
+            <p className="text-sm text-zinc-500 mt-0.5">
+              {planoAtivo === 'gratuito'
+                ? 'Faça upgrade para liberar seus contatos e atrair mais clientes'
+                : 'Seu plano está ativo e funcionando'}
+            </p>
+          </div>
+        </div>
+
+        {/* Cards de plano */}
+        {PLANOS.map(plano => {
+          const ativo = planoAtivo === plano.id
+          const carregando = assinando === plano.id
+          const concluido = assinado === plano.id
+
+          return (
+            <div
+              key={plano.id}
+              className={`bg-zinc-900 border-2 rounded-2xl overflow-hidden transition-all ${
+                plano.destaque ? plano.cor + ' shadow-lg shadow-blue-500/10' : plano.cor
+              } ${ativo ? 'ring-2 ring-emerald-500/40' : ''}`}
+            >
+              {plano.destaque && (
+                <div className="bg-blue-600 text-white text-sm font-black uppercase text-center py-1.5 tracking-widest">
+                  Mais popular
+                </div>
+              )}
+
+              <div className="p-5 space-y-4">
+                {/* Nome + preço */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center flex-shrink-0">
+                      {plano.icone}
+                    </div>
+                    <div>
+                      <p className="text-lg font-black text-white leading-none">{plano.nome}</p>
+                      <p className="text-sm text-zinc-500 mt-0.5">{plano.descricao}</p>
+                    </div>
+                  </div>
+                  <p className="text-xl font-black text-white flex-shrink-0 text-right leading-tight">{plano.preco}</p>
+                </div>
+
+                {/* Benefícios */}
+                <ul className="space-y-2">
+                  {plano.beneficios.map((b, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <CheckCircle2 className={`w-4 h-4 flex-shrink-0 mt-0.5 ${
+                        plano.destaque ? 'text-blue-400' : plano.id === 'premium' ? 'text-yellow-400' : 'text-zinc-500'
+                      }`} />
+                      <span className="text-base text-zinc-300">{b}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* Botão */}
+                {ativo ? (
+                  <div className="flex items-center justify-center gap-2 bg-emerald-500/15 text-emerald-400 py-3 rounded-xl font-black uppercase text-base">
+                    <CheckCircle2 className="w-4 h-4" /> Plano atual
+                  </div>
+                ) : concluido ? (
+                  <div className="flex items-center justify-center gap-2 bg-emerald-500/15 text-emerald-400 py-3 rounded-xl font-black uppercase text-base">
+                    <CheckCircle2 className="w-4 h-4" /> Assinado!
+                  </div>
+                ) : plano.id === 'gratuito' ? (
+                  <div className="flex items-center justify-center gap-2 bg-zinc-800 text-zinc-600 py-3 rounded-xl font-black uppercase text-base cursor-default">
+                    <Lock className="w-4 h-4" /> Plano gratuito
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => handleAssinar(plano.id)}
+                    disabled={!!assinando}
+                    className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-black uppercase text-base transition-all disabled:opacity-50 ${
+                      plano.destaque
+                        ? 'bg-blue-600 hover:bg-blue-500 text-white'
+                        : 'bg-yellow-500 hover:bg-yellow-400 text-black'
+                    }`}
+                  >
+                    {carregando
+                      ? <><Loader2 className="w-4 h-4 animate-spin" /> Processando...</>
+                      : <><Zap className="w-4 h-4" /> Assinar {plano.nome}</>
+                    }
+                  </button>
+                )}
+              </div>
+            </div>
+          )
+        })}
+
+        {/* Rodapé */}
+        <p className="text-center text-sm text-zinc-600 pb-4">
+          Cancele a qualquer momento · Sem fidelidade
+        </p>
+      </main>
+    </div>
+  )
+}

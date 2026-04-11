@@ -1,70 +1,20 @@
 'use client'
 
-import { useState, Suspense, useEffect } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { Suspense } from 'react'
 import Link from 'next/link'
-import { Check, ArrowLeft, Users, Building, User, Smartphone, Download, Zap, Phone, Mail } from 'lucide-react'
-import { cadastrarUsuario, loginPorTelefone, getUsuarioLogado } from '@/services/auth'
+import { Check, ArrowLeft, Phone } from 'lucide-react'
+import { useIndiquePage } from '@/hooks/useIndiquePage'
 
 function IndicationContent() {
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  const type = searchParams.get('tipo') || 'amigo'
-  const codigo = searchParams.get('codigo') || Date.now().toString()
-  
-  const [step, setStep] = useState(1)
-  const [formData, setFormData] = useState({
-    nome: '',
-    email: '',
-    telefone: '',
-    tipoPessoa: 'fisica'
-  })
-  const [installed, setInstalled] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [erro, setErro] = useState('')
-
-  useEffect(() => {
-    // Verificar se já está logado
-    const usuario = getUsuarioLogado()
-    if (usuario) {
-      setInstalled(true)
-      setTimeout(() => router.push('/'), 2000)
-    }
-  }, [])
-
-  const handleLogin = async () => {
-    setLoading(true)
-    setErro('')
-    
-    const usuario = loginPorTelefone(formData.telefone)
-    if (usuario) {
-      setInstalled(true)
-      setTimeout(() => router.push('/'), 2000)
-    } else {
-      setErro('Telefone não cadastrado. Complete o cadastro.')
-      setStep(2)
-    }
-    setLoading(false)
-  }
-
-  const handleCadastro = async () => {
-    if (!formData.nome || !formData.telefone || !formData.email) {
-      setErro('Preencha todos os campos')
-      return
-    }
-    
-    setLoading(true)
-    setErro('')
-    
-    const usuario = cadastrarUsuario(formData.nome, formData.telefone, formData.email)
-    if (usuario) {
-      setInstalled(true)
-      setTimeout(() => router.push('/'), 2000)
-    } else {
-      setErro('Telefone já cadastrado! Faça login.')
-    }
-    setLoading(false)
-  }
+  const {
+    step, setStep,
+    formData, updateForm,
+    installed,
+    loading,
+    erro,
+    handleLogin,
+    handleCadastro,
+  } = useIndiquePage()
 
   if (installed) {
     return (
@@ -108,7 +58,7 @@ function IndicationContent() {
                   <input
                     type="tel"
                     value={formData.telefone}
-                    onChange={(e) => setFormData({...formData, telefone: e.target.value})}
+                    onChange={(e) => updateForm('telefone', e.target.value)}
                     className="w-full pl-10 pr-4 py-3 border rounded-xl text-base"
                     placeholder="(00) 00000-0000"
                   />
@@ -164,7 +114,7 @@ function IndicationContent() {
               <input
                 type="text"
                 value={formData.nome}
-                onChange={(e) => setFormData({...formData, nome: e.target.value})}
+                onChange={(e) => updateForm('nome', e.target.value)}
                 className="w-full px-4 py-3 border rounded-xl"
                 placeholder="Digite seu nome"
               />
@@ -175,7 +125,7 @@ function IndicationContent() {
               <input
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                onChange={(e) => updateForm('email', e.target.value)}
                 className="w-full px-4 py-3 border rounded-xl"
                 placeholder="seu@email.com"
               />
@@ -186,8 +136,8 @@ function IndicationContent() {
               <input
                 type="tel"
                 value={formData.telefone}
-                onChange={(e) => setFormData({...formData, telefone: e.target.value})}
-                className="w-full px-4 py-3 border rounded-xl"
+                onChange={(e) => updateForm('telefone', e.target.value)}
+                  className="w-full px-4 py-3 border rounded-xl"
                 placeholder="(00) 00000-0000"
               />
             </div>

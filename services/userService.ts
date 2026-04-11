@@ -1,6 +1,16 @@
 ﻿import { supabase } from '@/lib/supabase'
 import { createWelcomeBonus } from './transactionService'
 
+export interface User {
+  id: string
+  name?: string
+  email?: string
+  role?: string
+  status?: string
+  created_at?: string
+  [key: string]: unknown
+}
+
 /**
  * Busca a lista de todos os usuários (necessário para o admin/usuarios)
  */
@@ -30,10 +40,10 @@ export async function approveUser(userId: string) {
 /**
  * Bloqueia um usuário
  */
-export async function blockUser(userId: string) {
+export async function blockUser(userId: string, blocked = true) {
   const { data, error } = await supabase
     .from('profiles')
-    .update({ status: 'blocked' })
+    .update({ status: blocked ? 'blocked' : 'active' })
     .eq('id', userId);
 
   if (error) throw error;

@@ -1,99 +1,24 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Search, Filter, Calendar, User, Phone, DollarSign, CheckCircle, Clock, AlertCircle, CreditCard, QrCode } from 'lucide-react'
-
-interface VendaFiada {
-  id: string
-  clienteId: string
-  clienteNome: string
-  clienteTelefone: string
-  valor: number
-  data: string
-  vencimento: string
-  status: 'pendente' | 'pago' | 'vencido'
-  itens: any[]
-  pagamento?: {
-    data: string
-    valor: number
-    metodo: string
-  }
-}
+import { ArrowLeft, Search, Calendar, User, Phone, AlertCircle, Zap } from 'lucide-react'
+import { useFiadoPage } from '@/hooks/useFiadoPage'
 
 export default function FiadoPage() {
-  const [vendasFiadas, setVendasFiadas] = useState<VendaFiada[]>([])
-  const [filtro, setFiltro] = useState<'todos' | 'pendente' | 'pago' | 'vencido'>('todos')
-  const [searchTerm, setSearchTerm] = useState('')
-  const [showPagamentoModal, setShowPagamentoModal] = useState<VendaFiada | null>(null)
-  const [planoPago, setPlanoPago] = useState(true) // Simular - verificar plano do usuário
-
-  useEffect(() => {
-    carregarVendas()
-  }, [])
-
-  const carregarVendas = () => {
-    const saved = localStorage.getItem('vendas_fiadas')
-    if (saved) {
-      const vendas = JSON.parse(saved)
-      // Atualizar status baseado na data de vencimento
-      const vendasAtualizadas = vendas.map((venda: VendaFiada) => {
-        if (venda.status === 'pendente' && new Date(venda.vencimento) < new Date()) {
-          return { ...venda, status: 'vencido' }
-        }
-        return venda
-      })
-      setVendasFiadas(vendasAtualizadas)
-      localStorage.setItem('vendas_fiadas', JSON.stringify(vendasAtualizadas))
-    }
-  }
-
-  const registrarPagamento = (venda: VendaFiada, metodo: string) => {
-    const vendaAtualizada = {
-      ...venda,
-      status: 'pago' as const,
-      pagamento: {
-        data: new Date().toISOString(),
-        valor: venda.valor,
-        metodo: metodo
-      }
-    }
-
-    const novasVendas = vendasFiadas.map(v => 
-      v.id === venda.id ? vendaAtualizada : v
-    )
-    setVendasFiadas(novasVendas)
-    localStorage.setItem('vendas_fiadas', JSON.stringify(novasVendas))
-    
-    // Atualizar saldo do cliente
-    const clientes = localStorage.getItem('clientes_fiado')
-    if (clientes) {
-      const clientesArray = JSON.parse(clientes)
-      const clienteIndex = clientesArray.findIndex((c: any) => c.id === venda.clienteId)
-      if (clienteIndex !== -1) {
-        clientesArray[clienteIndex].saldoFiado -= venda.valor
-        localStorage.setItem('clientes_fiado', JSON.stringify(clientesArray))
-      }
-    }
-
-    // Enviar notificação de pagamento (simulado)
-    alert(`✅ Pagamento registrado!\n\nCliente: ${venda.clienteNome}\nValor: R$ ${venda.valor.toFixed(2)}\nMétodo: ${metodo.toUpperCase()}\nNotificação enviada ao cliente.`)
-    
-    setShowPagamentoModal(null)
-  }
-
-  const enviarNotificacaoVencimento = (venda: VendaFiada) => {
-    alert(`📱 Notificação enviada para ${venda.clienteTelefone}:\n\nOlá ${venda.clienteNome}, seu pagamento de R$ ${venda.valor.toFixed(2)} vence hoje! Dirija-se à loja ou pague via PIX.`)
-  }
-
-  const vendasFiltradas = vendasFiadas.filter(venda => {
-    if (filtro !== 'todos' && venda.status !== filtro) return false
-    if (searchTerm && !venda.clienteNome.toLowerCase().includes(searchTerm.toLowerCase())) return false
-    return true
-  })
-
-  const totalPendente = vendasFiadas.filter(v => v.status === 'pendente').reduce((sum, v) => sum + v.valor, 0)
-  const totalVencido = vendasFiadas.filter(v => v.status === 'vencido').reduce((sum, v) => sum + v.valor, 0)
+  const {
+    vendasFiltradas,
+    filtro, setFiltro,
+    searchTerm, setSearchTerm,
+    showPagamentoModal, setShowPagamentoModal,
+    showUpgradeAlert, setShowUpgradeAlert,
+    planoPago,
+    registrarPagamento,
+    handleNotificarVencimento,
+    totalPendente,
+    totalVencido,
+    countPendente,
+    countVencido,
+  } = useFiadoPage()
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -114,12 +39,12 @@ export default function FiadoPage() {
           <div className="bg-white rounded-xl p-4 shadow-sm">
             <p className="text-sm text-gray-500">Total em Fiado</p>
             <p className="text-2xl font-bold text-yellow-600">R$ {totalPendente.toFixed(2)}</p>
-            <p className="text-xs text-gray-400">{vendasFiadas.filter(v => v.status === 'pendente').length} clientes</p>
+            <p className="text-xs text-gray-400">{countPendente} clientes</p>
           </div>
           <div className="bg-white rounded-xl p-4 shadow-sm">
             <p className="text-sm text-gray-500">Vencido</p>
             <p className="text-2xl font-bold text-red-600">R$ {totalVencido.toFixed(2)}</p>
-            <p className="text-xs text-gray-400">{vendasFiadas.filter(v => v.status === 'vencido').length} clientes</p>
+            <p className="text-xs text-gray-400">{countVencido} clientes</p>
           </div>
         </div>
 
@@ -214,15 +139,17 @@ export default function FiadoPage() {
 
               {venda.status === 'pendente' && (
                 <div className="flex gap-2 mt-3">
-                  {new Date(venda.vencimento).toDateString() === new Date().toDateString() && (
-                    <button
-                      onClick={() => enviarNotificacaoVencimento(venda)}
-                      className="flex-1 py-2 bg-yellow-100 text-yellow-700 rounded-lg text-sm flex items-center justify-center gap-1"
-                    >
-                      <AlertCircle className="w-4 h-4" />
-                      Notificar Vencimento
-                    </button>
-                  )}
+                  <button
+                    onClick={() => handleNotificarVencimento(venda)}
+                    className={`flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1 ${
+                      planoPago
+                        ? 'bg-yellow-100 text-yellow-700'
+                        : 'bg-gray-100 text-gray-400'
+                    }`}
+                  >
+                    <AlertCircle className="w-4 h-4" />
+                    {planoPago ? 'Notificar' : 'Notificar 🔒'}
+                  </button>
                   <button
                     onClick={() => setShowPagamentoModal(venda)}
                     className="flex-1 py-2 bg-green-500 text-white rounded-lg text-sm font-semibold"
@@ -241,6 +168,37 @@ export default function FiadoPage() {
           )}
         </div>
       </main>
+
+      {/* Alerta upgrade de plano */}
+      {showUpgradeAlert && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 text-center">
+            <Zap className="w-12 h-12 text-yellow-500 mx-auto mb-3" />
+            <h2 className="text-xl font-bold mb-2">Funcionalidade Premium</h2>
+            <p className="text-gray-500 text-sm mb-4">
+              O envio de notificações push e WhatsApp para o comprador — com nome da loja, valor da compra e saldo disponível — está disponível apenas nos <strong>planos pagos</strong>.
+            </p>
+            <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-3 text-xs text-yellow-700 mb-5 text-left">
+              <p className="font-bold mb-1">Com o plano pago você também libera:</p>
+              <p>• Notificação automática de vencimento</p>
+              <p>• Aviso de pagamento confirmado ao comprador</p>
+              <p>• Relatórios avançados de fiado</p>
+            </div>
+            <button
+              onClick={() => setShowUpgradeAlert(false)}
+              className="w-full py-3 bg-gradient-to-r from-yellow-400 to-amber-500 text-black rounded-xl font-bold mb-2"
+            >
+              Ver Planos
+            </button>
+            <button
+              onClick={() => setShowUpgradeAlert(false)}
+              className="w-full py-2 text-gray-400 text-sm"
+            >
+              Agora não
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Modal de Pagamento */}
       {showPagamentoModal && (
