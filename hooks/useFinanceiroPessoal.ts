@@ -63,13 +63,41 @@ export const CATEGORIAS_DESPESA: { value: LancamentoCategoria; label: string; em
 ]
 
 const STORAGE_KEY = 'fin_pessoal_lancamentos'
+const STORAGE_KEY_CARTOES = 'fin_pessoal_cartoes'
 const now = () => new Date().toISOString()
 const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+
+// ─── Cartões ──────────────────────────────────────────────────────────────────
+
+export type BandeiraCartao = 'visa' | 'mastercard' | 'elo' | 'amex' | 'hipercard' | 'outro'
+
+export interface Cartao {
+  id: string
+  apelido: string           // "Nubank principal", "Inter débito"
+  bandeira: BandeiraCartao
+  ultimos4: string          // últimos 4 dígitos
+  limite: number
+  diaVencimento: number     // 1-31
+  melhorDiaCompra: number   // calculado: vencimento - 10 dias
+  cor: string               // hex ou tailwind p/ personalização
+  criadoEm: string
+  atualizadoEm: string
+}
+
+export interface AlertaCartao {
+  cartaoId: string
+  apelido: string
+  tipo: 'melhor_dia' | 'fatura_proxima' | 'fatura_hoje' | 'fatura_atrasada'
+  diasRestantes: number     // negativo = já passou
+  mensagem: string
+  urgencia: 'info' | 'aviso' | 'critico'
+}
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useFinanceiroPessoal() {
   const [lancamentos, setLancamentos] = useState<Lancamento[]>([])
+  const [cartoes, setCartoes] = useState<Cartao[]>([])
   const [filtroMes, setFiltroMes] = useState<string>(() => {
     const d = new Date()
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
@@ -85,6 +113,10 @@ export function useFinanceiroPessoal() {
       const raw = localStorage.getItem(STORAGE_KEY)
       if (raw) setLancamentos(JSON.parse(raw))
     } catch { /* noop */ }
+    try {
+      const rawC = localStorage.getItem(STORAGE_KEY_CARTOES)
+      if (rawC) setCartoes(JSON.parse(rawC))
+    } catch { /* noop */ }
   }, [])
 
   // persist
@@ -92,6 +124,82 @@ export function useFinanceiroPessoal() {
     setLancamentos(list)
     localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
   }, [])
+
+  const persistCartoes = useCallback((list: Cartao[]) => {
+    setCartoes(list)
+    localStorage.setItem(STORAGE_KEY_CARTOES, JSON.stringify(list))
+  }, [])
+
+  // ─── CRUD cartões ────────────────────────────────────────────────────────────
+
+  const adicionarCartao = useCallback((dados: Omit<Cartao, 'id' | 'melhorDiaCompra' | 'criadoEm' | 'atualizadoEm'>) => {
+    // melhor dia = vencimento - 10, ajustado p/ mês
+    const melhor = dados.diaVencimento > 10 ? dados.diaVencimento - 10 : dados.diaVencimento + 20
+    const novo: Cartao = { ...dados, id: uid(), melhorDiaCompra: melhor, criadoEm: now(), atualizadoEm: now() }
+    persistCartoes([...cartoes, novo])
+  }, [cartoes, persistCartoes])
+
+  const atualizarCartao = useCallback((id: string, dados: Partial<Omit<Cartao, 'id' | 'criadoEm'>>) => {
+    const melhor = dados.diaVencimento
+      ? dados.diaVencimento > 10 ? dados.diaVencimento - 10 : dados.diaVencimento + 20
+      : undefined
+    persistCartoes(cartoes.map(c => c.id === id
+      ? { ...c, ...dados, ...(melhor !== undefined ? { melhorDiaCompra: melhor } : {}), atualizadoEm: now() }
+      : c
+    ))
+  }, [cartoes, persistCartoes])
+
+  const removerCartao = useCallback((id: string) => {
+    persistCartoes(cartoes.filter(c => c.id !== id))
+  }, [cartoes, persistCartoes])
+
+  // ─── Alertas de cartão ───────────────────────────────────────────────────────
+
+  const alertasCartoes: AlertaCartao[] = cartoes.flatMap(c => {
+    const hoje = new Date()
+    const diaHoje = hoje.getDate()
+    const alertas: AlertaCartao[] = []
+
+    // melhor dia de compra: avisa no dia exato
+    if (diaHoje === c.melhorDiaCompra) {
+      alertas.push({
+        cartaoId: c.id, apelido: c.apelido,
+        tipo: 'melhor_dia', diasRestantes: 0,
+        mensagem: `Hoje é o melhor dia para comprar no ${c.apelido}!`,
+        urgencia: 'info',
+      })
+    }
+
+    // próximo vencimento de fatura
+    const proxVenc = new Date(hoje.getFullYear(), hoje.getMonth(), c.diaVencimento)
+    if (proxVenc < hoje) proxVenc.setMonth(proxVenc.getMonth() + 1)
+    const diff = Math.round((proxVenc.getTime() - hoje.getTime()) / 86400000)
+
+    if (diff < 0) {
+      alertas.push({
+        cartaoId: c.id, apelido: c.apelido,
+        tipo: 'fatura_atrasada', diasRestantes: diff,
+        mensagem: `Fatura ${c.apelido} está ${Math.abs(diff)} dia(s) em atraso!`,
+        urgencia: 'critico',
+      })
+    } else if (diff === 0) {
+      alertas.push({
+        cartaoId: c.id, apelido: c.apelido,
+        tipo: 'fatura_hoje', diasRestantes: 0,
+        mensagem: `Fatura ${c.apelido} vence HOJE!`,
+        urgencia: 'critico',
+      })
+    } else if (diff <= 5) {
+      alertas.push({
+        cartaoId: c.id, apelido: c.apelido,
+        tipo: 'fatura_proxima', diasRestantes: diff,
+        mensagem: `Fatura ${c.apelido} vence em ${diff} dia(s)`,
+        urgencia: diff <= 2 ? 'critico' : 'aviso',
+      })
+    }
+
+    return alertas
+  })
 
   // ─── CRUD ───────────────────────────────────────────────────────────────────
 
@@ -210,5 +318,10 @@ export function useFinanceiroPessoal() {
     removerGrupoRecorrencia,
     marcarPago,
     adicionarProlabore,
+    cartoes,
+    adicionarCartao,
+    atualizarCartao,
+    removerCartao,
+    alertasCartoes,
   }
 }
