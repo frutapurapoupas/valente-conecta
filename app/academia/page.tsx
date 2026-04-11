@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import {
   CheckCircle, Flame, MapPin, Plus, Minus,
-  TrendingUp, BookOpen, Target, Trophy, Star, Wifi, WifiOff, Pencil
+  TrendingUp, BookOpen, Target, Trophy, Star, Wifi, WifiOff, Pencil, X
 } from 'lucide-react'
 import AcademiaHeader from '@/components/academia/Header'
 import BottomNav from '@/components/academia/BottomNav'
@@ -408,10 +408,20 @@ export default function AcademiaPage() {
       {showCadastro && (
         <div className="fixed inset-0 z-50 bg-indigo-950/90 flex items-end justify-center">
           <div className="bg-white rounded-t-3xl w-full max-w-md p-6 space-y-4 overflow-y-auto max-h-[90vh]">
-            <div className="text-center">
-              <span className="text-4xl">\uD83C\uDFCB\uFE0F</span>
-              <h2 className="text-xl font-black text-gray-800 mt-2">Seu Perfil de Treino</h2>
-              <p className="text-sm text-gray-500 mt-1">As notifica\u00e7\u00f5es de incentivo ser\u00e3o personalizadas para voc\u00ea</p>
+            <div className="text-center relative">
+              {perfil && (
+                <button
+                  onClick={() => setShowCadastro(false)}
+                  className="absolute right-0 top-0 w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-xl flex items-center justify-center transition active:scale-90"
+                >
+                  <X className="w-4 h-4 text-gray-500" />
+                </button>
+              )}
+              <span className="text-4xl">🏋️</span>
+              <h2 className="text-xl font-black text-gray-800 mt-2">
+                {perfil ? 'Editar Perfil de Treino' : 'Seu Perfil de Treino'}
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">As notificações de incentivo serão personalizadas para você</p>
             </div>
             <div className="space-y-3">
               <div>

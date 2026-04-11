@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowLeft, Settings } from 'lucide-react'
+import { ArrowLeft, Settings, X } from 'lucide-react'
 
 interface HeaderProps {
   isAdmin: boolean
@@ -23,7 +23,14 @@ export default function AcademiaHeader({
           <ArrowLeft className="w-6 h-6" />
         </Link>
         <h1 className="font-black text-xl tracking-tighter italic">VALENTE FITNESS</h1>
-        {isAdmin && <Settings className="text-yellow-400 w-6 h-6" />}
+        {isAdmin
+          ? <Settings className="text-yellow-400 w-6 h-6" />
+          : (
+            <Link href="/" className="w-9 h-9 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition active:scale-90">
+              <X className="w-5 h-5 text-white" />
+            </Link>
+          )
+        }
       </div>
 
       <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 text-center">
