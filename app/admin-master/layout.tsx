@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import AdminMasterGate from '@/components/AdminMasterGate'
 
 export const metadata: Metadata = {
   title: 'VC Admin Master',
@@ -15,7 +16,7 @@ export default function AdminMasterLayout({ children }: { children: React.ReactN
   return (
     <>
       <link rel="apple-touch-icon" href="/icon-192.png" />
-      {children}
+      <AdminMasterGate>{children}</AdminMasterGate>
     </>
   )
 }
