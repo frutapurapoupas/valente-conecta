@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState } from 'react'
 import Link from 'next/link'
 import {
@@ -338,22 +338,7 @@ function LinhaLancamento({ l, onPago, onEditar, onRemover, onRemoverGrupo }: Lin
             </button>
             {l.grupoRecorrencia && (
               <button onClick={onRemoverGrupo} className="flex items-center gap-1.5 px-3 py-2 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm font-bold hover:bg-red-500/20 transition-all">
-                <RotateCcw className="w-4 h-4" /> Remover série
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
-            <button onClick={onRemover} className="flex items-center gap-1.5 px-3 py-2 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm font-bold hover:bg-red-500/20 transition-all">
-              <Trash2 className="w-4 h-4" /> Remover
-            </button>
-            {l.grupoRecorrencia && (
-              <button onClick={onRemoverGrupo} className="flex items-center gap-1.5 px-3 py-2 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm font-bold hover:bg-red-500/20 transition-all">
-                <RotateCcw className="w-4 h-4" /> Remover série
+                <RotateCcw className="w-4 h-4" /> Remover serie
               </button>
             )}
           </div>
@@ -1059,3 +1044,4 @@ export default function FinanceiroPessoal() {
     </div>
   )
 }
+
