@@ -44,8 +44,8 @@ const PERFIS = [
   {
     id: 'admin',
     label: 'Admin Master',
-    desc: 'Login do painel administrativo',
-    path: '/admin/login',
+    desc: 'Painel completo de gestão',
+    path: '/admin/master',
     color: 'text-red-400',
     badge: 'bg-red-600',
   },
@@ -99,6 +99,68 @@ export default function InstaladorAdminPage() {
       </header>
 
       <main className="max-w-2xl mx-auto px-4 pt-5 space-y-5">
+
+        {/* ATALHOS RÁPIDOS */}
+        <div className="space-y-3">
+          <h2 className="text-base font-black text-white uppercase italic tracking-tighter flex items-center gap-2">
+            <QrCode className="w-5 h-5 text-yellow-400" /> Atalhos Rápidos
+          </h2>
+          <div className="grid grid-cols-2 gap-3">
+            {/* Admin Master */}
+            <div className="bg-zinc-900 border border-red-500/30 rounded-2xl p-4 flex flex-col items-center gap-3">
+              <div className="text-center">
+                <span className="text-xs font-black uppercase text-white bg-red-600 px-2.5 py-1 rounded-full">Admin</span>
+              </div>
+              <div className="p-2 bg-zinc-800 rounded-xl border border-zinc-700">
+                {origem
+                  ? <QRCodeImg url={`${origem}/admin/master`} size={130} />
+                  : <div className="w-[130px] h-[130px] bg-zinc-700 rounded-xl flex items-center justify-center"><RefreshCw className="w-5 h-5 text-zinc-500 animate-spin" /></div>
+                }
+              </div>
+              <p className="text-xs font-bold text-red-400 text-center leading-tight">Admin Master</p>
+              <div className="flex gap-2 w-full">
+                <a href={`${origem}/admin/master`} target="_blank" rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-1 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-xs font-bold text-zinc-300 transition-all">
+                  <ExternalLink className="w-3 h-3" /> Abrir
+                </a>
+                <button onClick={() => copiar(`${origem}/admin/master`)}
+                  className="flex-1 flex items-center justify-center gap-1 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-xs font-bold text-zinc-300 transition-all">
+                  {copiado === `${origem}/admin/master`
+                    ? <><CheckCircle2 className="w-3 h-3 text-emerald-400" /> OK!</>
+                    : <><Copy className="w-3 h-3" /> Copiar</>
+                  }
+                </button>
+              </div>
+            </div>
+
+            {/* Demo Geral */}
+            <div className="bg-zinc-900 border border-blue-500/30 rounded-2xl p-4 flex flex-col items-center gap-3">
+              <div className="text-center">
+                <span className="text-xs font-black uppercase text-white bg-blue-600 px-2.5 py-1 rounded-full">Demo</span>
+              </div>
+              <div className="p-2 bg-zinc-800 rounded-xl border border-zinc-700">
+                {origem
+                  ? <QRCodeImg url={`${origem}/`} size={130} />
+                  : <div className="w-[130px] h-[130px] bg-zinc-700 rounded-xl flex items-center justify-center"><RefreshCw className="w-5 h-5 text-zinc-500 animate-spin" /></div>
+                }
+              </div>
+              <p className="text-xs font-bold text-blue-400 text-center leading-tight">Demo Geral</p>
+              <div className="flex gap-2 w-full">
+                <a href={`${origem}/`} target="_blank" rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-1 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-xs font-bold text-zinc-300 transition-all">
+                  <ExternalLink className="w-3 h-3" /> Abrir
+                </a>
+                <button onClick={() => copiar(`${origem}/`)}
+                  className="flex-1 flex items-center justify-center gap-1 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-xs font-bold text-zinc-300 transition-all">
+                  {copiado === `${origem}/`
+                    ? <><CheckCircle2 className="w-3 h-3 text-emerald-400" /> OK!</>
+                    : <><Copy className="w-3 h-3" /> Copiar</>
+                  }
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* INFO */}
         <div className="bg-blue-600/10 border border-blue-500/20 rounded-2xl p-4">

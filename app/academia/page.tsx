@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import {
   CheckCircle, Flame, MapPin, Plus, Minus,
-  TrendingUp, BookOpen, Target, Trophy, Star, Wifi, WifiOff
+  TrendingUp, BookOpen, Target, Trophy, Star, Wifi, WifiOff, Pencil
 } from 'lucide-react'
 import AcademiaHeader from '@/components/academia/Header'
 import BottomNav from '@/components/academia/BottomNav'
@@ -189,6 +189,20 @@ export default function AcademiaPage() {
     setExercicios(ex => ex.map(e => e.id === id ? { ...e, carga: Math.max(0, e.carga + delta) } : e))
   }
 
+  function abrirEdicao() {
+    if (perfil) {
+      setFormPerfil({
+        nome: perfil.nome,
+        objetivo: perfil.objetivo,
+        pesoAtual: String(perfil.pesoAtual),
+        pesoMeta: String(perfil.pesoMeta),
+        freqSemanal: String(perfil.freqSemanal),
+        nivel: perfil.nivel,
+      })
+    }
+    setShowCadastro(true)
+  }
+
   function salvarFormPerfil() {
     if (!formPerfil.nome || !formPerfil.pesoAtual || !formPerfil.pesoMeta) return
     const novo: PerfilAluno = {
@@ -326,9 +340,16 @@ export default function AcademiaPage() {
 
         {/* Metas */}
         <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 space-y-4">
-          <h3 className="font-black text-lg text-gray-800 flex items-center gap-2">
-            <Target className="w-5 h-5 text-violet-500" /> Minhas Metas
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className="font-black text-lg text-gray-800 flex items-center gap-2">
+              <Target className="w-5 h-5 text-violet-500" /> Minhas Metas
+            </h3>
+            {perfil && (
+              <button onClick={abrirEdicao} className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-xl text-xs font-bold active:scale-95 transition-all border border-indigo-100">
+                <Pencil className="w-3.5 h-3.5" /> Editar perfil
+              </button>
+            )}
+          </div>
           {METAS_ALUNO.map(m => (
             <div key={m.label} className="space-y-1.5">
               <div className="flex justify-between text-sm">
@@ -444,8 +465,13 @@ export default function AcademiaPage() {
               </div>
             </div>
             <button onClick={salvarFormPerfil} disabled={!formPerfil.nome || !formPerfil.pesoAtual || !formPerfil.pesoMeta} className="w-full py-4 bg-gradient-to-r from-indigo-600 to-violet-700 text-white rounded-2xl font-black text-lg active:scale-95 transition-all disabled:opacity-40">
-              Salvar e Come\u00e7ar \uD83D\uDE80
+              {perfil ? 'Salvar altera\u00e7\u00f5es \u2705' : 'Salvar e Come\u00e7ar \uD83D\uDE80'}
             </button>
+            {perfil && (
+              <button onClick={() => setShowCadastro(false)} className="w-full py-3 text-sm font-bold text-gray-400 active:scale-95 transition-all">
+                Cancelar
+              </button>
+            )}
           </div>
         </div>
       )}
