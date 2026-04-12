@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import {
@@ -14,11 +14,10 @@ import {
   notificarCheckIn, notificarEmAndamento, notificarCheckOut,
 } from '@/hooks/useAcademiaNotificacoes'
 
-// Coordenadas da academia — configuradas pelo admin
 const GYM_LAT = -23.5505
 const GYM_LNG = -46.6333
-const GYM_RADIUS = 5   // metros — aluno precisa estar a 5m da academia
-const WARMUP_MS = 5 * 60 * 1000 // 5 min após entrar no raio para iniciar contagem
+const GYM_RADIUS = 5
+const WARMUP_MS = 5 * 60 * 1000
 const GEO_PERMISSION_KEY = 'academia_geo_granted'
 const CHECKIN_KEY = 'academia_checkin'
 
@@ -69,11 +68,10 @@ export default function AcademiaPage() {
   const [incentIdx, setIncentIdx] = useState(0)
   const watchRef    = useRef<number | null>(null)
   const timerRef    = useRef<NodeJS.Timeout | null>(null)
-  const warmupRef   = useRef<NodeJS.Timeout | null>(null) // timer dos 5 min de espera
-  const dentroRef   = useRef(false) // evita disparos duplicados
+  const warmupRef   = useRef<NodeJS.Timeout | null>(null)
+  const dentroRef   = useRef(false)
 
   function pararTudo() {
-    // Para imediatamente ao sair do raio
     dentroRef.current = false
     if (warmupRef.current) { clearTimeout(warmupRef.current); warmupRef.current = null }
     setIsCheckIn(false)
@@ -81,37 +79,30 @@ export default function AcademiaPage() {
     localStorage.removeItem(CHECKIN_KEY)
   }
 
-  // --- Inicia monitoramento de localização ---
   function iniciarGeo() {
     if (!navigator.geolocation) { setGeoState('negado'); return }
     setGeoState('watching')
     localStorage.setItem(GEO_PERMISSION_KEY, '1')
-
     watchRef.current = navigator.geolocation.watchPosition(
       (pos) => {
         const dist = calcDist(pos.coords.latitude, pos.coords.longitude, GYM_LAT, GYM_LNG)
         const dentro = dist <= GYM_RADIUS
         setGeoState(dentro ? 'dentro' : 'fora')
-
         if (dentro) {
           if (!dentroRef.current) {
-            // Primeira vez dentro do raio — aguarda 5 min para iniciar
             dentroRef.current = true
             warmupRef.current = setTimeout(() => {
               if (dentroRef.current) {
                 const start = Date.now()
                 setIsCheckIn(true)
                 localStorage.setItem(CHECKIN_KEY, JSON.stringify({ start }))
-                // Notifica check-in
                 const p = carregarPerfil()
                 if (p) notificarCheckIn(p)
               }
             }, WARMUP_MS)
           }
         } else {
-          // Saíu do raio — para tudo imediatamente
           if (dentroRef.current) {
-            // Notifica check-out com tempo acumulado
             const saved = localStorage.getItem(CHECKIN_KEY)
             if (saved) {
               const { start } = JSON.parse(saved)
@@ -129,14 +120,12 @@ export default function AcademiaPage() {
     )
   }
 
-  // Carrega perfil ao iniciar
   useEffect(() => {
     const p = carregarPerfil()
     if (p) setPerfil(p)
     else setShowCadastro(true)
   }, [])
 
-  // Retoma monitoramento se já deu permissão antes
   useEffect(() => {
     const granted = localStorage.getItem(GEO_PERMISSION_KEY)
     const saved = localStorage.getItem(CHECKIN_KEY)
@@ -153,7 +142,6 @@ export default function AcademiaPage() {
     }
   }, []) // eslint-disable-line
 
-  // Timer de treino — atualiza a cada minuto
   useEffect(() => {
     if (isCheckIn) {
       timerRef.current = setInterval(() => {
@@ -164,7 +152,6 @@ export default function AcademiaPage() {
             const data = JSON.parse(saved)
             localStorage.setItem(CHECKIN_KEY, JSON.stringify({ ...data, elapsed: novo }))
           }
-          // Notifica a cada 30 min
           const p = carregarPerfil()
           if (p) notificarEmAndamento(p, novo)
           return novo
@@ -176,7 +163,6 @@ export default function AcademiaPage() {
     return () => { if (timerRef.current) clearInterval(timerRef.current) }
   }, [isCheckIn])
 
-  // Rotação de incentivos
   useEffect(() => {
     const t = setInterval(() => setIncentIdx(i => (i + 1) % INCENTIVOS.length), 4000)
     return () => clearInterval(t)
@@ -222,32 +208,30 @@ export default function AcademiaPage() {
   const pctFeitos = Math.round((totalFeitos / exercicios.length) * 100)
   const incent = INCENTIVOS[incentIdx]
   const corMap: Record<string, string> = {
-    amber:  'bg-amber-50 border-amber-200 text-amber-800',
-    violet: 'bg-violet-50 border-violet-200 text-violet-800',
-    blue:   'bg-blue-50 border-blue-200 text-blue-800',
+    amber:  'bg-amber-500/10 border-amber-500/20 text-amber-300',
+    violet: 'bg-violet-500/10 border-violet-500/20 text-violet-300',
+    blue:   'bg-blue-500/10 border-blue-500/20 text-blue-300',
   }
 
-  // --- Banner de geo ---
   const geoBanner = geoState === 'dentro' && isCheckIn
-    ? { txt: '\uD83D\uDCCD Voc\u00ea est\u00e1 na academia \u2014 treino em andamento', cls: 'bg-emerald-100 text-emerald-700' }
+    ? { txt: '\uD83D\uDCCD Voc\u00ea est\u00e1 na academia \u2014 treino em andamento', cls: 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-300' }
     : geoState === 'dentro' && !isCheckIn
-    ? { txt: '\uD83D\uDCCD Voc\u00ea est\u00e1 no local \u2014 contagem inicia em 5 min',  cls: 'bg-blue-100 text-blue-700' }
+    ? { txt: '\uD83D\uDCCD Voc\u00ea est\u00e1 no local \u2014 contagem inicia em 5 min', cls: 'bg-blue-500/10 border border-blue-500/20 text-blue-300' }
     : geoState === 'fora'
-    ? { txt: '\uD83D\uDCCD Voc\u00ea saiu da academia',              cls: 'bg-orange-100 text-orange-700' }
+    ? { txt: '\uD83D\uDCCD Voc\u00ea saiu da academia', cls: 'bg-orange-500/10 border border-orange-500/20 text-orange-300' }
     : geoState === 'watching'
-    ? { txt: '\uD83D\uDCCD Detectando localiza\u00e7\u00e3o...',     cls: 'bg-slate-100 text-slate-500' }
+    ? { txt: '\uD83D\uDCCD Detectando localiza\u00e7\u00e3o...', cls: 'bg-zinc-800 border border-zinc-700 text-zinc-400' }
     : geoState === 'negado'
-    ? { txt: '\uD83D\uDCCD Localiza\u00e7\u00e3o negada pelo dispositivo', cls: 'bg-red-100 text-red-600' }
+    ? { txt: '\uD83D\uDCCD Localiza\u00e7\u00e3o negada pelo dispositivo', cls: 'bg-red-500/10 border border-red-500/20 text-red-400' }
     : null
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-28">
+    <div className="min-h-screen bg-zinc-950 pb-28">
       <NotificationPermission />
       <AcademiaHeader isAdmin={isAdmin} isCheckIn={isCheckIn} elapsedTime={elapsedTime} onActionClick={() => {}} />
 
-      {/* Banner de localização ativo */}
       {geoBanner && (
-        <div className={`mx-4 mt-3 px-4 py-2 rounded-2xl flex items-center gap-2 text-sm font-semibold ${geoBanner.cls}`}>
+        <div className={mx-4 mt-3 px-4 py-2 rounded-2xl flex items-center gap-2 text-sm font-semibold }>
           {geoState === 'watching' ? <Wifi className="w-4 h-4 flex-shrink-0" /> : geoState === 'negado' ? <WifiOff className="w-4 h-4 flex-shrink-0" /> : <MapPin className="w-4 h-4 flex-shrink-0" />}
           <span>{geoBanner.txt}</span>
         </div>
@@ -255,7 +239,6 @@ export default function AcademiaPage() {
 
       <main className="max-w-2xl mx-auto px-4 pt-4 space-y-4">
 
-        {/* Botão de entrada — só aparece se ainda não deu permissão */}
         {geoState === 'idle' && (
           <button
             onClick={iniciarGeo}
@@ -267,7 +250,7 @@ export default function AcademiaPage() {
         )}
 
         {/* Incentivo rotativo */}
-        <div className={`border rounded-2xl px-4 py-3 flex items-center gap-3 transition-all ${corMap[incent.cor]}`}>
+        <div className={order rounded-2xl px-4 py-3 flex items-center gap-3 transition-all }>
           <span className="text-2xl">{incent.emoji}</span>
           <p className="text-sm font-bold">{incent.txt}</p>
         </div>
@@ -277,61 +260,61 @@ export default function AcademiaPage() {
           {[
             { icon: <Flame className="w-5 h-5 text-amber-500" />, val: '5',          label: 'dias seguidos' },
             { icon: <Trophy className="w-5 h-5 text-yellow-500" />, val: '12',        label: 'treinos/m\u00eas' },
-            { icon: <Star className="w-5 h-5 text-indigo-500" />,   val: `${pctFeitos}%`, label: 'treino hoje' },
+            { icon: <Star className="w-5 h-5 text-indigo-400" />,   val: ${pctFeitos}%, label: 'treino hoje' },
           ].map(s => (
-            <div key={s.label} className="bg-white rounded-2xl p-4 text-center shadow-sm border border-slate-100">
+            <div key={s.label} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 text-center">
               <div className="flex justify-center mb-1">{s.icon}</div>
-              <p className="font-black text-xl text-gray-800">{s.val}</p>
-              <p className="text-xs text-gray-500 leading-tight">{s.label}</p>
+              <p className="font-black text-xl text-white">{s.val}</p>
+              <p className="text-xs text-zinc-500 leading-tight">{s.label}</p>
             </div>
           ))}
         </div>
 
         {/* Treino do dia */}
-        <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 space-y-3">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="font-black text-lg text-gray-800">TREINO DO DIA</h3>
-            <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-black">S\u00c9RIE A</span>
+            <h3 className="font-black text-lg text-white">TREINO DO DIA</h3>
+            <span className="bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 px-3 py-1 rounded-full text-xs font-black">S\u00c9RIE A</span>
           </div>
           <div className="space-y-1">
-            <div className="flex justify-between text-xs text-gray-500 font-semibold">
+            <div className="flex justify-between text-xs text-zinc-500 font-semibold">
               <span>{totalFeitos}/{exercicios.length} exerc\u00edcios</span>
               <span>{pctFeitos}%</span>
             </div>
-            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-              <div className="h-full bg-indigo-600 rounded-full transition-all" style={{ width: `${pctFeitos}%` }} />
+            <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+              <div className="h-full bg-indigo-600 rounded-full transition-all" style={{ width: ${pctFeitos}% }} />
             </div>
           </div>
           {exercicios.map(ex => (
-            <div key={ex.id} className={`rounded-2xl border p-4 space-y-3 transition-all ${ex.feito ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200'}`}>
+            <div key={ex.id} className={ounded-2xl border p-4 space-y-3 transition-all }>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm ${ex.feito ? 'bg-emerald-500 text-white' : 'bg-indigo-600 text-white'}`}>
+                  <div className={w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm }>
                     {ex.feito ? <CheckCircle className="w-5 h-5" /> : ex.id}
                   </div>
                   <div>
-                    <p className="font-bold text-sm text-gray-800">{ex.nome}</p>
-                    <p className="text-xs text-slate-400">{ex.series} s\u00e9ries \u00d7 {ex.reps} reps</p>
+                    <p className="font-bold text-sm text-white">{ex.nome}</p>
+                    <p className="text-xs text-zinc-500">{ex.series} s\u00e9ries \u00d7 {ex.reps} reps</p>
                   </div>
                 </div>
-                <button onClick={() => toggleExercicio(ex.id)} className={`text-xs font-black px-3 py-1.5 rounded-xl transition-all active:scale-95 ${ex.feito ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600'}`}>
+                <button onClick={() => toggleExercicio(ex.id)} className={	ext-xs font-black px-3 py-1.5 rounded-xl transition-all active:scale-95 }>
                   {ex.feito ? 'FEITO' : 'MARCAR'}
                 </button>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-xs text-gray-500 font-semibold w-12">Carga:</span>
-                <button onClick={() => alterarCarga(ex.id, -2.5)} className="w-8 h-8 bg-slate-200 rounded-xl flex items-center justify-center active:scale-90 transition-all">
-                  <Minus className="w-4 h-4 text-gray-600" />
+                <span className="text-xs text-zinc-500 font-semibold w-12">Carga:</span>
+                <button onClick={() => alterarCarga(ex.id, -2.5)} className="w-8 h-8 bg-zinc-700 hover:bg-zinc-600 text-white rounded-xl flex items-center justify-center active:scale-90 transition-all">
+                  <Minus className="w-4 h-4" />
                 </button>
-                <span className="font-black text-base text-gray-800 w-16 text-center">{ex.carga} kg</span>
-                <button onClick={() => alterarCarga(ex.id, 2.5)} className="w-8 h-8 bg-slate-200 rounded-xl flex items-center justify-center active:scale-90 transition-all">
-                  <Plus className="w-4 h-4 text-gray-600" />
+                <span className="font-black text-base text-white w-16 text-center">{ex.carga} kg</span>
+                <button onClick={() => alterarCarga(ex.id, 2.5)} className="w-8 h-8 bg-zinc-700 hover:bg-zinc-600 text-white rounded-xl flex items-center justify-center active:scale-90 transition-all">
+                  <Plus className="w-4 h-4" />
                 </button>
                 <div className="flex-1">
-                  <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                    <div className="h-full bg-indigo-400 rounded-full transition-all" style={{ width: `${Math.min(100, Math.round((ex.carga / ex.metaCarga) * 100))}%` }} />
+                  <div className="h-1.5 bg-zinc-700 rounded-full overflow-hidden">
+                    <div className="h-full bg-indigo-400 rounded-full transition-all" style={{ width: ${Math.min(100, Math.round((ex.carga / ex.metaCarga) * 100))}% }} />
                   </div>
-                  <p className="text-[10px] text-slate-400 mt-0.5">meta: {ex.metaCarga} kg</p>
+                  <p className="text-[10px] text-zinc-500 mt-0.5">meta: {ex.metaCarga} kg</p>
                 </div>
               </div>
             </div>
@@ -339,13 +322,13 @@ export default function AcademiaPage() {
         </div>
 
         {/* Metas */}
-        <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 space-y-4">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-black text-lg text-gray-800 flex items-center gap-2">
-              <Target className="w-5 h-5 text-violet-500" /> Minhas Metas
+            <h3 className="font-black text-lg text-white flex items-center gap-2">
+              <Target className="w-5 h-5 text-violet-400" /> Minhas Metas
             </h3>
             {perfil && (
-              <button onClick={abrirEdicao} className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-xl text-xs font-bold active:scale-95 transition-all border border-indigo-100">
+              <button onClick={abrirEdicao} className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 rounded-xl text-xs font-bold active:scale-95 transition-all">
                 <Pencil className="w-3.5 h-3.5" /> Editar perfil
               </button>
             )}
@@ -353,34 +336,34 @@ export default function AcademiaPage() {
           {METAS_ALUNO.map(m => (
             <div key={m.label} className="space-y-1.5">
               <div className="flex justify-between text-sm">
-                <span className="font-semibold text-gray-700">{m.label}</span>
-                <span className="font-black text-gray-800">{m.valor} <span className="text-xs text-gray-400 font-normal">\u2192 {m.meta}</span></span>
+                <span className="font-semibold text-zinc-300">{m.label}</span>
+                <span className="font-black text-white">{m.valor} <span className="text-xs text-zinc-500 font-normal">\u2192 {m.meta}</span></span>
               </div>
-              <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                <div className={`h-full rounded-full transition-all ${m.cor}`} style={{ width: `${m.pct}%` }} />
+              <div className="h-2.5 bg-zinc-800 rounded-full overflow-hidden">
+                <div className={h-full rounded-full transition-all } style={{ width: ${m.pct}% }} />
               </div>
-              <p className="text-xs text-gray-400 text-right">{m.pct}% da meta</p>
+              <p className="text-xs text-zinc-500 text-right">{m.pct}% da meta</p>
             </div>
           ))}
         </div>
 
         {/* Histórico + Biblioteca */}
         <div className="grid grid-cols-2 gap-3">
-          <button className="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center gap-2 shadow-sm active:scale-95 transition-all">
-            <TrendingUp className="w-6 h-6 text-indigo-500" />
-            <p className="font-bold text-sm text-gray-700">Hist\u00f3rico de Cargas</p>
-            <p className="text-xs text-gray-400 text-center">Veja sua evolu\u00e7\u00e3o</p>
+          <button className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex flex-col items-center gap-2 active:scale-95 transition-all hover:border-zinc-700">
+            <TrendingUp className="w-6 h-6 text-indigo-400" />
+            <p className="font-bold text-sm text-white">Hist\u00f3rico de Cargas</p>
+            <p className="text-xs text-zinc-500 text-center">Veja sua evolu\u00e7\u00e3o</p>
           </button>
-          <button className="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center gap-2 shadow-sm active:scale-95 transition-all">
-            <BookOpen className="w-6 h-6 text-violet-500" />
-            <p className="font-bold text-sm text-gray-700">Biblioteca</p>
-            <p className="text-xs text-gray-400 text-center">Exerc\u00edcios e t\u00e9cnicas</p>
+          <button className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex flex-col items-center gap-2 active:scale-95 transition-all hover:border-zinc-700">
+            <BookOpen className="w-6 h-6 text-violet-400" />
+            <p className="font-bold text-sm text-white">Biblioteca</p>
+            <p className="text-xs text-zinc-500 text-center">Exerc\u00edcios e t\u00e9cnicas</p>
           </button>
         </div>
 
         {/* Conquistas */}
-        <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
-          <h3 className="font-black text-base text-gray-800 flex items-center gap-2 mb-3">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5">
+          <h3 className="font-black text-base text-white flex items-center gap-2 mb-3">
             <Star className="w-5 h-5 text-yellow-400" /> Conquistas
           </h3>
           <div className="flex gap-3 overflow-x-auto pb-1">
@@ -391,9 +374,9 @@ export default function AcademiaPage() {
               { emoji: '\u2B50',        nome: '20 treinos',      ok: false },
               { emoji: '\uD83C\uDFC5', nome: '30 treinos',      ok: false },
             ].map(c => (
-              <div key={c.nome} className={`flex-shrink-0 flex flex-col items-center gap-1 w-16 p-2 rounded-2xl border ${c.ok ? 'bg-yellow-50 border-yellow-200' : 'bg-slate-50 border-slate-200 opacity-40'}`}>
+              <div key={c.nome} className={lex-shrink-0 flex flex-col items-center gap-1 w-16 p-2 rounded-2xl border }>
                 <span className="text-2xl">{c.emoji}</span>
-                <p className="text-[9px] font-bold text-center text-gray-600 leading-tight">{c.nome}</p>
+                <p className="text-[9px] font-bold text-center text-zinc-400 leading-tight">{c.nome}</p>
               </div>
             ))}
           </div>
@@ -404,32 +387,37 @@ export default function AcademiaPage() {
 
       <BottomNav isAdmin={isAdmin} />
 
-      {/* Modal de cadastro de perfil — aparece só se não tiver perfil */}
+      {/* Modal de cadastro de perfil */}
       {showCadastro && (
-        <div className="fixed inset-0 z-50 bg-indigo-950/90 flex items-end justify-center">
-          <div className="bg-white rounded-t-3xl w-full max-w-md p-6 space-y-4 overflow-y-auto max-h-[90vh]">
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-end justify-center">
+          <div className="bg-zinc-900 border-t border-zinc-800 rounded-t-3xl w-full max-w-md p-6 space-y-4 overflow-y-auto max-h-[90vh]">
             <div className="text-center relative">
               {perfil && (
                 <button
                   onClick={() => setShowCadastro(false)}
-                  className="absolute right-0 top-0 w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-xl flex items-center justify-center transition active:scale-90"
+                  className="absolute right-0 top-0 w-8 h-8 bg-zinc-800 hover:bg-zinc-700 rounded-xl flex items-center justify-center transition active:scale-90"
                 >
-                  <X className="w-4 h-4 text-gray-500" />
+                  <X className="w-4 h-4 text-zinc-400" />
                 </button>
               )}
               <span className="text-4xl">🏋️</span>
-              <h2 className="text-xl font-black text-gray-800 mt-2">
+              <h2 className="text-xl font-black text-white mt-2">
                 {perfil ? 'Editar Perfil de Treino' : 'Seu Perfil de Treino'}
               </h2>
-              <p className="text-sm text-gray-500 mt-1">As notificações de incentivo serão personalizadas para você</p>
+              <p className="text-sm text-zinc-400 mt-1">As notificações de incentivo serão personalizadas para você</p>
             </div>
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-bold text-gray-600 uppercase tracking-wide">Seu nome</label>
-                <input value={formPerfil.nome} onChange={e => setFormPerfil(f => ({ ...f, nome: e.target.value }))} placeholder="Como quer ser chamado?" className="mt-1 w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 text-base" />
+                <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide">Seu nome</label>
+                <input
+                  value={formPerfil.nome}
+                  onChange={e => setFormPerfil(f => ({ ...f, nome: e.target.value }))}
+                  placeholder="Como quer ser chamado?"
+                  className="mt-1 w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-base"
+                />
               </div>
               <div>
-                <label className="text-xs font-bold text-gray-600 uppercase tracking-wide">Objetivo principal</label>
+                <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide">Objetivo principal</label>
                 <div className="grid grid-cols-2 gap-2 mt-1">
                   {[
                     { val: 'emagrecer',       emoji: '\uD83D\uDD25', label: 'Emagrecer' },
@@ -437,7 +425,7 @@ export default function AcademiaPage() {
                     { val: 'condicionamento', emoji: '\u26A1',        label: 'Condicionamento' },
                     { val: 'saude',           emoji: '\uD83D\uDC9A', label: 'Sa\u00fade geral' },
                   ].map(o => (
-                    <button key={o.val} onClick={() => setFormPerfil(f => ({ ...f, objetivo: o.val }))} className={`py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 border-2 transition-all ${formPerfil.objetivo === o.val ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-600'}`}>
+                    <button key={o.val} onClick={() => setFormPerfil(f => ({ ...f, objetivo: o.val }))} className={py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 border-2 transition-all }>
                       <span>{o.emoji}</span>{o.label}
                     </button>
                   ))}
@@ -445,31 +433,31 @@ export default function AcademiaPage() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-bold text-gray-600 uppercase tracking-wide">Peso atual (kg)</label>
-                  <input type="number" value={formPerfil.pesoAtual} onChange={e => setFormPerfil(f => ({ ...f, pesoAtual: e.target.value }))} placeholder="Ex: 82" className="mt-1 w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 text-base" />
+                  <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide">Peso atual (kg)</label>
+                  <input type="number" value={formPerfil.pesoAtual} onChange={e => setFormPerfil(f => ({ ...f, pesoAtual: e.target.value }))} placeholder="Ex: 82" className="mt-1 w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-base" />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-gray-600 uppercase tracking-wide">Meta de peso (kg)</label>
-                  <input type="number" value={formPerfil.pesoMeta} onChange={e => setFormPerfil(f => ({ ...f, pesoMeta: e.target.value }))} placeholder="Ex: 72" className="mt-1 w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 text-base" />
+                  <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide">Meta de peso (kg)</label>
+                  <input type="number" value={formPerfil.pesoMeta} onChange={e => setFormPerfil(f => ({ ...f, pesoMeta: e.target.value }))} placeholder="Ex: 72" className="mt-1 w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-base" />
                 </div>
               </div>
               <div>
-                <label className="text-xs font-bold text-gray-600 uppercase tracking-wide">Frequ\u00eancia desejada por semana</label>
+                <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide">Frequ\u00eancia desejada por semana</label>
                 <div className="flex gap-2 mt-1">
                   {['2','3','4','5','6'].map(n => (
-                    <button key={n} onClick={() => setFormPerfil(f => ({ ...f, freqSemanal: n }))} className={`flex-1 py-3 rounded-xl text-sm font-black border-2 transition-all ${formPerfil.freqSemanal === n ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-600'}`}>{n}x</button>
+                    <button key={n} onClick={() => setFormPerfil(f => ({ ...f, freqSemanal: n }))} className={lex-1 py-3 rounded-xl text-sm font-black border-2 transition-all }>{n}x</button>
                   ))}
                 </div>
               </div>
               <div>
-                <label className="text-xs font-bold text-gray-600 uppercase tracking-wide">N\u00edvel</label>
+                <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide">N\u00edvel</label>
                 <div className="flex gap-2 mt-1">
                   {[
                     { val: 'iniciante', label: 'Iniciante' },
                     { val: 'intermediario', label: 'Interm.' },
                     { val: 'avancado', label: 'Avan\u00e7ado' },
                   ].map(n => (
-                    <button key={n.val} onClick={() => setFormPerfil(f => ({ ...f, nivel: n.val }))} className={`flex-1 py-3 rounded-xl text-sm font-bold border-2 transition-all ${formPerfil.nivel === n.val ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-600'}`}>{n.label}</button>
+                    <button key={n.val} onClick={() => setFormPerfil(f => ({ ...f, nivel: n.val }))} className={lex-1 py-3 rounded-xl text-sm font-bold border-2 transition-all }>{n.label}</button>
                   ))}
                 </div>
               </div>
@@ -478,7 +466,7 @@ export default function AcademiaPage() {
               {perfil ? 'Salvar altera\u00e7\u00f5es \u2705' : 'Salvar e Come\u00e7ar \uD83D\uDE80'}
             </button>
             {perfil && (
-              <button onClick={() => setShowCadastro(false)} className="w-full py-3 text-sm font-bold text-gray-400 active:scale-95 transition-all">
+              <button onClick={() => setShowCadastro(false)} className="w-full py-3 text-sm font-bold text-zinc-500 active:scale-95 transition-all">
                 Cancelar
               </button>
             )}
