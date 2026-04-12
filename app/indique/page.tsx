@@ -18,15 +18,15 @@ function IndicationContent() {
 
   if (installed) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Check className="w-10 h-10 text-green-600" />
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 max-w-md w-full text-center">
+          <div className="w-20 h-20 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Check className="w-10 h-10 text-emerald-400" />
           </div>
-          <h2 className="text-2xl font-bold mb-2">Acesso liberado! ✅</h2>
-          <p className="text-gray-600 mb-4">Bem-vindo ao Valente Conecta</p>
-          <div className="mt-4 w-full bg-gray-200 rounded-full h-2">
-            <div className="bg-green-500 rounded-full h-2 w-full animate-pulse" />
+          <h2 className="text-2xl font-bold text-white mb-2">Acesso liberado! ✅</h2>
+          <p className="text-zinc-400 mb-4">Bem-vindo ao Valente Conecta</p>
+          <div className="mt-4 w-full bg-zinc-800 rounded-full h-2">
+            <div className="bg-emerald-500 rounded-full h-2 w-full animate-pulse" />
           </div>
         </div>
       </div>
