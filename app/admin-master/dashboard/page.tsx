@@ -9,7 +9,7 @@ import {
   Users, Building2, ShoppingBag, Wallet, TrendingUp,
   LayoutDashboard, CreditCard, Tag, BookOpen, Settings,
   Package, UserCheck, BarChart3, Megaphone, GraduationCap, MapPin,
-  ShoppingCart, Search, Award, Bell, FileText
+  ShoppingCart, Search, Award, Bell, FileText, CalendarClock
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import FinanceiroPessoalShortcut from '@/components/admin-master/FinanceiroPessoalShortcut'
@@ -55,6 +55,7 @@ const ATALHOS = [
   { label: 'Bonus',          icon: Award,           href: '/admin/usuarios/bonus',            cor: 'text-amber-400' },
   { label: 'Busca',          icon: Search,          href: '/busca/produtos',                  cor: 'text-blue-400' },
   { label: 'Caixa',          icon: CreditCard,      href: '/admin/financeiro/controle',       cor: 'text-emerald-400' },
+  { label: 'Serv. Agendado', icon: CalendarClock,   href: '/admin/agenda',                    cor: 'text-fuchsia-400' },
 ]
 
 function TTip({ active, payload, label }: any) {
