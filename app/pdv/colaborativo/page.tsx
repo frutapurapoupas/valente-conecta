@@ -1,91 +1,53 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
-import { ArrowLeft, ChevronRight } from 'lucide-react'
-
-const MENUS = [
-  {
-    id: 'vendas',
-    label: 'Vendas',
-    descricao: 'Registrar vendas e atender clientes',
-    href: '/pdv/venda-busca',
-    emoji: '🛒',
-    bg: 'from-blue-500 to-indigo-600',
-  },
-  {
-    id: 'estoque',
-    label: 'Estoque',
-    descricao: 'Gerenciar produtos e catálogo',
-    href: '/pdv/estoque',
-    emoji: '📦',
-    bg: 'from-emerald-500 to-green-600',
-  },
-  {
-    id: 'perfil',
-    label: 'Perfil',
-    descricao: 'Dados da loja e horários',
-    href: '/profissional/catalogo',
-    emoji: '🏪',
-    bg: 'from-purple-500 to-violet-600',
-  },
-  {
-    id: 'planos',
-    label: 'Planos',
-    descricao: 'Assinatura e funcionalidades',
-    href: '/empresa/planos',
-    emoji: '⭐',
-    bg: 'from-amber-500 to-orange-500',
-  },
-]
+import { ChevronRight, ArrowLeft } from 'lucide-react'
+import { usePDVColaborativo } from '@/hooks/usePDVColaborativo'
 
 export default function PDVColaborativoPage() {
+  const { menus } = usePDVColaborativo()
+
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white sticky top-0 z-20">
-        <div className="flex items-center gap-3 px-4 py-4 max-w-lg mx-auto">
-          <Link href="/" className="p-2 hover:bg-white/20 rounded-lg transition">
-            <ArrowLeft className="w-5 h-5" />
+    <div className="min-h-screen bg-zinc-950 text-white pb-20">
+      <header className="sticky top-0 z-20 bg-zinc-950/95 backdrop-blur border-b border-zinc-900 px-4 py-4">
+        <div className="max-w-lg mx-auto flex items-center gap-3">
+          <Link href="/" className="p-2 bg-zinc-900 border border-zinc-800 rounded-xl">
+            <ArrowLeft className="w-5 h-5 text-zinc-400" />
           </Link>
           <div>
-            <h1 className="font-bold text-xl leading-tight">PDV Colaborativo</h1>
-            <p className="text-blue-200 text-xs">Gestão completa da sua loja física</p>
+            <h1 className="text-lg font-black">PDV Colaborativo</h1>
+            <p className="text-xs text-zinc-500">GestÃ£o completa da sua loja fÃ­sica</p>
           </div>
         </div>
       </header>
 
-      <main className="max-w-lg mx-auto px-4 pt-8 space-y-4">
-        {/* Banner informativo */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-blue-100 flex items-center gap-3">
-          <span className="text-3xl">🏪</span>
+      <main className="max-w-lg mx-auto px-4 py-5 space-y-3">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex items-center gap-3">
+          <span className="text-3xl">ðŸª</span>
           <div>
-            <p className="font-semibold text-sm text-gray-800">Bem-vindo ao seu painel de loja</p>
-            <p className="text-xs text-gray-500 mt-0.5">Gerencie vendas, estoque, perfil e plano num só lugar.</p>
+            <p className="font-bold text-sm text-white">Bem-vindo ao seu painel de loja</p>
+            <p className="text-xs text-zinc-500 mt-0.5">Vendas, estoque, perfil e plano num sÃ³ lugar.</p>
           </div>
         </div>
 
-        {/* Cards de navegação — classes estáticas por item para garantir geração pelo Tailwind */}
-        <div className="space-y-3">
-          {MENUS.map((item) => (
+        <div className="space-y-2">
+          {menus.map((item) => (
             <Link key={item.id} href={item.href}>
-              <div className={`bg-gradient-to-r ${item.bg} rounded-2xl p-5 shadow-md flex items-center justify-between active:scale-95 transition-all`}>
-                <div className="flex items-center gap-4">
-                  <span className="text-4xl">{item.emoji}</span>
-                  <div>
-                    <h2 className="text-xl font-black text-white">{item.label}</h2>
-                    <p className="text-sm text-white opacity-90">{item.descricao}</p>
-                  </div>
+              <div className="bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-2xl p-4 flex items-center gap-4 active:scale-[0.99] transition-all">
+                <span className="text-3xl flex-shrink-0">{item.emoji}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-black text-white text-base">{item.label}</p>
+                  <p className="text-sm text-zinc-500">{item.descricao}</p>
                 </div>
-                <ChevronRight className="w-6 h-6 text-white flex-shrink-0" />
+                <ChevronRight className="w-5 h-5 text-zinc-600 flex-shrink-0" />
               </div>
             </Link>
           ))}
         </div>
 
-        {/* Dica rápida */}
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mt-2">
-          <p className="text-xs text-amber-800">
-            💡 <strong>Dica:</strong> para vender na rua ou em feiras, use o <strong>PDV Móvel</strong> na tela inicial — entrada direta no leitor de produtos.
+        <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4">
+          <p className="text-xs text-amber-300">
+            ðŸ’¡ <strong>Dica:</strong> para vender na rua ou em feiras, use o <strong>PDV MÃ³vel</strong> na tela inicial â€” entrada direta no leitor de produtos.
           </p>
         </div>
       </main>
