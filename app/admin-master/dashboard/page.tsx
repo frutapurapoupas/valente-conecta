@@ -1,4 +1,5 @@
 'use client'
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import {
   BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer,
@@ -11,6 +12,7 @@ import {
   ShoppingCart, Search, Award, Bell, FileText
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import FinanceiroPessoalShortcut from '@/components/admin-master/FinanceiroPessoalShortcut'
 
 const dadosMensais = [
   { mes: 'Nov', receita: 4200, despesa: 2800 },
@@ -96,8 +98,21 @@ export default function DashboardMaster() {
 
       {/* Header */}
       <div className="px-6 pt-8 pb-6 border-b border-zinc-800">
-        <h1 className="text-5xl font-black italic text-indigo-400 uppercase leading-none">Command Center</h1>
-        <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest mt-1">Admin Master &middot; Valente Conecta</p>
+        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h1 className="text-5xl font-black italic text-indigo-400 uppercase leading-none">Command Center</h1>
+            <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest mt-1">Admin Master &middot; Valente Conecta</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <FinanceiroPessoalShortcut />
+            <Link
+              href="/admin-master/financeiro-pessoal"
+              className="text-[11px] font-bold uppercase tracking-wide text-zinc-500 transition-colors hover:text-zinc-300"
+            >
+              Base atual em evolucao
+            </Link>
+          </div>
+        </div>
       </div>
 
       <div className="p-6 space-y-8 pb-24">
