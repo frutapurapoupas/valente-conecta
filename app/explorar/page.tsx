@@ -1,12 +1,23 @@
 ﻿'use client'
 
-import { Search, MapPin, Zap, Star, ChevronDown, Lock, Unlock, X, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
-import ProfessionalCard from '@/components/services/ProfessionalStatus'
+import { Search, MapPin, ChevronDown, Lock, Unlock, X, AlertCircle, Loader2, Star, Clock, Navigation } from 'lucide-react'
+import type { Profissional } from '@/hooks/useExplorarPage'
 import { useExplorarPage } from '@/hooks/useExplorarPage'
 import { useDesbloquearCidade } from '@/hooks/useDesbloquearCidade'
 
+const STATUS_LABEL: Record<Profissional['status'], string> = {
+  aberto:   'Aberto',
+  fechado:  'Fechado',
+  ocupado:  'Ocupado',
+}
+const STATUS_CLS: Record<Profissional['status'], string> = {
+  aberto:   'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+  fechado:  'bg-red-500/20 text-red-400 border-red-500/30',
+  ocupado:  'bg-amber-500/20 text-amber-400 border-amber-500/30',
+}
+
 export default function ExplorarPage() {
-  const { activeFilter, setActiveFilter, categorias } = useExplorarPage()
+  const { activeFilter, setActiveFilter, categorias, busca, setBusca, lista, destaques } = useExplorarPage()
   const {
     cidadeAtiva,
     cidades,
@@ -24,48 +35,45 @@ export default function ExplorarPage() {
   } = useDesbloquearCidade()
 
   return (
-    <div className="min-h-screen bg-dark-1 pb-24">
-      {/* HEADER DINÂMICO */}
-      <header className="p-6 space-y-4 bg-gradient-to-b from-primary/10 to-transparent">
-        <div className="flex justify-between items-center">
+    <div className="min-h-screen bg-zinc-950 text-white pb-24">
+
+      {/* HEADER */}
+      <header className="sticky top-0 z-20 bg-zinc-950/95 backdrop-blur border-b border-zinc-900 px-4 py-4 space-y-3">
+        <div className="max-w-3xl mx-auto flex items-center justify-between">
           <div>
-            <p className="text-gray-500 text-sm font-bold uppercase tracking-widest">Você está em</p>
-            <button
-              onClick={abrirSeletor}
-              className="flex items-center gap-1.5 group"
-            >
-              <MapPin className="text-secondary w-5 h-5" />
-              <h2 className="text-2xl font-black text-white uppercase">
-                {cidadeAtiva.nome}
-              </h2>
-              <ChevronDown className="text-gray-500 w-4 h-4 group-hover:text-secondary transition-colors mt-0.5" />
+            <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest">Você está em</p>
+            <button onClick={abrirSeletor} className="flex items-center gap-1.5 group">
+              <MapPin className="w-4 h-4 text-indigo-400" />
+              <span className="text-xl font-black text-white">{cidadeAtiva.nome}</span>
+              <ChevronDown className="w-4 h-4 text-zinc-500 mt-0.5 group-hover:text-indigo-400 transition-colors" />
             </button>
           </div>
-          <div className="w-12 h-12 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center">
-             <Zap className="text-yellow-500 fill-yellow-500" />
+          <div className="text-xs text-zinc-500 font-bold">
+            Saldo: <span className="text-yellow-400 font-black">{saldoConectas} ✦</span>
           </div>
         </div>
 
-        {/* BARRA DE BUSCA "CHIQUE" */}
-        <div className="relative group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-secondary transition-all" />
-          <input 
-            type="text" 
-            placeholder="O que você precisa agora?" 
-            className="w-full bg-white/5 border border-white/10 p-5 pl-12 rounded-2xl text-white outline-none focus:border-secondary/50 focus:bg-white/10 transition-all"
+        {/* Busca */}
+        <div className="max-w-3xl mx-auto relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+          <input
+            value={busca}
+            onChange={e => setBusca(e.target.value)}
+            placeholder="Buscar serviços, lojas ou bairros..."
+            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-4 py-3 text-base text-white placeholder:text-zinc-600 focus:border-indigo-500/50 outline-none"
           />
         </div>
 
-        {/* FILTROS DE CATEGORIA RÁPIDOS */}
-        <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
-          {categorias.map((cat) => (
-            <button 
+        {/* Filtros de categoria */}
+        <div className="max-w-3xl mx-auto flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+          {categorias.map(cat => (
+            <button
               key={cat}
               onClick={() => setActiveFilter(cat.toLowerCase())}
-              className={`px-6 py-2 rounded-full whitespace-nowrap font-bold text-sm transition-all ${
-                activeFilter === cat.toLowerCase() 
-                ? 'bg-secondary text-white shadow-lg shadow-secondary/20' 
-                : 'bg-white/5 text-gray-500 border border-white/10'
+              className={`px-4 py-2 rounded-xl text-sm font-bold border whitespace-nowrap transition-all ${
+                activeFilter === cat.toLowerCase()
+                  ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300'
+                  : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700'
               }`}
             >
               {cat}
@@ -74,53 +82,44 @@ export default function ExplorarPage() {
         </div>
       </header>
 
-      {/* SEÇÃO: ABERTOS AGORA (O diferencial para serviços) */}
-      <section className="px-6 space-y-6">
-        <div className="flex justify-between items-end">
-          <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">
-            ⚡ Disponíveis Agora
-          </h3>
-          <span className="text-secondary text-xs font-bold">Ver todos</span>
-        </div>
+      <main className="max-w-3xl mx-auto px-4 py-5 space-y-6">
 
-        <div className="grid grid-cols-1 gap-4">
-          <ProfessionalCard pro={{
-            name: 'Borracharia do Baixinho',
-            category: 'Borracharia 24h',
-            is_online: true,
-            daily_rate: 50.00,
-            address: 'Rua Principal, Centro',
-            avatar: '/borracharia.jpg'
-          }} />
-        </div>
-      </section>
+        {/* Destaques (aparece apenas no filtro "Todos") */}
+        {activeFilter === 'todos' && !busca && destaques.length > 0 && (
+          <section className="space-y-3">
+            <h2 className="text-sm font-black text-zinc-400 uppercase tracking-widest">⚡ Em destaque</h2>
+            <div className="grid grid-cols-1 gap-3">
+              {destaques.map(p => (
+                <ProfCard key={p.id} p={p} destaque />
+              ))}
+            </div>
+          </section>
+        )}
 
-      {/* SEÇÃO: OFERTAS COM PREÇO BORRADO */}
-      <section className="px-6 mt-10 space-y-6">
-        <h3 className="text-xl font-black text-white uppercase italic tracking-tighter flex items-center gap-2">
-          <Star className="text-primary w-5 h-5 fill-primary" /> Oportunidades
-        </h3>
-        
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-dark-2 rounded-3xl border border-white/5 p-4 space-y-3">
-             <div className="aspect-square bg-gray-800 rounded-2xl overflow-hidden grayscale-[0.5]">
-                <img src="/casa-aluguel.jpg" className="w-full h-full object-cover opacity-50" />
-             </div>
-             <p className="text-white font-bold leading-tight">Aluguel Casa 3 Quartos</p>
-             <div className="flex items-center justify-between">
-                <span className="text-secondary font-black blur-[4px]">R$ 800</span>
-                <button className="text-[10px] bg-white/10 px-2 py-1 rounded-lg text-gray-400">Ver</button>
-             </div>
+        {/* Lista principal */}
+        <section className="space-y-3">
+          {activeFilter !== 'todos' || busca ? (
+            <h2 className="text-sm font-black text-zinc-400 uppercase tracking-widest">
+              {lista.length} resultado{lista.length !== 1 ? 's' : ''}
+            </h2>
+          ) : (
+            <h2 className="text-sm font-black text-zinc-400 uppercase tracking-widest">Todos os serviços</h2>
+          )}
+
+          {lista.length === 0 && (
+            <div className="text-center py-16 text-zinc-600 font-bold">Nenhum resultado encontrado</div>
+          )}
+
+          <div className="space-y-2">
+            {lista.map(p => <ProfCard key={p.id} p={p} />)}
           </div>
-        </div>
-      </section>
+        </section>
+      </main>
 
       {/* ═══ MODAL: SELETOR DE CIDADE ═══════════════════════════════════ */}
       {modalAberto && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm">
           <div className="bg-zinc-900 border border-zinc-800 rounded-t-3xl w-full max-w-md p-6 space-y-5">
-
-            {/* Header modal */}
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-black text-white text-lg">Escolher cidade</h3>
@@ -133,13 +132,11 @@ export default function ExplorarPage() {
               </button>
             </div>
 
-            {/* Lista de cidades */}
             <div className="space-y-2">
               {cidades.map(c => {
                 const dias = diasRestantes(c.validadeAte)
                 const isAtiva = c.id === cidadeAtiva.id
                 const isSelecionada = cidadeSelecionada?.id === c.id
-
                 return (
                   <button
                     key={c.id}
@@ -176,7 +173,6 @@ export default function ExplorarPage() {
               })}
             </div>
 
-            {/* Painel de confirmação de desbloqueio */}
             {cidadeSelecionada && !cidadeSelecionada.desbloqueada && (
               <div className="bg-indigo-500/10 border border-indigo-500/30 rounded-2xl p-4 space-y-3">
                 <p className="text-sm font-bold text-indigo-300">
@@ -205,11 +201,48 @@ export default function ExplorarPage() {
                 </button>
               </div>
             )}
-
           </div>
         </div>
       )}
+    </div>
+  )
+}
 
+/* ─── Card de profissional/serviço ─────────────────────────────── */
+function ProfCard({ p, destaque = false }: { p: Profissional; destaque?: boolean }) {
+  return (
+    <div className={`bg-zinc-900 border rounded-2xl p-4 flex items-center gap-4 ${destaque ? 'border-indigo-500/30' : 'border-zinc-800'}`}>
+      {/* Avatar */}
+      <div className={`w-14 h-14 rounded-2xl ${p.cor} border border-white/5 flex items-center justify-center flex-shrink-0 text-2xl`}>
+        {p.avatar}
+      </div>
+
+      {/* Info */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="font-black text-white text-base truncate">{p.nome}</p>
+          <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${STATUS_CLS[p.status]}`}>
+            {STATUS_LABEL[p.status]}
+          </span>
+        </div>
+        <p className="text-sm text-zinc-400 truncate">{p.categoria} · {p.subcategoria}</p>
+        <div className="flex items-center gap-3 mt-1 text-xs text-zinc-500 flex-wrap">
+          <span className="flex items-center gap-1">
+            <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+            <span className="text-yellow-400 font-bold">{p.nota.toFixed(1)}</span>
+            <span>({p.totalAvaliacoes})</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <Navigation className="w-3 h-3" />
+            {p.distancia}
+          </span>
+          <span className="flex items-center gap-1">
+            <MapPin className="w-3 h-3" />
+            {p.bairro}
+          </span>
+        </div>
+        <p className="text-xs text-indigo-300 font-bold mt-1">{p.preco}</p>
+      </div>
     </div>
   )
 }
