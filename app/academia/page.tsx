@@ -1,6 +1,31 @@
 ﻿'use client'
 
 import { useState, useEffect, useRef } from 'react'
+// --- Tipos e helpers para Esporte ---
+type EsporteLocal = {
+  nome: string
+  esporte: string
+  vezesSemana: string
+  horasPrevistas: string
+  lat: number
+  lng: number
+}
+
+function getEsportesPadrao() {
+  return [
+    'Corrida',
+    'Ciclismo',
+    'Futebol',
+    'Vôlei',
+    'Natação',
+    'Caminhada',
+    'Outro',
+  ]
+}
+
+function distMetros(a: {lat:number,lng:number}, b: {lat:number,lng:number}) {
+  return calcDist(a.lat, a.lng, b.lat, b.lng)
+}
 import {
   CheckCircle, Flame, MapPin, Plus, Minus,
   TrendingUp, BookOpen, Target, Trophy, Star, Wifi, WifiOff, Pencil, X
@@ -67,6 +92,10 @@ export default function AcademiaPage() {
   const [exercicios, setExercicios] = useState<Exercicio[]>(TREINO_INICIAL)
   const [incentIdx, setIncentIdx] = useState(0)
   const [atividade, setAtividade] = useState<'academia' | 'esporte' | null>(null)
+  const [showEsporteModal, setShowEsporteModal] = useState(false)
+  const [formEsporte, setFormEsporte] = useState<EsporteLocal>({ nome: '', esporte: '', vezesSemana: '', horasPrevistas: '', lat: 0, lng: 0 })
+  const [esportesCadastrados, setEsportesCadastrados] = useState<EsporteLocal[]>([])
+  const [esporteEditIdx, setEsporteEditIdx] = useState<number | null>(null)
   const watchRef    = useRef<number | null>(null)
   const timerRef    = useRef<NodeJS.Timeout | null>(null)
   const warmupRef   = useRef<NodeJS.Timeout | null>(null)
@@ -81,7 +110,56 @@ export default function AcademiaPage() {
     localStorage.removeItem(CHECKIN_KEY)
   }
 
+  // --- Esporte: fluxo de cadastro/edição ---
+  function abrirModalEsporte(editarIdx: number | null = null, pos?: {lat:number,lng:number}) {
+    setEsporteEditIdx(editarIdx)
+    if (editarIdx !== null && esportesCadastrados[editarIdx]) {
+      setFormEsporte(esportesCadastrados[editarIdx])
+    } else {
+      setFormEsporte({ nome: '', esporte: '', vezesSemana: '', horasPrevistas: '', lat: pos?.lat || 0, lng: pos?.lng || 0 })
+    }
+    setShowEsporteModal(true)
+  }
+
+  function salvarEsporte() {
+    if (!formEsporte.nome || !formEsporte.esporte || !formEsporte.vezesSemana || !formEsporte.horasPrevistas) return
+    let novos = [...esportesCadastrados]
+    if (esporteEditIdx !== null) {
+      novos[esporteEditIdx] = formEsporte
+    } else {
+      novos.push(formEsporte)
+    }
+    setEsportesCadastrados(novos)
+    localStorage.setItem('esportes_cadastrados', JSON.stringify(novos))
+    setShowEsporteModal(false)
+    setEsporteEditIdx(null)
+    // Aqui pode disparar notificação/meta
+  }
+
+  function checarLocalEsporte(pos: {lat:number,lng:number}) {
+    const idx = esportesCadastrados.findIndex(e => distMetros(e, pos) < 50)
+    return idx
+  }
+
   function iniciarGeo(tipo: 'academia' | 'esporte') {
+    if (tipo === 'esporte') {
+      if (!navigator.geolocation) { setGeoState('negado'); return }
+      navigator.geolocation.getCurrentPosition((pos) => {
+        const lat = pos.coords.latitude
+        const lng = pos.coords.longitude
+        const idx = checarLocalEsporte({lat, lng})
+        if (idx !== -1) {
+          // Local já cadastrado
+          if (window.confirm('Este local de esporte já está cadastrado. Deseja editar as informações?')) {
+            abrirModalEsporte(idx)
+          }
+          return
+        }
+        abrirModalEsporte(null, {lat, lng})
+      }, () => setGeoState('negado'), { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 })
+      return
+    }
+    // Academia segue fluxo normal
     setAtividade(tipo)
     if (!navigator.geolocation) { setGeoState('negado'); return }
     setGeoState('watching')
@@ -122,6 +200,12 @@ export default function AcademiaPage() {
       { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
     )
   }
+
+  // Carregar esportes cadastrados do localStorage ao iniciar
+  useEffect(() => {
+    const esportes = localStorage.getItem('esportes_cadastrados')
+    if (esportes) setEsportesCadastrados(JSON.parse(esportes))
+  }, [])
 
   useEffect(() => {
     const p = carregarPerfil()
@@ -262,8 +346,83 @@ export default function AcademiaPage() {
               </button>
             </div>
             <div className="mt-1 text-xs text-zinc-400 text-center">
-              Escolha <b>Academia</b> para treinos convencionais ou <b>Esporte</b> para atividades ao ar livre. O tempo e localização serão registrados para benefícios semanais.
+              <b>Academia:</b> registre treinos convencionais.<br />
+              <b>Esporte:</b> registre atividades ao ar livre, informando o local, esporte praticado, frequência semanal e tempo previsto. O sistema irá reconhecer o local automaticamente nas próximas vezes, enviar notificações de incentivo e acompanhar suas metas.
             </div>
+                {/* Modal de cadastro/edição de esporte */}
+                {showEsporteModal && (
+                  <div className="fixed inset-0 z-50 bg-black/80 flex items-end justify-center">
+                    <div className="bg-zinc-900 border-t border-zinc-800 rounded-t-3xl w-full max-w-md p-6 space-y-4 overflow-y-auto max-h-screen min-h-screen md:min-h-0 md:max-h-[90vh] flex flex-col justify-center mx-auto" style={{minHeight: '100dvh'}}>
+                      <div className="text-center relative">
+                        <button
+                          onClick={() => { setShowEsporteModal(false); setEsporteEditIdx(null) }}
+                          className="absolute right-0 top-0 w-8 h-8 bg-zinc-800 hover:bg-zinc-700 rounded-xl flex items-center justify-center transition active:scale-90"
+                        >
+                          <X className="w-4 h-4 text-zinc-400" />
+                        </button>
+                        <span className="text-4xl">🏟️</span>
+                        <h2 className="text-xl font-black text-white mt-2">
+                          {esporteEditIdx !== null ? 'Editar Local de Esporte' : 'Novo Local de Esporte'}
+                        </h2>
+                        <p className="text-sm text-zinc-400 mt-1">Cadastre o local, esporte praticado, frequência semanal e tempo previsto por sessão.</p>
+                      </div>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide">Nome do local</label>
+                          <input
+                            value={formEsporte.nome}
+                            onChange={e => setFormEsporte(f => ({ ...f, nome: e.target.value }))}
+                            placeholder="Ex: Praça Central, Parque, Quadra..."
+                            className="mt-1 w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-green-400 text-base"
+                            style={{color: 'white'}}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide">Esporte praticado</label>
+                          <select
+                            value={formEsporte.esporte}
+                            onChange={e => setFormEsporte(f => ({ ...f, esporte: e.target.value }))}
+                            className="mt-1 w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-green-400 text-base"
+                            style={{color: 'white'}}>
+                            <option value="">Selecione...</option>
+                            {getEsportesPadrao().map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                          </select>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide">Vezes por semana</label>
+                            <input
+                              type="number"
+                              value={formEsporte.vezesSemana}
+                              onChange={e => setFormEsporte(f => ({ ...f, vezesSemana: e.target.value }))}
+                              placeholder="Ex: 3"
+                              className="mt-1 w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-green-400 text-base"
+                              style={{color: 'white'}}
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide">Horas previstas/sessão</label>
+                            <input
+                              type="number"
+                              value={formEsporte.horasPrevistas}
+                              onChange={e => setFormEsporte(f => ({ ...f, horasPrevistas: e.target.value }))}
+                              placeholder="Ex: 1.5"
+                              className="mt-1 w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-green-400 text-base"
+                              style={{color: 'white'}}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={salvarEsporte}
+                        disabled={!formEsporte.nome || !formEsporte.esporte || !formEsporte.vezesSemana || !formEsporte.horasPrevistas}
+                        className="w-full py-4 bg-gradient-to-r from-green-600 to-emerald-700 text-white rounded-2xl font-black text-lg active:scale-95 transition-all disabled:opacity-40 mt-2"
+                      >
+                        Salvar
+                      </button>
+                    </div>
+                  </div>
+                )}
           </div>
         )}
 
