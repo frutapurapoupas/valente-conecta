@@ -8,6 +8,11 @@ export interface PerfilAluno {
   freqSemanal: number   // vezes por semana desejadas
   nivel: 'iniciante' | 'intermediario' | 'avancado'
   ultimoTreino?: string // ISO date
+  academiaNome?: string
+  academiaLat?: number | null
+  academiaLng?: number | null
+  diasSeguidos?: number
+  treinosMes?: number
 }
 
 const PERFIL_KEY = 'academia_perfil_aluno'

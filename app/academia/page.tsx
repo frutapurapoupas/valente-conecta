@@ -27,8 +27,8 @@ function distMetros(a: {lat:number,lng:number}, b: {lat:number,lng:number}) {
   return calcDist(a.lat, a.lng, b.lat, b.lng)
 }
 import {
-  CheckCircle, Flame, MapPin, Plus, Minus,
-  TrendingUp, BookOpen, Target, Trophy, Star, Wifi, WifiOff, Pencil, X
+  CheckCircle, Flame, Plus, Minus,
+  TrendingUp, BookOpen, Target, Trophy, Star, Wifi, WifiOff, Pencil, X, MapPin
 } from 'lucide-react'
 import AcademiaHeader from '@/components/academia/Header'
 import BottomNav from '@/components/academia/BottomNav'
@@ -39,8 +39,8 @@ import {
   notificarCheckIn, notificarEmAndamento, notificarCheckOut,
 } from '@/hooks/useAcademiaNotificacoes'
 
-const GYM_LAT = -23.5505
-const GYM_LNG = -46.6333
+
+// Academia location state (dynamic)
 const GYM_RADIUS = 5
 const WARMUP_MS = 5 * 60 * 1000
 const GEO_PERMISSION_KEY = 'academia_geo_granted'
@@ -83,9 +83,12 @@ const INCENTIVOS = [
 
 export default function AcademiaPage() {
   const [isAdmin] = useState(false)
-  const [perfil, setPerfil] = useState<PerfilAluno | null>(null)
+  const [perfil, setPerfil] = useState<import('@/hooks/useAcademiaNotificacoes').PerfilAluno | null>(null)
+  const [academiaNome, setAcademiaNome] = useState('')
+  const [academiaLat, setAcademiaLat] = useState<number | null>(null)
+  const [academiaLng, setAcademiaLng] = useState<number | null>(null)
   const [showCadastro, setShowCadastro] = useState(false)
-  const [formPerfil, setFormPerfil] = useState({ nome: '', objetivo: 'emagrecer', pesoAtual: '', pesoMeta: '', freqSemanal: '3', nivel: 'iniciante' })
+  const [formPerfil, setFormPerfil] = useState({ nome: '', objetivo: 'emagrecer', pesoAtual: '', pesoMeta: '', freqSemanal: '3', nivel: 'iniciante', academiaNome: '', academiaLat: '', academiaLng: '' })
   const [geoState, setGeoState] = useState<GeoState>('idle')
   const [isCheckIn, setIsCheckIn] = useState(false)
   const [elapsedTime, setElapsedTime] = useState(0)
@@ -157,46 +160,14 @@ export default function AcademiaPage() {
       }, () => setGeoState('negado'), { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 })
       return
     }
-    // Academia segue fluxo normal
-    setAtividade(tipo)
+    // Academia: capture location and save to state
     if (!navigator.geolocation) { setGeoState('negado'); return }
-    setGeoState('watching')
-    localStorage.setItem(GEO_PERMISSION_KEY, '1')
-    watchRef.current = navigator.geolocation.watchPosition(
-      (pos) => {
-        const dist = calcDist(pos.coords.latitude, pos.coords.longitude, GYM_LAT, GYM_LNG)
-        const dentro = dist <= GYM_RADIUS
-        setGeoState(dentro ? 'dentro' : 'fora')
-        if (dentro) {
-          if (!dentroRef.current) {
-            dentroRef.current = true
-            warmupRef.current = setTimeout(() => {
-              if (dentroRef.current) {
-                const start = Date.now()
-                setIsCheckIn(true)
-                localStorage.setItem(CHECKIN_KEY, JSON.stringify({ start }))
-                const p = carregarPerfil()
-                if (p) notificarCheckIn(p)
-              }
-            }, WARMUP_MS)
-          }
-        } else {
-          if (dentroRef.current) {
-            const saved = localStorage.getItem(CHECKIN_KEY)
-            if (saved) {
-              const { start } = JSON.parse(saved)
-              const mins = Math.floor((Date.now() - start) / 60000)
-              const p = carregarPerfil()
-              if (p && mins > 0) notificarCheckOut(p, mins)
-            }
-            pararTudo()
-          }
-          setGeoState('fora')
-        }
-      },
-      () => setGeoState('negado'),
-      { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
-    )
+    navigator.geolocation.getCurrentPosition((pos) => {
+      setAcademiaLat(pos.coords.latitude)
+      setAcademiaLng(pos.coords.longitude)
+      setFormPerfil(f => ({ ...f, academiaLat: String(pos.coords.latitude), academiaLng: String(pos.coords.longitude) }))
+      alert('Localização da academia capturada!')
+    }, () => setGeoState('negado'), { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 })
   }
 
   // Carregar esportes cadastrados do localStorage ao iniciar
@@ -207,8 +178,12 @@ export default function AcademiaPage() {
 
   useEffect(() => {
     const p = carregarPerfil()
-    if (p) setPerfil(p)
-    else setShowCadastro(true)
+    if (p) {
+      setPerfil(p)
+      setAcademiaNome(p.academiaNome || '')
+      setAcademiaLat(p.academiaLat || null)
+      setAcademiaLng(p.academiaLng || null)
+    } else setShowCadastro(true)
   }, [])
 
   useEffect(() => {
@@ -270,6 +245,9 @@ export default function AcademiaPage() {
         pesoMeta: String(perfil.pesoMeta),
         freqSemanal: String(perfil.freqSemanal),
         nivel: perfil.nivel,
+        academiaNome: perfil.academiaNome || '',
+        academiaLat: perfil.academiaLat ? String(perfil.academiaLat) : '',
+        academiaLng: perfil.academiaLng ? String(perfil.academiaLng) : '',
       })
     }
     setShowCadastro(true)
@@ -284,9 +262,15 @@ export default function AcademiaPage() {
       pesoMeta: parseFloat(formPerfil.pesoMeta),
       freqSemanal: parseInt(formPerfil.freqSemanal),
       nivel: formPerfil.nivel as PerfilAluno['nivel'],
+      academiaNome: formPerfil.academiaNome,
+      academiaLat: formPerfil.academiaLat ? parseFloat(formPerfil.academiaLat) : null,
+      academiaLng: formPerfil.academiaLng ? parseFloat(formPerfil.academiaLng) : null,
     }
     salvarPerfil(novo)
     setPerfil(novo)
+    setAcademiaNome(novo.academiaNome || '')
+    setAcademiaLat(novo.academiaLat || null)
+    setAcademiaLng(novo.academiaLng || null)
     setShowCadastro(false)
   }
 
@@ -314,7 +298,15 @@ export default function AcademiaPage() {
   return (
     <div className="min-h-screen bg-zinc-950 pb-28">
       <NotificationPermission />
-      <AcademiaHeader isAdmin={isAdmin} isCheckIn={isCheckIn} elapsedTime={elapsedTime} onActionClick={() => {}} isCounting={isCheckIn} />
+      <AcademiaHeader isAdmin={isAdmin} isCheckIn={isCheckIn} elapsedTime={elapsedTime} onActionClick={() => {
+        // Block training start if profile is incomplete
+        if (!perfil || !perfil.nome || !perfil.pesoAtual || !perfil.pesoMeta) {
+          setShowCadastro(true)
+          return
+        }
+        // Start training logic here (existing logic)
+        iniciarGeo('academia')
+      }} isCounting={isCheckIn} />
 
       {geoBanner && (
         <div className="mx-4 mt-3 px-4 py-2 rounded-2xl flex items-center gap-2 text-sm font-semibold">
@@ -430,19 +422,23 @@ export default function AcademiaPage() {
           <p className="text-sm font-bold">{incent.txt}</p>
         </div>
 
-        {/* Stats rápidos */}
+        {/* Stats rápidos - agora dinâmicos */}
         <div className="grid grid-cols-3 gap-3">
-          {[
-            { icon: <Flame className="w-5 h-5 text-amber-500" />, val: '5', label: 'dias seguidos' },
-            { icon: <Trophy className="w-5 h-5 text-yellow-500" />, val: '12', label: 'treinos/mês' },
-            { icon: <Star className="w-5 h-5 text-indigo-400" />, val: `${pctFeitos}%`, label: 'treino hoje' },
-          ].map(s => (
-            <div key={s.label} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 text-center">
-              <div className="flex justify-center mb-1">{s.icon}</div>
-              <p className="font-black text-xl text-white">{s.val}</p>
-              <p className="text-xs text-zinc-500 leading-tight">{s.label}</p>
-            </div>
-          ))}
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 text-center">
+            <div className="flex justify-center mb-1"><Flame className="w-5 h-5 text-amber-500" /></div>
+            <p className="font-black text-xl text-white">{perfil?.diasSeguidos || 0}</p>
+            <p className="text-xs text-zinc-500 leading-tight">dias seguidos</p>
+          </div>
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 text-center">
+            <div className="flex justify-center mb-1"><Trophy className="w-5 h-5 text-yellow-500" /></div>
+            <p className="font-black text-xl text-white">{perfil?.treinosMes || 0}</p>
+            <p className="text-xs text-zinc-500 leading-tight">treinos/mês</p>
+          </div>
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 text-center">
+            <div className="flex justify-center mb-1"><Star className="w-5 h-5 text-indigo-400" /></div>
+            <p className="font-black text-xl text-white">{pctFeitos}%</p>
+            <p className="text-xs text-zinc-500 leading-tight">treino hoje</p>
+          </div>
         </div>
 
         {/* Treino do dia */}
@@ -462,7 +458,7 @@ export default function AcademiaPage() {
           </div>
         </div>
 
-        {/* Metas */}
+        {/* Metas - agora dinâmicas */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-black text-lg text-white flex items-center gap-2">
@@ -474,48 +470,56 @@ export default function AcademiaPage() {
               </button>
             )}
           </div>
-          {METAS_ALUNO.map(m => (
-            <div key={m.label} className="space-y-1.5">
-              <div className="flex justify-between text-sm">
-                <span className="font-semibold text-zinc-300">{m.label}</span>
-                <span className="font-black text-white">{m.valor} <span className="text-xs text-zinc-500 font-normal">→ {m.meta}</span></span>
-              </div>
-              <div className="h-2.5 bg-zinc-800 rounded-full overflow-hidden">
-                <div className="h-full rounded-full transition-all bg-violet-500" style={{ width: `${m.pct}%` }} />
-              </div>
-              <p className="text-xs text-zinc-500 text-right">{m.pct}% da meta</p>
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-sm">
+              <span className="font-semibold text-zinc-300">Peso corporal</span>
+              <span className="font-black text-white">{perfil?.pesoAtual || '-'} kg <span className="text-xs text-zinc-500 font-normal">→ {perfil?.pesoMeta || '-' } kg</span></span>
             </div>
-          ))}
+            <div className="h-2.5 bg-zinc-800 rounded-full overflow-hidden">
+              <div className="h-full rounded-full transition-all bg-violet-500" style={{ width: `${perfil && perfil.pesoAtual && perfil.pesoMeta ? Math.round(100 * (1 - ((perfil.pesoAtual - perfil.pesoMeta) / (perfil.pesoAtual || 1)))) : 0}%` }} />
+            </div>
+            <p className="text-xs text-zinc-500 text-right">{perfil && perfil.pesoAtual && perfil.pesoMeta ? Math.round(100 * (1 - ((perfil.pesoAtual - perfil.pesoMeta) / (perfil.pesoAtual || 1)))) : 0}% da meta</p>
+          </div>
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-sm">
+              <span className="font-semibold text-zinc-300">Treinos/semana</span>
+              <span className="font-black text-white">{perfil?.freqSemanal || '-'}x <span className="text-xs text-zinc-500 font-normal">meta: {perfil?.freqSemanal || '-' }x</span></span>
+            </div>
+            <div className="h-2.5 bg-zinc-800 rounded-full overflow-hidden">
+              <div className="h-full rounded-full transition-all bg-blue-500" style={{ width: `${perfil?.freqSemanal ? Math.min(100, Math.round((perfil.freqSemanal/5)*100)) : 0}%` }} />
+            </div>
+            <p className="text-xs text-zinc-500 text-right">{perfil?.freqSemanal ? Math.min(100, Math.round((perfil.freqSemanal/5)*100)) : 0}% da meta</p>
+          </div>
         </div>
 
         {/* Histórico + Biblioteca */}
         <div className="grid grid-cols-2 gap-3">
           <button className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex flex-col items-center gap-2 active:scale-95 transition-all hover:border-zinc-700">
             <TrendingUp className="w-6 h-6 text-indigo-400" />
-            <p className="font-bold text-sm text-white">Hist\u00f3rico de Cargas</p>
-            <p className="text-xs text-zinc-500 text-center">Veja sua evolu\u00e7\u00e3o</p>
+            <p className="font-bold text-sm text-white">Histórico de Esportes</p>
+            <p className="text-xs text-zinc-500 text-center">Veja locais e frequência</p>
           </button>
           <button className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex flex-col items-center gap-2 active:scale-95 transition-all hover:border-zinc-700">
             <BookOpen className="w-6 h-6 text-violet-400" />
             <p className="font-bold text-sm text-white">Biblioteca</p>
-            <p className="text-xs text-zinc-500 text-center">Exerc\u00edcios e t\u00e9cnicas</p>
+            <p className="text-xs text-zinc-500 text-center">Exercícios e técnicas</p>
           </button>
         </div>
 
-        {/* Conquistas */}
+        {/* Conquistas - dinâmicas */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5">
           <h3 className="font-black text-base text-white flex items-center gap-2 mb-3">
             <Star className="w-5 h-5 text-yellow-400" /> Conquistas
           </h3>
           <div className="flex gap-3 overflow-x-auto pb-1">
             {[
-              { emoji: '\uD83C\uDFC6', nome: 'Primeiro Treino', ok: true },
-              { emoji: '\uD83D\uDD25', nome: '5 dias seguidos', ok: true },
-              { emoji: '\uD83D\uDCAA', nome: '10 treinos',      ok: true },
-              { emoji: '\u2B50',        nome: '20 treinos',      ok: false },
-              { emoji: '\uD83C\uDFC5', nome: '30 treinos',      ok: false },
+              { emoji: '\uD83C\uDFC6', nome: 'Primeiro Esporte', ok: esportesCadastrados.length > 0 },
+              { emoji: '\uD83D\uDD25', nome: '5 dias seguidos', ok: (perfil?.diasSeguidos ?? 0) >= 5 },
+              { emoji: '\uD83D\uDCAA', nome: '10 treinos',      ok: (perfil?.treinosMes ?? 0) >= 10 },
+              { emoji: '\u2B50',        nome: '20 treinos',      ok: (perfil?.treinosMes ?? 0) >= 20 },
+              { emoji: '\uD83C\uDFC5', nome: '30 treinos',      ok: (perfil?.treinosMes ?? 0) >= 30 },
             ].map(c => (
-              <div key={c.nome} className="flex-shrink-0 flex flex-col items-center gap-1 w-16 p-2 rounded-2xl border">
+              <div key={c.nome} className={`flex-shrink-0 flex flex-col items-center gap-1 w-16 p-2 rounded-2xl border ${c.ok ? 'border-yellow-400 bg-yellow-400/10' : 'border-zinc-700'}`}>
                 <span className="text-2xl">{c.emoji}</span>
                 <p className="text-[9px] font-bold text-center text-zinc-400 leading-tight">{c.nome}</p>
               </div>
@@ -528,7 +532,7 @@ export default function AcademiaPage() {
 
       <BottomNav isAdmin={isAdmin} />
 
-      {/* Modal de cadastro de perfil */}
+      {/* Modal de cadastro de perfil + academia */}
       {showCadastro && (
         <div className="fixed inset-0 z-50 bg-black/80 flex items-end justify-center">
           <div className="bg-zinc-900 border-t border-zinc-800 rounded-t-3xl w-full max-w-md p-6 space-y-4 overflow-y-auto max-h-[90vh]">
@@ -566,7 +570,7 @@ export default function AcademiaPage() {
                     { val: 'condicionamento', emoji: '\u26A1',        label: 'Condicionamento' },
                     { val: 'saude',           emoji: '\uD83D\uDC9A', label: 'Sa\u00fade geral' },
                   ].map(o => (
-                    <button key={o.val} onClick={() => setFormPerfil(f => ({ ...f, objetivo: o.val }))} className="py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 border-2 transition-all">
+                    <button key={o.val} onClick={() => setFormPerfil(f => ({ ...f, objetivo: o.val }))} className={`py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 border-2 transition-all ${formPerfil.objetivo === o.val ? 'border-indigo-500 bg-indigo-500/10 text-indigo-300' : 'border-zinc-700 text-zinc-400'}`}>
                       <span>{o.emoji}</span>{o.label}
                     </button>
                   ))}
@@ -583,28 +587,42 @@ export default function AcademiaPage() {
                 </div>
               </div>
               <div>
-                <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide">Frequ\u00eancia desejada por semana</label>
+                <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide">Frequência desejada por semana</label>
                 <div className="flex gap-2 mt-1">
                   {['2','3','4','5','6'].map(n => (
-                    <button key={n} onClick={() => setFormPerfil(f => ({ ...f, freqSemanal: n }))} className="flex-1 py-3 rounded-xl text-sm font-black border-2 transition-all">{n}x</button>
+                    <button key={n} onClick={() => setFormPerfil(f => ({ ...f, freqSemanal: n }))} className={`flex-1 py-3 rounded-xl text-sm font-black border-2 transition-all ${formPerfil.freqSemanal === n ? 'border-indigo-500 bg-indigo-500/10 text-indigo-300' : 'border-zinc-700 text-zinc-400'}`}>{n}x</button>
                   ))}
                 </div>
               </div>
               <div>
-                <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide">N\u00edvel</label>
+                <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide">Nível</label>
                 <div className="flex gap-2 mt-1">
                   {[
                     { val: 'iniciante', label: 'Iniciante' },
                     { val: 'intermediario', label: 'Interm.' },
-                    { val: 'avancado', label: 'Avan\u00e7ado' },
+                    { val: 'avancado', label: 'Avançado' },
                   ].map(n => (
-                    <button key={n.val} onClick={() => setFormPerfil(f => ({ ...f, nivel: n.val }))} className="flex-1 py-3 rounded-xl text-sm font-bold border-2 transition-all">{n.label}</button>
+                    <button key={n.val} onClick={() => setFormPerfil(f => ({ ...f, nivel: n.val }))} className={`flex-1 py-3 rounded-xl text-sm font-bold border-2 transition-all ${formPerfil.nivel === n.val ? 'border-indigo-500 bg-indigo-500/10 text-indigo-300' : 'border-zinc-700 text-zinc-400'}`}>{n.label}</button>
                   ))}
                 </div>
               </div>
+              <div>
+                <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide flex items-center gap-2">Nome da academia
+                  <button type="button" onClick={() => iniciarGeo('academia')} className="ml-2 px-2 py-1 bg-indigo-700 text-white rounded text-xs flex items-center gap-1"><MapPin className="w-4 h-4" /> Capturar local</button>
+                </label>
+                <input
+                  value={formPerfil.academiaNome}
+                  onChange={e => setFormPerfil(f => ({ ...f, academiaNome: e.target.value }))}
+                  placeholder="Nome da academia (opcional)"
+                  className="mt-1 w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-black placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-base"
+                />
+                {formPerfil.academiaLat && formPerfil.academiaLng && (
+                  <div className="text-xs text-zinc-400 mt-1">Localização capturada: <span className="font-bold text-green-400">{formPerfil.academiaLat}, {formPerfil.academiaLng}</span></div>
+                )}
+              </div>
             </div>
             <button onClick={salvarFormPerfil} disabled={!formPerfil.nome || !formPerfil.pesoAtual || !formPerfil.pesoMeta} className="w-full py-4 bg-gradient-to-r from-indigo-600 to-violet-700 text-white rounded-2xl font-black text-lg active:scale-95 transition-all disabled:opacity-40">
-              {perfil ? 'Salvar altera\u00e7\u00f5es \u2705' : 'Salvar e Come\u00e7ar \uD83D\uDE80'}
+              {perfil ? 'Salvar alterações ✅' : 'Salvar e Começar 🚀'}
             </button>
             {perfil && (
               <button onClick={() => setShowCadastro(false)} className="w-full py-3 text-sm font-bold text-zinc-500 active:scale-95 transition-all">

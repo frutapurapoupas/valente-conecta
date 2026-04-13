@@ -15,6 +15,12 @@ import { ArrowLeft, Settings, X, Hourglass } from 'lucide-react'
   elapsedTime,
   onActionClick,
   isCounting
+export default function AcademiaHeader({
+  isAdmin,
+  isCheckIn,
+  elapsedTime,
+  onActionClick,
+  isCounting
 }: HeaderProps) {
   return (
     <header className="bg-gradient-to-br from-indigo-700 to-purple-800 text-white p-6 rounded-b-[3rem] shadow-2xl">
