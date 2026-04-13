@@ -414,7 +414,7 @@ ounded-2xl border p-4 space-y-3 transition-all }>
                   value={formPerfil.nome}
                   onChange={e => setFormPerfil(f => ({ ...f, nome: e.target.value }))}
                   placeholder="Como quer ser chamado?"
-                  className="mt-1 w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-white focus:outline-none focus:ring-2 focus:ring-indigo-400 text-base"
+                  className="mt-1 w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-black placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-base"
                 />
               </div>
               <div>
@@ -435,11 +435,11 @@ ounded-2xl border p-4 space-y-3 transition-all }>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide">Peso atual (kg)</label>
-                  <input type="number" value={formPerfil.pesoAtual} onChange={e => setFormPerfil(f => ({ ...f, pesoAtual: e.target.value }))} placeholder="Ex: 82" className="mt-1 w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-white focus:outline-none focus:ring-2 focus:ring-indigo-400 text-base" />
+                  <input type="number" value={formPerfil.pesoAtual} onChange={e => setFormPerfil(f => ({ ...f, pesoAtual: e.target.value }))} placeholder="Ex: 82" className="mt-1 w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-black placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-base" />
                 </div>
                 <div>
                   <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide">Meta de peso (kg)</label>
-                  <input type="number" value={formPerfil.pesoMeta} onChange={e => setFormPerfil(f => ({ ...f, pesoMeta: e.target.value }))} placeholder="Ex: 72" className="mt-1 w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-white focus:outline-none focus:ring-2 focus:ring-indigo-400 text-base" />
+                  <input type="number" value={formPerfil.pesoMeta} onChange={e => setFormPerfil(f => ({ ...f, pesoMeta: e.target.value }))} placeholder="Ex: 72" className="mt-1 w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-black placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-base" />
                 </div>
               </div>
               <div>
