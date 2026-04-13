@@ -5,7 +5,116 @@ import {
   ArrowLeft, Save, Plus, Trash2, X, Globe, Star, Package,
   Building2, User, Clock, Bell, BellOff, Camera, Check, AlertTriangle
 } from 'lucide-react'
-import { usePerfilEmpresarial, TIPOS_PROFISSIONAL, CATEGORIAS_EMPRESA } from '@/hooks/usePerfilEmpresarial'
+import { MapPin } from 'lucide-react'
+import { usePerfilEmpresarial, TIPOS_PROFISSIONAL, CATEGORIAS_EMPRESA, ItemCatalogo, HorarioDia } from '@/hooks/usePerfilEmpresarial'
+import { useState } from 'react'
+
+// Bloco de agenda/calendário para profissional liberal
+function AgendaProfissional() {
+
+  // Lista de feriados (exemplo, pode ser parametrizado)
+  const feriados: string[] = [
+    // '2026-04-21', // Tiradentes
+    // '2026-05-01', // Dia do Trabalho
+  ]
+
+  // Estado: dias marcados (disponível/ocupado) para os próximos 120 dias
+  const [dias, setDias] = useState(() => {
+    const hoje = new Date()
+    return Array.from({ length: 120 }, (_, i) => {
+      const d = new Date(hoje)
+      d.setDate(hoje.getDate() + i)
+      const dataISO = d.toISOString().slice(0, 10)
+      const diaSemana = d.getDay()
+      const isFeriado = feriados.some(f => f === dataISO)
+      // Marcar como disponível se for dia útil (segunda a sexta, não feriado)
+      const disponivel = diaSemana >= 1 && diaSemana <= 5 && !isFeriado
+      return {
+        data: dataISO,
+        disponivel,
+        diaSemana,
+        isFeriado,
+      }
+    })
+  })
+
+  // Marcar/desmarcar disponibilidade
+  function toggleDia(idx: number) {
+    setDias(ds => ds.map((d, i) => i === idx ? { ...d, disponivel: !d.disponivel } : d))
+  }
+
+  // Dias públicos (primeiros 60)
+  const diasPublicos = dias.slice(0, 60)
+  // Dias privados (61-120)
+  const diasPrivados = dias.slice(60)
+
+  // Simulação: se algum dia após 90 está marcado, mostrar alerta
+  const diasParaAlerta = dias.slice(90).filter(d => d.disponivel).length
+
+  return (
+    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 mb-6">
+      <h2 className="font-bold text-zinc-300 flex items-center gap-2 mb-2">
+        <Clock className="w-5 h-5 text-purple-400" /> Agenda de Disponibilidade
+      </h2>
+      <p className="text-xs text-zinc-500 mb-3">Dias úteis já estão marcados automaticamente. Atue apenas nos dias destacados (feriados, sábados e domingos).</p>
+
+      {diasParaAlerta > 0 && (
+        <div className="bg-amber-500/10 border border-amber-500 text-amber-400 rounded-xl p-3 mb-3 text-xs font-bold flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4" />
+          Atualize sua agenda! Você marcou disponibilidade após 90 dias. Mantenha sempre atualizada para aparecer na busca.
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2">
+        {diasPublicos.map((d, idx) => {
+          const dataObj = new Date(d.data)
+          const label = dataObj.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' })
+          // Sábado, domingo ou feriado
+          const isExcecao = d.diaSemana === 0 || d.diaSemana === 6 || d.isFeriado
+          return (
+            <button
+              key={d.data}
+              onClick={() => toggleDia(idx)}
+              className={`rounded-xl p-2 text-xs font-bold flex flex-col items-center border-2 transition-all
+                ${d.disponivel ? 'bg-purple-600/20 border-purple-400 text-purple-300' : 'bg-zinc-950 border-zinc-800 text-zinc-400'}
+                ${isExcecao ? 'ring-2 ring-amber-400' : ''}
+              `}
+              title={isExcecao ? 'Sábado, domingo ou feriado' : 'Dia útil'}
+            >
+              {label}
+              <span>{d.disponivel ? '✔️' : ''}</span>
+            </button>
+          )
+        })}
+      </div>
+      <details>
+        <summary className="text-xs text-zinc-500 cursor-pointer mb-2">Dias futuros (privados)</summary>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
+          {diasPrivados.map((d, idx) => {
+            const dataObj = new Date(d.data)
+            const label = dataObj.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' })
+            const isExcecao = d.diaSemana === 0 || d.diaSemana === 6 || d.isFeriado
+            return (
+              <button
+                key={d.data}
+                onClick={() => toggleDia(idx + 60)}
+                className={`rounded-xl p-2 text-xs font-bold flex flex-col items-center border-2 transition-all
+                  ${d.disponivel ? 'bg-purple-600/20 border-purple-400 text-purple-300' : 'bg-zinc-950 border-zinc-800 text-zinc-400'}
+                  ${isExcecao ? 'ring-2 ring-amber-400' : ''}
+                `}
+                title={isExcecao ? 'Sábado, domingo ou feriado' : 'Dia útil'}
+              >
+                {label}
+                <span>{d.disponivel ? '✔️' : ''}</span>
+              </button>
+            )
+          })}
+        </div>
+      </details>
+      <div className="mt-4 text-xs text-zinc-500">* Somente os primeiros 60 dias ficam públicos para clientes.</div>
+    </div>
+  )
+}
 
 function SeletorTipo({ onSelect }: { onSelect: (t: 'empresa' | 'profissional') => void }) {
   return (
@@ -41,6 +150,34 @@ function SeletorTipo({ onSelect }: { onSelect: (t: 'empresa' | 'profissional') =
             <p className="text-sm text-zinc-400">Pedreiro, manicure, barbeiro, eletricista…</p>
           </div>
         </button>
+
+        {/* Card Ambulante */}
+        <button
+          onClick={() => alert('Em breve: cadastro de Ambulante!')}
+          className="w-full bg-zinc-900 border-2 border-zinc-800 hover:border-orange-500 rounded-2xl p-6 flex items-center gap-4 transition-all"
+        >
+          <div className="w-14 h-14 bg-orange-500/10 rounded-2xl flex items-center justify-center flex-shrink-0">
+            <MapPin className="w-7 h-7 text-orange-400" />
+          </div>
+          <div className="text-left">
+            <p className="font-black text-lg text-white">Ambulante</p>
+            <p className="text-sm text-zinc-400">Vendedor de rua, food truck, feira livre…</p>
+          </div>
+        </button>
+
+        {/* Card Serviços com Agendamento */}
+        <button
+          onClick={() => alert('Em breve: cadastro de Serviços com Agendamento!')}
+          className="w-full bg-zinc-900 border-2 border-zinc-800 hover:border-green-500 rounded-2xl p-6 flex items-center gap-4 transition-all"
+        >
+          <div className="w-14 h-14 bg-green-500/10 rounded-2xl flex items-center justify-center flex-shrink-0">
+            <Clock className="w-7 h-7 text-green-400" />
+          </div>
+          <div className="text-left">
+            <p className="font-black text-lg text-white">Serviços com Agendamento</p>
+            <p className="text-sm text-zinc-400">Clínica, salão de beleza, consultoria, aulas…</p>
+          </div>
+        </button>
       </div>
     </div>
   )
@@ -66,7 +203,7 @@ export default function PerfilCatalogoPage() {
     removerItem,
     salvarPerfil,
     nomePrincipal,
-  } = usePerfilEmpresarial()
+  } = usePerfilEmpresarial() as any
 
   if (!tipoNegocio) {
     return <SeletorTipo onSelect={setTipoNegocio} />
@@ -77,13 +214,13 @@ export default function PerfilCatalogoPage() {
   const gradTo = isEmpresa ? 'to-indigo-700' : 'to-violet-700'
   const ringColor = isEmpresa ? 'focus:ring-blue-400' : 'focus:ring-purple-400'
 
-  const inputCls = mt-1 w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:ring-2 
-  const selectCls = mt-1 w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-xl text-white focus:outline-none focus:ring-2 
+  const inputCls = `mt-1 w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:ring-2 ${ringColor}`
+  const selectCls = `mt-1 w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-xl text-white focus:outline-none focus:ring-2 ${ringColor}`
 
   return (
     <div className="min-h-screen bg-zinc-950 pb-32">
       {/* Header */}
-      <header className={g-gradient-to-r   text-white sticky top-0 z-20}>
+      <header className={`bg-gradient-to-r ${gradFrom} ${gradTo} text-white sticky top-0 z-20`}>
         <div className="flex items-center gap-3 px-4 py-3 max-w-2xl mx-auto">
           <Link href="/pdv/colaborativo" className="p-2 hover:bg-white/20 rounded-lg transition">
             <ArrowLeft className="w-5 h-5" />
@@ -114,7 +251,7 @@ export default function PerfilCatalogoPage() {
               <button
                 key={tab.id}
                 onClick={() => setAba(tab.id)}
-                className={px-4 py-1.5 rounded-full text-sm font-bold transition-all }
+                className="px-4 py-1.5 rounded-full text-sm font-bold transition-all"
               >
                 {tab.label}
               </button>
@@ -174,6 +311,12 @@ export default function PerfilCatalogoPage() {
                       placeholder="Nome completo" className={inputCls} />
                   </div>
                   <div>
+                    <label className="text-xs font-bold text-zinc-500 uppercase">Cidade/Base *</label>
+                    <input value={formProfissional.endereco} onChange={e => updateProfissional('endereco', e.target.value)}
+                      placeholder="Ex: Valente, BA" className={inputCls} />
+                    <span className="text-xs text-zinc-500">Todos os serviços/itens cadastrados ficarão vinculados a esta cidade.</span>
+                  </div>
+                  <div>
                     <label className="text-xs font-bold text-zinc-500 uppercase">Tipo de Serviço *</label>
                     <select value={formProfissional.tipoProfissional} onChange={e => updateProfissional('tipoProfissional', e.target.value)} className={selectCls}>
                       <option value="">Selecione…</option>
@@ -195,7 +338,7 @@ export default function PerfilCatalogoPage() {
                     <textarea value={formProfissional.descricaoServico} onChange={e => updateProfissional('descricaoServico', e.target.value)}
                       placeholder="Ex: Pedreiro com 10 anos de experiência…"
                       rows={3}
-                      className={${inputCls} resize-none} />
+                      className={`${inputCls} resize-none`} />
                   </div>
                 </>
               )}
@@ -203,7 +346,7 @@ export default function PerfilCatalogoPage() {
 
             <button
               onClick={salvarPerfil}
-              className={w-full py-4 rounded-2xl font-bold text-white text-lg flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all bg-gradient-to-r  }
+              className={`w-full py-4 rounded-2xl font-bold text-white text-lg flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all bg-gradient-to-r ${gradFrom} ${gradTo}`}
             >
               <Save className="w-5 h-5" />
               {perfilSalvo ? 'Atualizar Perfil' : 'Salvar e Continuar'}
@@ -217,7 +360,7 @@ export default function PerfilCatalogoPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowAddItem(true)}
-                className={lex-1 py-3 rounded-2xl font-bold text-white flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all bg-gradient-to-r  }
+                className={`flex-1 py-3 rounded-2xl font-bold text-white flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all bg-gradient-to-r ${gradFrom} ${gradTo}`}
               >
                 <Plus className="w-5 h-5" />
                 {isEmpresa ? 'Adicionar Produto' : 'Adicionar Serviço'}
@@ -241,7 +384,7 @@ export default function PerfilCatalogoPage() {
               </div>
             ) : (
               <div className="space-y-3">
-                {itensCatalogo.map(item => (
+                {itensCatalogo.map((item: ItemCatalogo) => (
                   <div key={item.id} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex items-center gap-4">
                     <div className="w-16 h-16 bg-zinc-800 rounded-xl flex-shrink-0 overflow-hidden flex items-center justify-center">
                       {item.foto
@@ -249,11 +392,25 @@ export default function PerfilCatalogoPage() {
                         : <Package className="w-8 h-8 text-zinc-600" />
                       }
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-white truncate">{item.nome}</p>
-                      <p className="text-green-400 font-bold">R$ {item.preco.toFixed(2)}</p>
-                      {item.descricao && <p className="text-xs text-zinc-500 truncate">{item.descricao}</p>}
-                    </div>
+                     <div className="flex-1 min-w-0">
+                       <p className="font-bold text-white truncate">{item.nome}</p>
+                       <p className="text-green-400 font-bold">R$ {item.preco.toFixed(2)}</p>
+                       {item.descricao && <p className="text-xs text-zinc-500 truncate">{item.descricao}</p>}
+                       {/* Endereço com localizador, bloqueado para não pagantes */}
+                       {item.endereco && (
+                         <div className="flex items-center gap-1 mt-1">
+                           <svg width="16" height="16" fill="none" viewBox="0 0 24 24" className="text-blue-400"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5Z" fill="currentColor"/></svg>
+                           {item.planoPago ? (
+                             <span className="text-xs text-blue-400 font-bold underline cursor-pointer" title="Ver no mapa" onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.endereco || '')}`, '_blank')}>{item.endereco}</span>
+                           ) : (
+                             <span className="text-xs text-zinc-500 font-bold select-none">
+                               <span className="blur-sm">{item.endereco}</span>
+                               <span className="ml-2 text-amber-400 underline cursor-pointer" onClick={() => alert('Para ver o endereço e contato, faça o pagamento do plano!')}>Desbloquear</span>
+                             </span>
+                           )}
+                         </div>
+                       )}
+                     </div>
                     <button onClick={() => removerItem(item.id)} className="p-2 text-red-400 hover:bg-red-500/10 rounded-xl transition-all">
                       <Trash2 className="w-5 h-5" />
                     </button>
@@ -267,35 +424,15 @@ export default function PerfilCatalogoPage() {
         {/* ── ABA HORÁRIOS ── */}
         {aba === 'horarios' && perfilSalvo && (
           <>
-            <div className={ounded-2xl p-5 border-2 transition-all }>
-              <div className="mb-3">
-                <p className="font-bold text-white flex items-center gap-2">
-                  <AlertTriangle className={w-5 h-5 } />
-                  Horário Especial
-                </p>
-                <p className="text-xs text-zinc-500 mt-0.5">
-                  Aparece para todos na busca, mesmo sem plano pago
-                </p>
-              </div>
-              <button
-                onClick={publicarAvisoAtipico}
-                className={w-full py-5 rounded-2xl font-black text-xl flex items-center justify-center gap-3 transition-all active:scale-95 }
-              >
-                {avisoAtipicoAtivo
-                  ? <><X className="w-6 h-6" /> REMOVER AVISO</>
-                  : <><AlertTriangle className="w-6 h-6" /> ESTOU ABERTO — HORÁRIO ESPECIAL</>
-                }
-              </button>
-              {avisoAtipicoAtivo && (
-                <p className="text-xs text-amber-400 text-center mt-3 font-bold">
-                  ⚠️ Aviso ativo — clientes estão sendo avisados na busca
-                </p>
-              )}
-            </div>
+            {/* Bloco de agenda/calendário para profissional liberal */}
+            {!isEmpresa && (
+              <AgendaProfissional />
+            )}
 
+            {/* Bloco original para empresa */}
             {isEmpresa && (
               <>
-                <div className={ounded-2xl p-5 border-2 }>
+                <div className={`rounded-2xl p-5 border-2 ${statusAberto ? 'bg-green-500/10 border-green-500/40' : 'bg-zinc-900 border-zinc-800'}` }>
                   <div className="flex items-center justify-between mb-3">
                     <div>
                       <p className="font-bold text-white">Status de Funcionamento</p>
@@ -305,7 +442,7 @@ export default function PerfilCatalogoPage() {
                   </div>
                   <button
                     onClick={toggleStatusAberto}
-                    className={w-full py-4 rounded-2xl font-black text-lg flex items-center justify-center gap-3 transition-all active:scale-95 }
+                    className="w-full py-4 rounded-2xl font-black text-lg flex items-center justify-center gap-3 transition-all active:scale-95"
                   >
                     {statusAberto
                       ? <><Check className="w-6 h-6" /> ESTAMOS ABERTOS AGORA!</>
@@ -326,11 +463,11 @@ export default function PerfilCatalogoPage() {
                   <p className="text-xs text-zinc-500">Fica visível para todos os clientes na busca.</p>
 
                   <div className="space-y-3">
-                    {horarios.map(h => (
+                    {horarios.map((h: HorarioDia) => (
                       <div key={h.dia} className="flex items-center gap-3">
                         <button
                           onClick={() => updateHorario(h.dia, 'aberto', !h.aberto)}
-                          className={w-5 h-5 rounded flex-shrink-0 border-2 flex items-center justify-center transition-all }
+                          className="w-5 h-5 rounded flex-shrink-0 border-2 flex items-center justify-center transition-all"
                         >
                           {h.aberto && <Check className="w-3 h-3 text-white" />}
                         </button>
@@ -360,6 +497,8 @@ export default function PerfilCatalogoPage() {
             )}
           </>
         )}
+
+
       </main>
 
       {/* MODAL: Adicionar item */}
@@ -377,18 +516,18 @@ export default function PerfilCatalogoPage() {
 
             <div>
               <label className="text-xs font-bold text-zinc-500 uppercase">Nome *</label>
-              <input value={novoItem.nome} onChange={e => setNovoItem(prev => ({ ...prev, nome: e.target.value }))}
+              <input value={novoItem.nome} onChange={e => setNovoItem((prev: any) => ({ ...prev, nome: e.target.value }))}
                 placeholder={isEmpresa ? 'Ex: Arroz 5kg' : 'Ex: Corte masculino'}
                 className={inputCls} />
             </div>
             <div>
               <label className="text-xs font-bold text-zinc-500 uppercase">Preço (R$) *</label>
-              <input type="number" value={novoItem.preco} onChange={e => setNovoItem(prev => ({ ...prev, preco: e.target.value }))}
+              <input type="number" value={novoItem.preco} onChange={e => setNovoItem((prev: any) => ({ ...prev, preco: e.target.value }))}
                 placeholder="0,00" className={inputCls} />
             </div>
             <div>
               <label className="text-xs font-bold text-zinc-500 uppercase">Descrição</label>
-              <input value={novoItem.descricao} onChange={e => setNovoItem(prev => ({ ...prev, descricao: e.target.value }))}
+              <input value={novoItem.descricao} onChange={e => setNovoItem((prev: any) => ({ ...prev, descricao: e.target.value }))}
                 placeholder="Detalhes adicionais…" className={inputCls} />
             </div>
             <div>
@@ -396,7 +535,7 @@ export default function PerfilCatalogoPage() {
               {novoItem.foto ? (
                 <div className="relative mt-1">
                   <img src={novoItem.foto} className="w-full h-32 object-cover rounded-xl" alt="preview" />
-                  <button onClick={() => setNovoItem(prev => ({ ...prev, foto: null }))}
+                  <button onClick={() => setNovoItem((prev: any) => ({ ...prev, foto: null }))}
                     className="absolute top-2 right-2 bg-black/60 text-white p-1 rounded-lg">
                     <X className="w-4 h-4" />
                   </button>
@@ -413,7 +552,7 @@ export default function PerfilCatalogoPage() {
             {erroItem && <p className="text-red-400 text-sm font-bold">{erroItem}</p>}
 
             <button onClick={adicionarItem}
-              className={w-full py-4 rounded-2xl font-black text-white text-lg flex items-center justify-center gap-2 active:scale-95 transition-all bg-gradient-to-r  }>
+              className={`w-full py-4 rounded-2xl font-black text-white text-lg flex items-center justify-center gap-2 active:scale-95 transition-all bg-gradient-to-r ${gradFrom} ${gradTo}`}>
               <Plus className="w-5 h-5" /> Adicionar ao Catálogo
             </button>
           </div>
@@ -437,7 +576,7 @@ export default function PerfilCatalogoPage() {
             </div>
 
             <div className="overflow-y-auto flex-1 p-4 space-y-4">
-              <div className={g-gradient-to-r   rounded-2xl p-5 text-white text-center}>
+              <div className={`bg-gradient-to-r ${gradFrom} ${gradTo} rounded-2xl p-5 text-white text-center`}>
                 <div className="w-16 h-16 bg-white/30 rounded-full mx-auto mb-3 flex items-center justify-center">
                   {isEmpresa ? <Building2 className="w-8 h-8" /> : <User className="w-8 h-8" />}
                 </div>
@@ -462,7 +601,7 @@ export default function PerfilCatalogoPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-3">
-                  {itensCatalogo.map(item => (
+                  {itensCatalogo.map((item: ItemCatalogo) => (
                     <div key={item.id} className="bg-zinc-800 border border-zinc-700 rounded-2xl p-3">
                       <div className="w-full h-24 bg-zinc-700 rounded-xl mb-2 overflow-hidden flex items-center justify-center">
                         {item.foto

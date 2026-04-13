@@ -20,6 +20,8 @@ export interface ItemCatalogo {
   preco: number
   foto: string | null
   descricao?: string
+  endereco?: string
+  planoPago?: boolean
 }
 
 export interface FormEmpresa {
@@ -36,6 +38,7 @@ export interface FormProfissional {
   celular: string
   valorServico: string
   descricaoServico: string
+  endereco: string // cidade/base obrigatória
 }
 
 export const TIPOS_PROFISSIONAL = [
@@ -63,10 +66,19 @@ const HORARIOS_INICIAIS: HorarioDia[] = [
 ]
 
 export function usePerfilEmpresarial() {
+    // Função para atualizar campos do formulário de empresa
+    function updateEmpresa(campo: keyof FormEmpresa, valor: string) {
+      setFormEmpresa(prev => ({ ...prev, [campo]: valor }))
+    }
+
+    // Função para atualizar campos do formulário de profissional
+    function updateProfissional(campo: keyof FormProfissional, valor: string) {
+      setFormProfissional(prev => ({ ...prev, [campo]: valor }))
+    }
+  // Estados principais primeiro
   const [tipoNegocio, setTipoNegocio] = useState<TipoNegocio>(null)
   const [perfilSalvo, setPerfilSalvo] = useState(false)
   const [aba, setAba] = useState<'perfil' | 'catalogo' | 'horarios'>('perfil')
-
   // Dados empresa
   const [formEmpresa, setFormEmpresa] = useState<FormEmpresa>({
     nomeFantasia: '',
@@ -75,7 +87,6 @@ export function usePerfilEmpresarial() {
     endereco: '',
     categoria: '',
   })
-
   // Dados profissional
   const [formProfissional, setFormProfissional] = useState<FormProfissional>({
     nome: '',
@@ -83,101 +94,89 @@ export function usePerfilEmpresarial() {
     celular: '',
     valorServico: '',
     descricaoServico: '',
+    endereco: '',
   })
-
   // Horários (empresa)
   const [horarios, setHorarios] = useState<HorarioDia[]>(HORARIOS_INICIAIS)
-
   // Status excepcional
   const [statusAberto, setStatusAberto] = useState(false)
   const [mensagemExcepcional, setMensagemExcepcional] = useState('')
-
   // Aviso de horário atípico
   const [avisoAtipicoAtivo, setAvisoAtipicoAtivo] = useState(false)
-
   const publicarAvisoAtipico = () => setAvisoAtipicoAtivo(prev => !prev)
-
   // Catálogo
   const [itensCatalogo, setItensCatalogo] = useState<ItemCatalogo[]>([])
+  // Estados para modal de adicionar item
   const [showAddItem, setShowAddItem] = useState(false)
   const [showCatalogoOnline, setShowCatalogoOnline] = useState(false)
-  const [novoItem, setNovoItem] = useState({ nome: '', preco: '', foto: null as string | null, descricao: '' })
-  const [erroItem, setErroItem] = useState('')
+  const [novoItem, setNovoItem] = useState<any>({ nome: '', preco: '', descricao: '', foto: null })
+  const [erroItem, setErroItem] = useState<string | null>(null)
 
-  // Helpers empresa
-  const updateEmpresa = (field: keyof FormEmpresa, value: string) =>
-    setFormEmpresa(prev => ({ ...prev, [field]: value }))
-
-  // Helpers profissional
-  const updateProfissional = (field: keyof FormProfissional, value: string) =>
-    setFormProfissional(prev => ({ ...prev, [field]: value }))
-
-  // Helpers horários
-  const updateHorario = (dia: DiaSemana, field: keyof HorarioDia, value: string | boolean) => {
-    setHorarios(prev => prev.map(h => h.dia === dia ? { ...h, [field]: value } : h))
-  }
-
-  // Salvar perfil
-  const salvarPerfil = () => {
-    if (tipoNegocio === 'empresa') {
-      if (!formEmpresa.nomeFantasia || !formEmpresa.celular) {
-        alert('Preencha pelo menos nome e celular.')
-        return
-      }
-    } else {
-      if (!formProfissional.nome || !formProfissional.tipoProfissional) {
-        alert('Preencha nome e tipo de serviço.')
-        return
-      }
-    }
-    setPerfilSalvo(true)
-    setAba('catalogo')
-  }
-
-  // Foto do item
-  const handleFotoItem = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Função para lidar com upload de foto do item
+  function handleFotoItem(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
     const reader = new FileReader()
-    reader.onload = ev => setNovoItem(prev => ({ ...prev, foto: ev.target?.result as string }))
+    reader.onload = ev => {
+      setNovoItem((prev: any) => ({ ...prev, foto: ev.target?.result as string }))
+    }
     reader.readAsDataURL(file)
   }
 
-  // Adicionar item ao catálogo
-  const adicionarItem = () => {
+  // Função para adicionar item ao catálogo
+  function adicionarItem() {
+    // Só pode cadastrar na cidade/base do perfil
+    const cidadeBase = tipoNegocio === 'empresa' ? formEmpresa.endereco : formProfissional.endereco
     if (!novoItem.nome || !novoItem.preco) {
-      setErroItem('Nome e preço são obrigatórios.')
+      setErroItem('Preencha nome e preço')
       return
     }
-    const item: ItemCatalogo = {
-      id: Date.now().toString(),
-      nome: novoItem.nome,
-      preco: parseFloat(novoItem.preco),
-      foto: novoItem.foto,
-      descricao: novoItem.descricao,
+    if (!cidadeBase) {
+      setErroItem('Defina o endereço/cidade no perfil antes de cadastrar')
+      return
     }
-    setItensCatalogo(prev => [...prev, item])
-    setNovoItem({ nome: '', preco: '', foto: null, descricao: '' })
+    // Força o endereço do item ser a cidade/base do perfil
+    setItensCatalogo(prev => [
+      ...prev,
+      { ...novoItem, id: Math.random().toString(36).slice(2), preco: Number(novoItem.preco), endereco: cidadeBase, planoPago: false }
+    ])
+    setNovoItem({ nome: '', preco: '', descricao: '', foto: null })
     setShowAddItem(false)
-    setErroItem('')
+    setErroItem(null)
   }
 
-  const removerItem = (id: string) => {
-    setItensCatalogo(prev => prev.filter(i => i.id !== id))
+  // Função para remover item do catálogo
+  function removerItem(id: string) {
+    setItensCatalogo(prev => prev.filter(item => item.id !== id))
   }
 
-  const toggleStatusAberto = () => {
+  // Função mock para salvar perfil
+  function salvarPerfil() {
+    setPerfilSalvo(true)
+  }
+
+  // Nome principal mock
+  const nomePrincipal = formEmpresa?.nomeFantasia || formProfissional?.nome || ''
+  // Função para atualizar campos dos horários
+  function updateHorario(dia: DiaSemana, campo: keyof HorarioDia, valor: string | boolean) {
+    setHorarios(prev => prev.map(h =>
+      h.dia === dia ? { ...h, [campo]: valor } : h
+    ))
+  }
+
+  // Função para alternar statusAberto
+  function toggleStatusAberto() {
     setStatusAberto(prev => !prev)
-    if (!statusAberto) {
-      setMensagemExcepcional('Estamos abertos agora! Venha nos visitar.')
-    } else {
-      setMensagemExcepcional('')
-    }
   }
 
-  const nomePrincipal = tipoNegocio === 'empresa'
-    ? formEmpresa.nomeFantasia
-    : formProfissional.nome
+  // Garante que todos os itens tenham endereco e planoPago
+  const itensCatalogoCompletos = itensCatalogo.map(item => ({
+    ...item,
+    endereco: item.endereco ?? '',
+    planoPago: item.planoPago ?? false,
+  }))
+
+  // Retorno do hook
 
   return {
     tipoNegocio, setTipoNegocio,
@@ -186,9 +185,9 @@ export function usePerfilEmpresarial() {
     formEmpresa, updateEmpresa,
     formProfissional, updateProfissional,
     horarios, updateHorario,
-    statusAberto, mensagemExcepcional, toggleStatusAberto,
+    statusAberto, toggleStatusAberto,
     avisoAtipicoAtivo, publicarAvisoAtipico,
-    itensCatalogo,
+    itensCatalogo: itensCatalogoCompletos,
     showAddItem, setShowAddItem,
     showCatalogoOnline, setShowCatalogoOnline,
     novoItem, setNovoItem,
@@ -200,3 +199,4 @@ export function usePerfilEmpresarial() {
     nomePrincipal,
   }
 }
+

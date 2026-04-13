@@ -23,7 +23,7 @@ export default function PDVColaborativoPage() {
 
       <main className="max-w-lg mx-auto px-4 py-5 space-y-3">
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex items-center gap-3">
-          <span className="text-3xl">ðŸª</span>
+          <span className="text-3xl">🏪</span>
           <div>
             <p className="font-bold text-sm text-white">Bem-vindo ao seu painel de loja</p>
             <p className="text-xs text-zinc-500 mt-0.5">Vendas, estoque, perfil e plano num sÃ³ lugar.</p>

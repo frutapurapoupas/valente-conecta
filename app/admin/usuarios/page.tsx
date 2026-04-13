@@ -26,6 +26,10 @@ export default function UsuariosPage() {
   const [filtro, setFiltro] = useState('')
   const [acao, setAcao] = useState<string | null>(null)
 
+  // Estado de execução em tempo real
+  const [executando, setExecutando] = useState(false)
+
+
   const filtrados = users.filter(u => {
     if (!filtro.trim()) return true
     const q = filtro.toLowerCase()
@@ -34,10 +38,44 @@ export default function UsuariosPage() {
            (u.role ?? '').toLowerCase().includes(q)
   })
 
+  // Função para gerar link único
+  function gerarLinkIndicacao(userId: string) {
+    // Altere a URL base conforme necessário
+    return `https://valenteconecta.com/indicacao/${userId}`
+  }
+
+  // Função para gerar QR code (usando a lib qrcode)
+  async function gerarQRCode(link: string) {
+    const QRCode = (await import('qrcode')).default
+    return await QRCode.toDataURL(link)
+  }
+
+  const [qrUserId, setQrUserId] = useState<string | null>(null)
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null)
+
+  async function handleShowQr(userId: string) {
+    setExecutando(true)
+    try {
+      const link = gerarLinkIndicacao(userId)
+      const url = await gerarQRCode(link)
+      setQrUserId(userId)
+      setQrCodeUrl(url)
+    } finally {
+      setExecutando(false)
+    }
+  }
+
+  function handleCloseQr() {
+    setQrUserId(null)
+    setQrCodeUrl(null)
+  }
+
   async function toggleBloquear(id: string, bloqueado: boolean) {
     setAcao(id)
+    setExecutando(true)
     await supabase.from('users').update({ status: bloqueado ? 'active' : 'blocked' }).eq('id', id)
     setAcao(null)
+    setExecutando(false)
     window.location.reload()
   }
 
@@ -49,6 +87,12 @@ export default function UsuariosPage() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
+      {/* Banner de execução em tempo real */}
+      {executando && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-blue-600 text-white text-center py-2 font-bold animate-pulse shadow-lg">
+          Executando ação em tempo real...
+        </div>
+      )}
       {/* HEADER */}
       <header className="sticky top-0 z-30 bg-zinc-950/95 backdrop-blur border-b border-zinc-900 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -85,6 +129,7 @@ export default function UsuariosPage() {
           {filtrados.map(u => {
             const role = u.role ?? 'user'
             const bloqueado = u.status === 'blocked'
+            const linkIndicacao = gerarLinkIndicacao(u.id)
             return (
               <div
                 key={u.id}
@@ -106,12 +151,25 @@ export default function UsuariosPage() {
                     </span>
                   </div>
                   <p className="text-base text-zinc-500 truncate">{u.email ?? '—'}</p>
+                  {/* Exibir o ID do usuário */}
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-xs text-zinc-400 select-all">ID:</span>
+                    <span className="text-xs text-zinc-400 font-mono select-all break-all">{u.id}</span>
+                  </div>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className={`w-2 h-2 rounded-full flex-shrink-0 ${STATUS_COR[u.status ?? 'active'] ?? 'bg-zinc-600'}`} />
                     <span className="text-base text-zinc-600 capitalize">{u.status ?? 'active'}</span>
                     {u.saldo_conecta != null && (
-                      <span className="text-base text-yellow-500 font-bold">{Number(u.saldo_conecta).toFixed(0)} ✦</span>
+                      <span className="text-base text-yellow-500 font-bold">{Number(u.saldo_conecta).toFixed(0)} {'\u2726'}</span>
                     )}
+                  </div>
+                  {/* Link de indicação */}
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="text-xs text-blue-400 font-bold select-all break-all">{linkIndicacao}</span>
+                    <button
+                      className="text-xs text-blue-400 underline hover:text-blue-300"
+                      onClick={() => handleShowQr(u.id)}
+                    >QR Code</button>
                   </div>
                 </div>
 
@@ -137,6 +195,17 @@ export default function UsuariosPage() {
               </div>
             )
           })}
+          {/* Modal QR Code */}
+          {qrUserId && qrCodeUrl && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+              <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 flex flex-col items-center gap-4 relative">
+                <button onClick={handleCloseQr} className="absolute top-2 right-2 text-zinc-400 hover:text-white">×</button>
+                <img src={qrCodeUrl} alt="QR Code" className="w-48 h-48" />
+                <p className="text-xs text-blue-400 font-bold break-all select-all">{gerarLinkIndicacao(qrUserId)}</p>
+                <button onClick={handleCloseQr} className="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold">Fechar</button>
+              </div>
+            </div>
+          )}
         </section>
       </main>
     </div>

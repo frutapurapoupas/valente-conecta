@@ -65,14 +65,22 @@ export default function VendaBuscaPage() {
                 <button
                   key={m.id}
                   onClick={() => setFormaPagamento(m.id as any)}
-                  className={p-3 rounded-xl text-center transition border-2 }
+                  className={`p-3 rounded-xl text-center transition border-2 ${
+                    formaPagamento === m.id
+                      ? 'border-green-500 bg-green-500/10 text-white font-semibold'
+                      : 'border-zinc-700 text-zinc-300 hover:border-zinc-500'
+                  }`}
                 >
                   {m.label}
                 </button>
               ))}
               <button
                 onClick={() => setFormaPagamento('conecta')}
-                className={p-3 rounded-xl text-center transition border-2 col-span-2 }
+                className={`p-3 rounded-xl text-center transition border-2 col-span-2 ${
+                  formaPagamento === 'conecta'
+                    ? 'border-green-500 bg-green-500/10 text-white font-semibold'
+                    : 'border-zinc-700 text-zinc-300 hover:border-zinc-500'
+                }`}
               >
                 🪙 Moeda Conecta
               </button>
@@ -210,7 +218,9 @@ export default function VendaBuscaPage() {
         <div className="flex gap-2">
           <button
             onClick={toggleLeitorExterno}
-            className={px-3 py-1.5 rounded-full text-sm flex items-center gap-1 transition }
+            className={`px-3 py-1.5 rounded-full text-sm flex items-center gap-1 transition ${
+              leitorConectado ? 'bg-green-600 text-white' : leitorExterno ? 'bg-amber-500 text-black' : 'bg-zinc-800 border border-zinc-700 text-zinc-300'
+            }`}
           >
             {leitorConectado ? <Bluetooth className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
             {leitorExterno ? (leitorConectado ? 'Leitor Ativo' : 'Conectando...') : 'Ativar Leitor'}
@@ -223,7 +233,11 @@ export default function VendaBuscaPage() {
 
       <main className="p-4 max-w-lg mx-auto">
         {mensagem && (
-          <div className={mb-4 p-3 rounded-xl text-sm }>
+          <div className={`mb-4 p-3 rounded-xl text-sm ${
+            mensagem.includes('✔') ? 'bg-green-500/10 border border-green-500/20 text-green-300'
+            : mensagem.includes('📝') ? 'bg-amber-500/10 border border-amber-500/20 text-amber-300'
+            : 'bg-blue-500/10 border border-blue-500/20 text-blue-300'
+          }`}>
             {mensagem}
           </div>
         )}

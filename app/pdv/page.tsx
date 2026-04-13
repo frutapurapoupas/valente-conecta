@@ -381,7 +381,7 @@ export default function PDVPage() {
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
             <div className="text-center mb-4">
               <div className="w-24 h-24 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Camera className={w-12 h-12 text-blue-400 } />
+                <Camera className="w-12 h-12 text-blue-400" />
               </div>
               <h2 className="text-xl font-bold text-white">Leitor de Código</h2>
               <p className="text-sm text-zinc-400">Aponte a câmera para o código de barras</p>

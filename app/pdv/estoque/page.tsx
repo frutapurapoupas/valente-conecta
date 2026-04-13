@@ -190,9 +190,9 @@ export default function EstoquePage() {
                         {produto.emPromocao && produto.precoAnterior != null && (
                           <span className="text-zinc-600 line-through text-xs">R$ {produto.precoAnterior.toFixed(2)}</span>
                         )}
-                        <span className={ont-bold }>R$ {produto.preco.toFixed(2)}</span>
+                        <span className={`font-bold ${produto.emPromocao ? 'text-red-400' : 'text-green-400'}`}>R$ {produto.preco.toFixed(2)}</span>
                       </div>
-                      <p className="text-sm text-zinc-400">Estoque: <span className={ont-bold }>{produto.quantidade} un</span></p>
+                      <p className="text-sm text-zinc-400">Estoque: <span className={`font-bold ${produto.quantidade < 10 ? 'text-red-400' : 'text-white'}`}>{produto.quantidade} un</span></p>
                       {planoPago && produto.fornecedor && (
                         <p className="text-xs text-zinc-500">Fornecedor: {produto.fornecedor}</p>
                       )}
@@ -297,7 +297,7 @@ export default function EstoquePage() {
                       type="text"
                       value={formData.fornecedor}
                       onChange={(e) => updateFormData('fornecedor', e.target.value)}
-                      className={w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white }
+                      className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white ${!planoPago ? 'bg-zinc-800/50 border-zinc-800 text-zinc-600 cursor-not-allowed' : 'bg-zinc-800 border-zinc-700'}`}
                       placeholder="Digite o fornecedor"
                       disabled={!planoPago}
                     />
@@ -310,7 +310,7 @@ export default function EstoquePage() {
                         step="0.01"
                         value={formData.precoCompra}
                         onChange={(e) => updateFormData('precoCompra', e.target.value)}
-                        className={w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white }
+                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white ${!planoPago ? 'bg-zinc-800/50 border-zinc-800 text-zinc-600 cursor-not-allowed' : 'bg-zinc-800 border-zinc-700'}`}
                         placeholder="0,00"
                         disabled={!planoPago}
                       />
@@ -321,7 +321,7 @@ export default function EstoquePage() {
                         type="date"
                         value={formData.validade}
                         onChange={(e) => updateFormData('validade', e.target.value)}
-                        className={w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white }
+                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white ${!planoPago ? 'bg-zinc-800/50 border-zinc-800 text-zinc-600 cursor-not-allowed' : 'bg-zinc-800 border-zinc-700'}`}
                         disabled={!planoPago}
                       />
                     </div>
