@@ -61,7 +61,7 @@ export default function VendaPage() {
                 <button
                   key={metodo.id}
                   onClick={() => setFormaPagamento(metodo.id as any)}
-                  className={p-3 rounded-xl text-center transition border-2 }
+                  className="p-3 rounded-xl text-center transition border-2"
                 >
                   {metodo.label}
                 </button>
