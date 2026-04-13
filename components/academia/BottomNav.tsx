@@ -24,6 +24,7 @@ export default function BottomNav({ isAdmin }: BottomNavProps) {
         className={`flex flex-col items-center transition ${
           isAdmin ? 'text-red-500 hover:text-red-600' : 'text-slate-400 hover:text-slate-600'
         }`}
+        prefetch={false}
       >
         <Settings size={20} />
         <span className="text-[8px] font-bold mt-1 uppercase">{isAdmin ? 'ADMIN' : 'PERFIL'}</span>
