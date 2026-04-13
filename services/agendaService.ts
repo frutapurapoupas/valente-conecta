@@ -4,8 +4,8 @@ import { supabase } from '@/lib/supabase'
 // Listar todos os agendamentos
 export async function listarAgendamentos(): Promise<Agendamento[]> {
   const { data, error } = await supabase.from('agendamentos').select('*').order('inicio', { ascending: true })
-  if (error) throw error
-  return data as Agendamento[]
+	if (error) throw error
+	return data as Agendamento[]
 }
 
 // Listar agendamentos de um profissional
@@ -95,5 +95,4 @@ export async function clienteJaAgendadoNoDia(clienteTelefone: string, dia: strin
     .or('status.eq.confirmado,status.eq.pendente')
   if (error) throw error
   return (data?.length ?? 0) > 0
-}
 }
