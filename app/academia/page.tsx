@@ -66,6 +66,7 @@ export default function AcademiaPage() {
   const [elapsedTime, setElapsedTime] = useState(0)
   const [exercicios, setExercicios] = useState<Exercicio[]>(TREINO_INICIAL)
   const [incentIdx, setIncentIdx] = useState(0)
+  const [atividade, setAtividade] = useState<'academia' | 'esporte' | null>(null)
   const watchRef    = useRef<number | null>(null)
   const timerRef    = useRef<NodeJS.Timeout | null>(null)
   const warmupRef   = useRef<NodeJS.Timeout | null>(null)
@@ -76,10 +77,12 @@ export default function AcademiaPage() {
     if (warmupRef.current) { clearTimeout(warmupRef.current); warmupRef.current = null }
     setIsCheckIn(false)
     setElapsedTime(0)
+    setAtividade(null)
     localStorage.removeItem(CHECKIN_KEY)
   }
 
-  function iniciarGeo() {
+  function iniciarGeo(tipo: 'academia' | 'esporte') {
+    setAtividade(tipo)
     if (!navigator.geolocation) { setGeoState('negado'); return }
     setGeoState('watching')
     localStorage.setItem(GEO_PERMISSION_KEY, '1')
@@ -130,17 +133,18 @@ export default function AcademiaPage() {
     const granted = localStorage.getItem(GEO_PERMISSION_KEY)
     const saved = localStorage.getItem(CHECKIN_KEY)
     if (saved) {
-      const { start } = JSON.parse(saved)
+      const { start, atividade: savedAtividade } = JSON.parse(saved)
       dentroRef.current = true
       setIsCheckIn(true)
       setElapsedTime(Math.floor((Date.now() - start) / 60000))
+      setAtividade(savedAtividade || 'academia')
     }
-    if (granted) iniciarGeo()
+    // Não reinicia geo automaticamente, exige escolha do usuário
     return () => {
       if (watchRef.current) navigator.geolocation.clearWatch(watchRef.current)
       if (warmupRef.current) clearTimeout(warmupRef.current)
     }
-  }, []) // eslint-disable-line
+  }, [])
 
   useEffect(() => {
     if (isCheckIn) {
@@ -214,15 +218,15 @@ export default function AcademiaPage() {
   }
 
   const geoBanner = geoState === 'dentro' && isCheckIn
-    ? { txt: '\uD83D\uDCCD Voc\u00ea est\u00e1 na academia \u2014 treino em andamento', cls: 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-300' }
+    ? { txt: `\uD83D\uDCCD Você está em ${atividade === 'esporte' ? 'atividade esportiva' : 'academia'} — sessão em andamento`, cls: 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-300' }
     : geoState === 'dentro' && !isCheckIn
-    ? { txt: '\uD83D\uDCCD Voc\u00ea est\u00e1 no local \u2014 contagem inicia em 5 min', cls: 'bg-blue-500/10 border border-blue-500/20 text-blue-300' }
+    ? { txt: `\uD83D\uDCCD Você está no local — contagem inicia em 5 min`, cls: 'bg-blue-500/10 border border-blue-500/20 text-blue-300' }
     : geoState === 'fora'
-    ? { txt: '\uD83D\uDCCD Voc\u00ea saiu da academia', cls: 'bg-orange-500/10 border border-orange-500/20 text-orange-300' }
+    ? { txt: `\uD83D\uDCCD Você saiu do local`, cls: 'bg-orange-500/10 border border-orange-500/20 text-orange-300' }
     : geoState === 'watching'
-    ? { txt: '\uD83D\uDCCD Detectando localiza\u00e7\u00e3o...', cls: 'bg-zinc-800 border border-zinc-700 text-zinc-400' }
+    ? { txt: '\uD83D\uDCCD Detectando localização...', cls: 'bg-zinc-800 border border-zinc-700 text-zinc-400' }
     : geoState === 'negado'
-    ? { txt: '\uD83D\uDCCD Localiza\u00e7\u00e3o negada pelo dispositivo', cls: 'bg-red-500/10 border border-red-500/20 text-red-400' }
+    ? { txt: '\uD83D\uDCCD Localização negada pelo dispositivo', cls: 'bg-red-500/10 border border-red-500/20 text-red-400' }
     : null
 
   return (
@@ -231,7 +235,7 @@ export default function AcademiaPage() {
       <AcademiaHeader isAdmin={isAdmin} isCheckIn={isCheckIn} elapsedTime={elapsedTime} onActionClick={() => {}} />
 
       {geoBanner && (
-        <div className={mx-4 mt-3 px-4 py-2 rounded-2xl flex items-center gap-2 text-sm font-semibold }>
+        <div className="mx-4 mt-3 px-4 py-2 rounded-2xl flex items-center gap-2 text-sm font-semibold">
           {geoState === 'watching' ? <Wifi className="w-4 h-4 flex-shrink-0" /> : geoState === 'negado' ? <WifiOff className="w-4 h-4 flex-shrink-0" /> : <MapPin className="w-4 h-4 flex-shrink-0" />}
           <span>{geoBanner.txt}</span>
         </div>
@@ -240,17 +244,31 @@ export default function AcademiaPage() {
       <main className="max-w-2xl mx-auto px-4 pt-4 space-y-4">
 
         {geoState === 'idle' && (
-          <button
-            onClick={iniciarGeo}
-            className="w-full py-5 bg-gradient-to-r from-indigo-600 to-violet-700 text-white rounded-3xl font-black text-lg flex items-center justify-center gap-3 shadow-lg active:scale-95 transition-all"
-          >
-            <MapPin className="w-6 h-6" />
-            ESTOU NA ACADEMIA
-          </button>
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-3">
+              <button
+                onClick={() => iniciarGeo('academia')}
+                className="flex-1 py-5 bg-gradient-to-r from-indigo-600 to-violet-700 text-white rounded-3xl font-black text-lg flex items-center justify-center gap-3 shadow-lg active:scale-95 transition-all"
+              >
+                <MapPin className="w-6 h-6" />
+                Academia
+              </button>
+              <button
+                onClick={() => iniciarGeo('esporte')}
+                className="flex-1 py-5 bg-gradient-to-r from-green-600 to-emerald-700 text-white rounded-3xl font-black text-lg flex items-center justify-center gap-3 shadow-lg active:scale-95 transition-all"
+              >
+                <Flame className="w-6 h-6" />
+                Esporte
+              </button>
+            </div>
+            <div className="mt-1 text-xs text-zinc-400 text-center">
+              Escolha <b>Academia</b> para treinos convencionais ou <b>Esporte</b> para atividades ao ar livre. O tempo e localização serão registrados para benefícios semanais.
+            </div>
+          </div>
         )}
 
         {/* Incentivo rotativo */}
-        <div className={order rounded-2xl px-4 py-3 flex items-center gap-3 transition-all }>
+        <div className="border rounded-2xl px-4 py-3 flex items-center gap-3 transition-all">
           <span className="text-2xl">{incent.emoji}</span>
           <p className="text-sm font-bold">{incent.txt}</p>
         </div>
@@ -258,9 +276,9 @@ export default function AcademiaPage() {
         {/* Stats rápidos */}
         <div className="grid grid-cols-3 gap-3">
           {[
-            { icon: <Flame className="w-5 h-5 text-amber-500" />, val: '5',          label: 'dias seguidos' },
-            { icon: <Trophy className="w-5 h-5 text-yellow-500" />, val: '12',        label: 'treinos/m\u00eas' },
-            { icon: <Star className="w-5 h-5 text-indigo-400" />,   val: ${pctFeitos}%, label: 'treino hoje' },
+            { icon: <Flame className="w-5 h-5 text-amber-500" />, val: '5', label: 'dias seguidos' },
+            { icon: <Trophy className="w-5 h-5 text-yellow-500" />, val: '12', label: 'treinos/mês' },
+            { icon: <Star className="w-5 h-5 text-indigo-400" />, val: `${pctFeitos}%`, label: 'treino hoje' },
           ].map(s => (
             <div key={s.label} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 text-center">
               <div className="flex justify-center mb-1">{s.icon}</div>
@@ -282,44 +300,9 @@ export default function AcademiaPage() {
               <span>{pctFeitos}%</span>
             </div>
             <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
-              <div className="h-full bg-indigo-600 rounded-full transition-all" style={{ width: ${pctFeitos}% }} />
+              <div className="h-full bg-indigo-600 rounded-full transition-all" style={{ width: `${pctFeitos}%` }} />
             </div>
           </div>
-          {exercicios.map(ex => (
-            <div key={ex.id} className={
-ounded-2xl border p-4 space-y-3 transition-all }>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm }>
-                    {ex.feito ? <CheckCircle className="w-5 h-5" /> : ex.id}
-                  </div>
-                  <div>
-                    <p className="font-bold text-sm text-white">{ex.nome}</p>
-                    <p className="text-xs text-zinc-500">{ex.series} s\u00e9ries \u00d7 {ex.reps} reps</p>
-                  </div>
-                </div>
-                <button onClick={() => toggleExercicio(ex.id)} className={	ext-xs font-black px-3 py-1.5 rounded-xl transition-all active:scale-95 }>
-                  {ex.feito ? 'FEITO' : 'MARCAR'}
-                </button>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-zinc-500 font-semibold w-12">Carga:</span>
-                <button onClick={() => alterarCarga(ex.id, -2.5)} className="w-8 h-8 bg-zinc-700 hover:bg-zinc-600 text-white rounded-xl flex items-center justify-center active:scale-90 transition-all">
-                  <Minus className="w-4 h-4" />
-                </button>
-                <span className="font-black text-base text-white w-16 text-center">{ex.carga} kg</span>
-                <button onClick={() => alterarCarga(ex.id, 2.5)} className="w-8 h-8 bg-zinc-700 hover:bg-zinc-600 text-white rounded-xl flex items-center justify-center active:scale-90 transition-all">
-                  <Plus className="w-4 h-4" />
-                </button>
-                <div className="flex-1">
-                  <div className="h-1.5 bg-zinc-700 rounded-full overflow-hidden">
-                    <div className="h-full bg-indigo-400 rounded-full transition-all" style={{ width: ${Math.min(100, Math.round((ex.carga / ex.metaCarga) * 100))}% }} />
-                  </div>
-                  <p className="text-[10px] text-zinc-500 mt-0.5">meta: {ex.metaCarga} kg</p>
-                </div>
-              </div>
-            </div>
-          ))}
         </div>
 
         {/* Metas */}
@@ -338,10 +321,10 @@ ounded-2xl border p-4 space-y-3 transition-all }>
             <div key={m.label} className="space-y-1.5">
               <div className="flex justify-between text-sm">
                 <span className="font-semibold text-zinc-300">{m.label}</span>
-                <span className="font-black text-white">{m.valor} <span className="text-xs text-zinc-500 font-normal">\u2192 {m.meta}</span></span>
+                <span className="font-black text-white">{m.valor} <span className="text-xs text-zinc-500 font-normal">→ {m.meta}</span></span>
               </div>
               <div className="h-2.5 bg-zinc-800 rounded-full overflow-hidden">
-                <div className={h-full rounded-full transition-all } style={{ width: ${m.pct}% }} />
+                <div className="h-full rounded-full transition-all bg-violet-500" style={{ width: `${m.pct}%` }} />
               </div>
               <p className="text-xs text-zinc-500 text-right">{m.pct}% da meta</p>
             </div>
@@ -375,7 +358,7 @@ ounded-2xl border p-4 space-y-3 transition-all }>
               { emoji: '\u2B50',        nome: '20 treinos',      ok: false },
               { emoji: '\uD83C\uDFC5', nome: '30 treinos',      ok: false },
             ].map(c => (
-              <div key={c.nome} className={lex-shrink-0 flex flex-col items-center gap-1 w-16 p-2 rounded-2xl border }>
+              <div key={c.nome} className="flex-shrink-0 flex flex-col items-center gap-1 w-16 p-2 rounded-2xl border">
                 <span className="text-2xl">{c.emoji}</span>
                 <p className="text-[9px] font-bold text-center text-zinc-400 leading-tight">{c.nome}</p>
               </div>
@@ -426,7 +409,7 @@ ounded-2xl border p-4 space-y-3 transition-all }>
                     { val: 'condicionamento', emoji: '\u26A1',        label: 'Condicionamento' },
                     { val: 'saude',           emoji: '\uD83D\uDC9A', label: 'Sa\u00fade geral' },
                   ].map(o => (
-                    <button key={o.val} onClick={() => setFormPerfil(f => ({ ...f, objetivo: o.val }))} className={py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 border-2 transition-all }>
+                    <button key={o.val} onClick={() => setFormPerfil(f => ({ ...f, objetivo: o.val }))} className="py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 border-2 transition-all">
                       <span>{o.emoji}</span>{o.label}
                     </button>
                   ))}
@@ -446,7 +429,7 @@ ounded-2xl border p-4 space-y-3 transition-all }>
                 <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide">Frequ\u00eancia desejada por semana</label>
                 <div className="flex gap-2 mt-1">
                   {['2','3','4','5','6'].map(n => (
-                    <button key={n} onClick={() => setFormPerfil(f => ({ ...f, freqSemanal: n }))} className={lex-1 py-3 rounded-xl text-sm font-black border-2 transition-all }>{n}x</button>
+                    <button key={n} onClick={() => setFormPerfil(f => ({ ...f, freqSemanal: n }))} className="flex-1 py-3 rounded-xl text-sm font-black border-2 transition-all">{n}x</button>
                   ))}
                 </div>
               </div>
@@ -458,7 +441,7 @@ ounded-2xl border p-4 space-y-3 transition-all }>
                     { val: 'intermediario', label: 'Interm.' },
                     { val: 'avancado', label: 'Avan\u00e7ado' },
                   ].map(n => (
-                    <button key={n.val} onClick={() => setFormPerfil(f => ({ ...f, nivel: n.val }))} className={lex-1 py-3 rounded-xl text-sm font-bold border-2 transition-all }>{n.label}</button>
+                    <button key={n.val} onClick={() => setFormPerfil(f => ({ ...f, nivel: n.val }))} className="flex-1 py-3 rounded-xl text-sm font-bold border-2 transition-all">{n.label}</button>
                   ))}
                 </div>
               </div>
