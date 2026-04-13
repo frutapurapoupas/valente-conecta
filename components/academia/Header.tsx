@@ -1,20 +1,20 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowLeft, Settings, X } from 'lucide-react'
+import { ArrowLeft, Settings, X, Hourglass } from 'lucide-react'
 
-interface HeaderProps {
   isAdmin: boolean
   isCheckIn: boolean
   elapsedTime: number
   onActionClick: () => void
+  isCounting?: boolean
 }
 
-export default function AcademiaHeader({
   isAdmin,
   isCheckIn,
   elapsedTime,
-  onActionClick
+  onActionClick,
+  isCounting
 }: HeaderProps) {
   return (
     <header className="bg-gradient-to-br from-indigo-700 to-purple-800 text-white p-6 rounded-b-[3rem] shadow-2xl">
@@ -37,8 +37,17 @@ export default function AcademiaHeader({
         <p className="text-xs uppercase tracking-widest mb-1 opacity-70 font-bold">
           Status do Treino
         </p>
-        <div className="text-4xl font-black mb-4">
-          {isCheckIn ? `${elapsedTime} MIN` : "OFFLINE"}
+        <div className="text-4xl font-black mb-4 flex flex-col items-center gap-1">
+          {isCheckIn ? (
+            <>
+              <span className="flex items-center gap-2 text-2xl font-bold text-amber-300">
+                <Hourglass className="w-7 h-7 animate-pulse" />
+                Contando... {elapsedTime} min
+              </span>
+            </>
+          ) : (
+            "OFFLINE"
+          )}
         </div>
         <button
           onClick={onActionClick}

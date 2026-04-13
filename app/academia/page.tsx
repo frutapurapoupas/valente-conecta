@@ -149,10 +149,8 @@ export default function AcademiaPage() {
         const lng = pos.coords.longitude
         const idx = checarLocalEsporte({lat, lng})
         if (idx !== -1) {
-          // Local já cadastrado
-          if (window.confirm('Este local de esporte já está cadastrado. Deseja editar as informações?')) {
-            abrirModalEsporte(idx)
-          }
+          alert('Este local já está cadastrado. O app já está contando automaticamente.');
+          abrirModalEsporte(idx)
           return
         }
         abrirModalEsporte(null, {lat, lng})
@@ -316,7 +314,7 @@ export default function AcademiaPage() {
   return (
     <div className="min-h-screen bg-zinc-950 pb-28">
       <NotificationPermission />
-      <AcademiaHeader isAdmin={isAdmin} isCheckIn={isCheckIn} elapsedTime={elapsedTime} onActionClick={() => {}} />
+      <AcademiaHeader isAdmin={isAdmin} isCheckIn={isCheckIn} elapsedTime={elapsedTime} onActionClick={() => {}} isCounting={isCheckIn} />
 
       {geoBanner && (
         <div className="mx-4 mt-3 px-4 py-2 rounded-2xl flex items-center gap-2 text-sm font-semibold">
