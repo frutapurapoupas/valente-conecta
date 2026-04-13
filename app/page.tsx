@@ -41,16 +41,48 @@ export default function HomePage() {
 
   useEffect(() => {
     if (splashFase === 'pronto') return
-    const t1 = setTimeout(() => setSplashFase('pergunta'), 1800)   // logo por 1.8s
-    const t2 = setTimeout(() => setSplashFase('saindo'),  3800)   // pergunta por 2s
-    const t3 = setTimeout(() => setSplashFase('pronto'),  4400)   // fade out 0.6s
+    const t1 = setTimeout(() => setSplashFase('pergunta'), 2500)   // logo por 2.5s
+    const t2 = setTimeout(() => setSplashFase('saindo'),  5000)   // pergunta por 2.5s
+    const t3 = setTimeout(() => setSplashFase('pronto'),  6000)   // fade out 1s
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white pb-24">
+    <>
+      {/* SPLASH SCREEN slow motion */}
+      {splashFase !== 'pronto' && (
+        <div className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-gradient-to-br from-indigo-900 via-indigo-800 to-zinc-950 transition-all duration-1000 ${splashFase === 'saindo' ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}
+             style={{transitionProperty:'opacity,transform', transitionTimingFunction:'cubic-bezier(.4,2,.2,1)'}}>
+          <div className="flex flex-col items-center gap-6 animate-slowfadein">
+            <div className="w-24 h-24 rounded-3xl bg-yellow-400 flex items-center justify-center shadow-2xl scale-100 animate-slowpop">
+              <Zap className="w-16 h-16 text-black" />
+            </div>
+            <h1 className="text-3xl font-black text-white drop-shadow-lg animate-slowfadein">Valente Conecta</h1>
+            <p className="text-lg text-indigo-200 font-bold animate-slowfadein">Bem-vindo! Conectando oportunidades...</p>
+          </div>
+        </div>
+      )}
+      <div className="min-h-screen bg-zinc-950 text-white pb-24">
 
       {/* HEADER */}
+            {/* Animations for splash */}
+            <style jsx global>{`
+              @keyframes slowfadein {
+                0% { opacity: 0; transform: scale(0.95); }
+                100% { opacity: 1; transform: scale(1); }
+              }
+              @keyframes slowpop {
+                0% { transform: scale(0.7) rotate(-10deg); opacity: 0; }
+                60% { transform: scale(1.1) rotate(3deg); opacity: 1; }
+                100% { transform: scale(1) rotate(0deg); opacity: 1; }
+              }
+              .animate-slowfadein {
+                animation: slowfadein 1.2s cubic-bezier(.4,2,.2,1) both;
+              }
+              .animate-slowpop {
+                animation: slowpop 1.4s cubic-bezier(.4,2,.2,1) both;
+              }
+            `}</style>
       <header className="sticky top-0 z-30 bg-zinc-950/95 backdrop-blur border-b border-zinc-900 px-4 py-3">
         <div className="flex items-center justify-between max-w-2xl mx-auto">
           <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-2 bg-zinc-900 border border-zinc-800 rounded-xl md:hidden">
