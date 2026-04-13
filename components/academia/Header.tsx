@@ -2,19 +2,13 @@
 
 import Link from 'next/link'
 import { ArrowLeft, Settings, X, Hourglass } from 'lucide-react'
-
-  isAdmin: boolean
-  isCheckIn: boolean
-  elapsedTime: number
-  onActionClick: () => void
-  isCounting?: boolean
+interface HeaderProps {
+  isAdmin: boolean;
+  isCheckIn: boolean;
+  elapsedTime: number;
+  onActionClick: () => void;
+  isCounting?: boolean;
 }
-
-  isAdmin,
-  isCheckIn,
-  elapsedTime,
-  onActionClick,
-  isCounting
 export default function AcademiaHeader({
   isAdmin,
   isCheckIn,
