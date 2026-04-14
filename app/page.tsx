@@ -37,6 +37,11 @@ export default function HomePage() {
   )
 
   useEffect(() => {
+    // Se já tem perfil salvo, pula splash imediatamente
+    if (typeof window !== 'undefined' && localStorage.getItem('tipoUsuario')) {
+      if (splashFase !== 'pronto') setSplashFase('pronto')
+      return
+    }
     if (splashFase === 'pronto') return
     const t1 = setTimeout(() => setSplashFase('pergunta'), 2500)
     const t2 = setTimeout(() => setSplashFase('saindo'), 5000)
@@ -306,6 +311,7 @@ export default function HomePage() {
                 },
               ],
               lojista: [
+                // Lado esquerdo de cima pra baixo
                 {
                   href: '/pdv/colaborativo',
                   label: 'PDV Colaborativo',
@@ -315,6 +321,31 @@ export default function HomePage() {
                   icon: <ShoppingBag className="w-5 h-5 text-blue-400" />,
                 },
                 {
+                  href: '/agendamento/planos',
+                  label: 'Serviço com Agendamento',
+                  sub: 'Agenda digital e notificações',
+                  border: 'border-pink-500/20',
+                  bg: 'bg-pink-500/15',
+                  icon: <Zap className="w-5 h-5 text-pink-400" />,
+                },
+                {
+                  href: '/empresa/planos',
+                  label: 'Planos da Loja',
+                  sub: 'Todos os planos',
+                  border: 'border-yellow-500/20',
+                  bg: 'bg-yellow-500/15',
+                  icon: <Crown className="w-5 h-5 text-yellow-400" />,
+                },
+                {
+                  href: '/anuncios',
+                  label: 'Anúncios/Ofertas',
+                  sub: 'Divulgue sua loja e promoções',
+                  border: 'border-violet-500/20',
+                  bg: 'bg-violet-500/15',
+                  icon: <Zap className="w-5 h-5 text-violet-400" />,
+                },
+                // Lado direito de cima pra baixo
+                {
                   href: '/profissional/catalogo',
                   label: 'Catálogo',
                   sub: 'Produtos e horários',
@@ -323,36 +354,28 @@ export default function HomePage() {
                   icon: <Store className="w-5 h-5 text-indigo-400" />,
                 },
                 {
-                  href: '/empresa/planos',
-                  label: 'Planos da Loja',
-                  sub: 'Básico · Premium',
-                  border: 'border-yellow-500/20',
-                  bg: 'bg-yellow-500/15',
-                  icon: <Crown className="w-5 h-5 text-yellow-400" />,
+                  href: '/academia',
+                  label: 'Academia',
+                  sub: 'A partir de grátis',
+                  border: 'border-purple-500/20',
+                  bg: 'bg-purple-500/15',
+                  icon: <Dumbbell className="w-5 h-5 text-purple-400" />,
                 },
                 {
-                  href: '/carteira',
-                  label: 'Carteira',
-                  sub: 'Moeda Conecta',
-                  border: 'border-emerald-500/20',
-                  bg: 'bg-emerald-500/15',
-                  icon: <Wallet className="w-5 h-5 text-emerald-400" />,
-                },
-                {
-                  href: '/oferta',
-                  label: 'Ofertas',
-                  sub: 'Criar promoções',
-                  border: 'border-red-500/20',
-                  bg: 'bg-red-500/15',
-                  icon: <TrendingDown className="w-5 h-5 text-red-400" />,
-                },
-                {
-                  href: '/anuncios',
-                  label: 'Anúncios',
-                  sub: 'Divulgue sua loja',
+                  href: '/profissional/planos',
+                  label: 'Profissionais',
+                  sub: 'Planos e catálogo',
                   border: 'border-violet-500/20',
                   bg: 'bg-violet-500/15',
-                  icon: <Zap className="w-5 h-5 text-violet-400" />,
+                  icon: <User className="w-5 h-5 text-violet-400" />,
+                },
+                {
+                  href: '/ambulantes',
+                  label: 'Ambulante',
+                  sub: 'Venda na feira livre',
+                  border: 'border-amber-500/20',
+                  bg: 'bg-amber-500/15',
+                  icon: <Bike className="w-5 h-5 text-amber-400" />,
                 },
               ],
               profissional: [
@@ -459,26 +482,112 @@ export default function HomePage() {
 
             const cards = tipoUsuario ? CARDS[tipoUsuario] : CARDS.usuario_geral
 
+            // Definições de explicação resumida para cada funcionalidade
+            const explicacoes: Record<string, string> = {
+              '/pdv/colaborativo': 'Aqui você pode gerenciar vendas, estoque e caixa de forma colaborativa.',
+              '/agendamento/planos': 'Gerencie sua agenda, permita que clientes agendem online e envie notificações automáticas.',
+              '/empresa/planos': 'Veja todos os planos disponíveis para sua loja, com recursos de estoque, vendas e mais.',
+              '/anuncios': 'Divulgue sua loja, serviços ou promoções para mais pessoas na cidade.',
+              '/oferta': 'Crie e gerencie ofertas especiais para atrair mais clientes.',
+              '/profissional/catalogo': 'Monte seu catálogo de produtos ou serviços e defina horários de atendimento.',
+              '/academia': 'Acesse recursos exclusivos para academias e profissionais de esporte.',
+              '/profissional/planos': 'Conheça os planos para profissionais autônomos e seus benefícios.',
+              '/ambulantes': 'Venda na feira livre de forma organizada, com catálogo e divulgação.',
+              '/ambulantes/planos': 'Veja os planos para ambulantes, com recursos de catálogo e divulgação.',
+              '/usuario/planos': 'Gerencie sua assinatura e benefícios como consumidor.',
+              '/explorar': 'Busque produtos, serviços e estabelecimentos na cidade.',
+              '/carteira': 'Gerencie sua carteira digital, saldo e indicações.',
+            }
+
+            // Permissão: só pode acessar cards do próprio perfil, os demais mostram explicação
+            const podeAcessar = (href: string) => {
+              if (!tipoUsuario) return true
+              // Exemplo: lojista só pode acessar rotas de lojista, etc
+              if (tipoUsuario === 'lojista') {
+                return [
+                  '/pdv/colaborativo', '/agendamento/planos', '/empresa/planos', '/anuncios', '/oferta', '/profissional/catalogo', '/academia', '/profissional/planos', '/ambulantes', '/ambulantes/planos', '/carteira', '/usuario/planos'
+                ].includes(href)
+              }
+              if (tipoUsuario === 'profissional') {
+                return [
+                  '/profissional/catalogo', '/profissional/planos', '/carteira', '/explorar', '/anuncios', '/oferta', '/academia', '/usuario/planos'
+                ].includes(href)
+              }
+              if (tipoUsuario === 'ambulante') {
+                return [
+                  '/ambulantes', '/ambulantes/planos', '/carteira', '/explorar', '/profissional/catalogo', '/anuncios', '/usuario/planos'
+                ].includes(href)
+              }
+              if (tipoUsuario === 'usuario_geral') {
+                return [
+                  '/explorar', '/oferta', '/ambulantes', '/academia', '/carteira', '/usuario/planos'
+                ].includes(href)
+              }
+              if (tipoUsuario === 'agendamento') {
+                return [
+                  '/agendamento/planos', '/carteira', '/explorar', '/anuncios', '/usuario/planos'
+                ].includes(href)
+              }
+              return false
+            }
+
+            const [modalExplicacao, setModalExplicacao] = useState<string | null>(null)
+
             return (
-              <div className="grid grid-cols-2 gap-3">
-                {cards.map((c) => (
-                  <Link key={c.href + c.label} href={c.href}>
-                    <div
-                      className={`bg-zinc-900 border ${c.border} rounded-2xl p-4 flex flex-col gap-3 hover:opacity-80 transition-all active:scale-95`}
-                    >
-                      <div
-                        className={`w-10 h-10 ${c.bg} border ${c.border} rounded-xl flex items-center justify-center`}
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  {cards.map((c) => (
+                    podeAcessar(c.href) ? (
+                      <Link key={c.href + c.label} href={c.href}>
+                        <div
+                          className={`bg-zinc-900 border ${c.border} rounded-2xl p-4 flex flex-col gap-3 hover:opacity-80 transition-all active:scale-95`}
+                        >
+                          <div
+                            className={`w-10 h-10 ${c.bg} border ${c.border} rounded-xl flex items-center justify-center`}
+                          >
+                            {c.icon}
+                          </div>
+                          <div>
+                            <p className="font-black text-base text-white">{c.label}</p>
+                            <p className="text-sm text-zinc-500">{c.sub}</p>
+                          </div>
+                        </div>
+                      </Link>
+                    ) : (
+                      <button
+                        key={c.href + c.label}
+                        onClick={() => setModalExplicacao(explicacoes[c.href] || 'Funcionalidade exclusiva de outro perfil.')}
+                        className={`bg-zinc-900 border ${c.border} rounded-2xl p-4 flex flex-col gap-3 opacity-60 hover:opacity-80 transition-all active:scale-95 cursor-pointer`}
+                        type="button"
                       >
-                        {c.icon}
-                      </div>
-                      <div>
-                        <p className="font-black text-base text-white">{c.label}</p>
-                        <p className="text-sm text-zinc-500">{c.sub}</p>
-                      </div>
+                        <div
+                          className={`w-10 h-10 ${c.bg} border ${c.border} rounded-xl flex items-center justify-center`}
+                        >
+                          {c.icon}
+                        </div>
+                        <div>
+                          <p className="font-black text-base text-white">{c.label}</p>
+                          <p className="text-sm text-zinc-500">{c.sub}</p>
+                        </div>
+                      </button>
+                    )
+                  ))}
+                </div>
+                {modalExplicacao && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+                    <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 max-w-md w-full text-center">
+                      <h2 className="text-xl font-black text-white mb-2">Funcionalidade restrita</h2>
+                      <p className="text-zinc-300 mb-4">{modalExplicacao}</p>
+                      <button
+                        onClick={() => setModalExplicacao(null)}
+                        className="mt-2 px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold"
+                      >
+                        Entendi
+                      </button>
                     </div>
-                  </Link>
-                ))}
-              </div>
+                  </div>
+                )}
+              </>
             )
           })()}
 
@@ -792,10 +901,19 @@ export default function HomePage() {
                   hover: 'hover:border-emerald-400',
                   bg: 'bg-emerald-500/10',
                 },
+                {
+                  tipo: 'agendamento' as const,
+                  emoji: '📅',
+                  label: 'Serviços com Agendamento',
+                  sub: 'Agende clientes e controle horários',
+                  border: 'border-pink-500/40',
+                  hover: 'hover:border-pink-400',
+                  bg: 'bg-pink-500/10',
+                },
               ] as const).map((opt) => (
                 <button
                   key={opt.tipo}
-                  onClick={() => confirmarTipoUsuario(opt.tipo)}
+                  onClick={() => confirmarTipoUsuario(opt.tipo as any)}
                   className={`${opt.bg} border ${opt.border} ${opt.hover} rounded-2xl p-4 flex flex-col items-center gap-2 text-center transition-all active:scale-95`}
                 >
                   <span className="text-3xl">{opt.emoji}</span>
