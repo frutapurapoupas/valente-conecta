@@ -3,25 +3,37 @@
 import { useEffect } from 'react'
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
+
   useEffect(() => {
     // Registrar Service Worker para PWA
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
-        .then(registration => {
-          console.log('Service Worker registrado com sucesso')
-        })
-        .catch(error => {
-          console.log('Erro ao registrar Service Worker:', error)
-        })
+      navigator.serviceWorker.register('/sw.js').then(registration => {
+        console.log('Service Worker registrado com sucesso')
+
+        // Atualização automática: detecta nova versão e força reload
+        registration.onupdatefound = () => {
+          const installingWorker = registration.installing
+          if (installingWorker) {
+            installingWorker.onstatechange = () => {
+              if (installingWorker.state === 'installed') {
+                if (navigator.serviceWorker.controller) {
+                  // Nova versão disponível: força reload automático
+                  window.location.reload()
+                }
+              }
+            }
+          }
+        }
+      }).catch(error => {
+        console.log('Erro ao registrar Service Worker:', error)
+      })
     }
 
     // Solicitar instalação do PWA
     let deferredPrompt: any = null
-    
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault()
       deferredPrompt = e
-      
       // Mostrar banner de instalação apenas se o usuário não tiver instalado
       const hasShownBanner = localStorage.getItem('install_banner_shown')
       if (!hasShownBanner) {
@@ -39,7 +51,6 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           `
           document.body.appendChild(installBanner)
           localStorage.setItem('install_banner_shown', 'true')
-          
           document.getElementById('installPwaBtn')?.addEventListener('click', async () => {
             if (deferredPrompt) {
               deferredPrompt.prompt()
