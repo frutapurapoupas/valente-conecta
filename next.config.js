@@ -1,12 +1,19 @@
 ﻿/** @type {import('next').NextConfig} */
 const nextConfig = {
-  typescript: {
-    ignoreBuildErrors: true,
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, s-maxage=1, stale-while-revalidate=59', 
+            // Diz ao navegador: "Confie por 1 segundo, depois verifique se mudou"
+          },
+        ],
+      },
+    ]
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  swcMinify: true,
 }
 
 module.exports = nextConfig
