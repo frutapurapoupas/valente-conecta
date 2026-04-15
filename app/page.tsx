@@ -1,202 +1,112 @@
-﻿// app/page.tsx
-'use client'
-
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { 
-  Search, Wallet, Bell, Menu, LayoutGrid, GraduationCap, 
-  CalendarClock, Package, Megaphone, ShoppingBag, 
-  UserSquare2, Truck, ArrowRightLeft, UserPlus, Sparkles, Share2, Mic, MicOff 
-} from 'lucide-react'
-import { useHomePage } from '@/hooks/useHomePage'
-import { useVoiceSearch } from '@/hooks/useVoiceSearch'
-
-export default function HomePage() {
-  const { isMenuOpen, setIsMenuOpen, balance } = useHomePage()
-  const [searchTerm, setSearchTerm] = useState('')
-  const [isClient, setIsClient] = useState(false)
-  const [cardsRendered, setCardsRendered] = useState(false)
-
-  const { isListening, toggleListening } = useVoiceSearch((text, data) => {
-    setSearchTerm(text)
-    window.location.href = `/explorar?q=${encodeURIComponent(text)}&city=valente&mode=priority`
-  })
-
-  useEffect(() => { 
-    setIsClient(true)
-    // Debug: verificar se os cards foram renderizados
-    setTimeout(() => {
-      const cards = document.querySelectorAll('.action-card')
-      console.log('Cards encontrados:', cards.length)
-      setCardsRendered(true)
-    }, 100)
-  }, [])
+﻿// SCRIPT DE DIAGNÓSTICO E CORREÇÃO DOS CARDS
+(async function fixCards() {
+  console.log('=== INICIANDO CORREÇÃO DOS CARDS ===');
   
-  if (!isClient) return <div className="min-h-screen bg-black flex items-center justify-center text-white">Carregando Valente Conecta...</div>
-
-  const handleTextSearch = () => {
-    if (searchTerm.trim()) {
-      fetch('/api/search/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          term: searchTerm.trim(),
-          timestamp: new Date().toISOString(),
-          city: 'Valente-BA',
-          priority: 'LOCAL_FIRST',
-          source: 'text',
-          location: 'Valente-BA'
-        })
-      }).catch(err => console.error('Erro ao registrar busca:', err))
+  // 1. Verificar o que existe no momento
+  const main = document.querySelector('main');
+  const existingGrid = document.querySelector('.grid-cols-2, .cards-grid');
+  
+  console.log('Main encontrado:', !!main);
+  console.log('Grid existente:', !!existingGrid);
+  
+  if (!main) {
+    console.log('ERRO: Main não encontrado!');
+    return;
+  }
+  
+  // 2. Remover qualquer grid existente que possa estar quebrado
+  const oldGrids = main.querySelectorAll('.grid-cols-2, .cards-grid');
+  oldGrids.forEach(grid => {
+    console.log('Removendo grid antigo');
+    grid.remove();
+  });
+  
+  // 3. Criar o novo grid com os 8 cards
+  const cardsHTML = `
+    <div class="cards-grid" style="display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 1rem !important; width: 100% !important; margin-top: 1rem;">
+      <!-- Card 1 - PDV -->
+      <a href="/pdv" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; background: #18181b; border: 1px solid #27272a; border-radius: 32px; height: 176px; text-decoration: none; transition: all 0.2s;">
+        <div style="padding: 1rem; border-radius: 16px; background: rgba(255,255,255,0.05); margin-bottom: 1rem; color: #10b981;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+        </div>
+        <span style="font-size: 11px; font-weight: 900; text-transform: uppercase; color: #d4d4d8; text-align: center; font-style: italic;">PDV Colaborativo</span>
+      </a>
       
-      window.location.href = `/explorar?q=${encodeURIComponent(searchTerm.trim())}&city=valente&mode=priority`
-    }
-  }
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleTextSearch()
-    }
-  }
-
-  // Array com os 8 cards para garantir renderização
-  const cards = [
-    { href: "/pdv", icon: LayoutGrid, label: "PDV Colaborativo", color: "text-emerald-500" },
-    { href: "/admin/agendamento", icon: CalendarClock, label: "Serviços", color: "text-blue-400" },
-    { href: "/planos", icon: Package, label: "Planos da Loja", color: "text-purple-500" },
-    { href: "/anuncios", icon: Megaphone, label: "Ofertas & Ads", color: "text-orange-500" },
-    { href: "/catalogo", icon: ShoppingBag, label: "Catálogo Digital", color: "text-pink-500" },
-    { href: "/academia", icon: GraduationCap, label: "Academia Valente", color: "text-cyan-500" },
-    { href: "/admin/profissionais", icon: UserSquare2, label: "Profissionais", color: "text-indigo-500" },
-    { href: "/ambulantes", icon: Truck, label: "Rede Ambulantes", color: "text-zinc-400" },
-  ]
-
-  return (
-    <div className="min-h-screen bg-zinc-950 text-white pb-40 font-sans">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-zinc-950/95 border-b border-zinc-800/50 h-16 flex items-center justify-between px-4 max-w-2xl mx-auto backdrop-blur-md">
-        <Menu className="w-6 h-6 text-yellow-500 cursor-pointer" onClick={() => setIsMenuOpen(!isMenuOpen)} />
-        <div className="text-center font-black uppercase italic bg-yellow-500 text-black px-4 py-1 rounded-sm shadow-[4px_4px_0px_#854d0e] skew-x-[-12deg]">
-          Valente Conecta
+      <!-- Card 2 - Serviços -->
+      <a href="/admin/agendamento" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; background: #18181b; border: 1px solid #27272a; border-radius: 32px; height: 176px; text-decoration: none;">
+        <div style="padding: 1rem; border-radius: 16px; background: rgba(255,255,255,0.05); margin-bottom: 1rem; color: #60a5fa;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>
         </div>
-        <Bell className="w-6 h-6 text-zinc-400" />
-      </header>
-
-      <main className="max-w-2xl mx-auto px-4 pt-6 flex flex-col gap-5">
-        
-        {/* Busca */}
-        <section className="relative">
-          <div className="absolute inset-0 bg-blue-600 rounded-[32px] blur-3xl opacity-20" />
-          <div className="relative flex flex-col gap-3 p-5 bg-zinc-900 border-[6px] border-blue-600 rounded-[32px] shadow-2xl">
-            <div className="flex items-center gap-2 mb-1">
-              <Sparkles className={`w-4 h-4 ${isListening ? 'text-red-500 animate-ping' : 'text-blue-400'}`} />
-              <span className="text-[10px] font-black uppercase text-blue-400 italic">
-                {isListening ? '🎤 Ouvindo...' : '🔍 Busca Inteligente Valente'}
-              </span>
-            </div>
-
-            <div className="relative">
-              <div className="p-[6px] rounded-2xl bg-blue-600">
-                <div className="p-[3px] rounded-xl bg-blue-500">
-                  <div className="relative flex items-center bg-zinc-950 rounded-xl min-h-[64px] overflow-visible">
-                    <div className="flex-none pl-4 text-zinc-500">
-                      <Search className="w-5 h-5" />
-                    </div>
-                    <input 
-                      type="text" 
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      placeholder="O que procura em Valente?" 
-                      className="flex-1 bg-transparent border-none outline-none text-white text-base font-bold px-3 py-4"
-                    />
-                    <button 
-                      type="button" 
-                      onClick={toggleListening} 
-                      className={`
-                        flex-none pr-4 flex items-center justify-center transition-all min-w-[50px]
-                        ${isListening ? 'text-red-500' : 'text-blue-500'}
-                      `}
-                      title={isListening ? "Parar gravação" : "Buscar por voz"}
-                    >
-                      {isListening ? <MicOff className="w-6 h-6 animate-pulse" /> : <Mic className="w-6 h-6" />}
-                    </button>
-                  </div>
-                </div>
-              </div>
-              
-              {isListening && (
-                <div className="absolute -bottom-8 left-0 right-0 text-center">
-                  <span className="text-xs text-red-400 animate-pulse bg-red-500/10 px-3 py-1 rounded-full">
-                    🎤 Gravando... Fale o que deseja buscar
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* Indique e Ganhe */}
-        <Link href="/indique" className="flex items-center justify-between p-6 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-[32px] shadow-xl">
-          <div className="flex items-center gap-4">
-            <div className="bg-black/10 p-4 rounded-2xl text-black shadow-inner">
-              <Share2 className="w-7 h-7" />
-            </div>
-            <div className="flex flex-col text-black font-black uppercase leading-tight italic">
-              <span className="text-xl tracking-tighter italic">Indique e Ganhe</span>
-              <span className="text-[11px] not-italic font-bold opacity-80">R$ 5,00 por indicação</span>
-            </div>
-          </div>
-          <ArrowRightLeft className="w-5 h-5 text-black mr-2" />
-        </Link>
-
-        {/* Saldo */}
-        <div className="bg-zinc-900/50 border border-zinc-800 p-6 rounded-[32px] flex justify-between items-center shadow-inner">
-          <div>
-            <p className="text-zinc-500 text-[10px] uppercase font-black mb-1 italic tracking-widest">Saldo Disponível</p>
-            <p className="text-3xl font-black text-emerald-500 italic tracking-tighter">R$ {balance?.toFixed(2) || '0,00'}</p>
-          </div>
-          <Wallet className="w-7 h-7 text-zinc-500" />
+        <span style="font-size: 11px; font-weight: 900; text-transform: uppercase; color: #d4d4d8; text-align: center; font-style: italic;">Serviços</span>
+      </a>
+      
+      <!-- Card 3 - Planos -->
+      <a href="/planos" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; background: #18181b; border: 1px solid #27272a; border-radius: 32px; height: 176px; text-decoration: none;">
+        <div style="padding: 1rem; border-radius: 16px; background: rgba(255,255,255,0.05); margin-bottom: 1rem; color: #a855f7;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
         </div>
-
-        {/* 8 CARDS - Renderização garantida */}
-        <div className="grid grid-cols-2 gap-4">
-          {cards.map((card, index) => (
-            <Link
-              key={index}
-              href={card.href}
-              className="action-card flex flex-col items-center justify-center p-6 bg-zinc-900 border border-zinc-800 rounded-[32px] h-44 active:scale-95 transition-all w-full shadow-lg hover:border-zinc-700"
-            >
-              <div className={`p-4 rounded-2xl bg-white/5 ${card.color} mb-4`}>
-                <card.icon className="w-8 h-8" />
-              </div>
-              <span className="text-[11px] font-black uppercase text-zinc-300 text-center leading-tight tracking-tighter italic">
-                {card.label}
-              </span>
-            </Link>
-          ))}
+        <span style="font-size: 11px; font-weight: 900; text-transform: uppercase; color: #d4d4d8; text-align: center; font-style: italic;">Planos da Loja</span>
+      </a>
+      
+      <!-- Card 4 - Ofertas -->
+      <a href="/anuncios" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; background: #18181b; border: 1px solid #27272a; border-radius: 32px; height: 176px; text-decoration: none;">
+        <div style="padding: 1rem; border-radius: 16px; background: rgba(255,255,255,0.05); margin-bottom: 1rem; color: #f97316;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M7 7V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2"/><path d="M12 12v6"/><path d="M3 11h18"/><path d="M8 7h8"/></svg>
         </div>
-        
-        {/* Debug info - remove depois */}
-        {cardsRendered && (
-          <div className="text-center text-xs text-zinc-500 py-2">
-            8 cards carregados com sucesso ✓
-          </div>
-        )}
-      </main>
-
-      {/* Footer */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-zinc-950/90 border-t border-zinc-800/80 p-6 z-50 backdrop-blur-xl">
-        <div className="max-w-2xl mx-auto flex justify-between items-center px-6">    
-          <Link href="/"><LayoutGrid className="w-6 h-6 text-yellow-500" /></Link>    
-          <Link href="/financeiro" className="text-zinc-500"><ArrowRightLeft className="w-6 h-6" /></Link>
-          <div className="relative -mt-16 bg-yellow-500 p-5 rounded-full text-black shadow-2xl border-[6px] border-zinc-950 active:scale-90 transition-all">
-            <Search className="w-8 h-8 stroke-[3px]" />
-          </div>
-          <Link href="/pagamentos" className="text-zinc-500"><Wallet className="w-6 h-6" /></Link>
-          <Link href="/perfil" className="text-zinc-500"><UserPlus className="w-6 h-6" /></Link>  
+        <span style="font-size: 11px; font-weight: 900; text-transform: uppercase; color: #d4d4d8; text-align: center; font-style: italic;">Ofertas & Ads</span>
+      </a>
+      
+      <!-- Card 5 - Catálogo -->
+      <a href="/catalogo" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; background: #18181b; border: 1px solid #27272a; border-radius: 32px; height: 176px; text-decoration: none;">
+        <div style="padding: 1rem; border-radius: 16px; background: rgba(255,255,255,0.05); margin-bottom: 1rem; color: #ec4899;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
         </div>
-      </nav>
+        <span style="font-size: 11px; font-weight: 900; text-transform: uppercase; color: #d4d4d8; text-align: center; font-style: italic;">Catálogo Digital</span>
+      </a>
+      
+      <!-- Card 6 - Academia -->
+      <a href="/academia" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; background: #18181b; border: 1px solid #27272a; border-radius: 32px; height: 176px; text-decoration: none;">
+        <div style="padding: 1rem; border-radius: 16px; background: rgba(255,255,255,0.05); margin-bottom: 1rem; color: #06b6d4;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+        </div>
+        <span style="font-size: 11px; font-weight: 900; text-transform: uppercase; color: #d4d4d8; text-align: center; font-style: italic;">Academia Valente</span>
+      </a>
+      
+      <!-- Card 7 - Profissionais -->
+      <a href="/admin/profissionais" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; background: #18181b; border: 1px solid #27272a; border-radius: 32px; height: 176px; text-decoration: none;">
+        <div style="padding: 1rem; border-radius: 16px; background: rgba(255,255,255,0.05); margin-bottom: 1rem; color: #6366f1;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <span style="font-size: 11px; font-weight: 900; text-transform: uppercase; color: #d4d4d8; text-align: center; font-style: italic;">Profissionais</span>
+      </a>
+      
+      <!-- Card 8 - Ambulantes -->
+      <a href="/ambulantes" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; background: #18181b; border: 1px solid #27272a; border-radius: 32px; height: 176px; text-decoration: none;">
+        <div style="padding: 1rem; border-radius: 16px; background: rgba(255,255,255,0.05); margin-bottom: 1rem; color: #a1a1aa;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>
+        </div>
+        <span style="font-size: 11px; font-weight: 900; text-transform: uppercase; color: #d4d4d8; text-align: center; font-style: italic;">Rede Ambulantes</span>
+      </a>
     </div>
-  )
-}
+  `;
+  
+  // 4. Inserir o grid após o último elemento (depois do saldo)
+  const saldoDiv = main.querySelector('.bg-zinc-900\\/50, [class*="bg-zinc-900"]');
+  if (saldoDiv) {
+    saldoDiv.insertAdjacentHTML('afterend', cardsHTML);
+    console.log('✅ Cards inseridos após o saldo!');
+  } else {
+    main.insertAdjacentHTML('beforeend', cardsHTML);
+    console.log('✅ Cards inseridos no final do main!');
+  }
+  
+  // 5. Verificar resultado
+  const newCards = document.querySelectorAll('.cards-grid a');
+  console.log(`✅ Total de cards agora: ${newCards.length}`);
+  
+  if (newCards.length === 8) {
+    console.log('🎉 SUCESSO! Os 8 cards foram carregados!');
+  } else {
+    console.log(`⚠️ Ainda com problema: ${newCards.length} cards encontrados`);
+  }
+})();
