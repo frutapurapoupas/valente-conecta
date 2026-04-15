@@ -2,14 +2,419 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* ========== CONFIGURAÇÕES BASE ========== */
+@layer base {
+  * {
+    @apply border-zinc-800;
+  }
+  
+  body {
+    @apply bg-zinc-950 text-white antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  html {
+    @apply scroll-smooth;
+  }
 }
 
+/* ========== UTILITÁRIOS PERSONALIZADOS ========== */
+@layer utilities {
+  /* Animações para cards e interações */
+  .animate-in {
+    animation: slideInFromBottom 0.3s ease-out;
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .animate-spin-slow {
+    animation: spin 3s linear infinite;
+  }
+  
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  /* Gradientes personalizados */
+  .bg-gradient-primary {
+    @apply bg-gradient-to-r from-blue-600 to-indigo-600;
+  }
+  
+  .bg-gradient-success {
+    @apply bg-gradient-to-r from-emerald-500 to-green-600;
+  }
+  
+  .bg-gradient-warning {
+    @apply bg-gradient-to-r from-orange-500 to-red-500;
+  }
+  
+  /* Efeitos de brilho */
+  .glow-effect {
+    @apply relative overflow-hidden;
+  }
+  
+  .glow-effect::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full;
+    animation: shimmer 2s infinite;
+  }
+  
+  /* Esconder visualmente (acessibilidade) */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+}
+
+/* ========== KEYFRAMES E ANIMAÇÕES ========== */
+@keyframes slideInFromBottom {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromTop {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes scale {
+  0% {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ========== CLASSES DE ANIMAÇÃO ========== */
+.animate-slide-in-bottom {
+  animation: slideInFromBottom 0.3s ease-out;
+}
+
+.animate-slide-in-top {
+  animation: slideInFromTop 0.3s ease-out;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-bounce-slow {
+  animation: bounce 2s ease-in-out infinite;
+}
+
+.animate-scale {
+  animation: scale 0.2s ease-out;
+}
+
+/* ========== SCROLLBAR PERSONALIZADA ========== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #18181b;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #52525b;
+}
+
+::-webkit-scrollbar-corner {
+  background: #18181b;
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3f3f46 #18181b;
+}
+
+/* ========== SELECTION PERSONALIZADO ========== */
+::selection {
+  background-color: rgba(59, 130, 246, 0.5);
+  color: white;
+}
+
+::-moz-selection {
+  background-color: rgba(59, 130, 246, 0.5);
+  color: white;
+}
+
+/* ========== ESTILOS PARA INPUTS E BOTÕES ========== */
+input, textarea, select, button {
+  @apply outline-none;
+}
+
+input:focus, textarea:focus, select:focus {
+  @apply ring-2 ring-blue-500/50 ring-offset-2 ring-offset-zinc-950;
+}
+
+/* Remove o outline padrão do Chrome para inputs */
+input:focus-visible, textarea:focus-visible, select:focus-visible {
+  @apply outline-none;
+}
+
+/* Estilos para placeholders */
+::placeholder {
+  @apply text-zinc-500;
+}
+
+/* ========== ESTILOS PARA LINKS ========== */
+a {
+  @apply transition-all duration-200;
+}
+
+a:active {
+  @apply scale-95;
+}
+
+/* ========== ESTILOS PARA MODAL E OVERLAY ========== */
+.modal-overlay {
+  @apply fixed inset-0 bg-black/80 backdrop-blur-sm z-50;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+  @apply relative bg-zinc-900 rounded-2xl border border-zinc-800 shadow-2xl;
+  animation: scale 0.2s ease-out;
+}
+
+/* ========== ESTILOS PARA TOAST/NOTIFICAÇÕES ========== */
+.toast {
+  @apply fixed bottom-20 left-4 right-4 z-50 md:left-auto md:right-4 md:bottom-24 md:w-96;
+  animation: slideInFromBottom 0.3s ease-out;
+}
+
+.toast-success {
+  @apply bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-2xl p-4 shadow-2xl border border-white/20;
+}
+
+.toast-error {
+  @apply bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-2xl p-4 shadow-2xl border border-white/20;
+}
+
+.toast-info {
+  @apply bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl p-4 shadow-2xl border border-white/20;
+}
+
+/* ========== ESTILOS PARA SKELETON LOADING ========== */
+.skeleton {
+  @apply bg-zinc-800 animate-pulse rounded-lg;
+}
+
+.skeleton-text {
+  @apply h-4 bg-zinc-800 rounded animate-pulse;
+}
+
+.skeleton-circle {
+  @apply rounded-full bg-zinc-800 animate-pulse;
+}
+
+/* ========== ESTILOS PARA CARDS ========== */
+.card {
+  @apply bg-zinc-900 border border-zinc-800 rounded-2xl transition-all duration-200;
+}
+
+.card-hover {
+  @apply hover:border-zinc-700 hover:shadow-xl hover:scale-[1.02] transition-all duration-200;
+}
+
+.card-gradient {
+  @apply bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-800 rounded-2xl;
+}
+
+/* ========== ESTILOS PARA GRADIENTES DE FUNDO ========== */
+.bg-grid-white {
+  background-image: linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+.bg-dots-white {
+  background-image: radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* ========== ESTILOS PARA TIPOGRAFIA ========== */
+.text-gradient {
+  @apply bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent;
+}
+
+.text-gradient-gold {
+  @apply bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent;
+}
+
+/* ========== ESTILOS PARA BOTÕES DE AÇÃO ========== */
+.btn-primary {
+  @apply bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold py-3 px-6 rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/25 active:scale-95;
+}
+
+.btn-secondary {
+  @apply bg-zinc-800 text-white font-bold py-3 px-6 rounded-xl transition-all duration-200 hover:bg-zinc-700 active:scale-95;
+}
+
+.btn-outline {
+  @apply border-2 border-blue-500 text-blue-500 font-bold py-3 px-6 rounded-xl transition-all duration-200 hover:bg-blue-500/10 active:scale-95;
+}
+
+/* ========== ESTILOS PARA TABELAS ========== */
+.table-container {
+  @apply overflow-x-auto rounded-2xl border border-zinc-800;
+}
+
+.table-custom {
+  @apply w-full text-sm text-left;
+}
+
+.table-custom thead {
+  @apply text-xs uppercase bg-zinc-900 border-b border-zinc-800;
+}
+
+.table-custom th {
+  @apply px-6 py-4 font-medium text-zinc-400;
+}
+
+.table-custom td {
+  @apply px-6 py-4 border-b border-zinc-800;
+}
+
+.table-custom tbody tr:hover {
+  @apply bg-zinc-800/50;
+}
+
+/* ========== CORREÇÕES PARA PWA E DISPOSITIVOS MÓVEIS ========== */
+/* Previne o bounce no iOS */
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-  background: #09090b;
-  color: #ffffff;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Melhora a experiência de toque em dispositivos móveis */
+button, a, [role="button"] {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+/* Remove o tap highlight em dispositivos móveis - CORRIGIDO */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ========== CLASSES DE ACESSIBILIDADE ========== */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-zinc-950;
+}
+
+/* ========== ESTILOS PARA PRINT ========== */
+@media print {
+  body {
+    @apply bg-white text-black;
+    position: relative;
+  }
+  
+  .no-print {
+    display: none;
+  }
+  
+  .card, .card-gradient {
+    @apply border border-gray-300 shadow-none;
+  }
+}
+
+/* ========== ESTILOS PARA DARK MODE (FALLBACK) ========== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+  }
+}
+
+/* ========== UTILITÁRIOS DE LAYOUT ========== */
+.min-h-screen-safe {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
 }

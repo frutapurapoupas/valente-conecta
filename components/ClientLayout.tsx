@@ -1,71 +1,133 @@
+// components/ClientLayout.tsx
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { Download, X } from 'lucide-react'
 
-export default function ClientLayout({ children }: { children: React.ReactNode }) {
+interface ClientLayoutProps {
+  children: React.ReactNode
+}
+
+export default function ClientLayout({ children }: ClientLayoutProps) {
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
+  const [showInstallBanner, setShowInstallBanner] = useState(false)
 
   useEffect(() => {
-    // Registrar Service Worker para PWA
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').then(registration => {
-        console.log('Service Worker registrado com sucesso')
-
-        // Atualização automática: detecta nova versão e força reload
-        registration.onupdatefound = () => {
-          const installingWorker = registration.installing
-          if (installingWorker) {
-            installingWorker.onstatechange = () => {
-              if (installingWorker.state === 'installed') {
-                if (navigator.serviceWorker.controller) {
-                  // Nova versão disponível: força reload automático
-                  window.location.reload()
-                }
-              }
-            }
-          }
-        }
-      }).catch(error => {
-        console.log('Erro ao registrar Service Worker:', error)
-      })
+    // Handler para instalação do PWA
+    const handleBeforeInstallPrompt = (e: Event) => {
+      // Previne o comportamento padrão
+      e.preventDefault()
+      
+      // Armazena o evento para usar depois
+      setDeferredPrompt(e)
+      
+      // Verifica se já mostramos o banner antes
+      const hasShownBanner = localStorage.getItem('pwa-banner-shown')
+      const hasInstalled = localStorage.getItem('pwa-installed')
+      
+      if (!hasShownBanner && !hasInstalled) {
+        // Mostra o banner após 5 segundos
+        setTimeout(() => {
+          setShowInstallBanner(true)
+        }, 5000)
+      }
     }
 
-    // Solicitar instalação do PWA
-    let deferredPrompt: any = null
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault()
-      deferredPrompt = e
-      // Mostrar banner de instalação apenas se o usuário não tiver instalado
-      const hasShownBanner = localStorage.getItem('install_banner_shown')
-      if (!hasShownBanner) {
-        setTimeout(() => {
-          const installBanner = document.createElement('div')
-          installBanner.id = 'pwa-install-banner'
-          installBanner.innerHTML = `
-            <div style="position:fixed;bottom:20px;left:20px;right:20px;background:#6366f1;color:white;padding:16px;border-radius:16px;display:flex;justify-content:space-between;align-items:center;z-index:1000;box-shadow:0 4px 12px rgba(0,0,0,0.15)">
-              <div>
-                <strong style="font-size:16px">📱 Instalar App</strong>
-                <p style="font-size:12px;margin:4px 0 0 0;opacity:0.9">Adicione à tela inicial para acesso rápido</p>
-              </div>
-              <button id="installPwaBtn" style="background:white;color:#6366f1;border:none;padding:8px 16px;border-radius:8px;font-weight:bold;cursor:pointer">Instalar</button>
-            </div>
-          `
-          document.body.appendChild(installBanner)
-          localStorage.setItem('install_banner_shown', 'true')
-          document.getElementById('installPwaBtn')?.addEventListener('click', async () => {
-            if (deferredPrompt) {
-              deferredPrompt.prompt()
-              const { outcome } = await deferredPrompt.userChoice
-              if (outcome === 'accepted') {
-                console.log('Usuário aceitou instalação do PWA')
-              }
-              deferredPrompt = null
-            }
-            document.getElementById('pwa-install-banner')?.remove()
-          })
-        }, 3000)
-      }
-    })
+    // Verificar se já está instalado (modo standalone)
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+    if (isStandalone) {
+      localStorage.setItem('pwa-installed', 'true')
+    }
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+    }
   }, [])
 
-  return <>{children}</>
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return
+
+    // Mostra o prompt de instalação
+    deferredPrompt.prompt()
+    
+    // Aguarda a escolha do usuário
+    const { outcome } = await deferredPrompt.userChoice
+    
+    if (outcome === 'accepted') {
+      console.log('Usuário instalou o PWA')
+      localStorage.setItem('pwa-installed', 'true')
+    }
+    
+    // Limpa o prompt
+    setDeferredPrompt(null)
+    setShowInstallBanner(false)
+    localStorage.setItem('pwa-banner-shown', 'true')
+  }
+
+  const handleCloseBanner = () => {
+    setShowInstallBanner(false)
+    localStorage.setItem('pwa-banner-shown', 'true')
+  }
+
+  return (
+    <>
+      {children}
+      
+      {/* Banner customizado de instalação do PWA */}
+      {showInstallBanner && (
+        <div className="fixed bottom-20 left-4 right-4 z-50 animate-in slide-in-from-bottom-10 duration-300 md:left-auto md:right-4 md:bottom-24 md:w-96">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-4 shadow-2xl border border-white/20 relative">
+            {/* Botão fechar */}
+            <button
+              onClick={handleCloseBanner}
+              className="absolute top-2 right-2 text-white/60 hover:text-white"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            
+            <div className="flex items-center gap-3">
+              {/* Ícone */}
+              <div className="bg-white/20 p-2 rounded-xl">
+                <Download className="w-6 h-6 text-white" />
+              </div>
+              
+              {/* Texto */}
+              <div className="flex-1">
+                <h3 className="text-white font-bold text-sm">Instale o Valente Conecta</h3>
+                <p className="text-white/80 text-xs">Tenha acesso rápido como um app</p>
+              </div>
+              
+              {/* Botão instalar */}
+              <button
+                onClick={handleInstallClick}
+                className="px-4 py-2 bg-white text-blue-600 rounded-xl text-sm font-bold hover:bg-white/90 transition-all transform hover:scale-105"
+              >
+                Instalar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Estilos para animação */}
+      <style jsx global>{`
+        @keyframes slideInFromBottom {
+          from {
+            transform: translateY(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+        
+        .animate-in {
+          animation: slideInFromBottom 0.3s ease-out;
+        }
+      `}</style>
+    </>
+  )
 }
