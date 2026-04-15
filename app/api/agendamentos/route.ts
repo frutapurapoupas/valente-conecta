@@ -70,21 +70,3 @@ export async function POST(request: NextRequest) {
   
   return NextResponse.json(data, { status: 201 })
 }
-
-export async function PUT(request: NextRequest) {
-  const body = await request.json()
-  const { id, status_agendamento } = body
-  
-  const { data, error } = await supabase
-    .from('sales')
-    .update({ status_agendamento: status_agendamento })
-    .eq('id', id)
-    .select()
-    .single()
-  
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
-  
-  return NextResponse.json(data)
-}
