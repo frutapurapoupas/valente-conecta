@@ -2,11 +2,6 @@
 const nextConfig = {
   reactStrictMode: true,
   
-  // Configurações do Turbopack (se precisar)
-  turbopack: {
-    // Suas configurações do Turbopack aqui, se houver
-  },
-  
   // Imagens - configure se necessário
   images: {
     domains: [], // Adicione domínios de imagens externas se precisar
