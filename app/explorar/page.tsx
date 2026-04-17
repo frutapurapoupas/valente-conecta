@@ -5,7 +5,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Store, Package, Globe, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { SmartSearchBar } from '@/components/ui/SmartSearchBar';
+import SmartSearchBar from '@/components/ui/SmartSearchBar';
 
 interface SearchResult {
   id: string;
