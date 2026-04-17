@@ -110,7 +110,7 @@ async function handleDistanceMatrix(searchParams: URLSearchParams) {
   const destinations = searchParams.get('destinations') // lat,lng
   
   if (!origins || !destinations) {
-    return NextResponse.json({ error: 'Origens e destinos são obrigatórios' }, { status: 400 })
+    return NextResponse.json({ error: 'Origins and destinations are required' }, { status: 400 })
   }
 
   const API_KEY = process.env.GOOGLE_MAPS_API_KEY || 'demo_key'
