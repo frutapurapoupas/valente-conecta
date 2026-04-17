@@ -203,7 +203,7 @@ const planosUsuario = [
   },
 ];
 
-function PlanoCard({ plano }) {
+function PlanoCard({ plano }: { plano: any }) {
   return (
     <div className={`bg-zinc-900 border ${plano.cor} rounded-2xl p-5 flex-1 min-w-[260px] max-w-xs flex flex-col`}>
       <div className="flex items-center gap-2 mb-2">
@@ -213,13 +213,13 @@ function PlanoCard({ plano }) {
       <p className="text-2xl font-black text-white mb-1">{plano.preco}</p>
       <p className="text-xs text-zinc-400 mb-3">{plano.descricao}</p>
       <ul className="text-sm text-zinc-300 space-y-1 mb-2 pl-4 list-disc">
-        {plano.beneficios.map((b, i) => <li key={i}>{b}</li>)}
+        {plano.beneficios.map((b: string, i: number) => <li key={i}>{b}</li>)}
       </ul>
       {plano.avulsos && (
         <div className="mt-2">
           <p className="text-xs text-zinc-400 font-bold mb-1">Avulsos:</p>
           <ul className="text-xs text-zinc-300 pl-4 list-disc">
-            {plano.avulsos.map((a, i) => <li key={i}>{a.label}: <span className="font-bold">{a.valor}</span></li>)}
+            {plano.avulsos.map((a: any, i: number) => <li key={i}>{a.label}: <span className="font-bold">{a.valor}</span></li>)}
           </ul>
         </div>
       )}

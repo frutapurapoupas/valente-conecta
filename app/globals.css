@@ -2,15 +2,55 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Melhorar suporte a touch para dispositivos móveis */
+.touch-manipulation {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+  outline: none;
+}
+
+/* Forçar z-index alto para elementos clicáveis */
+.touch-manipulation {
+  z-index: 50 !important;
+  position: relative;
+}
+
+/* Melhorar feedback visual em touch */
+@media (hover: none) and (pointer: coarse) {
+  .touch-manipulation:active {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  
+  .touch-manipulation:hover {
+    transform: scale(1.05);
+  }
+}
+
+/* Prevenir zoom duplo em iOS */
+input, textarea, button {
+  touch-action: manipulation;
+}
+
+/* Melhorar cliques em mobile */
+button {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Forçar cliques funcionarem */
+.z-high {
+  z-index: 9999 !important;
+  position: relative;
+}
+
 /* ========== CONFIGURAÇÕES BASE ========== */
 @layer base {
   * {
     @apply border-zinc-800;
-  }
-  
-  body {
-    @apply bg-zinc-950 text-white antialiased;
-    font-feature-settings: "rlig" 1, "calt" 1;
   }
   
   html {
@@ -18,9 +58,40 @@
   }
 }
 
+/* CORREÇÃO DO SCROLL - PERMITE ROLAGEM NORMAL */
+html, body {
+  position: relative !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  height: auto !important;
+  min-height: 100vh !important;
+}
+
+body {
+  position: relative !important;
+  width: 100% !important;
+  height: auto !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  background-color: #09090b;
+  color: white;
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+main {
+  overflow-y: visible !important;
+  overflow-x: hidden !important;
+  min-height: 100vh;
+  padding-bottom: 100px;
+}
+
+/* Remove o tap highlight em dispositivos móveis */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* ========== UTILITÁRIOS PERSONALIZADOS ========== */
 @layer utilities {
-  /* Animações para cards e interações */
   .animate-in {
     animation: slideInFromBottom 0.3s ease-out;
   }
@@ -29,15 +100,10 @@
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
   
-  .animate-spin-slow {
-    animation: spin 3s linear infinite;
-  }
-  
   .text-balance {
     text-wrap: balance;
   }
   
-  /* Gradientes personalizados */
   .bg-gradient-primary {
     @apply bg-gradient-to-r from-blue-600 to-indigo-600;
   }
@@ -50,18 +116,6 @@
     @apply bg-gradient-to-r from-orange-500 to-red-500;
   }
   
-  /* Efeitos de brilho */
-  .glow-effect {
-    @apply relative overflow-hidden;
-  }
-  
-  .glow-effect::before {
-    content: '';
-    @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full;
-    animation: shimmer 2s infinite;
-  }
-  
-  /* Esconder visualmente (acessibilidade) */
   .sr-only {
     position: absolute;
     width: 1px;
@@ -197,7 +251,6 @@
   background: #18181b;
 }
 
-/* Firefox scrollbar */
 * {
   scrollbar-width: thin;
   scrollbar-color: #3f3f46 #18181b;
@@ -223,12 +276,10 @@ input:focus, textarea:focus, select:focus {
   @apply ring-2 ring-blue-500/50 ring-offset-2 ring-offset-zinc-950;
 }
 
-/* Remove o outline padrão do Chrome para inputs */
 input:focus-visible, textarea:focus-visible, select:focus-visible {
   @apply outline-none;
 }
 
-/* Estilos para placeholders */
 ::placeholder {
   @apply text-zinc-500;
 }
@@ -253,37 +304,6 @@ a:active {
   animation: scale 0.2s ease-out;
 }
 
-/* ========== ESTILOS PARA TOAST/NOTIFICAÇÕES ========== */
-.toast {
-  @apply fixed bottom-20 left-4 right-4 z-50 md:left-auto md:right-4 md:bottom-24 md:w-96;
-  animation: slideInFromBottom 0.3s ease-out;
-}
-
-.toast-success {
-  @apply bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-2xl p-4 shadow-2xl border border-white/20;
-}
-
-.toast-error {
-  @apply bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-2xl p-4 shadow-2xl border border-white/20;
-}
-
-.toast-info {
-  @apply bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl p-4 shadow-2xl border border-white/20;
-}
-
-/* ========== ESTILOS PARA SKELETON LOADING ========== */
-.skeleton {
-  @apply bg-zinc-800 animate-pulse rounded-lg;
-}
-
-.skeleton-text {
-  @apply h-4 bg-zinc-800 rounded animate-pulse;
-}
-
-.skeleton-circle {
-  @apply rounded-full bg-zinc-800 animate-pulse;
-}
-
 /* ========== ESTILOS PARA CARDS ========== */
 .card {
   @apply bg-zinc-900 border border-zinc-800 rounded-2xl transition-all duration-200;
@@ -295,27 +315,6 @@ a:active {
 
 .card-gradient {
   @apply bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-800 rounded-2xl;
-}
-
-/* ========== ESTILOS PARA GRADIENTES DE FUNDO ========== */
-.bg-grid-white {
-  background-image: linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px),
-                    linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px);
-  background-size: 50px 50px;
-}
-
-.bg-dots-white {
-  background-image: radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px);
-  background-size: 20px 20px;
-}
-
-/* ========== ESTILOS PARA TIPOGRAFIA ========== */
-.text-gradient {
-  @apply bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent;
-}
-
-.text-gradient-gold {
-  @apply bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent;
 }
 
 /* ========== ESTILOS PARA BOTÕES DE AÇÃO ========== */
@@ -331,50 +330,10 @@ a:active {
   @apply border-2 border-blue-500 text-blue-500 font-bold py-3 px-6 rounded-xl transition-all duration-200 hover:bg-blue-500/10 active:scale-95;
 }
 
-/* ========== ESTILOS PARA TABELAS ========== */
-.table-container {
-  @apply overflow-x-auto rounded-2xl border border-zinc-800;
-}
-
-.table-custom {
-  @apply w-full text-sm text-left;
-}
-
-.table-custom thead {
-  @apply text-xs uppercase bg-zinc-900 border-b border-zinc-800;
-}
-
-.table-custom th {
-  @apply px-6 py-4 font-medium text-zinc-400;
-}
-
-.table-custom td {
-  @apply px-6 py-4 border-b border-zinc-800;
-}
-
-.table-custom tbody tr:hover {
-  @apply bg-zinc-800/50;
-}
-
-/* ========== CORREÇÕES PARA PWA E DISPOSITIVOS MÓVEIS ========== */
-/* Previne o bounce no iOS */
-body {
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Melhora a experiência de toque em dispositivos móveis */
+/* ========== CORREÇÕES PARA PWA ========== */
 button, a, [role="button"] {
   cursor: pointer;
   touch-action: manipulation;
-}
-
-/* Remove o tap highlight em dispositivos móveis - CORRIGIDO */
-* {
-  -webkit-tap-highlight-color: transparent;
 }
 
 /* ========== CLASSES DE ACESSIBILIDADE ========== */
@@ -386,7 +345,7 @@ button, a, [role="button"] {
 @media print {
   body {
     @apply bg-white text-black;
-    position: relative;
+    position: relative !important;
   }
   
   .no-print {
@@ -398,7 +357,7 @@ button, a, [role="button"] {
   }
 }
 
-/* ========== ESTILOS PARA DARK MODE (FALLBACK) ========== */
+/* ========== ESTILOS PARA DARK MODE ========== */
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;

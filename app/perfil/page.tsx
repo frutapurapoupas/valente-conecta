@@ -15,7 +15,7 @@ export default function PerfilPage() {
     if (user.email) setEmail(user.email)
   }, [])
 
-  function salvarPerfil(e) {
+  function salvarPerfil(e: React.FormEvent) {
     e.preventDefault()
     localStorage.setItem('perfil_usuario', JSON.stringify({ nome, email }))
     setEditando(false)

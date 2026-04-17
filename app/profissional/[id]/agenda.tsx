@@ -8,7 +8,7 @@ export default function AgendaRedirectPage() {
   const params = useSearchParams()
   useEffect(() => {
     // Redireciona para a agenda do profissional com o id correto
-    const id = params.get('id')
+    const id = params?.get('id')
     if (id) {
       router.replace(`/profissional/agenda?id=${id}`)
     }

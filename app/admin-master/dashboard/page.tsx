@@ -9,7 +9,8 @@ import {
   Users, Building2, ShoppingBag, Wallet, TrendingUp,
   LayoutDashboard, CreditCard, Tag, BookOpen, Settings,
   Package, UserCheck, BarChart3, Megaphone, GraduationCap, MapPin,
-  ShoppingCart, Search, Award, Bell, FileText, CalendarClock
+  ShoppingCart, Search, Award, Bell, FileText, CalendarClock,
+  Clock, CheckCircle, XCircle, Truck, Store, Phone, Mail, User
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import FinanceiroPessoalShortcut from '@/components/admin-master/FinanceiroPessoalShortcut'
@@ -76,6 +77,33 @@ export default function DashboardMaster() {
   const [stats, setStats] = useState({ usuarios: 0, empresas: 0, transacoes: 0 })
   const [loading, setLoading] = useState(true)
 
+  // Dashboard sem autenticação - acesso direto
+  const [orders, setOrders] = useState([
+    {
+      id: 'order_1711234567890',
+      customer: { name: 'João Silva', phone: '(77) 91234-5678' },
+      items: [
+        { name: 'Arroz Tipo 1 5kg', quantity: 2, price: 25.90 },
+        { name: 'Feijão Carioca 1kg', quantity: 1, price: 8.90 }
+      ],
+      total: 60.70,
+      status: 'pending',
+      timestamp: new Date().toISOString(),
+      store: 'Mercado Central Valente'
+    },
+    {
+      id: 'order_1711234567891',
+      customer: { name: 'Maria Santos', phone: '(77) 99876-5432' },
+      items: [
+        { name: 'Serviço de Barbearia', quantity: 1, price: 25.00 }
+      ],
+      total: 25.00,
+      status: 'confirmed',
+      timestamp: new Date(Date.now() - 3600000).toISOString(),
+      store: 'Barbearia Valente'
+    }
+  ])
+
   useEffect(() => {
     async function load() {
       try {
@@ -93,6 +121,36 @@ export default function DashboardMaster() {
     }
     load()
   }, [])
+
+  const handleOrderResponse = (orderId: string, response: 'pickup' | 'delivery') => {
+    setOrders(prev => prev.map(order => {
+      if (order.id === orderId) {
+        const treatment = response === 'pickup' 
+          ? { type: 'pickup', message: 'Retirar na loja em 30 minutos', time: '30 minutos' }
+          : { type: 'delivery', message: 'Entrega em até 1 hora', time: '1 hora' }
+        
+        return {
+          ...order,
+          status: 'confirmed',
+          treatment,
+          response_time: new Date().toISOString()
+        }
+      }
+      return order
+    }))
+
+    // Simular envio de notificação para cliente
+    console.log(`Notificação enviada para cliente do pedido ${orderId}: ${response === 'pickup' ? 'Retirar na loja' : 'Entrega'}`)
+  }
+
+  const handleOrderCancel = (orderId: string) => {
+    setOrders(prev => prev.map(order => {
+      if (order.id === orderId) {
+        return { ...order, status: 'cancelled', cancelled_at: new Date().toISOString() }
+      }
+      return order
+    }))
+  }
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
@@ -195,6 +253,99 @@ export default function DashboardMaster() {
                 <Line type="monotone" dataKey="receita" stroke="#10b981" strokeWidth={2.5} dot={{ fill: '#10b981', r: 4 }} />
               </LineChart>
             </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Pedidos do Catálogo */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xs font-black uppercase tracking-widest text-zinc-500">PEDIDOS DO CATÁLOGO</h2>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span>
+              <span className="text-xs text-zinc-400">{orders.filter(o => o.status === 'pending').length} pendentes</span>
+            </div>
+          </div>
+          <div className="space-y-3">
+            {orders.map(order => (
+              <div key={order.id} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className={`w-2 h-2 rounded-full ${
+                        order.status === 'pending' ? 'bg-yellow-500 animate-pulse' :
+                        order.status === 'confirmed' ? 'bg-emerald-500' :
+                        'bg-red-500'
+                      }`} />
+                      <h3 className="font-bold text-white">Pedido #{order.id.split('_')[1]}</h3>
+                      <span className="text-xs text-zinc-400">
+                        {new Date(order.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4 text-sm text-zinc-400 mb-2">
+                      <div className="flex items-center gap-1">
+                        <User className="w-3 h-3" />
+                        <span>{order.customer.name}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Phone className="w-3 h-3" />
+                        <span>{order.customer.phone}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Store className="w-3 h-3" />
+                        <span>{order.store}</span>
+                      </div>
+                    </div>
+                    <div className="space-y-1 mb-3">
+                      {order.items.map((item, idx) => (
+                        <div key={idx} className="text-xs text-zinc-300">
+                          {item.quantity}x {item.name} - R$ {item.price.toFixed(2)}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="border-t border-zinc-800 pt-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-bold text-white">Total: R$ {order.total.toFixed(2)}</span>
+                        {order.status === 'pending' ? (
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => handleOrderResponse(order.id, 'pickup')}
+                              className="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1 rounded-lg text-xs font-medium transition-colors"
+                            >
+                              <Store className="w-3 h-3 inline mr-1" />
+                              Retirada
+                            </button>
+                            <button
+                              onClick={() => handleOrderResponse(order.id, 'delivery')}
+                              className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg text-xs font-medium transition-colors"
+                            >
+                              <Truck className="w-3 h-3 inline mr-1" />
+                              Entrega
+                            </button>
+                            <button
+                              onClick={() => handleOrderCancel(order.id)}
+                              className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-xs font-medium transition-colors"
+                            >
+                              <XCircle className="w-3 h-3 inline mr-1" />
+                              Cancelar
+                            </button>
+                          </div>
+                        ) : order.status === 'confirmed' ? (
+                          <div className="flex items-center gap-2 text-emerald-400 text-xs">
+                            <CheckCircle className="w-4 h-4" />
+                            <span>{order.treatment?.message}</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 text-red-400 text-xs">
+                            <XCircle className="w-4 h-4" />
+                            <span>Cancelado</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 

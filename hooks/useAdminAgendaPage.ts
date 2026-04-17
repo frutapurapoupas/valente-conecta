@@ -11,7 +11,7 @@ export function useAdminAgendaPage() {
   const [busca, setBusca] = useState('')
 
   useEffect(() => {
-    const data = listarAgendamentos()
+    const data: Agendamento[] = listarAgendamentos()
     setAgendamentos(data)
     setLoading(false)
   }, [])

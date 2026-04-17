@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 
-export default function InvitePage({ params }) {
+export default function InvitePage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const { id } = params
 

@@ -19,7 +19,7 @@ interface SearchResult {
 
 function SearchResults() {
   const searchParams = useSearchParams();
-  const query = searchParams.get('q');
+  const query = searchParams?.get('q') || '';
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'all' | 'local' | 'catalog' | 'web'>('all');

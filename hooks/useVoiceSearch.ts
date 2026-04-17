@@ -1,87 +1,201 @@
-// hooks/useVoiceSearch.ts
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
-interface SearchMetadata {
-  term: string
-  timestamp: string
-  city: string
-  priority: string
-  source: 'voice'
-  location: string
+interface VoiceSearchOptions {
+  onResult?: (text: string, data?: any) => void
+  onError?: (error: string) => void
+  onStart?: () => void
+  onEnd?: () => void
 }
 
-export function useVoiceSearch(onSearchComplete: (text: string, data: SearchMetadata) => void) {
+interface VoiceSearchResult {
+  isSupported: boolean
+  isListening: boolean
+  transcript: string
+  startListening: () => void
+  stopListening: () => void
+  error?: string
+  browserInfo: {
+    name: string
+    version: string
+    supportsSpeech: boolean
+    supportsHTTPS: boolean
+    hasMicrophone: boolean
+  }
+}
+
+export function useVoiceSearch(options: VoiceSearchOptions = {}): VoiceSearchResult {
   const [isListening, setIsListening] = useState(false)
-  const recognitionRef = useRef<any>(null)
-  const [hasRecognitionSupport, setHasRecognitionSupport] = useState(false)
+  const [transcript, setTranscript] = useState('')
+  const [error, setError] = useState<string>('')
+  const [recognition, setRecognition] = useState<any>(null)
+  const [browserInfo, setBrowserInfo] = useState({
+    name: '',
+    version: '',
+    supportsSpeech: false,
+    supportsHTTPS: false,
+    hasMicrophone: false
+  })
 
+  // Detecção automática de capacidades do navegador
   useEffect(() => {
-    // Verifica suporte ao microfone
+    // Detectar navegador
+    const userAgent = navigator.userAgent
+    let browserName = 'Unknown'
+    let browserVersion = ''
+
+    if (userAgent.indexOf('Chrome') > -1) {
+      browserName = 'Chrome'
+      const match = userAgent.match(/Chrome\/(\d+)/)
+      browserVersion = match ? match[1] : ''
+    } else if (userAgent.indexOf('Safari') > -1) {
+      browserName = 'Safari'
+      const match = userAgent.match(/Version\/(\d+)/)
+      browserVersion = match ? match[1] : ''
+    } else if (userAgent.indexOf('Firefox') > -1) {
+      browserName = 'Firefox'
+      const match = userAgent.match(/Firefox\/(\d+)/)
+      browserVersion = match ? match[1] : ''
+    } else if (userAgent.indexOf('Edge') > -1) {
+      browserName = 'Edge'
+      const match = userAgent.match(/Edge\/(\d+)/)
+      browserVersion = match ? match[1] : ''
+    }
+
+    // Verificar suporte a Web Speech API
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-    const hasSupport = !!SpeechRecognition
-    setHasRecognitionSupport(hasSupport)
-    
-    if (hasSupport) {
-      recognitionRef.current = new SpeechRecognition()
-      recognitionRef.current.lang = 'pt-BR'
-      recognitionRef.current.continuous = false
-      recognitionRef.current.interimResults = false
-      
-      recognitionRef.current.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript
-        
-        // Metadados completos para o Admin Master
-        const searchMetadata: SearchMetadata = {
-          term: transcript,
-          timestamp: new Date().toISOString(),
-          city: 'Valente-BA',
-          priority: 'LOCAL_FIRST',
-          source: 'voice',
-          location: 'Valente-BA'
-        }
-        
-        // Registra no Admin Master (sem bloquear a UI)
-        fetch('/api/search/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(searchMetadata)
-        }).catch(err => console.error('Erro ao registrar busca:', err))
-        
-        onSearchComplete(transcript, searchMetadata)
-        setIsListening(false)
-      }
+    const supportsSpeech = !!SpeechRecognition
 
-      recognitionRef.current.onerror = (event: any) => {
-        console.error('Erro no reconhecimento de voz:', event.error)
-        setIsListening(false)
-      }
+    // Verificar HTTPS
+    const supportsHTTPS = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1'
 
-      recognitionRef.current.onend = () => {
-        setIsListening(false)
+    // Verificar microfone (assíncrono)
+    const checkMicrophone = async () => {
+      try {
+        await navigator.mediaDevices?.getUserMedia({ audio: true })
+        setBrowserInfo(prev => ({ ...prev, hasMicrophone: true }))
+      } catch {
+        setBrowserInfo(prev => ({ ...prev, hasMicrophone: false }))
       }
     }
-  }, [onSearchComplete])
 
-  const toggleListening = useCallback(() => {
-    if (!hasRecognitionSupport) {
-      alert('Seu navegador não suporta busca por voz. Use Chrome, Edge ou Safari.')
+    checkMicrophone()
+
+    // Configurar reconhecimento se suportado
+    if (supportsSpeech && supportsHTTPS) {
+      const recognitionInstance = new SpeechRecognition()
+      recognitionInstance.continuous = false
+      recognitionInstance.interimResults = false
+      recognitionInstance.lang = 'pt-BR'
+
+      recognitionInstance.onstart = () => {
+        setIsListening(true)
+        setError('')
+        setTranscript('')
+        options.onStart?.()
+      }
+
+      recognitionInstance.onresult = (event: any) => {
+        const current = event.resultIndex
+        const transcript = event.results[current][0].transcript
+        setTranscript(transcript)
+        options.onResult?.(transcript, event)
+      }
+
+      recognitionInstance.onerror = (event: any) => {
+        let errorMessage = 'Erro na busca por voz'
+        
+        switch (event.error) {
+          case 'no-speech':
+            errorMessage = 'Nenhum discurso detectado'
+            break
+          case 'audio-capture':
+            errorMessage = 'Erro ao capturar áudio'
+            break
+          case 'not-allowed':
+            errorMessage = 'Permissão de microfone negada'
+            break
+          case 'network':
+            errorMessage = 'Erro de conexão'
+            break
+          case 'service-not-allowed':
+            errorMessage = 'Serviço de reconhecimento não permitido'
+            break
+          default:
+            errorMessage = `Erro: ${event.error}`
+        }
+
+        setError(errorMessage)
+        options.onError?.(errorMessage)
+      }
+
+      recognitionInstance.onend = () => {
+        setIsListening(false)
+        options.onEnd?.()
+      }
+
+      setRecognition(recognitionInstance)
+    }
+
+    // Definir informações do navegador
+    const info = {
+      name: browserName,
+      version: browserVersion,
+      supportsSpeech,
+      supportsHTTPS,
+      hasMicrophone: false // Será atualizado assincronamente
+    }
+
+    setBrowserInfo(info)
+
+    // Mensagem específica baseada no problema detectado
+    if (!supportsSpeech || !supportsHTTPS) {
+      let errorMessage = ''
+      
+      if (!supportsHTTPS) {
+        errorMessage = 'Busca por voz requer HTTPS (exceto localhost)'
+      } else if (!supportsSpeech) {
+        errorMessage = `Navegador ${browserName} ${browserVersion} não suporta busca por voz`
+      } else {
+        errorMessage = 'Recurso de busca por voz indisponível'
+      }
+
+      setError(errorMessage)
+      options.onError?.(errorMessage)
+    }
+  }, []) // Array de dependências vazio para executar apenas uma vez
+
+  const startListening = useCallback(() => {
+    if (!recognition) {
+      const errorMessage = error || 'Busca por voz não disponível neste navegador'
+      setError(errorMessage)
+      options.onError?.(errorMessage)
       return
     }
-    
-    if (isListening) {
-      recognitionRef.current?.stop()
-    } else {
-      try {
-        recognitionRef.current?.start()
-        setIsListening(true)
-      } catch (error) {
-        console.error('Erro ao iniciar reconhecimento:', error)
-        setIsListening(false)
-      }
-    }
-  }, [isListening, hasRecognitionSupport])
 
-  return { isListening, toggleListening }
+    try {
+      recognition.start()
+    } catch (err) {
+      const errorMessage = 'Erro ao iniciar busca por voz'
+      setError(errorMessage)
+      options.onError?.(errorMessage)
+    }
+  }, [recognition, error, options])
+
+  const stopListening = useCallback(() => {
+    if (recognition && isListening) {
+      recognition.stop()
+    }
+  }, [recognition, isListening])
+
+  return {
+    isSupported: browserInfo.supportsSpeech && browserInfo.supportsHTTPS,
+    isListening,
+    transcript,
+    startListening,
+    stopListening,
+    error,
+    browserInfo
+  }
 }

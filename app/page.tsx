@@ -1,276 +1,142 @@
 ﻿'use client'
 
-import { useState, useEffect, Suspense } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
-import { Store, Package, Globe, ArrowLeft, Search, Mic } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { SmartSearchBar } from '@/components/ui/SmartSearchBar'
+import {
+  Search, Wallet, Bell, Menu, LayoutGrid,
+  CalendarClock, Package, Megaphone,
+  Truck, ArrowRightLeft, UserPlus, Sparkles,
+  Share2, Dumbbell, BookOpen, Users, Store
+} from 'lucide-react'
 
-interface SearchResult {
-  id: string
-  name: string
-  type: 'local' | 'catalog' | 'web'
-  description: string
-  image?: string
-  location?: string
-  relevance: number
-}
+import { useHomePage } from '@/hooks/useHomePage'
+import { ActionCard } from '@/components/ui/ActionCard'
+import SmartSearchBar from '@/components/ui/SmartSearchBar'
+import OnboardingTutorial from '@/components/ui/OnboardingTutorial'
 
-function SearchResults() {
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  
-  // Garantir que searchParams não é null antes de usar
-  const query = searchParams?.get('q') ?? ''
-  
-  const [results, setResults] = useState<SearchResult[]>([])
-  const [loading, setLoading] = useState(false)
-  const [activeTab, setActiveTab] = useState<'all' | 'local' | 'catalog' | 'web'>('all')
-  const [redirected, setRedirected] = useState(false)
+export default function HomePage() {
+  const { isMenuOpen, setIsMenuOpen, balance } = useHomePage()
+  const [isClient, setIsClient] = useState(false)
+  const [showOnboarding, setShowOnboarding] = useState(false)
 
   useEffect(() => {
-    // Só redireciona uma vez se não tiver query
-    if (!query && !redirected) {
-      setRedirected(true)
-      router.replace('/')
-      return
-    }
-    
-    if (query) {
-      performSearch(query)
-    }
-  }, [query])
+    setIsClient(true)
 
-  const performSearch = async (term: string) => {
-    setLoading(true)
-    
-    // Simula busca hierárquica (prioridade local)
-    setTimeout(() => {
-      const mockResults: SearchResult[] = []
-      
-      // Prioridade 1: Estabelecimentos de Valente-BA
-      if (term.toLowerCase().includes('restaurante') || term.toLowerCase().includes('comida')) {
-        mockResults.push({
-          id: '1',
-          name: 'Restaurante do João',
-          type: 'local',
-          description: 'Comida caseira e self-service em Valente-BA',
-          location: 'Centro, Valente-BA',
-          relevance: 95
-        })
-      }
-      
-      if (term.toLowerCase().includes('mercado') || term.toLowerCase().includes('supermercado')) {
-        mockResults.push({
-          id: '2',
-          name: 'Supermercado Bom Preço',
-          type: 'local',
-          description: 'Mercado completo com entregas em Valente',
-          location: 'Av. Principal, Valente-BA',
-          relevance: 92
-        })
-      }
-      
-      // Prioridade 2: Catálogos internos
-      if (term.toLowerCase().includes('celular') || term.toLowerCase().includes('iphone')) {
-        mockResults.push({
-          id: '3',
-          name: 'Smartphone XYZ',
-          type: 'catalog',
-          description: 'Celular disponível na loja TechValente',
-          relevance: 85
-        })
-      }
-      
-      // Prioridade 3: Busca web (apenas se necessário)
-      if (mockResults.length === 0) {
-        mockResults.push({
-          id: 'web1',
-          name: `Resultados da Web para "${term}"`,
-          type: 'web',
-          description: 'Buscar na internet resultados mais amplos',
-          relevance: 50
-        })
-      }
-      
-      setResults(mockResults)
-      setLoading(false)
-    }, 800)
+    const viewCount = parseInt(localStorage.getItem('onboarding_view_count') || '0')
+    const hasSeenOnboarding = localStorage.getItem('has_seen_onboarding') === 'true'
+
+    if (!hasSeenOnboarding && viewCount < 3) {
+      setShowOnboarding(true)
+    }
+  }, [])
+
+  const handleOnboardingClose = () => setShowOnboarding(false)
+  const handleOnboardingDismiss = () => {
+    setShowOnboarding(false)
+    localStorage.setItem('has_seen_onboarding', 'true')
   }
 
-  const filteredResults = results.filter(result => {
-    if (activeTab === 'all') return true
-    return result.type === activeTab
-  })
-
-  const getTypeIcon = (type: string) => {
-    switch(type) {
-      case 'local': return <Store className="w-5 h-5 text-green-400" />
-      case 'catalog': return <Package className="w-5 h-5 text-blue-400" />
-      case 'web': return <Globe className="w-5 h-5 text-purple-400" />
-      default: return null
-    }
-  }
-
-  const getTypeLabel = (type: string) => {
-    switch(type) {
-      case 'local': return 'Local'
-      case 'catalog': return 'Catálogo'
-      case 'web': return 'Web'
-      default: return type
-    }
-  }
-
-  // Se não tiver query e já tentou redirecionar, mostra loading
-  if (!query) {
-    return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-zinc-400">Redirecionando...</p>
-        </div>
-      </div>
-    )
-  }
+  if (!isClient) return <div className="min-h-screen bg-black" />
 
   return (
-    <div className="min-h-screen bg-zinc-950">
-      {/* Header com Busca */}
-      <div className="sticky top-0 z-50 bg-zinc-950/95 backdrop-blur-md border-b border-zinc-800">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
-            <Link 
-              href="/" 
-              className="p-2 hover:bg-zinc-800 rounded-full transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 text-zinc-400" />
-            </Link>
-            <div className="flex-1">
-              <SmartSearchBar placeholder="Buscar em Valente..." />
+    <div className="min-h-screen bg-zinc-950 text-white pb-40">
+
+      {/* HEADER */}
+      <header className="sticky top-0 z-50 bg-zinc-950/80 backdrop-blur-xl border-b border-zinc-800">
+        <div className="h-16 max-w-2xl mx-auto flex items-center justify-between px-4">
+
+          <Menu
+            className="w-6 h-6 text-yellow-500"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          />
+
+          <div className="font-black uppercase italic text-yellow-500 text-sm tracking-widest">
+            Valente Conecta
+          </div>
+
+          <Bell className="w-6 h-6 text-zinc-400" />
+        </div>
+      </header>
+
+      {/* CONTAINER */}
+      <main className="max-w-2xl mx-auto px-4 pt-6 space-y-6">
+
+        {/* SEARCH HERO */}
+        <section className="relative">
+          <div className="absolute inset-0 bg-blue-600 blur-3xl opacity-30 rounded-[28px]" />
+          <div className="relative bg-blue-600 rounded-[28px] p-5 shadow-xl space-y-3">
+
+            <div className="flex items-center gap-2 text-xs font-black uppercase">
+              <Sparkles className="w-4 h-4" />
+              Busca Inteligente
+            </div>
+
+            <SmartSearchBar placeholder="O que procura em Valente?" />
+          </div>
+        </section>
+
+        {/* INDICAÇÃO */}
+        <Link
+          href="/indique-e-ganhe"
+          className="flex justify-between items-center p-5 rounded-[28px] bg-gradient-to-r from-yellow-500 to-orange-600 text-black"
+        >
+          <div className="flex items-center gap-3">
+            <Share2 className="w-6 h-6" />
+            <div className="leading-tight">
+              <p className="font-black uppercase">Indique e Ganhe</p>
+              <p className="text-xs opacity-80">Bônus ativos</p>
             </div>
           </div>
-        </div>
-      </div>
+          <ArrowRightLeft className="w-5 h-5" />
+        </Link>
 
-      {/* Conteúdo Principal */}
-      <div className="container mx-auto px-4 py-8">
-        {/* Título da Busca */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white">
-            Resultados para: <span className="text-blue-400">"{query}"</span>
-          </h1>
-          <p className="text-zinc-400 mt-2">
-            Priorizando resultados locais de Valente-BA
-          </p>
-        </div>
-
-        {/* Tabs de Filtro */}
-        <div className="flex gap-2 mb-8 border-b border-zinc-800 overflow-x-auto">
-          {[
-            { id: 'all', label: 'Todos', count: results.length },
-            { id: 'local', label: '📍 Valente-BA', count: results.filter(r => r.type === 'local').length },
-            { id: 'catalog', label: '📦 Catálogos', count: results.filter(r => r.type === 'catalog').length },
-            { id: 'web', label: '🌐 Web', count: results.filter(r => r.type === 'web').length }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`
-                px-6 py-3 font-medium transition-all relative whitespace-nowrap
-                ${activeTab === tab.id 
-                  ? 'text-blue-400' 
-                  : 'text-zinc-400 hover:text-zinc-300'
-                }
-              `}
-            >
-              {tab.label}
-              {tab.count > 0 && (
-                <span className="ml-2 text-sm px-2 py-0.5 bg-zinc-800 rounded-full">
-                  {tab.count}
-                </span>
-              )}
-              {activeTab === tab.id && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-400 rounded-full" />
-              )}
-            </button>
-          ))}
-        </div>
-
-        {/* Resultados */}
-        {loading ? (
-          <div className="space-y-4">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="bg-zinc-900 rounded-2xl p-6 animate-pulse">
-                <div className="h-6 bg-zinc-800 rounded w-1/3 mb-3" />
-                <div className="h-4 bg-zinc-800 rounded w-2/3 mb-2" />
-                <div className="h-4 bg-zinc-800 rounded w-1/2" />
-              </div>
-            ))}
-          </div>
-        ) : filteredResults.length > 0 ? (
-          <div className="space-y-4">
-            {filteredResults.map((result) => (
-              <div
-                key={result.id}
-                className="bg-zinc-900 hover:bg-zinc-800 rounded-2xl p-6 transition-all cursor-pointer border border-zinc-800 hover:border-zinc-700"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-zinc-800/50 rounded-xl">
-                    {getTypeIcon(result.type)}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      <h3 className="text-lg font-semibold text-white">
-                        {result.name}
-                      </h3>
-                      <span className="text-xs px-2 py-1 bg-zinc-800 rounded-full text-zinc-400">
-                        {getTypeLabel(result.type)}
-                      </span>
-                    </div>
-                    <p className="text-zinc-300 mb-2">{result.description}</p>
-                    {result.location && (
-                      <p className="text-sm text-zinc-400">📍 {result.location}</p>
-                    )}
-                    <div className="mt-3 flex items-center gap-2">
-                      <div className="text-xs text-blue-400">
-                        Relevância: {result.relevance}%
-                      </div>
-                      <div className="flex-1 h-1 bg-zinc-800 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-blue-400 rounded-full"
-                          style={{ width: `${result.relevance}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-16">
-            <div className="text-6xl mb-4">🔍</div>
-            <h3 className="text-xl font-semibold text-white mb-2">
-              Nenhum resultado encontrado
-            </h3>
-            <p className="text-zinc-400">
-              Tente buscar por termos diferentes ou verifique nossa busca na web
+        {/* SALDO */}
+        <section className="bg-zinc-900 border border-zinc-800 rounded-[28px] p-5 flex justify-between items-center">
+          <div>
+            <p className="text-xs text-zinc-500 uppercase">Saldo</p>
+            <p className="text-3xl font-black text-emerald-500">
+              R$ {balance?.toFixed(2) || '0,00'}
             </p>
           </div>
-        )}
-      </div>
-    </div>
-  )
-}
+          <Wallet className="w-7 h-7 text-zinc-500" />
+        </section>
 
-export default function ExplorarPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <div className="text-white">Carregando...</div>
-      </div>
-    }>
-      <SearchResults />
-    </Suspense>
+        {/* GRID ACTIONS */}
+        <section className="grid grid-cols-2 gap-4">
+          <ActionCard href="/pdv" icon={Store} label="PDV Colaborativo" color="text-emerald-500" />
+          <ActionCard href="/catalogo" icon={BookOpen} label="Catálogo" color="text-pink-500" />
+          <ActionCard href="/servicos-agendamento" icon={CalendarClock} label="Agendamentos" color="text-blue-400" />
+          <ActionCard href="/academia" icon={Dumbbell} label="Academia" color="text-cyan-500" />
+          <ActionCard href="/planos" icon={Package} label="Planos" color="text-purple-500" />
+          <ActionCard href="/profissionais" icon={Users} label="Profissionais" color="text-indigo-500" />
+          <ActionCard href="/anuncios" icon={Megaphone} label="Anúncios" color="text-orange-500" />
+          <ActionCard href="/ambulantes" icon={Truck} label="Ambulantes" color="text-zinc-400" />
+        </section>
+      </main>
+
+      {/* ONBOARDING */}
+      <OnboardingTutorial
+        isVisible={showOnboarding}
+        onClose={handleOnboardingClose}
+        onDismiss={handleOnboardingDismiss}
+      />
+
+      {/* FOOTER */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-zinc-950/90 backdrop-blur-xl border-t border-zinc-800">
+        <div className="max-w-2xl mx-auto flex justify-between items-center px-6 py-4">
+
+          <LayoutGrid className="w-6 h-6 text-yellow-500" />
+          <ArrowRightLeft className="w-6 h-6 text-zinc-500" />
+
+          <div className="bg-yellow-500 p-4 rounded-full text-black -mt-10 shadow-xl">
+            <Search className="w-7 h-7" />
+          </div>
+
+          <Wallet className="w-6 h-6 text-zinc-500" />
+          <UserPlus className="w-6 h-6 text-zinc-500" />
+
+        </div>
+      </nav>
+    </div>
   )
 }

@@ -104,7 +104,7 @@ export default function FinanceiroPessoalScreen() {
       {/* alertas de cartão — sempre visíveis no topo */}
       {alertasCartoes.length > 0 && (
         <div className="px-4 pt-4 max-w-2xl mx-auto flex flex-col gap-2">
-          {alertasCartoes.map((a, i) => <BannerAlerta key={i} alerta={a} />)}
+          {alertasCartoes.map((a, i) => <BannerAlerta key={i} urgencia={a.urgencia} tipo={a.tipo} mensagem={a.mensagem} />)}
         </div>
       )}
 
