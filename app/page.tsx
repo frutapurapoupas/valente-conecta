@@ -44,17 +44,14 @@ export default function HomePage() {
       {/* HEADER */}
       <header className="sticky top-0 z-50 bg-zinc-950/80 backdrop-blur-xl border-b border-zinc-800">
         <div className="h-16 max-w-2xl mx-auto flex items-center justify-between px-4">
-
           <Menu
-            className="w-6 h-6 text-yellow-500"
+            className="w-6 h-6 text-yellow-500 cursor-pointer"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           />
-
           <div className="font-black uppercase italic text-yellow-500 text-sm tracking-widest">
             Valente Conecta
           </div>
-
-          <Bell className="w-6 h-6 text-zinc-400" />
+          <Bell className="w-6 h-6 text-zinc-400 cursor-pointer" />
         </div>
       </header>
 
@@ -65,12 +62,10 @@ export default function HomePage() {
         <section className="relative">
           <div className="absolute inset-0 bg-blue-600 blur-3xl opacity-30 rounded-[28px]" />
           <div className="relative bg-blue-600 rounded-[28px] p-5 shadow-xl space-y-3">
-
             <div className="flex items-center gap-2 text-xs font-black uppercase">
               <Sparkles className="w-4 h-4" />
               Busca Inteligente
             </div>
-
             <SmartSearchBar placeholder="O que procura em Valente?" />
           </div>
         </section>
@@ -122,19 +117,15 @@ export default function HomePage() {
       />
 
       {/* FOOTER */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-zinc-950/90 backdrop-blur-xl border-t border-zinc-800">
+      <nav className="fixed bottom-0 left-0 right-0 bg-zinc-950/90 backdrop-blur-md border-t border-zinc-800">
         <div className="max-w-2xl mx-auto flex justify-between items-center px-6 py-4">
-
-          <LayoutGrid className="w-6 h-6 text-yellow-500" />
-          <ArrowRightLeft className="w-6 h-6 text-zinc-500" />
-
-          <div className="bg-yellow-500 p-4 rounded-full text-black -mt-10 shadow-xl">
+          <LayoutGrid className="w-6 h-6 text-yellow-500 cursor-pointer" />
+          <ArrowRightLeft className="w-6 h-6 text-zinc-500 cursor-pointer" />
+          <div className="bg-yellow-500 p-4 rounded-full text-black -mt-10 shadow-xl cursor-pointer">
             <Search className="w-7 h-7" />
           </div>
-
-          <Wallet className="w-6 h-6 text-zinc-500" />
-          <UserPlus className="w-6 h-6 text-zinc-500" />
-
+          <Wallet className="w-6 h-6 text-zinc-500 cursor-pointer" />
+          <UserPlus className="w-6 h-6 text-zinc-500 cursor-pointer" />
         </div>
       </nav>
     </div>

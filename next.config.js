@@ -1,8 +1,21 @@
 ﻿/** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  compress: true,
-  allowedDevOrigins: ['192.168.18.9', 'localhost', '127.0.0.1'],
-  turbopack: {},
+  
+  // Configurações do Turbopack (se precisar)
+  turbopack: {
+    // Suas configurações do Turbopack aqui, se houver
+  },
+  
+  // Imagens - configure se necessário
+  images: {
+    domains: [], // Adicione domínios de imagens externas se precisar
+  },
+  
+  // Compiler options (substitui o antigo swcMinify)
+  compiler: {
+    // removeConsole: process.env.NODE_ENV === 'production', // opcional
+  },
 }
+
 module.exports = nextConfig
