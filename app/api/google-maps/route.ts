@@ -115,7 +115,7 @@ async function handleDistanceMatrix(searchParams: URLSearchParams) {
 
   const API_KEY = process.env.GOOGLE_MAPS_API_KEY || 'demo_key'
   
-  const url = `https://maps.googleapis.com/maps/api/distancematrix/json`
+  let url = `https://maps.googleapis.com/maps/api/distancematrix/json`
   url += `?origins=${encodeURIComponent(origins)}`
   url += `&destinations=${encodeURIComponent(destinations)}`
   url += `&key=${API_KEY}`
