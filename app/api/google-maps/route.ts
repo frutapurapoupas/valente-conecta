@@ -94,7 +94,7 @@ async function handleGeocode(searchParams: URLSearchParams) {
 
   const API_KEY = process.env.GOOGLE_MAPS_API_KEY || 'demo_key'
   
-  const url = `https://maps.googleapis.com/maps/api/geocode/json`
+  let url = `https://maps.googleapis.com/maps/api/geocode/json`
   url += `?address=${encodeURIComponent(address)}`
   url += `&key=${API_KEY}`
   url += `&components=country:BR`
