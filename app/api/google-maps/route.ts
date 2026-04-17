@@ -135,7 +135,7 @@ async function handleNearbySearch(searchParams: URLSearchParams) {
   const keyword = searchParams.get('keyword') || ''
   
   if (!location) {
-    return NextResponse.json({ error: 'Localização é obrigatória' }, { status: 400 })
+    return NextResponse.json({ error: 'Location is required' }, { status: 400 })
   }
 
   const API_KEY = process.env.GOOGLE_MAPS_API_KEY || 'demo_key'
