@@ -1,11 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { AlertCircle, Clock, ArrowLeft, Home } from 'lucide-react'
 import Link from 'next/link'
 
-export default function ConviteExpiradoPage() {
+function ConviteExpiradoContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [countdown, setCountdown] = useState(5)
@@ -115,5 +115,13 @@ export default function ConviteExpiradoPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function ConviteExpiradoPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center">Carregando...</div>}>
+      <ConviteExpiradoContent />
+    </Suspense>
   )
 }
