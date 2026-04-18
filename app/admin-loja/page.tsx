@@ -61,6 +61,7 @@ export default function AdminLojaPage() {
   const [busca, setBusca] = useState('')
   const [filtroStatus, setFiltroStatus] = useState<'todos' | 'pendente' | 'concluido' | 'cancelado'>('todos')
   const [loading, setLoading] = useState(false)
+  const [agendamentos, setAgendamentos] = useState<Agendamento[]>([])
   
   useEffect(() => {
     // Verificar preferência de layout
