@@ -3,8 +3,8 @@ import { useSearchParams } from 'next/navigation'
 
 function ConviteSucessoContent() {
   const searchParams = useSearchParams()
-  const email = searchParams.get('email')
-  const token = searchParams.get('token')
+  const email = searchParams?.get('email')
+  const token = searchParams?.get('token')
   
   return (
     <div className="min-h-screen bg-zinc-900 text-white flex items-center justify-center">
