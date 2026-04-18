@@ -9,6 +9,20 @@ import {
   ArrowRight,
   Search,
   ChevronRight,
+  Bell,
+  Clock,
+  CheckCircle,
+  Users,
+  XCircle,
+  AlertCircle,
+  UserCheck,
+  BarChart3,
+  DollarSign,
+  Calendar,
+  Star,
+  Download,
+  Filter,
+  Eye
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -63,6 +77,10 @@ export default function AdminLojaPage() {
   const [filtroStatus, setFiltroStatus] = useState<'todos' | 'pendente' | 'concluido' | 'cancelado'>('todos')
   const [loading, setLoading] = useState(false)
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([])
+  const [colaboradores, setColaboradores] = useState<Colaborador[]>([])
+  const [metricas, setMetricas] = useState<Metricas | null>(null)
+  const [activeTab, setActiveTab] = useState<'fila' | 'colaboradores' | 'metricas' | 'pagamentos'>('fila')
+  const [showNovoColaborador, setShowNovoColaborador] = useState(false)
   
   useEffect(() => {
     // Verificar preferência de layout
@@ -377,7 +395,7 @@ export default function AdminLojaPage() {
                 </div>
                 <select
                   value={filtroStatus}
-                  onChange={(e) => setFiltroStatus(e.target.value)}
+                  onChange={(e) => setFiltroStatus(e.target.value as any)}
                   className="bg-zinc-700 border border-zinc-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
                 >
                   <option value="todos">Todos Status</option>
