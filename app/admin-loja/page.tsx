@@ -60,6 +60,7 @@ export default function AdminLojaPage() {
   const router = useRouter()
   const [busca, setBusca] = useState('')
   const [filtroStatus, setFiltroStatus] = useState<'todos' | 'pendente' | 'concluido' | 'cancelado'>('todos')
+  const [loading, setLoading] = useState(false)
   
   useEffect(() => {
     // Verificar preferência de layout
