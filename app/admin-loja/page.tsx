@@ -58,6 +58,8 @@ interface Metricas {
 
 export default function AdminLojaPage() {
   const router = useRouter()
+  const [busca, setBusca] = useState('')
+  const [filtroStatus, setFiltroStatus] = useState<'todos' | 'pendente' | 'concluido' | 'cancelado'>('todos')
   
   useEffect(() => {
     // Verificar preferência de layout
