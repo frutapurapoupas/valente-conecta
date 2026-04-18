@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Settings, DollarSign, Users, Store, Briefcase, Calendar, ShoppingCart, Dumbbell, Save, AlertCircle } from 'lucide-react'
+import { Settings, DollarSign, Users, Store, Briefcase, Calendar, ShoppingCart, Dumbbell, Save, AlertCircle, TrendingUp } from 'lucide-react'
 
 interface BonusConfig {
   id: string

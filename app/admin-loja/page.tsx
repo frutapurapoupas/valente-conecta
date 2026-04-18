@@ -8,6 +8,7 @@ import {
   Settings,
   ArrowRight,
   Search,
+  ChevronRight,
 } from 'lucide-react'
 import Link from 'next/link'
 
