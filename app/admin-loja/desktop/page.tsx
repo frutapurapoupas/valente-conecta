@@ -18,6 +18,7 @@ import {
   ChevronRight,
   UserCheck,
   AlertCircle,
+  Star,
   FileText,
   BarChart3,
   Monitor,
