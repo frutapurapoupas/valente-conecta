@@ -6,7 +6,8 @@ import {
   Monitor, 
   Smartphone,
   Settings,
-  ArrowRight
+  ArrowRight,
+  Search,
 } from 'lucide-react'
 import Link from 'next/link'
 
