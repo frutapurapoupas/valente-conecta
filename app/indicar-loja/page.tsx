@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ArrowLeft, MapPin, Camera, Upload, Star, Gift, Trophy, Users, TrendingUp, User, Phone, CheckCircle, AlertCircle } from 'lucide-react'
 import { useReferralSystem } from '@/hooks/useReferralSystem'
 import { useLocationService } from '@/hooks/useLocationService'
