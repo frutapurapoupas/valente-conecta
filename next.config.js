@@ -5,4 +5,5 @@ module.exports = {
   typescript: {
     ignoreBuildErrors: true, // só temporariamente!
   },
+  output: 'export',
 }
