@@ -18,6 +18,7 @@ import {
   Menu,
   Home,
   ChevronRight,
+  Monitor,
   LogOut
 } from 'lucide-react'
 import Link from 'next/link'
