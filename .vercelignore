@@ -1,0 +1,22 @@
+# Ignorar arquivos problemáticos
+app/admin/financeiro/page.tsx
+app/admin/usuarios/page.tsx
+app/convite/[inviteCode]/page.tsx
+app/admin-master/**/*.tsx
+app/admin/**/*.tsx
+
+# Ignorar arquivos de desenvolvimento
+**/*.test.ts
+**/*.spec.ts
+**/README.md
+**/*.log
+
+# Ignorar pastas temporárias
+node_modules
+.next
+out
+build
+
+# Ignorar arquivos de configuração local
+.env*
+*.local

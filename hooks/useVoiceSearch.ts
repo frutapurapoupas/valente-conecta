@@ -86,10 +86,18 @@ export function useVoiceSearch(options: VoiceSearchOptions = {}): VoiceSearchRes
     if (supportsSpeech && supportsHTTPS) {
       const recognitionInstance = new SpeechRecognition()
       recognitionInstance.continuous = false
-      recognitionInstance.interimResults = false
+      recognitionInstance.interimResults = true // Habilitar resultados intermediários
       recognitionInstance.lang = 'pt-BR'
+      recognitionInstance.maxAlternatives = 3 // Mais alternativas para melhor precisão
+
+      let timeoutId: NodeJS.Timeout | null = null
 
       recognitionInstance.onstart = () => {
+        // Limpar timeout anterior se existir
+        if (timeoutId) {
+          clearTimeout(timeoutId)
+        }
+        
         setIsListening(true)
         setError('')
         setTranscript('')
@@ -97,10 +105,34 @@ export function useVoiceSearch(options: VoiceSearchOptions = {}): VoiceSearchRes
       }
 
       recognitionInstance.onresult = (event: any) => {
-        const current = event.resultIndex
-        const transcript = event.results[current][0].transcript
-        setTranscript(transcript)
-        options.onResult?.(transcript, event)
+        let finalTranscript = ''
+        let interimTranscript = ''
+
+        // Processar todos os resultados
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const result = event.results[i]
+          if (result.isFinal) {
+            finalTranscript += result[0].transcript
+          } else {
+            interimTranscript += result[0].transcript
+          }
+        }
+
+        // Atualizar transcript intermediário durante a fala
+        if (interimTranscript) {
+          setTranscript(interimTranscript)
+        }
+
+        // Processar resultado final
+        if (finalTranscript) {
+          const cleanTranscript = finalTranscript.trim().toLowerCase()
+          setTranscript(finalTranscript)
+          
+          // Verificar se não é apenas uma palavra aleatória
+          if (cleanTranscript.length > 2) {
+            options.onResult?.(finalTranscript, event)
+          }
+        }
       }
 
       recognitionInstance.onerror = (event: any) => {
@@ -108,30 +140,41 @@ export function useVoiceSearch(options: VoiceSearchOptions = {}): VoiceSearchRes
         
         switch (event.error) {
           case 'no-speech':
-            errorMessage = 'Nenhum discurso detectado'
+            errorMessage = 'Nenhum discurso detectado. Fale claramente.'
             break
           case 'audio-capture':
-            errorMessage = 'Erro ao capturar áudio'
+            errorMessage = 'Erro ao capturar áudio. Verifique o microfone.'
             break
           case 'not-allowed':
-            errorMessage = 'Permissão de microfone negada'
+            errorMessage = 'Permissão do microfone negada. Permita o acesso.'
             break
           case 'network':
-            errorMessage = 'Erro de conexão'
+            errorMessage = 'Erro de conexão. Verifique sua internet.'
             break
           case 'service-not-allowed':
-            errorMessage = 'Serviço de reconhecimento não permitido'
+            errorMessage = 'Serviço de reconhecimento não permitido.'
+            break
+          case 'aborted':
+            errorMessage = 'Reconhecimento interrompido.'
             break
           default:
             errorMessage = `Erro: ${event.error}`
         }
 
+        setIsListening(false)
         setError(errorMessage)
         options.onError?.(errorMessage)
       }
 
       recognitionInstance.onend = () => {
         setIsListening(false)
+        
+        // Limpar timeout
+        if (timeoutId) {
+          clearTimeout(timeoutId)
+          timeoutId = null
+        }
+        
         options.onEnd?.()
       }
 
@@ -175,13 +218,28 @@ export function useVoiceSearch(options: VoiceSearchOptions = {}): VoiceSearchRes
     }
 
     try {
+      // Limpar estados anteriores
+      setError('')
+      setTranscript('')
+      
+      // Iniciar reconhecimento
       recognition.start()
+      
+      // Timeout automático após 8 segundos
+      setTimeout(() => {
+        if (recognition && isListening) {
+          recognition.stop()
+          setError('Tempo esgotado. Fale mais rápido ou tente novamente.')
+        }
+      }, 8000)
+      
     } catch (err) {
-      const errorMessage = 'Erro ao iniciar busca por voz'
+      console.error('Erro ao iniciar reconhecimento:', err)
+      const errorMessage = 'Erro ao iniciar busca por voz. Verifique as permissões.'
       setError(errorMessage)
       options.onError?.(errorMessage)
     }
-  }, [recognition, error, options])
+  }, [recognition, error, options, isListening])
 
   const stopListening = useCallback(() => {
     if (recognition && isListening) {

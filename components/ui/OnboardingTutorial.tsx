@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { X, Search, MapPin, Package, Sparkles } from 'lucide-react'
+import { X, Search, MapPin, Package, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
 
 interface OnboardingTutorialProps {
   isVisible: boolean
@@ -12,207 +12,237 @@ interface OnboardingTutorialProps {
 export default function OnboardingTutorial({ isVisible, onClose, onDismiss }: OnboardingTutorialProps) {
   const [currentStep, setCurrentStep] = useState(0)
   const [viewCount, setViewCount] = useState(0)
+  const [isMobile, setIsMobile] = useState(false)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const touchStartX = useRef(0)
+  const touchEndX = useRef(0)
 
   const steps = [
     {
-      icon: Search,
       title: "1. Busque",
       description: "Digite ou fale o que você procura. Nossa IA corrige automaticamente e sugere melhores opções.",
-      color: "bg-blue-500"
+      icon: Search,
+      color: "bg-gradient-to-br from-blue-500 to-cyan-500"
     },
     {
-      icon: MapPin,
       title: "2. Localize",
       description: "Encontre as melhores ofertas perto de você. Sistema prioriza produtos locais com preços competitivos.",
-      color: "bg-green-500"
+      icon: MapPin,
+      color: "bg-gradient-to-br from-emerald-500 to-teal-500"
     },
     {
-      icon: Package,
       title: "3. Compare",
-      description: "Compare preços de múltiplas lojas e economize. Intelência artificial encontra os melhores negócios.",
-      color: "bg-purple-500"
+      description: "Compare preços de múltiplas lojas e economize. Inteligência artificial encontra os melhores negócios.",
+      icon: Package,
+      color: "bg-gradient-to-br from-purple-500 to-pink-500"
     }
   ]
 
   useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  useEffect(() => {
+    if (isMobile && scrollContainerRef.current) {
+      const scrollAmount = currentStep * (280 + 16)
+      scrollContainerRef.current.scrollTo({ left: scrollAmount, behavior: 'smooth' })
+    }
+  }, [currentStep, isMobile])
+
+  useEffect(() => {
     if (isVisible) {
-      setViewCount(prev => prev + 1)
-      // Salvar no localStorage
-      localStorage.setItem('onboarding_view_count', (viewCount + 1).toString())
+      document.body.style.overflow = 'hidden'
+      document.body.style.position = 'fixed'
+      document.body.style.width = '100%'
+      const views = parseInt(localStorage.getItem('onboarding_view_count') || '0')
+      setViewCount(views)
+    } else {
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
     }
   }, [isVisible])
 
-  useEffect(() => {
-    // Auto-dismiss após 3 visualizações
-    if (viewCount >= 3) {
-      onDismiss()
+  const handleNext = () => {
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1)
+    } else {
+      handleClose()
     }
-  }, [viewCount, onDismiss])
+  }
+
+  const handlePrev = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1)
+    }
+  }
+
+  const handleClose = () => {
+    const currentViews = parseInt(localStorage.getItem('onboarding_view_count') || '0')
+    localStorage.setItem('onboarding_view_count', (currentViews + 1).toString())
+    if (currentViews + 1 >= 3) {
+      localStorage.setItem('has_seen_onboarding', 'true')
+    }
+    onClose()
+  }
+
+  const handleDismiss = () => {
+    localStorage.setItem('onboarding_view_count', '3')
+    localStorage.setItem('has_seen_onboarding', 'true')
+    onDismiss()
+  }
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    touchEndX.current = e.changedTouches[0].clientX
+    const diff = touchStartX.current - touchEndX.current
+    if (Math.abs(diff) > 50) {
+      diff > 0 ? handleNext() : handlePrev()
+    }
+  }
+
+  const handleScroll = () => {
+    if (isMobile && scrollContainerRef.current) {
+      const scrollPosition = scrollContainerRef.current.scrollLeft
+      const newStep = Math.round(scrollPosition / (280 + 16))
+      if (newStep !== currentStep && newStep >= 0 && newStep < steps.length) {
+        setCurrentStep(newStep)
+      }
+    }
+  }
 
   if (!isVisible) return null
+  if (parseInt(localStorage.getItem('onboarding_view_count') || '0') >= 3) return null
+
+  const progress = ((currentStep + 1) / steps.length) * 100
 
   return (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[9999] flex items-center justify-center p-4">
-      <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden border-4 border-white/20">
-        {/* Header com gradiente vibrante */}
-        <div className="relative p-8 border-b border-white/10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 via-orange-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-2xl animate-pulse">
-                  <Sparkles className="w-8 h-8 text-white drop-shadow-lg" />
-                </div>
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-300 rounded-full animate-ping"></div>
+    <div 
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-2 sm:p-4"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
+      <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto border-4 border-white/20">
+        
+        <div className="sticky top-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 z-10 p-4 sm:p-8 border-b border-white/10">
+          <div className="flex justify-between items-start">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center">
+                <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               </div>
               <div>
-                <h2 className="text-3xl font-black text-white mb-2 leading-tight">
-                  🎉 Bem-vindo ao<br/>Valente Conecta!
-                </h2>
-                <p className="text-lg text-white/90 font-medium">
-                  Descubra como economizar em 3 passos mágicos ✨
-                </p>
+                <h2 className="text-xl sm:text-3xl font-black text-white leading-tight">🎉 Bem-vindo!</h2>
+                <p className="text-white/80 text-xs sm:text-sm">Descubra como economizar ✨</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              {viewCount < 3 && (
-                <button
-                  onClick={onDismiss}
-                  className="text-white/80 hover:text-white p-3 rounded-full hover:bg-white/10 transition-all"
-                  title="Pular tutorial"
-                >
-                  <X className="w-6 h-6" />
-                </button>
-              )}
-              <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
-                <span className="text-white text-sm font-medium">
-                  {viewCount < 3 ? `👀 ${viewCount}/3` : '✅ Concluído'}
-                </span>
-              </div>
-            </div>
+            <button onClick={handleClose} className="text-white/80 hover:text-white p-2 rounded-full hover:bg-white/10">
+              <X className="w-5 h-5" />
+            </button>
           </div>
         </div>
 
-        {/* Content com cards vibrantes */}
-        <div className="p-8 bg-gradient-to-b from-white/10 to-transparent">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {steps.map((step, index) => (
-              <div
-                key={index}
-                className={`relative group cursor-pointer transform transition-all duration-300 hover:scale-105 ${
-                  currentStep === index
-                    ? 'scale-105'
-                    : 'hover:scale-102'
-                }`}
-                onClick={() => setCurrentStep(index)}
-              >
-                {currentStep === index && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                    <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs px-4 py-2 rounded-full font-bold shadow-lg animate-bounce">
-                      PASSO {index + 1}
-                    </div>
-                  </div>
-                )}
-                
-                <div className={`relative p-8 rounded-2xl border-2 transition-all backdrop-blur-sm ${
-                  currentStep === index
-                    ? 'border-white bg-white/90 shadow-2xl'
-                    : 'border-white/20 bg-white/50 hover:bg-white/70'
-                }`}>
-                  {/* Background decorativo */}
-                  <div className={`absolute inset-0 rounded-2xl opacity-10 ${
-                    currentStep === index ? 'bg-gradient-to-br from-blue-400 to-purple-600' : 'bg-gray-400'
-                  }`}></div>
-                  
-                  <div className="relative z-10 text-center">
-                    <div className={`w-20 h-20 ${step.color} rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl transform transition-transform group-hover:rotate-12`}>
-                      <step.icon className="w-10 h-10 text-white drop-shadow-lg" />
-                    </div>
-                    <h3 className={`text-2xl font-bold mb-3 ${
-                      currentStep === index ? 'text-gray-900' : 'text-gray-700'
+        <div className="p-4 sm:p-8">
+          
+          <div className="mb-6 sm:mb-8">
+            <div className="flex justify-between mb-2 text-white/80 text-xs sm:text-sm">
+              <span>Passo {currentStep + 1} de {steps.length}</span>
+              <span>{Math.round(progress)}%</span>
+            </div>
+            <div className="h-1.5 bg-white/20 rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
+            </div>
+          </div>
+
+          <div className="block md:hidden">
+            <div 
+              ref={scrollContainerRef}
+              className="overflow-x-auto snap-x snap-mandatory scroll-smooth hide-scrollbar"
+              onScroll={handleScroll}
+            >
+              <div className="flex gap-4 w-max">
+                {steps.map((step, index) => (
+                  <div key={index} className="snap-center w-[280px] flex-shrink-0">
+                    <div className={`p-6 rounded-2xl border-2 transition-all ${
+                      currentStep === index ? 'border-white bg-white/90 shadow-2xl' : 'border-white/20 bg-white/50'
                     }`}>
-                      {step.title}
-                    </h3>
-                    <p className={`text-base leading-relaxed ${
-                      currentStep === index ? 'text-gray-600' : 'text-gray-500'
-                    }`}>
-                      {step.description}
-                    </p>
-                    
-                    {/* Indicador visual */}
-                    {currentStep !== index && (
-                      <div className="mt-4 text-gray-400 text-sm">
-                        Clique para explorar →
+                      <div className="text-center">
+                        <div className={`w-16 h-16 ${step.color} rounded-2xl flex items-center justify-center mx-auto mb-4`}>
+                          <step.icon className="w-8 h-8 text-white" />
+                        </div>
+                        <h3 className={`text-xl font-bold mb-2 ${currentStep === index ? 'text-gray-900' : 'text-gray-700'}`}>
+                          {step.title}
+                        </h3>
+                        <p className={`text-sm ${currentStep === index ? 'text-gray-600' : 'text-gray-500'}`}>
+                          {step.description}
+                        </p>
                       </div>
-                    )}
+                    </div>
                   </div>
+                ))}
+              </div>
+            </div>
+            <div className="flex justify-center gap-2 mt-4">
+              {steps.map((_, i) => (
+                <button key={i} onClick={() => setCurrentStep(i)} className={`h-2 rounded-full transition-all ${i === currentStep ? 'w-8 bg-white' : 'w-2 bg-white/30'}`} />
+              ))}
+            </div>
+            <p className="text-center text-white/50 text-xs mt-3">👆 Deslize para os lados</p>
+          </div>
+
+          <div className="hidden md:grid md:grid-cols-3 gap-6">
+            {steps.map((step, index) => (
+              <div key={index} onClick={() => setCurrentStep(index)} className={`cursor-pointer p-6 rounded-2xl border-2 transition-all ${
+                currentStep === index ? 'border-white bg-white/90 shadow-2xl scale-105' : 'border-white/20 bg-white/50 hover:bg-white/70'
+              }`}>
+                <div className="text-center">
+                  <div className={`w-16 h-16 ${step.color} rounded-2xl flex items-center justify-center mx-auto mb-4`}>
+                    <step.icon className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className={`text-lg font-bold mb-2 ${currentStep === index ? 'text-gray-900' : 'text-gray-700'}`}>
+                    {step.title}
+                  </h3>
+                  <p className={`text-sm ${currentStep === index ? 'text-gray-600' : 'text-gray-500'}`}>
+                    {step.description}
+                  </p>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Navigation melhorada */}
-          <div className="flex items-center justify-between mt-12 pt-8 border-t border-white/20">
-            <div className="flex items-center gap-4">
-              <div className="text-white/80 text-sm font-medium">
-                Passo {currentStep + 1} de {steps.length}
-              </div>
-              <div className="flex gap-2">
-                {[...Array(steps.length)].map((_, i) => (
-                  <div
-                    key={i}
-                    className={`w-2 h-2 rounded-full transition-all ${
-                      i === currentStep ? 'bg-white w-8' : 'bg-white/30 w-2'
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <button
-                onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
-                disabled={currentStep === 0}
-                className="px-6 py-3 text-sm font-medium text-white/70 bg-white/10 backdrop-blur-sm rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/20 transition-all border border-white/20"
-              >
-                ← Anterior
-              </button>
-              <button
-                onClick={() => {
-                  if (currentStep < steps.length - 1) {
-                    setCurrentStep(currentStep + 1)
-                  } else {
-                    onClose()
-                  }
-                }}
-                className="px-8 py-3 text-base font-bold text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl shadow-xl transform transition-all hover:scale-105 border-2 border-white/30"
-              >
-                {currentStep < steps.length - 1 ? 'Próximo Passo →' : '🚀 Começar Agora!'}
-              </button>
-            </div>
+          <div className="flex gap-3 mt-8 pt-6 border-t border-white/20">
+            <button
+              onClick={handlePrev}
+              disabled={currentStep === 0}
+              className="flex-1 py-3 text-white/70 bg-white/10 rounded-xl disabled:opacity-50 hover:bg-white/20 transition-all flex items-center justify-center gap-2"
+            >
+              <ChevronLeft className="w-4 h-4" /> Anterior
+            </button>
+            <button
+              onClick={handleNext}
+              className="flex-1 py-3 font-bold text-white bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl hover:scale-105 transition-all flex items-center justify-center gap-2"
+            >
+              {currentStep < steps.length - 1 ? 'Próximo →' : '🚀 Começar!'}
+            </button>
           </div>
         </div>
 
-        {/* Footer com design moderno */}
-        <div className="bg-gradient-to-r from-gray-900/90 to-black/90 px-8 py-6 border-t border-white/10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center animate-pulse">
-                <Sparkles className="w-4 h-4 text-white" />
-              </div>
-              <div className="text-white/80 text-sm">
-                <div className="font-medium">💡 Dica Rápida</div>
-                <div className="text-white/60 text-xs mt-1">
-                  Este tutorial aparece apenas 3 vezes para não atrapalhar sua experiência
-                </div>
-              </div>
-            </div>
-            {viewCount < 3 && (
-              <button
-                onClick={onDismiss}
-                className="text-white/60 hover:text-white px-6 py-3 rounded-xl hover:bg-white/10 transition-all border border-white/20"
-              >
-                Pular Tutorial →
-              </button>
-            )}
+        <div className="p-4 border-t border-white/10 bg-black/30">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 text-white/60 text-xs">
+            <span>💡 Este tutorial aparece apenas 3 vezes</span>
+            <button onClick={handleDismiss} className="hover:text-white transition-all">Pular Tutorial →</button>
           </div>
         </div>
       </div>

@@ -34,13 +34,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# IDE
-.vscode
-.idea
-
-# logs
-logs
-*.log
-
-# Vercel
-.vercel
+# arquivos temporários
+catalogos.json

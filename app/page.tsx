@@ -1,133 +1,179 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
-  Search, Wallet, Bell, Menu, LayoutGrid,
-  CalendarClock, Package, Megaphone,
-  Truck, ArrowRightLeft, UserPlus, Sparkles,
-  Share2, Dumbbell, BookOpen, Users, Store
+  Search, Wallet, QrCode, Bell, Menu, X, Zap, Dumbbell,
+  ShoppingBag, Gift, Lock, MapPin, Phone, Mail, Navigation,
+  ChevronRight, TrendingDown,
+  Building2, Loader2, AlertTriangle, Crown, User, Store, Bike,
+  LayoutGrid, Calendar, Megaphone, Package
 } from 'lucide-react'
-
 import { useHomePage } from '@/hooks/useHomePage'
-import { ActionCard } from '@/components/ui/ActionCard'
 import SmartSearchBar from '@/components/ui/SmartSearchBar'
 import OnboardingTutorial from '@/components/ui/OnboardingTutorial'
 
 export default function HomePage() {
-  const { isMenuOpen, setIsMenuOpen, balance } = useHomePage()
-  const [isClient, setIsClient] = useState(false)
-  const [showOnboarding, setShowOnboarding] = useState(false)
+  const {
+    isMenuOpen, setIsMenuOpen,
+    showSearchModal, setShowSearchModal,
+    showUnlockModal, setShowUnlockModal,
+    unlockTarget,
+    loadingUnlock,
+    unlockPrice,
+    searchTerm, setSearchTerm,
+    searchResults,
+    welcomeSearchesLeft,
+    handleSearch,
+    handleUnlockContact,
+    confirmUnlockPayment,
+    balance,
+    notifications,
+    tipoUsuario,
+    isAdmin,
+    isAdminMaster,
+    isEmpresa,
+    isProfissional,
+    isUser,
+    userData,
+    linkIndicacao,
+  } = useHomePage()
+
+  const [showTutorial, setShowTutorial] = useState(false)
 
   useEffect(() => {
-    setIsClient(true)
-
     const viewCount = parseInt(localStorage.getItem('onboarding_view_count') || '0')
     const hasSeenOnboarding = localStorage.getItem('has_seen_onboarding') === 'true'
-
-    if (!hasSeenOnboarding && viewCount < 3) {
-      setShowOnboarding(true)
+    
+    if (viewCount < 3 && !hasSeenOnboarding) {
+      setShowTutorial(true)
     }
   }, [])
 
-  const handleOnboardingClose = () => setShowOnboarding(false)
-  const handleOnboardingDismiss = () => {
-    setShowOnboarding(false)
-    localStorage.setItem('has_seen_onboarding', 'true')
+  const handleCloseTutorial = () => {
+    setShowTutorial(false)
   }
 
-  if (!isClient) return <div className="min-h-screen bg-black" />
+  const handleDismissTutorial = () => {
+    localStorage.setItem('onboarding_view_count', '3')
+    localStorage.setItem('has_seen_onboarding', 'true')
+    setShowTutorial(false)
+  }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white pb-40">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 text-white pb-40 relative overflow-hidden">
+      <OnboardingTutorial 
+        isVisible={showTutorial}
+        onClose={handleCloseTutorial}
+        onDismiss={handleDismissTutorial}
+      />
 
-      {/* HEADER */}
-      <header className="sticky top-0 z-50 bg-zinc-950/80 backdrop-blur-xl border-b border-zinc-800">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-0 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute top-1/2 right-0 w-80 h-80 bg-blue-500/30 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute bottom-0 left-1/2 w-72 h-72 bg-pink-500/20 rounded-full blur-3xl animate-pulse delay-2000" />
+      </div>
+
+      <header className="sticky top-0 z-50 bg-white/10 backdrop-blur-2xl border border-white/20 shadow-2xl">
         <div className="h-16 max-w-2xl mx-auto flex items-center justify-between px-4">
-          <Menu
-            className="w-6 h-6 text-yellow-500 cursor-pointer"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          />
-          <div className="font-black uppercase italic text-yellow-500 text-sm tracking-widest">
-            Valente Conecta
+          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="relative group">
+            <Menu className="w-6 h-6 text-yellow-400 cursor-pointer hover:text-yellow-300 transition-colors" />
+          </button>
+          
+          <div className="font-black uppercase italic text-white text-sm tracking-widest">
+            <span>VALENTE CONECTA</span>
           </div>
-          <Bell className="w-6 h-6 text-zinc-400 cursor-pointer" />
+          
+          <Link href="/carteira" className="relative group">
+            <Wallet className="w-6 h-6 text-yellow-400 cursor-pointer hover:text-yellow-300 transition-colors" />
+          </Link>
         </div>
       </header>
 
-      {/* CONTAINER */}
-      <main className="max-w-2xl mx-auto px-4 pt-6 space-y-6">
-
-        {/* SEARCH HERO */}
-        <section className="relative">
-          <div className="absolute inset-0 bg-blue-600 blur-3xl opacity-30 rounded-[28px]" />
-          <div className="relative bg-blue-600 rounded-[28px] p-5 shadow-xl space-y-3">
-            <div className="flex items-center gap-2 text-xs font-black uppercase">
-              <Sparkles className="w-4 h-4" />
-              Busca Inteligente
+      <main className="max-w-2xl mx-auto px-4 pt-6 space-y-6 relative z-10">
+        <div className="relative">
+          <div className="relative bg-white/10 backdrop-blur-xl border border-white/20 rounded-[32px] p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-widest text-yellow-400">Busca Inteligente</span>
+              <QrCode className="w-4 h-4 text-zinc-400" />
             </div>
             <SmartSearchBar placeholder="O que procura em Valente?" />
-          </div>
-        </section>
-
-        {/* INDICAÇÃO */}
-        <Link
-          href="/indique-e-ganhe"
-          className="flex justify-between items-center p-5 rounded-[28px] bg-gradient-to-r from-yellow-500 to-orange-600 text-black"
-        >
-          <div className="flex items-center gap-3">
-            <Share2 className="w-6 h-6" />
-            <div className="leading-tight">
-              <p className="font-black uppercase">Indique e Ganhe</p>
-              <p className="text-xs opacity-80">Bônus ativos</p>
+            <div className="text-xs text-zinc-400 text-center">
+              <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse mr-2"></span>
+              IA ativa · Busca local
             </div>
           </div>
-          <ArrowRightLeft className="w-5 h-5" />
+        </div>
+
+        <Link 
+          href="/indique-e-ganhe"
+          className="group relative flex justify-between items-center p-6 rounded-[32px] bg-gradient-to-r from-yellow-400/90 to-orange-500/90 backdrop-blur-xl border border-white/20 shadow-2xl hover:shadow-yellow-400/25 transition-all duration-300 hover:scale-105"
+        >
+          <div className="flex items-center gap-3">
+            <Gift className="w-8 h-8 text-black" />
+            <div>
+              <p className="font-black text-black text-lg">Indique e Ganhe</p>
+              <p className="text-black/70 text-xs">Bônus ativos</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-2xl font-black text-black">R$ {balance?.toFixed(2) || '0.00'}</p>
+            <p className="text-black/70 text-xs">Saldo</p>
+          </div>
         </Link>
 
-        {/* SALDO */}
-        <section className="bg-zinc-900 border border-zinc-800 rounded-[28px] p-5 flex justify-between items-center">
-          <div>
-            <p className="text-xs text-zinc-500 uppercase">Saldo</p>
-            <p className="text-3xl font-black text-emerald-500">
-              R$ {balance?.toFixed(2) || '0,00'}
-            </p>
-          </div>
-          <Wallet className="w-7 h-7 text-zinc-500" />
-        </section>
-
-        {/* GRID ACTIONS */}
-        <section className="grid grid-cols-2 gap-4">
-          <ActionCard href="/pdv" icon={Store} label="PDV Colaborativo" color="text-emerald-500" />
-          <ActionCard href="/catalogo" icon={BookOpen} label="Catálogo" color="text-pink-500" />
-          <ActionCard href="/servicos-agendamento" icon={CalendarClock} label="Agendamentos" color="text-blue-400" />
-          <ActionCard href="/academia" icon={Dumbbell} label="Academia" color="text-cyan-500" />
-          <ActionCard href="/planos" icon={Package} label="Planos" color="text-purple-500" />
-          <ActionCard href="/profissionais" icon={Users} label="Profissionais" color="text-indigo-500" />
-          <ActionCard href="/anuncios" icon={Megaphone} label="Anúncios" color="text-orange-500" />
-          <ActionCard href="/ambulantes" icon={Truck} label="Ambulantes" color="text-zinc-400" />
-        </section>
+        <div className="grid grid-cols-2 gap-4">
+          <ActionCard href="/pdv/colaborativo" icon={Store} label="PDV Colaborativo" color="text-emerald-400" />
+          <ActionCard href="/catalogo" icon={Package} label="Catálogo" color="text-blue-400" />
+          <ActionCard href="/servicos-agendamento" icon={Calendar} label="Serviços com Agendamento" color="text-pink-400" />
+          <ActionCard href="/academia" icon={Dumbbell} label="Academia" color="text-cyan-400" />
+          <ActionCard href="/planos" icon={Crown} label="Planos" color="text-purple-400" />
+          <ActionCard href="/profissional/catalogo" icon={User} label="Área do Profissional" color="text-indigo-400" />
+          <ActionCard href="/anuncios" icon={Megaphone} label="Anúncios" color="text-orange-400" />
+          <ActionCard href="/ambulantes" icon={Bike} label="Ambulantes" color="text-amber-400" />
+        </div>
       </main>
 
-      {/* ONBOARDING */}
-      <OnboardingTutorial
-        isVisible={showOnboarding}
-        onClose={handleOnboardingClose}
-        onDismiss={handleOnboardingDismiss}
-      />
-
-      {/* FOOTER */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-zinc-950/90 backdrop-blur-md border-t border-zinc-800">
-        <div className="max-w-2xl mx-auto flex justify-between items-center px-6 py-4">
-          <LayoutGrid className="w-6 h-6 text-yellow-500 cursor-pointer" />
-          <ArrowRightLeft className="w-6 h-6 text-zinc-500 cursor-pointer" />
-          <div className="bg-yellow-500 p-4 rounded-full text-black -mt-10 shadow-xl cursor-pointer">
-            <Search className="w-7 h-7" />
-          </div>
-          <Wallet className="w-6 h-6 text-zinc-500 cursor-pointer" />
-          <UserPlus className="w-6 h-6 text-zinc-500 cursor-pointer" />
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/10 backdrop-blur-2xl border-t border-white/20 shadow-2xl">
+        <div className="flex justify-around items-center h-16 max-w-2xl mx-auto px-4">
+          <button className="flex flex-col items-center">
+            <LayoutGrid className="w-6 h-6 text-yellow-400" />
+            <span className="text-[10px] text-zinc-400 mt-1">Menu</span>
+          </button>
+          
+          <Link href="/busca-produtos" className="flex flex-col items-center">
+            <Search className="w-6 h-6 text-zinc-400 hover:text-yellow-400 transition-colors" />
+            <span className="text-[10px] text-zinc-400 mt-1">Buscar</span>
+          </Link>
+          
+          <Link href="/instalar" className="relative">
+            <div className="bg-gradient-to-r from-yellow-400 to-orange-500 p-4 rounded-full text-black -mt-10 shadow-2xl hover:shadow-yellow-400/50 transition-all duration-300 hover:scale-110">
+              <QrCode className="w-6 h-6" />
+            </div>
+          </Link>
+          
+          <Link href="/notificacoes" className="flex flex-col items-center">
+            <Bell className="w-6 h-6 text-zinc-400 hover:text-yellow-400 transition-colors" />
+            <span className="text-[10px] text-zinc-400 mt-1">Alertas</span>
+          </Link>
+          
+          <Link href="/carteira" className="flex flex-col items-center">
+            <Wallet className="w-6 h-6 text-zinc-400 hover:text-yellow-400 transition-colors" />
+            <span className="text-[10px] text-zinc-400 mt-1">Carteira</span>
+          </Link>
         </div>
       </nav>
     </div>
+  )
+}
+
+function ActionCard({ href, icon: Icon, label, color }: { href: string; icon: any; label: string; color: string }) {
+  return (
+    <Link href={href} className="relative group">
+      <div className="relative bg-white/10 backdrop-blur-xl border border-white/20 rounded-[24px] p-4 flex flex-col items-center justify-center h-28 hover:bg-white/15 transition-all duration-300 group-hover:scale-105">
+        <Icon className={`w-8 h-8 ${color} mb-2`} />
+        <span className="text-xs font-bold text-white/90 text-center">{label}</span>
+      </div>
+    </Link>
   )
 }

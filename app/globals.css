@@ -2,378 +2,155 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Melhorar suporte a touch para dispositivos móveis */
-.touch-manipulation {
-  -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
-  touch-action: manipulation;
-  outline: none;
-}
-
-/* Forçar z-index alto para elementos clicáveis */
-.touch-manipulation {
-  z-index: 50 !important;
-  position: relative;
-}
-
-/* Melhorar feedback visual em touch */
-@media (hover: none) and (pointer: coarse) {
-  .touch-manipulation:active {
-    transform: scale(0.95);
-    opacity: 0.8;
-  }
-  
-  .touch-manipulation:hover {
-    transform: scale(1.05);
-  }
-}
-
-/* Prevenir zoom duplo em iOS */
-input, textarea, button {
-  touch-action: manipulation;
-}
-
-/* Melhorar cliques em mobile */
-button {
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Forçar cliques funcionarem */
-.z-high {
-  z-index: 9999 !important;
-  position: relative;
-}
-
-/* ========== CONFIGURAÇÕES BASE ========== */
 @layer base {
   * {
     @apply border-zinc-800;
   }
-  
-  html {
-    @apply scroll-smooth;
+
+  body {
+    @apply bg-black text-white;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   }
 }
 
-/* CORREÇÃO DO SCROLL - PERMITE ROLAGEM NORMAL */
-html, body {
-  position: relative !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  height: auto !important;
-  min-height: 100vh !important;
-}
+@layer components {
+  .animate-fade-up {
+    animation: fadeUp 0.5s ease-out;
+  }
 
-body {
-  position: relative !important;
-  width: 100% !important;
-  height: auto !important;
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch;
-  background-color: #09090b;
-  color: white;
-  font-feature-settings: "rlig" 1, "calt" 1;
-}
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite;
+  }
 
-main {
-  overflow-y: visible !important;
-  overflow-x: hidden !important;
-  min-height: 100vh;
-  padding-bottom: 100px;
-}
+  .animate-slide-in {
+    animation: slideIn 0.3s ease-out;
+  }
 
-/* Remove o tap highlight em dispositivos móveis */
-* {
-  -webkit-tap-highlight-color: transparent;
-}
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 
-/* ========== UTILITÁRIOS PERSONALIZADOS ========== */
-@layer utilities {
-  .animate-in {
-    animation: slideInFromBottom 0.3s ease-out;
+  @keyframes glow {
+    0%, 100% {
+      box-shadow: 0 0 5px rgba(99, 102, 241, 0.2);
+    }
+    50% {
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.6);
+    }
   }
-  
-  .animate-pulse-slow {
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
-  
-  .text-balance {
-    text-wrap: balance;
-  }
-  
-  .bg-gradient-primary {
-    @apply bg-gradient-to-r from-blue-600 to-indigo-600;
-  }
-  
-  .bg-gradient-success {
-    @apply bg-gradient-to-r from-emerald-500 to-green-600;
-  }
-  
-  .bg-gradient-warning {
-    @apply bg-gradient-to-r from-orange-500 to-red-500;
-  }
-  
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border-width: 0;
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(-100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
   }
 }
 
-/* ========== KEYFRAMES E ANIMAÇÕES ========== */
-@keyframes slideInFromBottom {
-  from {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slideInFromTop {
-  from {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes shimmer {
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-@keyframes scale {
-  0% {
-    transform: scale(0.95);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-/* ========== CLASSES DE ANIMAÇÃO ========== */
-.animate-slide-in-bottom {
-  animation: slideInFromBottom 0.3s ease-out;
-}
-
-.animate-slide-in-top {
-  animation: slideInFromTop 0.3s ease-out;
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
-}
-
-.animate-bounce-slow {
-  animation: bounce 2s ease-in-out infinite;
-}
-
-.animate-scale {
-  animation: scale 0.2s ease-out;
-}
-
-/* ========== SCROLLBAR PERSONALIZADA ========== */
+/* Scrollbar customizada para navegadores WebKit */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #18181b;
-  border-radius: 10px;
+  background: #1f1f1f;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #3f3f46;
-  border-radius: 10px;
-  transition: background 0.2s ease;
+  background: #3f3f3f;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #52525b;
+  background: #5f5f5f;
 }
 
-::-webkit-scrollbar-corner {
-  background: #18181b;
+/* Esconder scrollbar no mobile para o swipe do tutorial */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Prevenir scroll quando modal está aberto */
+body.modal-open {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}
+
+/* Melhorias de toque para mobile */
+@media (max-width: 768px) {
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Ajuste de fontes para mobile */
+  html {
+    font-size: 14px;
+  }
+  
+  /* Melhorar área de toque em elementos interativos */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Animações suaves */
 * {
-  scrollbar-width: thin;
-  scrollbar-color: #3f3f46 #18181b;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* ========== SELECTION PERSONALIZADO ========== */
-::selection {
-  background-color: rgba(59, 130, 246, 0.5);
-  color: white;
+/* Loading spinner */
+.spinner {
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  border-top: 3px solid #fbbf24;
+  width: 24px;
+  height: 24px;
+  animation: spin 1s linear infinite;
 }
 
-::-moz-selection {
-  background-color: rgba(59, 130, 246, 0.5);
-  color: white;
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-/* ========== ESTILOS PARA INPUTS E BOTÕES ========== */
-input, textarea, select, button {
-  @apply outline-none;
+/* Skeleton loading */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #1f1f1f 25%,
+    #2a2a2a 50%,
+    #1f1f1f 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
 }
 
-input:focus, textarea:focus, select:focus {
-  @apply ring-2 ring-blue-500/50 ring-offset-2 ring-offset-zinc-950;
-}
-
-input:focus-visible, textarea:focus-visible, select:focus-visible {
-  @apply outline-none;
-}
-
-::placeholder {
-  @apply text-zinc-500;
-}
-
-/* ========== ESTILOS PARA LINKS ========== */
-a {
-  @apply transition-all duration-200;
-}
-
-a:active {
-  @apply scale-95;
-}
-
-/* ========== ESTILOS PARA MODAL E OVERLAY ========== */
-.modal-overlay {
-  @apply fixed inset-0 bg-black/80 backdrop-blur-sm z-50;
-  animation: fadeIn 0.2s ease-out;
-}
-
-.modal-content {
-  @apply relative bg-zinc-900 rounded-2xl border border-zinc-800 shadow-2xl;
-  animation: scale 0.2s ease-out;
-}
-
-/* ========== ESTILOS PARA CARDS ========== */
-.card {
-  @apply bg-zinc-900 border border-zinc-800 rounded-2xl transition-all duration-200;
-}
-
-.card-hover {
-  @apply hover:border-zinc-700 hover:shadow-xl hover:scale-[1.02] transition-all duration-200;
-}
-
-.card-gradient {
-  @apply bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-800 rounded-2xl;
-}
-
-/* ========== ESTILOS PARA BOTÕES DE AÇÃO ========== */
-.btn-primary {
-  @apply bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold py-3 px-6 rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/25 active:scale-95;
-}
-
-.btn-secondary {
-  @apply bg-zinc-800 text-white font-bold py-3 px-6 rounded-xl transition-all duration-200 hover:bg-zinc-700 active:scale-95;
-}
-
-.btn-outline {
-  @apply border-2 border-blue-500 text-blue-500 font-bold py-3 px-6 rounded-xl transition-all duration-200 hover:bg-blue-500/10 active:scale-95;
-}
-
-/* ========== CORREÇÕES PARA PWA ========== */
-button, a, [role="button"] {
-  cursor: pointer;
-  touch-action: manipulation;
-}
-
-/* ========== CLASSES DE ACESSIBILIDADE ========== */
-.focus-ring {
-  @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-zinc-950;
-}
-
-/* ========== ESTILOS PARA PRINT ========== */
-@media print {
-  body {
-    @apply bg-white text-black;
-    position: relative !important;
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
   }
-  
-  .no-print {
-    display: none;
+  100% {
+    background-position: -200% 0;
   }
-  
-  .card, .card-gradient {
-    @apply border border-gray-300 shadow-none;
-  }
-}
-
-/* ========== ESTILOS PARA DARK MODE ========== */
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-  }
-}
-
-/* ========== UTILITÁRIOS DE LAYOUT ========== */
-.min-h-screen-safe {
-  min-height: 100vh;
-  min-height: 100dvh;
-}
-
-.pb-safe {
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-.pt-safe {
-  padding-top: env(safe-area-inset-top);
 }

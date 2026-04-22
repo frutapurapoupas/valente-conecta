@@ -1,348 +1,485 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import {
-  ArrowLeft, MapPin, Phone, Navigation, Star,
-  MessageCircle, Search, Filter, Clock,
-  ChevronDown, Package, Loader2, Lock, Crown,
+import { 
+  Search, MapPin, Star, Filter, X, Package, 
+  ChevronLeft, ShoppingCart, Heart, Store, 
+  Phone, MessageCircle, CheckCircle, CreditCard, 
+  Truck, Home, Calendar, Clock, Bell, Sparkles,
+  Plus, Eye, EyeOff, UserPlus
 } from 'lucide-react'
 
-// ─── Tipos ──────────────────────────────────────────────────────────────────
+interface Produto {
+  id: string
+  nome: string
+  descricao: string
+  preco: number
+  quantidade: number
+  unidade: string
+  foto?: string
+}
+
+interface FormaPagamento {
+  id: string
+  nome: string
+  icone: string
+  aceita: boolean
+  condicoes: string
+}
+
 interface Ambulante {
   id: string
   nome: string
-  produto: string
-  categoria: string
-  bairro: string
+  nomeFantasia: string
+  cpf: string
+  telefone: string
+  localTrabalho: string
+  referenciaLocal: string
   cidade: string
-  telefone?: string
-  whatsapp?: string
-  horario?: string
-  disponivel_agora: boolean
-  avaliacao?: number
-  descricao?: string
-  foto_url?: string
-  emoji: string
+  bairro: string
+  descricao: string
+  status: 'trabalhando' | 'folgando' | 'ferias'
+  produtos: Produto[]
+  formasPagamento: FormaPagamento[]
+  avaliacao: number
 }
 
-// ─── Mock (substituir por fetch real) ──────────────────────────────────────
-const AMBULANTES: Ambulante[] = [
-  {
-    id: '1',
-    nome: 'João do Acarajé',
-    produto: 'Acarajé e Abará',
-    categoria: 'Comida',
-    bairro: 'Centro',
-    cidade: 'Valente, BA',
-    whatsapp: '5575988880010',
-    horario: 'Sáb–Dom 14h–20h',
-    disponivel_agora: true,
-    avaliacao: 4.9,
-    descricao: 'O melhor acarajé da região! Feito na hora com dendê puro.',
-    emoji: '🍤',
-  },
-  {
-    id: '2',
-    nome: 'Maria da Tapioca',
-    produto: 'Tapioca e Cuscuz',
-    categoria: 'Comida',
-    bairro: 'Feira',
-    cidade: 'Valente, BA',
-    whatsapp: '5575988880011',
-    horario: 'Seg–Sáb 6h–11h',
-    disponivel_agora: true,
-    avaliacao: 4.7,
-    descricao: 'Tapioca artesanal de todos os tipos. Café da manhã completo!',
-    emoji: '🥞',
-  },
-  {
-    id: '3',
-    nome: 'Pedro da Fruta',
-    produto: 'Frutas e Verduras',
-    categoria: 'Hortifruti',
-    bairro: 'Centro',
-    cidade: 'Valente, BA',
-    telefone: '(75) 9 8888-0012',
-    whatsapp: '5575988880012',
-    horario: 'Ter, Qui, Sáb 7h–12h',
-    disponivel_agora: false,
-    avaliacao: 4.5,
-    descricao: 'Frutas e verduras frescas direto do produtor. Entregas no bairro.',
-    emoji: '🍎',
-  },
-  {
-    id: '4',
-    nome: 'Ana do Artesanato',
-    produto: 'Artesanato e Renda',
-    categoria: 'Artesanato',
-    bairro: 'Centro',
-    cidade: 'Valente, BA',
-    whatsapp: '5575988880013',
-    horario: 'Sex–Dom 9h–17h',
-    disponivel_agora: false,
-    avaliacao: 4.8,
-    descricao: 'Peças de artesanato em renda, bordado e cerâmica. Encomendas aceitas.',
-    emoji: '🧶',
-  },
-  {
-    id: '5',
-    nome: 'Carlos do Sorvete',
-    produto: 'Sorvete artesanal',
-    categoria: 'Comida',
-    bairro: 'Praça',
-    cidade: 'Valente, BA',
-    whatsapp: '5575988880014',
-    horario: 'Diariamente 13h–19h',
-    disponivel_agora: true,
-    avaliacao: 4.6,
-    descricao: 'Mais de 20 sabores de sorvete artesanal. Feitos com frutas da região.',
-    emoji: '🍦',
-  },
-]
+type FormaPagamentoCliente = 'dinheiro' | 'pix' | 'cartao'
+type FormaEntrega = 'presencial' | 'delivery' | 'encomenda'
 
-const CATEGORIAS = ['Todos', 'Comida', 'Hortifruti', 'Artesanato', 'Bebidas', 'Outros']
+export default function AmbulantesPage() {
+  const [ambulantes, setAmbulantes] = useState<Ambulante[]>([])
+  const [filtrados, setFiltrados] = useState<Ambulante[]>([])
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFiltro, setStatusFiltro] = useState<string>('todos')
+  const [showFilters, setShowFilters] = useState(false)
+  const [carrinho, setCarrinho] = useState<{ ambulante: Ambulante; produto: Produto; quantidade: number }[]>([])
+  const [showCarrinho, setShowCarrinho] = useState(false)
+  const [showCheckout, setShowCheckout] = useState(false)
+  const [showConfirmacao, setShowConfirmacao] = useState(false)
+  const [formaPagamento, setFormaPagamento] = useState<FormaPagamentoCliente>('dinheiro')
+  const [formaEntrega, setFormaEntrega] = useState<FormaEntrega>('presencial')
+  const [nomeCliente, setNomeCliente] = useState('')
+  const [telefoneCliente, setTelefoneCliente] = useState('')
+  const [enderecoEntrega, setEnderecoEntrega] = useState('')
+  const [dataEntrega, setDataEntrega] = useState('')
+  const [horarioEntrega, setHorarioEntrega] = useState('')
+  const [enviando, setEnviando] = useState(false)
+  const [pedidoConfirmado, setPedidoConfirmado] = useState<any>(null)
 
-// ─── Página ─────────────────────────────────────────────────────────────────
-export default function AmbulantesPag() {
-  const [busca, setBusca] = useState('')
-  const [categoria, setCategoria] = useState('Todos')
-  const [apenasDisponiveis, setApenasDisponiveis] = useState(false)
-  const [desbloqueados, setDesbloqueados] = useState<string[]>([])
-  const [desbloqueando, setDesbloqueando] = useState<string | null>(null)
-  const [contatandoId, setContatandoId] = useState<string | null>(null)
+  // Carregar ambulantes do localStorage e API
+  useEffect(() => {
+    const carregarAmbulantes = () => {
+      const todos: Ambulante[] = []
+      
+      // Carregar do localStorage
+      const saved = localStorage.getItem('ambulante_dados')
+      if (saved) {
+        const dados = JSON.parse(saved)
+        todos.push({
+          id: 'cadastrado',
+          nome: dados.dados.nome,
+          nomeFantasia: dados.dados.nomeFantasia || '',
+          cpf: dados.dados.cpf,
+          telefone: dados.dados.telefone,
+          localTrabalho: dados.dados.localTrabalho,
+          referenciaLocal: dados.dados.referenciaLocal,
+          cidade: dados.dados.cidade || 'Valente',
+          bairro: dados.dados.bairro || 'Centro',
+          descricao: dados.dados.descricao,
+          status: dados.dados.status,
+          produtos: dados.produtos,
+          formasPagamento: dados.formasPagamento,
+          avaliacao: 4.8
+        })
+      }
+      
+      // Mock data
+      const mockAmbulantes: Ambulante[] = [
+        { 
+          id: '1', nome: 'Maria da Silva', nomeFantasia: 'Acarajé da Baiana', cpf: '123.456.789-00', telefone: '5575988880010',
+          localTrabalho: 'Feira Livre - Box 15', referenciaLocal: 'Em frente à igreja matriz', cidade: 'Valente', bairro: 'Centro',
+          descricao: 'Acarajé tradicional com vatapá, camarão e caruru', status: 'trabalhando',
+          produtos: [{ id: 'p1', nome: 'Acarajé', descricao: 'Tradicional', preco: 12, quantidade: 50, unidade: 'unidade' }],
+          formasPagamento: [{ id: 'dinheiro', nome: 'Dinheiro', icone: '💵', aceita: true, condicoes: 'À vista' }],
+          avaliacao: 4.8
+        },
+        { 
+          id: '2', nome: 'João Santos', nomeFantasia: 'Tapioca do João', cpf: '987.654.321-00', telefone: '5575988880011',
+          localTrabalho: 'Praça Central', referenciaLocal: 'Em frente à sorveteria', cidade: 'Valente', bairro: 'Centro',
+          descricao: 'Tapioca artesanal com diversos sabores', status: 'trabalhando',
+          produtos: [{ id: 'p2', nome: 'Tapioca', descricao: 'Com recheio', preco: 8, quantidade: 30, unidade: 'unidade' }],
+          formasPagamento: [{ id: 'pix', nome: 'PIX', icone: '📱', aceita: true, condicoes: 'À vista' }],
+          avaliacao: 4.7
+        }
+      ]
+      
+      todos.push(...mockAmbulantes)
+      setAmbulantes(todos)
+      setFiltrados(todos)
+    }
+    
+    carregarAmbulantes()
+  }, [])
 
-  const filtrados = AMBULANTES.filter(a => {
-    const matchBusca = busca.trim().length < 2
-      || a.nome.toLowerCase().includes(busca.toLowerCase())
-      || a.produto.toLowerCase().includes(busca.toLowerCase())
-      || a.bairro.toLowerCase().includes(busca.toLowerCase())
-    const matchCategoria = categoria === 'Todos' || a.categoria === categoria
-    const matchDisponivel = !apenasDisponiveis || a.disponivel_agora
-    return matchBusca && matchCategoria && matchDisponivel
-  })
+  // Filtrar
+  useEffect(() => {
+    let resultados = [...ambulantes]
+    
+    if (searchTerm) {
+      const termo = searchTerm.toLowerCase()
+      resultados = resultados.filter(a => 
+        a.nome.toLowerCase().includes(termo) ||
+        a.nomeFantasia.toLowerCase().includes(termo) ||
+        a.localTrabalho.toLowerCase().includes(termo) ||
+        a.bairro.toLowerCase().includes(termo) ||
+        a.produtos.some(p => p.nome.toLowerCase().includes(termo))
+      )
+    }
+    
+    if (statusFiltro !== 'todos') {
+      resultados = resultados.filter(a => a.status === statusFiltro)
+    }
+    
+    setFiltrados(resultados)
+  }, [searchTerm, statusFiltro, ambulantes])
 
-  const disponiveis = AMBULANTES.filter(a => a.disponivel_agora).length
-
-  async function handleDesbloquear(id: string) {
-    setDesbloqueando(id)
-    // TODO: integrar gateway de pagamento R$1,00
-    await new Promise(r => setTimeout(r, 1000))
-    setDesbloqueando(null)
-    setDesbloqueados(prev => [...prev, id])
-  }
-
-  async function handleContato(id: string) {
-    setContatandoId(id)
-    await new Promise(r => setTimeout(r, 600))
-    setContatandoId(null)
-    const ambulante = AMBULANTES.find(a => a.id === id)
-    if (ambulante?.whatsapp) {
-      window.open(`https://wa.me/${ambulante.whatsapp}`, '_blank')
+  const getStatusInfo = (status: string) => {
+    switch(status) {
+      case 'trabalhando': return { label: '🟢 Trabalhando', cor: 'text-emerald-400', bg: 'bg-emerald-500/20' }
+      case 'folgando': return { label: '🟡 Folgando', cor: 'text-yellow-400', bg: 'bg-yellow-500/20' }
+      case 'ferias': return { label: '🔴 Férias', cor: 'text-red-400', bg: 'bg-red-500/20' }
+      default: return { label: '⚪ Indisponível', cor: 'text-zinc-400', bg: 'bg-zinc-500/20' }
     }
   }
 
-  return (
-    <div className="min-h-screen bg-zinc-950 text-white font-sans pb-24">
+  const adicionarAoCarrinho = (ambulante: Ambulante, produto: Produto) => {
+    setCarrinho(prev => {
+      const existente = prev.find(item => item.produto.id === produto.id && item.ambulante.id === ambulante.id)
+      if (existente) {
+        return prev.map(item => 
+          item.produto.id === produto.id && item.ambulante.id === ambulante.id
+            ? { ...item, quantidade: item.quantidade + 1 }
+            : item
+        )
+      }
+      return [...prev, { ambulante, produto, quantidade: 1 }]
+    })
+  }
 
-      {/* HEADER */}
-      <header className="sticky top-0 z-30 bg-zinc-950/95 backdrop-blur border-b border-zinc-900 px-4 py-3 flex items-center gap-3">
-        <Link
-          href="/"
-          className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 transition-all flex-shrink-0"
-        >
-          <ArrowLeft className="w-4 h-4 text-zinc-400" />
-        </Link>
-        <div className="flex-1">
-          <h1 className="text-xl font-black text-white leading-none">Ambulantes</h1>
-          <p className="text-sm text-zinc-500">Vendedores e feirantes de Valente</p>
+  const removerDoCarrinho = (produtoId: string, ambulanteId: string) => {
+    setCarrinho(prev => prev.filter(item => !(item.produto.id === produtoId && item.ambulante.id === ambulanteId)))
+  }
+
+  const aumentarQuantidade = (produtoId: string, ambulanteId: string) => {
+    setCarrinho(prev => prev.map(item => 
+      item.produto.id === produtoId && item.ambulante.id === ambulanteId
+        ? { ...item, quantidade: item.quantidade + 1 }
+        : item
+    ))
+  }
+
+  const diminuirQuantidade = (produtoId: string, ambulanteId: string) => {
+    setCarrinho(prev => prev.map(item => {
+      if (item.produto.id === produtoId && item.ambulante.id === ambulanteId) {
+        const novaQtd = item.quantidade - 1
+        if (novaQtd <= 0) return null
+        return { ...item, quantidade: novaQtd }
+      }
+      return item
+    }).filter(Boolean) as typeof prev)
+  }
+
+  const totalCarrinho = carrinho.reduce((sum, item) => sum + (item.produto.preco * item.quantidade), 0)
+
+  const finalizarPedido = () => {
+    if (carrinho.length === 0) return
+    if (!nomeCliente || !telefoneCliente) {
+      alert('Preencha seu nome e telefone')
+      return
+    }
+    if (formaEntrega === 'delivery' && !enderecoEntrega) {
+      alert('Informe o endereço para entrega')
+      return
+    }
+
+    setEnviando(true)
+
+    const pedidoId = Math.random().toString(36).substring(2, 10).toUpperCase()
+    const dataAtual = new Date().toLocaleString('pt-BR')
+
+    const formasPagamentoMap = {
+      dinheiro: '💵 Dinheiro',
+      pix: '📱 PIX',
+      cartao: '💳 Cartão'
+    }
+
+    const formasEntregaMap = {
+      presencial: '🏪 Retirada presencial',
+      delivery: '🚚 Delivery',
+      encomenda: '📦 Encomenda'
+    }
+
+    setPedidoConfirmado({
+      id: pedidoId,
+      data: dataAtual,
+      cliente: nomeCliente,
+      telefone: telefoneCliente,
+      itens: carrinho,
+      total: totalCarrinho,
+      formaPagamento: formasPagamentoMap[formaPagamento],
+      formaEntrega: formasEntregaMap[formaEntrega],
+      enderecoEntrega: enderecoEntrega || 'Retirada no local',
+      dataEntrega: dataEntrega || 'Combinar com o vendedor',
+      horarioEntrega: horarioEntrega || 'Combinar com o vendedor'
+    })
+
+    setEnviando(false)
+    setShowCheckout(false)
+    setShowCarrinho(false)
+    setShowConfirmacao(true)
+    setCarrinho([])
+    
+    setTimeout(() => {
+      setShowConfirmacao(false)
+    }, 5000)
+  }
+
+  return (
+    <div className="min-h-screen bg-zinc-950 text-white pb-24">
+      {/* Header */}
+      <header className="sticky top-0 z-40 bg-zinc-900/95 backdrop-blur border-b border-zinc-800 px-4 py-4">
+        <div className="max-w-2xl mx-auto flex items-center justify-between">
+          <Link href="/" className="p-2 bg-zinc-800 rounded-xl">
+            <ChevronLeft className="w-5 h-5 text-zinc-400" />
+          </Link>
+          <h1 className="text-lg font-black text-white">Ambulantes</h1>
+          <div className="flex gap-2">
+            <Link href="/ambulantes/cadastro" className="p-2 bg-yellow-500 text-black rounded-xl text-sm font-bold flex items-center gap-1">
+              <UserPlus className="w-4 h-4" /> Cadastrar
+            </Link>
+            <button onClick={() => setShowCarrinho(true)} className="relative p-2 bg-zinc-800 rounded-xl">
+              <ShoppingCart className="w-5 h-5 text-yellow-400" />
+              {carrinho.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                  {carrinho.reduce((s, i) => s + i.quantidade, 0)}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
-        <Link
-          href="/ambulantes/planos"
-          className="flex items-center gap-1.5 px-3 py-2 bg-amber-500/10 border border-amber-500/30 rounded-xl text-sm font-black text-amber-400 hover:bg-amber-500/20 transition-all flex-shrink-0"
-        >
-          <Crown className="w-4 h-4" /> Planos
-        </Link>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 pt-5 space-y-4">
-
-        {/* Busca */}
+      <main className="max-w-2xl mx-auto p-4 space-y-4">
+        {/* Busca e Filtros */}
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 w-5 h-5" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-500 w-5 h-5" />
           <input
             type="text"
-            placeholder="Buscar por nome, produto ou bairro..."
-            value={busca}
-            onChange={e => setBusca(e.target.value)}
-            className="w-full bg-zinc-900 border border-zinc-800 p-4 pl-12 rounded-2xl text-base text-white outline-none focus:border-amber-500/50 focus:bg-zinc-800 transition-all placeholder:text-zinc-600"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Buscar ambulante, produto ou bairro..."
+            className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl py-3 pl-10 pr-4 text-white placeholder-zinc-600 focus:outline-none focus:border-yellow-500"
           />
-        </div>
-
-        {/* Filtros */}
-        <div className="flex gap-2 items-center">
-          <div className="flex gap-2 overflow-x-auto flex-1 pb-0.5 no-scrollbar">
-            {CATEGORIAS.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setCategoria(cat)}
-                className={`px-4 py-2 rounded-full text-sm font-black uppercase whitespace-nowrap transition-all flex-shrink-0 ${
-                  categoria === cat
-                    ? 'bg-amber-500 text-black'
-                    : 'bg-zinc-800 text-zinc-500 border border-zinc-700 hover:bg-zinc-700'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-          <button
-            onClick={() => setApenasDisponiveis(v => !v)}
-            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-black uppercase transition-all border ${
-              apenasDisponiveis
-                ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                : 'bg-zinc-800 text-zinc-500 border-zinc-700'
-            }`}
-          >
-            <Filter className="w-3.5 h-3.5" />
-            {apenasDisponiveis ? 'Disponíveis' : 'Todos'}
+          <button onClick={() => setShowFilters(!showFilters)} className="absolute right-3 top-1/2 transform -translate-y-1/2">
+            <Filter className={`w-5 h-5 ${showFilters ? 'text-yellow-400' : 'text-zinc-500'}`} />
           </button>
         </div>
 
-        {/* Resultado */}
-        {filtrados.length === 0 ? (
-          <div className="text-center py-16 space-y-3">
-            <Package className="w-12 h-12 text-zinc-700 mx-auto" />
-            <p className="text-zinc-500 font-black uppercase text-base">Nenhum resultado</p>
-            <p className="text-sm text-zinc-600">Tente mudar os filtros de busca</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {filtrados.map(ambulante => (
-              <div
-                key={ambulante.id}
-                className={`bg-zinc-900 border rounded-2xl p-5 space-y-3 transition-all ${
-                  ambulante.disponivel_agora ? 'border-amber-500/20' : 'border-zinc-800'
-                }`}
-              >
-                {/* Cabeçalho do card */}
-                <div className="flex items-start gap-4">
-                  <div className="w-16 h-16 flex-shrink-0 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-3xl overflow-hidden">
-                    {ambulante.foto_url
-                      ? <img src={ambulante.foto_url} alt={ambulante.nome} className="w-full h-full object-cover" />
-                      : ambulante.emoji
-                    }
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <p className="font-black text-lg text-white leading-tight">{ambulante.nome}</p>
-                        <p className="text-base text-amber-400 font-bold">{ambulante.produto}</p>
-                      </div>
-                      <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full flex-shrink-0 ${
-                        ambulante.disponivel_agora
-                          ? 'bg-emerald-500/10 border border-emerald-500/20'
-                          : 'bg-zinc-800 border border-zinc-700'
-                      }`}>
-                        <span className={`w-2 h-2 rounded-full ${
-                          ambulante.disponivel_agora ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-600'
-                        }`} />
-                        <span className={`text-xs font-black uppercase ${
-                          ambulante.disponivel_agora ? 'text-emerald-400' : 'text-zinc-500'
-                        }`}>
-                          {ambulante.disponivel_agora ? 'Agora' : 'Ausente'}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Info */}
-                    <div className="flex flex-wrap gap-3 mt-1.5 text-sm text-zinc-500">
-                      {desbloqueados.includes(ambulante.id) ? (
-                        <span className="flex items-center gap-1 text-zinc-400">
-                          <MapPin className="w-3 h-3 text-amber-400" /> {ambulante.bairro} · {ambulante.cidade}
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-1 select-none">
-                          <MapPin className="w-3 h-3" />
-                          <span className="blur-sm text-zinc-400 pointer-events-none">████████████</span>
-                        </span>
-                      )}
-                      {ambulante.avaliacao && (
-                        <span className="flex items-center gap-1 text-yellow-400">
-                          <Star className="w-3 h-3 fill-current" /> {ambulante.avaliacao}
-                        </span>
-                      )}
-                      {ambulante.horario && (
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" /> {ambulante.horario}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Descrição */}
-                {ambulante.descricao && (
-                  <p className="text-base text-zinc-400 leading-snug">{ambulante.descricao}</p>
-                )}
-
-                {/* Botão contato / paywall */}
-                {desbloqueados.includes(ambulante.id) ? (
-                  <button
-                    onClick={() => handleContato(ambulante.id)}
-                    disabled={contatandoId === ambulante.id}
-                    className="w-full flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-60 text-black py-3 rounded-xl text-base font-black uppercase transition-all"
-                  >
-                    {contatandoId === ambulante.id
-                      ? <Loader2 className="w-4 h-4 animate-spin" />
-                      : <MessageCircle className="w-4 h-4" />
-                    }
-                    {contatandoId === ambulante.id ? 'Abrindo...' : 'Chamar no WhatsApp'}
-                  </button>
-                ) : (
-                  <div className="space-y-2">
-                    {/* Contato borrado */}
-                    <div className="flex items-center gap-2 p-3 bg-zinc-800 rounded-xl border border-zinc-700">
-                      <Phone className="w-4 h-4 text-zinc-600 flex-shrink-0" />
-                      <span className="blur-sm text-zinc-400 text-sm select-none pointer-events-none flex-1">
-                        (75) 9 ████-████
-                      </span>
-                      <Lock className="w-3.5 h-3.5 text-zinc-600 flex-shrink-0" />
-                    </div>
-                    <button
-                      onClick={() => handleDesbloquear(ambulante.id)}
-                      disabled={desbloqueando === ambulante.id}
-                      className="w-full flex items-center justify-center gap-2 bg-zinc-800 hover:bg-amber-500/20 border border-amber-500/40 hover:border-amber-500/70 disabled:opacity-60 text-amber-400 py-3 rounded-xl text-base font-black uppercase transition-all"
-                    >
-                      {desbloqueando === ambulante.id
-                        ? <Loader2 className="w-4 h-4 animate-spin" />
-                        : <Lock className="w-4 h-4" />
-                      }
-                      {desbloqueando === ambulante.id ? 'Processando...' : 'Desbloquear Contato · R$ 1,00'}
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))}
+        {/* Filtros de Status */}
+        {showFilters && (
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs text-zinc-500 font-bold uppercase">Status</label>
+              <button onClick={() => setStatusFiltro('todos')} className="text-xs text-yellow-400">Limpar</button>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => setStatusFiltro('todos')} className={`px-3 py-1 rounded-full text-xs font-bold ${statusFiltro === 'todos' ? 'bg-yellow-500 text-black' : 'bg-zinc-800 text-zinc-400'}`}>Todos</button>
+              <button onClick={() => setStatusFiltro('trabalhando')} className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 ${statusFiltro === 'trabalhando' ? 'bg-emerald-500 text-white' : 'bg-zinc-800 text-zinc-400'}`}>🟢 Trabalhando</button>
+              <button onClick={() => setStatusFiltro('folgando')} className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 ${statusFiltro === 'folgando' ? 'bg-yellow-500 text-black' : 'bg-zinc-800 text-zinc-400'}`}>🟡 Folgando</button>
+              <button onClick={() => setStatusFiltro('ferias')} className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 ${statusFiltro === 'ferias' ? 'bg-red-500 text-white' : 'bg-zinc-800 text-zinc-400'}`}>🔴 Férias</button>
+            </div>
           </div>
         )}
 
-        {/* Seja um ambulante */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 text-center space-y-3 mt-2">
-          <p className="text-lg font-black text-white">Você é ambulante?</p>
-          <p className="text-base text-zinc-400">
-            Cadastre-se gratuitamente e apareça aqui para toda a cidade encontrar você.
-          </p>
-          <Link
-            href="/profissional/catalogo"
-            className="block w-full py-3 bg-amber-500 hover:bg-amber-400 text-black rounded-xl font-black uppercase text-base transition-all"
-          >
-            Cadastrar meu negócio
-          </Link>
+        {/* Lista de Ambulantes */}
+        <div className="space-y-3">
+          {filtrados.map(ambulante => {
+            const statusInfo = getStatusInfo(ambulante.status)
+            return (
+              <div key={ambulante.id} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <h3 className="font-bold text-white text-lg">{ambulante.nomeFantasia || ambulante.nome}</h3>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${statusInfo.bg} ${statusInfo.cor}`}>{statusInfo.label}</span>
+                      <div className="flex items-center gap-1"><Star className="w-3 h-3 fill-yellow-400 text-yellow-400" /><span className="text-xs">{ambulante.avaliacao}</span></div>
+                    </div>
+                  </div>
+                  <button className="p-1.5 bg-zinc-800 rounded-lg"><Heart className="w-4 h-4 text-zinc-500" /></button>
+                </div>
+                
+                <div className="space-y-2 text-sm">
+                  <p className="text-zinc-400 flex items-center gap-2"><MapPin className="w-4 h-4" /><span>{ambulante.localTrabalho}</span></p>
+                  {ambulante.referenciaLocal && <p className="text-xs text-zinc-500 ml-6">📍 {ambulante.referenciaLocal}</p>}
+                  <p className="text-zinc-400 flex items-center gap-2"><Store className="w-4 h-4" /><span>{ambulante.bairro}, {ambulante.cidade}</span></p>
+                </div>
+                
+                <p className="text-sm text-zinc-400 mt-2">{ambulante.descricao}</p>
+                
+                {/* Produtos */}
+                <div className="mt-3 space-y-2">
+                  <p className="text-xs text-zinc-500 font-bold uppercase">Produtos</p>
+                  {ambulante.produtos.map(produto => (
+                    <div key={produto.id} className="bg-zinc-800/50 rounded-xl p-3 flex items-center justify-between">
+                      <div className="flex-1">
+                        <p className="font-bold text-white">{produto.nome}</p>
+                        <p className="text-xs text-zinc-400">{produto.descricao}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-yellow-400 font-bold">R$ {produto.preco.toFixed(2)}</span>
+                          <span className="text-xs text-zinc-500">Estoque: {produto.quantidade}</span>
+                        </div>
+                      </div>
+                      <button onClick={() => adicionarAoCarrinho(ambulante, produto)} className="px-3 py-1.5 bg-yellow-500 text-black rounded-lg text-xs font-bold hover:bg-yellow-400 transition">
+                        Comprar
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Formas de Pagamento */}
+                {ambulante.formasPagamento && ambulante.formasPagamento.length > 0 && (
+                  <div className="mt-3 pt-2 border-t border-zinc-800">
+                    <p className="text-xs text-zinc-500">💳 Aceita: {ambulante.formasPagamento.map(f => `${f.icone} ${f.nome}`).join(', ')}</p>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+          
+          {filtrados.length === 0 && (
+            <div className="text-center py-12">
+              <Package className="w-12 h-12 text-zinc-700 mx-auto mb-3" />
+              <p className="text-zinc-500">Nenhum ambulante encontrado</p>
+              <Link href="/ambulantes/cadastro" className="inline-block mt-4 px-6 py-2 bg-yellow-500 text-black rounded-xl font-bold text-sm">
+                Sou Ambulante → Cadastrar
+              </Link>
+            </div>
+          )}
         </div>
-
       </main>
+
+      {/* Modal do Carrinho */}
+      {showCarrinho && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end justify-center">
+          <div className="bg-zinc-900 border-t border-zinc-800 w-full max-w-lg rounded-t-3xl max-h-[80vh] overflow-y-auto">
+            <div className="sticky top-0 bg-zinc-900 p-4 border-b border-zinc-800 flex justify-between items-center">
+              <h3 className="font-bold text-white text-lg">Seu Pedido</h3>
+              <button onClick={() => setShowCarrinho(false)} className="p-2 hover:bg-zinc-800 rounded-xl"><X className="w-5 h-5 text-zinc-400" /></button>
+            </div>
+            <div className="p-4 space-y-3">
+              {carrinho.length === 0 ? (
+                <p className="text-center text-zinc-500 py-8">Nenhum item no pedido</p>
+              ) : (
+                <>
+                  {carrinho.map(item => (
+                    <div key={`${item.ambulante.id}_${item.produto.id}`} className="bg-zinc-800 rounded-xl p-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-bold text-white">{item.produto.nome}</p>
+                          <p className="text-xs text-zinc-400">{item.ambulante.nomeFantasia || item.ambulante.nome}</p>
+                          <p className="text-yellow-400 text-sm">R$ {item.produto.preco.toFixed(2)}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => diminuirQuantidade(item.produto.id, item.ambulante.id)} className="w-8 h-8 bg-zinc-700 rounded-lg">-</button>
+                          <span className="w-8 text-center font-bold">{item.quantidade}</span>
+                          <button onClick={() => aumentarQuantidade(item.produto.id, item.ambulante.id)} className="w-8 h-8 bg-zinc-700 rounded-lg">+</button>
+                          <button onClick={() => removerDoCarrinho(item.produto.id, item.ambulante.id)} className="w-8 h-8 bg-red-500/20 rounded-lg"><X className="w-4 h-4 text-red-400" /></button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="border-t border-zinc-800 pt-4">
+                    <div className="flex justify-between mb-4">
+                      <span className="text-white font-bold">Total:</span>
+                      <span className="text-yellow-400 font-bold text-xl">R$ {totalCarrinho.toFixed(2)}</span>
+                    </div>
+                    <button onClick={() => { setShowCarrinho(false); setShowCheckout(true) }} className="w-full py-4 bg-yellow-500 text-black rounded-xl font-bold text-lg">Continuar</button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Checkout */}
+      {showCheckout && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-zinc-900 p-4 border-b border-zinc-800 flex justify-between items-center">
+              <h3 className="font-bold text-white text-lg">Finalizar Pedido</h3>
+              <button onClick={() => setShowCheckout(false)} className="p-2 hover:bg-zinc-800 rounded-xl"><X className="w-5 h-5 text-zinc-400" /></button>
+            </div>
+            <div className="p-5 space-y-4">
+              <div><label className="block text-white text-sm font-bold mb-2">Seu nome *</label><input type="text" value={nomeCliente} onChange={e => setNomeCliente(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white" /></div>
+              <div><label className="block text-white text-sm font-bold mb-2">WhatsApp *</label><input type="tel" value={telefoneCliente} onChange={e => setTelefoneCliente(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white" /></div>
+
+              <div><label className="block text-white text-sm font-bold mb-3">Forma de Entrega</label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button onClick={() => setFormaEntrega('presencial')} className={`p-3 rounded-xl border-2 flex flex-col items-center gap-1 ${formaEntrega === 'presencial' ? 'border-yellow-500 bg-yellow-500/10' : 'border-zinc-700'}`}><Home className="w-5 h-5" /><span className="text-xs">Presencial</span></button>
+                  <button onClick={() => setFormaEntrega('delivery')} className={`p-3 rounded-xl border-2 flex flex-col items-center gap-1 ${formaEntrega === 'delivery' ? 'border-yellow-500 bg-yellow-500/10' : 'border-zinc-700'}`}><Truck className="w-5 h-5" /><span className="text-xs">Delivery</span></button>
+                  <button onClick={() => setFormaEntrega('encomenda')} className={`p-3 rounded-xl border-2 flex flex-col items-center gap-1 ${formaEntrega === 'encomenda' ? 'border-yellow-500 bg-yellow-500/10' : 'border-zinc-700'}`}><Calendar className="w-5 h-5" /><span className="text-xs">Encomenda</span></button>
+                </div>
+              </div>
+
+              {formaEntrega === 'delivery' && (<div><label className="block text-white text-sm font-bold mb-2">Endereço para entrega</label><input type="text" value={enderecoEntrega} onChange={e => setEnderecoEntrega(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white" /></div>)}
+
+              {formaEntrega === 'encomenda' && (<div className="grid grid-cols-2 gap-3"><div><label className="block text-white text-sm font-bold mb-2">Data</label><input type="date" value={dataEntrega} onChange={e => setDataEntrega(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white" /></div><div><label className="block text-white text-sm font-bold mb-2">Horário</label><input type="time" value={horarioEntrega} onChange={e => setHorarioEntrega(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white" /></div></div>)}
+
+              <div><label className="block text-white text-sm font-bold mb-3">Forma de Pagamento</label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button onClick={() => setFormaPagamento('dinheiro')} className={`p-3 rounded-xl border-2 flex flex-col items-center gap-1 ${formaPagamento === 'dinheiro' ? 'border-yellow-500 bg-yellow-500/10' : 'border-zinc-700'}`}><span className="text-lg">💵</span><span className="text-xs">Dinheiro</span></button>
+                  <button onClick={() => setFormaPagamento('pix')} className={`p-3 rounded-xl border-2 flex flex-col items-center gap-1 ${formaPagamento === 'pix' ? 'border-yellow-500 bg-yellow-500/10' : 'border-zinc-700'}`}><span className="text-lg">📱</span><span className="text-xs">PIX</span></button>
+                  <button onClick={() => setFormaPagamento('cartao')} className={`p-3 rounded-xl border-2 flex flex-col items-center gap-1 ${formaPagamento === 'cartao' ? 'border-yellow-500 bg-yellow-500/10' : 'border-zinc-700'}`}><span className="text-lg">💳</span><span className="text-xs">Cartão</span></button>
+                </div>
+              </div>
+
+              <div className="bg-zinc-800 rounded-xl p-4"><p className="text-yellow-400 font-bold text-sm mb-2">Resumo</p>{carrinho.map((item, idx) => (<div key={idx} className="flex justify-between text-sm"><span>{item.quantidade}x {item.produto.nome}</span><span>R$ {(item.produto.preco * item.quantidade).toFixed(2)}</span></div>))}<div className="border-t border-zinc-700 mt-2 pt-2 flex justify-between"><span className="font-bold">Total</span><span className="text-yellow-400 font-bold">R$ {totalCarrinho.toFixed(2)}</span></div></div>
+
+              <button onClick={finalizarPedido} disabled={enviando} className="w-full py-4 bg-green-600 text-white rounded-xl font-bold text-lg flex items-center justify-center gap-2 disabled:opacity-50">
+                {enviando ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : <CheckCircle className="w-5 h-5" />}
+                {enviando ? 'Processando...' : 'Confirmar Pedido'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Confirmação */}
+      {showConfirmacao && pedidoConfirmado && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-gradient-to-br from-emerald-600 to-green-700 rounded-2xl w-full max-w-md max-h-[85vh] overflow-y-auto shadow-2xl">
+            <div className="relative p-6 text-center"><div className="absolute inset-0 bg-white/10 animate-pulse"></div><div className="relative z-10"><div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce"><CheckCircle className="w-12 h-12 text-emerald-600" /></div><h2 className="text-2xl font-black text-white mb-2">Pedido Realizado! 🎉</h2><p className="text-white/80 text-sm">Seu pedido foi enviado com sucesso</p></div></div>
+            <div className="bg-white/10 p-5 space-y-3">
+              <div className="bg-white/20 rounded-xl p-3 text-center"><p className="text-white/80 text-xs">Código do pedido</p><p className="text-white font-mono font-bold text-sm">{pedidoConfirmado.id}</p></div>
+              <div className="bg-white/20 rounded-xl p-3"><p className="text-white/80 text-xs mb-2">📋 Itens do pedido</p>{pedidoConfirmado.itens.map((item: any, idx: number) => (<div key={idx} className="flex justify-between text-white text-sm"><span>{item.quantidade}x {item.produto.nome}</span><span>R$ {(item.produto.preco * item.quantidade).toFixed(2)}</span></div>))}<div className="border-t border-white/20 mt-2 pt-2 flex justify-between"><span className="text-white font-bold">Total</span><span className="text-yellow-300 font-bold">R$ {pedidoConfirmado.total.toFixed(2)}</span></div></div>
+              <div className="bg-white/20 rounded-xl p-3"><p className="text-white/80 text-xs mb-2">🚚 Entrega</p><p className="text-white text-sm">{pedidoConfirmado.formaEntrega}</p>{pedidoConfirmado.enderecoEntrega !== 'Retirada no local' && <p className="text-white/70 text-xs mt-1">📍 {pedidoConfirmado.enderecoEntrega}</p>}</div>
+              <div className="bg-white/20 rounded-xl p-3"><p className="text-white/80 text-xs mb-2">💳 Pagamento</p><p className="text-white text-sm">{pedidoConfirmado.formaPagamento}</p></div>
+              <div className="flex items-center justify-center gap-2 text-white/70 text-xs"><Bell className="w-3 h-3" /><span>O ambulante será notificado</span></div>
+            </div>
+            <div className="p-4 pt-0"><button onClick={() => setShowConfirmacao(false)} className="w-full py-3 bg-white/20 rounded-xl text-white font-bold">Fechar</button></div>
+          </div>
+        </div>
+      )}
+
+      <style jsx>{`
+        @keyframes fade-in { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .animate-fade-in { animation: fade-in 0.3s ease-out; }
+        .animate-bounce { animation: bounce 0.5s ease-in-out; }
+      `}</style>
     </div>
   )
 }
