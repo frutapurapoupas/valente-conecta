@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { supabase, isMockMode } from '@/lib/supabase-client-switch'
 
-export type TipoResultado = 'catalogo' | 'estoque'
+export type TipoResultado = 'catalogo' | 'estoque' | 'servico'
 
 export interface ResultadoBusca {
   id: string
@@ -13,11 +14,36 @@ export interface ResultadoBusca {
   quantidade?: number
   tipo: TipoResultado
   fornecedor?: string
+  servicoId?: string
+  categoria?: string
+  descricao?: string
 }
 
 export function useBuscaProdutosPage() {
   const [query, setQuery] = useState('')
   const [resultados, setResultados] = useState<ResultadoBusca[]>([])
+  const [produtosServico, setProdutosServico] = useState<any[]>([])
+
+  useEffect(() => {
+    carregarProdutosServico()
+  }, [])
+
+  const carregarProdutosServico = async () => {
+    if (isMockMode()) {
+      setProdutosServico([])
+    } else {
+      try {
+        const { data } = await supabase
+          .from('produtos_catalogo')
+          .select('*')
+          .eq('publicado', true)
+          .eq('ativo', true)
+        setProdutosServico(data || [])
+      } catch (error) {
+        console.error('Erro ao carregar produtos de serviço:', error)
+      }
+    }
+  }
 
   useEffect(() => {
     if (query.trim().length < 2) {
@@ -57,8 +83,21 @@ export function useBuscaProdutosPage() {
         fornecedor: p.fornecedor,
       }))
 
-    setResultados([...catalogoResults, ...estoqueResults])
-  }, [query])
+    // Produtos de serviços com agendamento (catálogo publicado)
+    const servicoResults: ResultadoBusca[] = produtosServico
+      .filter(p => p.publicado && p.ativo && (p.nome?.toLowerCase().includes(q) || p.descricao?.toLowerCase().includes(q)))
+      .map(p => ({
+        id: String(p.id),
+        nome: p.nome,
+        preco: Number(p.preco),
+        tipo: 'servico',
+        servicoId: p.servicoId,
+        categoria: p.categoria,
+        descricao: p.descricao,
+      }))
+
+    setResultados([...catalogoResults, ...estoqueResults, ...servicoResults])
+  }, [query, produtosServico])
 
   return { query, setQuery, resultados }
 }

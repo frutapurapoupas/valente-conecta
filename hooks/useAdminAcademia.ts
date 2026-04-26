@@ -16,6 +16,20 @@ export type AlunoAcademia = {
   totalCheckins: number
   ultimoCheckin: string       // data ISO
   ativo: boolean
+  // Dados físicos e metas
+  pesoAtual: number
+  pesoMeta: number
+  altura: number              // em cm
+  idade: number
+  objetivo: 'emagrecer' | 'hipertrofia' | 'condicionamento' | 'saude'
+  nivel: 'iniciante' | 'intermediario' | 'avancado'
+  freqSemanal: number         // vezes por semana desejadas
+  condicoesFisicas: string[]  // restrições ou condições especiais
+  tipoExercicio: string[]     // tipos de exercício preferidos
+  // Progresso
+  diasSeguidos: number
+  treinosMes: number
+  metaProgresso: number       // % de progresso em relação à meta
 }
 
 export type AcademiaUnit = {
@@ -79,16 +93,76 @@ const MOCK_ACADEMIAS: AcademiaUnit[] = [
 ]
 
 const MOCK_ALUNOS: AlunoAcademia[] = [
-  { id: 1,  nome: 'João Silva',     foto: '', plano: 'basico',   academia: 'Academia Valente Fit', whatsapp: '75999991001', diasSemUso: 0,  totalCheckins: 45, ultimoCheckin: '2026-04-10', ativo: true  },
-  { id: 2,  nome: 'Maria Oliveira', foto: '', plano: 'basico',   academia: 'Academia Valente Fit', whatsapp: '75999991002', diasSemUso: 2,  totalCheckins: 38, ultimoCheckin: '2026-04-08', ativo: true  },
-  { id: 3,  nome: 'Pedro Costa',    foto: '', plano: 'gratuito', academia: 'Studio Move',          whatsapp: '75999991003', diasSemUso: 0,  totalCheckins: 12, ultimoCheckin: '2026-04-10', ativo: true  },
-  { id: 4,  nome: 'Ana Paula',      foto: '', plano: 'gratuito', academia: 'Academia Valente Fit', whatsapp: '75999991004', diasSemUso: 14, totalCheckins: 5,  ultimoCheckin: '2026-03-27', ativo: true  },
-  { id: 5,  nome: 'Carlos Eduardo', foto: '', plano: 'basico',   academia: 'Studio Move',          whatsapp: '75999991005', diasSemUso: 21, totalCheckins: 3,  ultimoCheckin: '2026-03-20', ativo: true  },
-  { id: 6,  nome: 'Fernanda Lima',  foto: '', plano: 'gratuito', academia: 'CrossFit Sertão',      whatsapp: '75999991006', diasSemUso: 0,  totalCheckins: 60, ultimoCheckin: '2026-04-10', ativo: true  },
-  { id: 7,  nome: 'Lucas Mendes',   foto: '', plano: 'gratuito', academia: 'Academia Valente Fit', whatsapp: '75999991007', diasSemUso: 30, totalCheckins: 2,  ultimoCheckin: '2026-03-11', ativo: true  },
-  { id: 8,  nome: 'Beatriz Santos', foto: '', plano: 'basico',   academia: 'Studio Move',          whatsapp: '75999991008', diasSemUso: 1,  totalCheckins: 29, ultimoCheckin: '2026-04-09', ativo: true  },
-  { id: 9,  nome: 'Rafael Pereira', foto: '', plano: 'gratuito', academia: 'Academia Valente Fit', whatsapp: '75999991009', diasSemUso: 7,  totalCheckins: 8,  ultimoCheckin: '2026-04-03', ativo: false },
-  { id: 10, nome: 'Juliana Ramos',  foto: '', plano: 'basico',   academia: 'CrossFit Sertão',      whatsapp: '75999991010', diasSemUso: 3,  totalCheckins: 22, ultimoCheckin: '2026-04-07', ativo: true  },
+  { 
+    id: 1, nome: 'João Silva', foto: '', plano: 'basico', academia: 'Academia Valente Fit', whatsapp: '75999991001', 
+    diasSemUso: 0, totalCheckins: 45, ultimoCheckin: '2026-04-10', ativo: true,
+    pesoAtual: 82, pesoMeta: 75, altura: 175, idade: 28, objetivo: 'emagrecer', nivel: 'intermediario', freqSemanal: 4,
+    condicoesFisicas: ['Nenhuma'], tipoExercicio: ['Musculação', 'Cardio'],
+    diasSeguidos: 5, treinosMes: 12, metaProgresso: 65
+  },
+  { 
+    id: 2, nome: 'Maria Oliveira', foto: '', plano: 'basico', academia: 'Academia Valente Fit', whatsapp: '75999991002', 
+    diasSemUso: 2, totalCheckins: 38, ultimoCheckin: '2026-04-08', ativo: true,
+    pesoAtual: 65, pesoMeta: 60, altura: 162, idade: 32, objetivo: 'hipertrofia', nivel: 'intermediario', freqSemanal: 5,
+    condicoesFisicas: ['Lesão joelho antiga'], tipoExercicio: ['Musculação', 'Pilates'],
+    diasSeguidos: 3, treinosMes: 10, metaProgresso: 55
+  },
+  { 
+    id: 3, nome: 'Pedro Costa', foto: '', plano: 'gratuito', academia: 'Studio Move', whatsapp: '75999991003', 
+    diasSemUso: 0, totalCheckins: 12, ultimoCheckin: '2026-04-10', ativo: true,
+    pesoAtual: 90, pesoMeta: 85, altura: 180, idade: 25, objetivo: 'condicionamento', nivel: 'iniciante', freqSemanal: 3,
+    condicoesFisicas: ['Nenhuma'], tipoExercicio: ['Cardio', 'Cross Training'],
+    diasSeguidos: 2, treinosMes: 6, metaProgresso: 30
+  },
+  { 
+    id: 4, nome: 'Ana Paula', foto: '', plano: 'gratuito', academia: 'Academia Valente Fit', whatsapp: '75999991004', 
+    diasSemUso: 14, totalCheckins: 5, ultimoCheckin: '2026-03-27', ativo: true,
+    pesoAtual: 70, pesoMeta: 65, altura: 168, idade: 29, objetivo: 'emagrecer', nivel: 'iniciante', freqSemanal: 3,
+    condicoesFisicas: ['Pressão alta controlada'], tipoExercicio: ['Musculação leve', 'Caminhada'],
+    diasSeguidos: 0, treinosMes: 2, metaProgresso: 15
+  },
+  { 
+    id: 5, nome: 'Carlos Eduardo', foto: '', plano: 'basico', academia: 'Studio Move', whatsapp: '75999991005', 
+    diasSemUso: 21, totalCheckins: 3, ultimoCheckin: '2026-03-20', ativo: true,
+    pesoAtual: 78, pesoMeta: 85, altura: 178, idade: 35, objetivo: 'hipertrofia', nivel: 'avancado', freqSemanal: 5,
+    condicoesFisicas: ['Nenhuma'], tipoExercicio: ['Musculação', 'Powerlifting'],
+    diasSeguidos: 0, treinosMes: 1, metaProgresso: 20
+  },
+  { 
+    id: 6, nome: 'Fernanda Lima', foto: '', plano: 'gratuito', academia: 'CrossFit Sertão', whatsapp: '75999991006', 
+    diasSemUso: 0, totalCheckins: 60, ultimoCheckin: '2026-04-10', ativo: true,
+    pesoAtual: 58, pesoMeta: 55, altura: 165, idade: 24, objetivo: 'condicionamento', nivel: 'avancado', freqSemanal: 6,
+    condicoesFisicas: ['Nenhuma'], tipoExercicio: ['CrossFit', 'HIIT', 'Corrida'],
+    diasSeguidos: 15, treinosMes: 20, metaProgresso: 85
+  },
+  { 
+    id: 7, nome: 'Lucas Mendes', foto: '', plano: 'gratuito', academia: 'Academia Valente Fit', whatsapp: '75999991007', 
+    diasSemUso: 30, totalCheckins: 2, ultimoCheckin: '2026-03-11', ativo: true,
+    pesoAtual: 95, pesoMeta: 80, altura: 182, idade: 40, objetivo: 'saude', nivel: 'iniciante', freqSemanal: 2,
+    condicoesFisicas: ['Diabetes tipo 2', 'Obesidade'], tipoExercicio: ['Caminhada', 'Natação'],
+    diasSeguidos: 0, treinosMes: 0, metaProgresso: 5
+  },
+  { 
+    id: 8, nome: 'Beatriz Santos', foto: '', plano: 'basico', academia: 'Studio Move', whatsapp: '75999991008', 
+    diasSemUso: 1, totalCheckins: 29, ultimoCheckin: '2026-04-09', ativo: true,
+    pesoAtual: 62, pesoMeta: 58, altura: 160, idade: 27, objetivo: 'emagrecer', nivel: 'intermediario', freqSemanal: 4,
+    condicoesFisicas: ['Nenhuma'], tipoExercicio: ['Musculação', 'Yoga', 'Pilates'],
+    diasSeguidos: 7, treinosMes: 14, metaProgresso: 70
+  },
+  { 
+    id: 9, nome: 'Rafael Pereira', foto: '', plano: 'gratuito', academia: 'Academia Valente Fit', whatsapp: '75999991009', 
+    diasSemUso: 7, totalCheckins: 8, ultimoCheckin: '2026-04-03', ativo: false,
+    pesoAtual: 85, pesoMeta: 78, altura: 176, idade: 31, objetivo: 'emagrecer', nivel: 'iniciante', freqSemanal: 3,
+    condicoesFisicas: ['Dor lombar'], tipoExercicio: ['Musculação adaptada', 'Alongamento'],
+    diasSeguidos: 0, treinosMes: 3, metaProgresso: 25
+  },
+  { 
+    id: 10, nome: 'Juliana Ramos', foto: '', plano: 'basico', academia: 'CrossFit Sertão', whatsapp: '75999991010', 
+    diasSemUso: 3, totalCheckins: 22, ultimoCheckin: '2026-04-07', ativo: true,
+    pesoAtual: 68, pesoMeta: 65, altura: 170, idade: 26, objetivo: 'hipertrofia', nivel: 'intermediario', freqSemanal: 5,
+    condicoesFisicas: ['Nenhuma'], tipoExercicio: ['CrossFit', 'Musculação', 'Funcional'],
+    diasSeguidos: 4, treinosMes: 11, metaProgresso: 60
+  },
 ]
 
 const FUNCIONALIDADES_INICIAIS: FuncionalidadePlano[] = [
@@ -174,6 +248,18 @@ export function useAdminAcademia() {
           academia: r.academia, whatsapp: r.whatsapp ?? '', diasSemUso,
           totalCheckins: r.total_checkins ?? 0, ultimoCheckin: r.ultimo_checkin ?? '',
           ativo: r.ativo,
+          pesoAtual: r.peso_atual ?? 0,
+          pesoMeta: r.peso_meta ?? 0,
+          altura: r.altura ?? 0,
+          idade: r.idade ?? 0,
+          objetivo: r.objetivo ?? 'saude',
+          nivel: r.nivel ?? 'iniciante',
+          freqSemanal: r.freq_semanal ?? 3,
+          condicoesFisicas: r.condicoes_fisicas ?? [],
+          tipoExercicio: r.tipo_exercicio ?? [],
+          diasSeguidos: r.dias_seguidos ?? 0,
+          treinosMes: r.treinos_mes ?? 0,
+          metaProgresso: r.meta_progresso ?? 0,
         }
       }))
     }

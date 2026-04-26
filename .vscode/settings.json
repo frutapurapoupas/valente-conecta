@@ -1,0 +1,5 @@
+{
+  "ai.provider": "deepseek",
+  "ai.model": "deepseek-coder",
+  "ai.temperature": 0.2
+}

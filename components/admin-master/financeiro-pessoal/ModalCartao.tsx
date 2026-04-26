@@ -1,141 +1,175 @@
-'use client'
-import { useState } from 'react'
-import { X, Save } from 'lucide-react'
-import {
-  type Cartao, type BandeiraCartao,
-} from '@/hooks/useFinanceiroPessoal'
+// components/admin-master/financeiro-pessoal/ModalCartao.tsx
+'use client';
 
-const BANDEIRAS: { value: BandeiraCartao; label: string; emoji: string }[] = [
-  { value: 'visa',       label: 'Visa',       emoji: '💳' },
-  { value: 'mastercard', label: 'Mastercard', emoji: '🔴' },
-  { value: 'elo',        label: 'Elo',        emoji: '🟡' },
-  { value: 'amex',       label: 'Amex',       emoji: '🔵' },
-  { value: 'hipercard',  label: 'Hipercard',  emoji: '🔶' },
-  { value: 'outro',      label: 'Outro',      emoji: '💳' },
-]
+import { useState, useEffect } from 'react';
+import { X, Trash2, CreditCard } from 'lucide-react';
 
-const CORES_CARTAO = [
-  { value: 'from-indigo-800 to-indigo-600',  label: 'Índigo' },
-  { value: 'from-violet-800 to-purple-600',  label: 'Roxo' },
-  { value: 'from-zinc-800 to-zinc-600',      label: 'Cinza' },
-  { value: 'from-emerald-800 to-green-600',  label: 'Verde' },
-  { value: 'from-rose-800 to-red-600',       label: 'Vermelho' },
-  { value: 'from-amber-700 to-yellow-500',   label: 'Dourado' },
-]
-
-interface ModalCartaoProps {
-  editando: Cartao | null
-  onSalvar: (dados: Omit<Cartao, 'id' | 'melhorDiaCompra' | 'criadoEm' | 'atualizadoEm'>) => void
-  onAtualizar: (id: string, dados: Partial<Omit<Cartao, 'id' | 'criadoEm'>>) => void
-  onFechar: () => void
+interface Cartao {
+  id: string;
+  nome: string;
+  limite: number;
+  diaFechamento: number;
+  diaVencimento: number;
+  cor: string;
 }
 
-export default function ModalCartao({ editando, onSalvar, onAtualizar, onFechar }: ModalCartaoProps) {
-  const [apelido, setApelido]           = useState(editando?.apelido ?? '')
-  const [bandeira, setBandeira]         = useState<BandeiraCartao>(editando?.bandeira ?? 'visa')
-  const [ultimos4, setUltimos4]         = useState(editando?.ultimos4 ?? '')
-  const [limite, setLimite]             = useState(editando ? String(editando.limite) : '')
-  const [diaVencimento, setDiaVenc]     = useState(editando ? String(editando.diaVencimento) : '')
-  const [cor, setCor]                   = useState(editando?.cor ?? CORES_CARTAO[0].value)
+interface ModalCartaoProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (cartao: Omit<Cartao, 'id'>) => void;
+  onDelete?: (id: string) => void;
+  cartao?: Cartao | null;
+}
 
-  const melhorDia = (() => {
-    const d = parseInt(diaVencimento)
-    if (isNaN(d)) return '—'
-    return d > 10 ? d - 10 : d + 20
-  })()
+const cores = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#78716c'];
 
-  function salvar() {
-    const lim = parseFloat(limite.replace(',', '.'))
-    const dia = parseInt(diaVencimento)
-    if (!apelido.trim() || isNaN(lim) || isNaN(dia) || dia < 1 || dia > 31) return
-    const dados = { apelido, bandeira, ultimos4, limite: lim, diaVencimento: dia, cor }
-    if (editando) onAtualizar(editando.id, dados)
-    else onSalvar(dados)
-    onFechar()
-  }
+export function ModalCartao({ isOpen, onClose, onSave, onDelete, cartao }: ModalCartaoProps) {
+  const [nome, setNome] = useState('');
+  const [limite, setLimite] = useState('');
+  const [diaFechamento, setDiaFechamento] = useState(10);
+  const [diaVencimento, setDiaVencimento] = useState(20);
+  const [cor, setCor] = useState('#3b82f6');
+
+  useEffect(() => {
+    if (cartao) {
+      setNome(cartao.nome);
+      setLimite(cartao.limite.toString());
+      setDiaFechamento(cartao.diaFechamento);
+      setDiaVencimento(cartao.diaVencimento);
+      setCor(cartao.cor);
+    } else {
+      setNome('');
+      setLimite('');
+      setDiaFechamento(10);
+      setDiaVencimento(20);
+      setCor('#3b82f6');
+    }
+  }, [cartao, isOpen]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nome.trim() || !limite) return;
+    onSave({
+      nome: nome.trim(),
+      limite: parseFloat(limite),
+      diaFechamento,
+      diaVencimento,
+      cor,
+    });
+    onClose();
+  };
+
+  const handleDelete = () => {
+    if (cartao && window.confirm(`Excluir o cartão "${cartao.nome}"?`)) {
+      onDelete?.(cartao.id);
+      onClose();
+    }
+  };
+
+  if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-zinc-950/95 flex items-end justify-center p-0 sm:items-center sm:p-4">
-      <div className="bg-zinc-900 border border-zinc-700 rounded-t-3xl sm:rounded-2xl w-full max-w-md max-h-[92vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-5 border-b border-zinc-800">
-          <h2 className="text-xl font-black text-white">{editando ? 'Editar Cartão' : 'Novo Cartão'}</h2>
-          <button onClick={onFechar} className="p-2 rounded-xl bg-zinc-800"><X className="w-5 h-5 text-zinc-400" /></button>
-        </div>
-
-        <div className="p-5 flex flex-col gap-4">
-          <div className={`bg-gradient-to-br ${cor} rounded-2xl p-5 flex flex-col gap-3 h-36 relative overflow-hidden`}>
-            <div className="flex items-center justify-between">
-              <p className="font-black text-white text-lg">{apelido || 'Apelido do cartão'}</p>
-              <span className="text-2xl">{BANDEIRAS.find(b => b.value === bandeira)?.emoji}</span>
-            </div>
-            <p className="text-white/60 text-sm font-mono tracking-widest">•••• •••• •••• {ultimos4 || '????'}</p>
-            <div className="flex gap-4 text-xs text-white/60 font-bold">
-              <span>Vence dia {diaVencimento || '—'}</span>
-              <span>·</span>
-              <span>Melhor compra dia {melhorDia}</span>
-            </div>
-          </div>
-
-          <div>
-            <label className="text-xs font-bold text-zinc-500 mb-1 block">APELIDO</label>
-            <input value={apelido} onChange={e => setApelido(e.target.value)} placeholder="Ex: Nubank principal"
-              className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:border-indigo-500" />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-bold text-zinc-500 mb-1 block">ÚLTIMOS 4 DÍGITOS</label>
-              <input value={ultimos4} onChange={e => setUltimos4(e.target.value.slice(0, 4))} placeholder="0000" maxLength={4}
-                inputMode="numeric"
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white text-base font-mono focus:outline-none focus:border-indigo-500" />
-            </div>
-            <div>
-              <label className="text-xs font-bold text-zinc-500 mb-1 block">LIMITE (R$)</label>
-              <input type="number" value={limite} onChange={e => setLimite(e.target.value)} placeholder="0,00"
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:border-indigo-500" />
-            </div>
-          </div>
-
-          <div>
-            <label className="text-xs font-bold text-zinc-500 mb-1 block">DIA DE VENCIMENTO DA FATURA</label>
-            <input type="number" min={1} max={31} value={diaVencimento} onChange={e => setDiaVenc(e.target.value)} placeholder="Ex: 10"
-              className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:border-indigo-500" />
-            {diaVencimento && (
-              <p className="text-xs text-indigo-400 mt-1 font-bold">
-                ✨ Melhor dia para comprar: dia {melhorDia}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="text-xs font-bold text-zinc-500 mb-2 block">BANDEIRA</label>
-            <div className="grid grid-cols-3 gap-2">
-              {BANDEIRAS.map(b => (
-                <button key={b.value} onClick={() => setBandeira(b.value)}
-                  className={`py-2 rounded-xl font-bold text-sm border transition-all flex items-center justify-center gap-1.5 ${bandeira === b.value ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300' : 'bg-zinc-800 border-zinc-700 text-zinc-400'}`}>
-                  <span>{b.emoji}</span> {b.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="text-xs font-bold text-zinc-500 mb-2 block">COR DO CARTÃO</label>
-            <div className="flex gap-2 flex-wrap">
-              {CORES_CARTAO.map(c => (
-                <button key={c.value} onClick={() => setCor(c.value)}
-                  className={`w-10 h-10 rounded-xl bg-gradient-to-br ${c.value} border-2 transition-all ${cor === c.value ? 'border-white scale-110' : 'border-transparent'}`} title={c.label} />
-              ))}
-            </div>
-          </div>
-
-          <button onClick={salvar}
-            className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-base rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95">
-            <Save className="w-5 h-5" />
-            {editando ? 'Salvar alterações' : 'Adicionar cartão'}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl shadow-xl w-full max-w-md mx-4">
+        <div className="flex justify-between items-center p-4 border-b border-zinc-800">
+          <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+            <CreditCard size={20} /> {cartao ? 'Editar Cartão' : 'Novo Cartão'}
+          </h2>
+          <button onClick={onClose} className="p-1 hover:bg-zinc-800 rounded-lg text-zinc-400">
+            <X size={20} />
           </button>
         </div>
+
+        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-1">Nome do Cartão</label>
+            <input
+              type="text"
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+              className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-zinc-400"
+              placeholder="Ex: Nubank, Itaú, Santander..."
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-1">Limite Total</label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">R$</span>
+              <input
+                type="number"
+                step="0.01"
+                value={limite}
+                onChange={(e) => setLimite(e.target.value)}
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-xl pl-10 pr-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-zinc-400"
+                placeholder="0,00"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-1">Dia Fechamento</label>
+              <select
+                value={diaFechamento}
+                onChange={(e) => setDiaFechamento(parseInt(e.target.value))}
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-white"
+              >
+                {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-1">Dia Vencimento</label>
+              <select
+                value={diaVencimento}
+                onChange={(e) => setDiaVencimento(parseInt(e.target.value))}
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-white"
+              >
+                {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-1">Cor</label>
+            <div className="flex gap-2">
+              {cores.map(c => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setCor(c)}
+                  className={`w-10 h-10 rounded-full transition-all ${
+                    cor === c ? 'ring-2 ring-offset-2 ring-offset-zinc-900 ring-zinc-400 scale-110' : ''
+                  }`}
+                  style={{ backgroundColor: c }}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            {cartao && onDelete && (
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="flex items-center gap-2 px-4 py-2 bg-red-900/50 text-red-400 rounded-xl hover:bg-red-900 border border-red-800"
+              >
+                <Trash2 size={18} /> Excluir
+              </button>
+            )}
+            <button
+              type="submit"
+              className="flex-1 bg-blue-600 text-white py-2 rounded-xl font-medium hover:bg-blue-700"
+            >
+              {cartao ? 'Salvar' : 'Adicionar Cartão'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
-  )
+  );
 }

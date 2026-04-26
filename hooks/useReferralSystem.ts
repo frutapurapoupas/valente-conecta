@@ -1,5 +1,16 @@
 'use client'
 
+/**
+ * ⚠️ SISTEMA DESATIVADO - USAR useIndicacoes.ts
+ * 
+ * Este sistema de bônus por pontos foi desativado em favor do sistema unificado
+ * de bônus por módulo em hooks/useIndicacoes.ts
+ * 
+ * O novo sistema gerencia todas as regras de bônus de forma centralizada
+ * com suporte para: ambulante, academia, profissional, servico, cidade,
+ * empresa, imovel_alugar, imovel_vender, transporte_delivery
+ */
+
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 

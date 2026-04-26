@@ -1,515 +1,588 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import Link from 'next/link'
-import { 
-  Dumbbell, Calendar, TrendingUp, Award, Users, ChevronLeft, LogIn, 
-  Settings, MapPin, Clock, Bell, Droplet, Coffee, Activity, Heart,
-  Edit2, Plus, Trash2, Navigation, Target, Flame, Battery, Footprints,
-  Zap, AlertCircle, CheckCircle, MessageCircle, ChevronLeft as ChevronLeftIcon,
-  ChevronRight as ChevronRightIcon
+import {
+  CheckCircle, Flame, MapPin, Plus, Minus,
+  TrendingUp, BookOpen, Target, Trophy, Star, Wifi, WifiOff, Edit, Dumbbell
 } from 'lucide-react'
+import AcademiaHeader from '@/components/academia/Header'
+import BottomNav from '@/components/academia/BottomNav'
+import AdminPanel from '@/components/academia/AdminPanel'
+import NotificationPermission from '@/components/academia/NotificationPermission'
+import PlanoAdminCard from '@/components/PlanoAdminCard'
+import {
+  type PerfilAluno, salvarPerfil, carregarPerfil,
+  notificarCheckIn, notificarEmAndamento, notificarCheckOut,
+} from '@/hooks/useAcademiaNotificacoes'
 
-interface AcademiaDados {
-  nome: string
-  endereco: string
-  lat?: number
-  lng?: number
-  horarioInicio: string
-  horarioFim: string
-  frequenciaSemanal: number
-  exercicios: string[]
+// Coordenadas da academia — configuradas pelo admin
+const GYM_LAT = -23.5505
+const GYM_LNG = -46.6333
+const GYM_RADIUS = 5   // metros — aluno precisa estar a 5m da academia
+const WARMUP_MS = 5 * 60 * 1000 // 5 min após entrar no raio para iniciar contagem
+const GEO_PERMISSION_KEY = 'academia_geo_granted'
+const CHECKIN_KEY = 'academia_checkin'
+
+function calcDist(lat1: number, lng1: number, lat2: number, lng2: number) {
+  const R = 6371000
+  const p1 = lat1 * Math.PI / 180, p2 = lat2 * Math.PI / 180
+  const dp = (lat2 - lat1) * Math.PI / 180, dl = (lng2 - lng1) * Math.PI / 180
+  const a = Math.sin(dp / 2) ** 2 + Math.cos(p1) * Math.cos(p2) * Math.sin(dl / 2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 }
 
-interface EsporteLocal {
-  id: string
-  nome: string
-  local: string
-  endereco: string
-  lat?: number
-  lng?: number
-  diasSemana: number[]
-  duracao: number
-  horario: string
+type GeoState = 'idle' | 'watching' | 'dentro' | 'fora' | 'negado'
+
+interface Exercicio {
+  id: number; nome: string; series: number; reps: number
+  carga: number; metaCarga: number; feito: boolean
 }
+
+const TREINO_INICIAL: Exercicio[] = [
+  { id: 1, nome: 'Supino Reto',     series: 4, reps: 12, carga: 60, metaCarga: 80,  feito: false },
+  { id: 2, nome: 'Puxada Frontal',  series: 3, reps: 15, carga: 55, metaCarga: 70,  feito: false },
+  { id: 3, nome: 'Desenvolvimento', series: 3, reps: 12, carga: 40, metaCarga: 60,  feito: false },
+  { id: 4, nome: 'Rosca Direta',    series: 3, reps: 15, carga: 25, metaCarga: 35,  feito: false },
+  { id: 5, nome: 'Agachamento',     series: 4, reps: 10, carga: 80, metaCarga: 100, feito: false },
+]
+
+const METAS_ALUNO = [
+  { label: 'Peso corporal',   valor: '78 kg', meta: '72 kg', pct: 40, cor: 'bg-blue-500' },
+  { label: 'Treinos/semana',  valor: '3x',    meta: '5x',    pct: 60, cor: 'bg-violet-500' },
+  { label: 'Carga no supino', valor: '60 kg', meta: '80 kg', pct: 75, cor: 'bg-emerald-500' },
+]
+
+const INCENTIVOS = [
+  { emoji: '\uD83D\uDD25', txt: '5 treinos consecutivos \u2014 voc\u00ea est\u00e1 em chamas!', cor: 'amber' },
+  { emoji: '\uD83C\uDFAF', txt: 'Supino a 75% da meta. Continue assim!', cor: 'violet' },
+  { emoji: '\u2B50',        txt: '12 treinos esse m\u00eas \u2014 recorde pessoal!', cor: 'blue' },
+]
 
 export default function AcademiaPage() {
-  const [cadastrado, setCadastrado] = useState(false)
-  const [dadosAcademia, setDadosAcademia] = useState<AcademiaDados | null>(null)
-  const [esportes, setEsportes] = useState<EsporteLocal[]>([])
-  const [showModalAcademia, setShowModalAcademia] = useState(false)
-  const [showModalEsporte, setShowModalEsporte] = useState(false)
-  const [editandoEsporte, setEditandoEsporte] = useState<EsporteLocal | null>(null)
-  const [localizacao, setLocalizacao] = useState<{ lat: number; lng: number } | null>(null)
-  const [mensagem, setMensagem] = useState('')
-  const [slideAtual, setSlideAtual] = useState(0)
-  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null)
+  const [isAdmin] = useState(false)
+  const [perfil, setPerfil] = useState<PerfilAluno | null>(null)
+  const [showCadastro, setShowCadastro] = useState(false)
+  const [showEditarPerfil, setShowEditarPerfil] = useState(false)
+  const [showCadastrarAtividade, setShowCadastrarAtividade] = useState(false)
+  const [formPerfil, setFormPerfil] = useState({ nome: '', objetivo: 'emagrecer', pesoAtual: '', pesoMeta: '', altura: '', periodoMeta: '', freqSemanal: '3', nivel: 'iniciante' })
+  const [geoState, setGeoState] = useState<GeoState>('idle')
+  const [isCheckIn, setIsCheckIn] = useState(false)
+  const [elapsedTime, setElapsedTime] = useState(0)
+  const [exercicios, setExercicios] = useState<Exercicio[]>(TREINO_INICIAL)
+  const [incentIdx, setIncentIdx] = useState(0)
+  const watchRef    = useRef<number | null>(null)
+  const timerRef    = useRef<NodeJS.Timeout | null>(null)
+  const warmupRef   = useRef<NodeJS.Timeout | null>(null) // timer dos 5 min de espera
+  const dentroRef   = useRef(false) // evita disparos duplicados
 
-  // Slides do carrossel
-  const slides = [
-    {
-      titulo: '💪 Desafio da Semana',
-      descricao: 'Complete 5 treinos e ganhe um brinde exclusivo!',
-      cor: 'from-purple-500 to-pink-500',
-      acao: 'Participar'
-    },
-    {
-      titulo: '🏆 Ranking de Presenças',
-      descricao: 'Você está no top 10! Continue assim!',
-      cor: 'from-yellow-500 to-orange-500',
-      acao: 'Ver ranking'
-    },
-    {
-      titulo: '🎯 Meta Pessoal',
-      descricao: 'Você está a 2 treinos de bater sua meta mensal!',
-      cor: 'from-green-500 to-emerald-500',
-      acao: 'Ver metas'
-    }
-  ]
+  function pararTudo() {
+    // Para imediatamente ao sair do raio
+    dentroRef.current = false
+    if (warmupRef.current) { clearTimeout(warmupRef.current); warmupRef.current = null }
+    setIsCheckIn(false)
+    setElapsedTime(0)
+    localStorage.removeItem(CHECKIN_KEY)
+  }
 
-  // Dados do formulário de academia
-  const [formAcademia, setFormAcademia] = useState<AcademiaDados>({
-    nome: '',
-    endereco: '',
-    horarioInicio: '08:00',
-    horarioFim: '20:00',
-    frequenciaSemanal: 3,
-    exercicios: []
-  })
+  // --- Inicia monitoramento de localização ---
+  function iniciarGeo() {
+    if (!navigator.geolocation) { setGeoState('negado'); return }
+    setGeoState('watching')
+    localStorage.setItem(GEO_PERMISSION_KEY, '1')
 
-  // Dados do formulário de esporte
-  const [formEsporte, setFormEsporte] = useState({
-    nome: '',
-    local: '',
-    endereco: '',
-    diasSemana: [] as number[],
-    duracao: 60,
-    horario: '18:00'
-  })
+    watchRef.current = navigator.geolocation.watchPosition(
+      (pos) => {
+        const dist = calcDist(pos.coords.latitude, pos.coords.longitude, GYM_LAT, GYM_LNG)
+        const dentro = dist <= GYM_RADIUS
+        setGeoState(dentro ? 'dentro' : 'fora')
 
-  const dias = [
-    { id: 0, nome: 'Dom', abreviado: 'D' },
-    { id: 1, nome: 'Seg', abreviado: 'S' },
-    { id: 2, nome: 'Ter', abreviado: 'T' },
-    { id: 3, nome: 'Qua', abreviado: 'Q' },
-    { id: 4, nome: 'Qui', abreviado: 'Q' },
-    { id: 5, nome: 'Sex', abreviado: 'S' },
-    { id: 6, nome: 'Sáb', abreviado: 'S' },
-  ]
+        if (dentro) {
+          if (!dentroRef.current) {
+            // Primeira vez dentro do raio — aguarda 5 min para iniciar
+            dentroRef.current = true
+            warmupRef.current = setTimeout(() => {
+              if (dentroRef.current) {
+                const start = Date.now()
+                setIsCheckIn(true)
+                localStorage.setItem(CHECKIN_KEY, JSON.stringify({ start }))
+                // Notifica check-in
+                const p = carregarPerfil()
+                if (p) notificarCheckIn(p)
+              }
+            }, WARMUP_MS)
+          }
+        } else {
+          // Saíu do raio — para tudo imediatamente
+          if (dentroRef.current) {
+            // Notifica check-out com tempo acumulado
+            const saved = localStorage.getItem(CHECKIN_KEY)
+            if (saved) {
+              const { start } = JSON.parse(saved)
+              const mins = Math.floor((Date.now() - start) / 60000)
+              const p = carregarPerfil()
+              if (p && mins > 0) notificarCheckOut(p, mins)
+            }
+            pararTudo()
+          }
+          setGeoState('fora')
+        }
+      },
+      () => setGeoState('negado'),
+      { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
+    )
+  }
 
-  const exerciciosLista = [
-    'Musculação', 'Esteira', 'Bicicleta', 'Alongamento', 'Funcional',
-    'Crossfit', 'Boxe', 'Dança', 'Yoga', 'Pilates', 'Natação', 'Corrida'
-  ]
-
-  // Carregar dados salvos
+  // Carrega perfil ao iniciar
   useEffect(() => {
-    const savedCadastro = localStorage.getItem('academia_cadastrado')
-    setCadastrado(savedCadastro === 'true')
-    
-    const savedAcademia = localStorage.getItem('academia_dados_academia')
-    if (savedAcademia) {
-      setDadosAcademia(JSON.parse(savedAcademia))
-      setFormAcademia(JSON.parse(savedAcademia))
-    }
-    
-    const savedEsportes = localStorage.getItem('academia_esportes')
-    if (savedEsportes) {
-      setEsportes(JSON.parse(savedEsportes))
-    }
+    const p = carregarPerfil()
+    if (p) setPerfil(p)
+    else setShowCadastro(true)
   }, [])
 
-  // Auto-play do carrossel
+  // Retoma monitoramento se já deu permissão antes
   useEffect(() => {
-    if (intervalId) clearInterval(intervalId)
-    const id = setInterval(() => {
-      setSlideAtual((prev) => (prev + 1) % slides.length)
-    }, 5000)
-    setIntervalId(id)
-    return () => clearInterval(id)
-  }, [slides.length])
+    const granted = localStorage.getItem(GEO_PERMISSION_KEY)
+    const saved = localStorage.getItem(CHECKIN_KEY)
+    if (saved) {
+      const { start } = JSON.parse(saved)
+      dentroRef.current = true
+      setIsCheckIn(true)
+      setElapsedTime(Math.floor((Date.now() - start) / 60000))
+    }
+    if (granted) iniciarGeo()
+    return () => {
+      if (watchRef.current) navigator.geolocation.clearWatch(watchRef.current)
+      if (warmupRef.current) clearTimeout(warmupRef.current)
+    }
+  }, []) // eslint-disable-line
 
-  const proximoSlide = () => {
-    setSlideAtual((prev) => (prev + 1) % slides.length)
-    resetarTimer()
-  }
-
-  const slideAnterior = () => {
-    setSlideAtual((prev) => (prev - 1 + slides.length) % slides.length)
-    resetarTimer()
-  }
-
-  const resetarTimer = () => {
-    if (intervalId) clearInterval(intervalId)
-    const id = setInterval(() => {
-      setSlideAtual((prev) => (prev + 1) % slides.length)
-    }, 5000)
-    setIntervalId(id)
-  }
-
-  const capturarLocalizacao = () => {
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        setLocalizacao({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
+  // Timer de treino — atualiza a cada minuto
+  useEffect(() => {
+    if (isCheckIn) {
+      timerRef.current = setInterval(() => {
+        setElapsedTime(t => {
+          const novo = t + 1
+          const saved = localStorage.getItem(CHECKIN_KEY)
+          if (saved) {
+            const data = JSON.parse(saved)
+            localStorage.setItem(CHECKIN_KEY, JSON.stringify({ ...data, elapsed: novo }))
+          }
+          // Notifica a cada 30 min
+          const p = carregarPerfil()
+          if (p) notificarEmAndamento(p, novo)
+          return novo
         })
-        setMensagem('📍 Localização capturada com sucesso!')
-        setTimeout(() => setMensagem(''), 3000)
+      }, 60000)
+    } else {
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
+    return () => { if (timerRef.current) clearInterval(timerRef.current) }
+  }, [isCheckIn])
+
+  // Rotação de incentivos
+  useEffect(() => {
+    const t = setInterval(() => setIncentIdx(i => (i + 1) % INCENTIVOS.length), 4000)
+    return () => clearInterval(t)
+  }, [])
+
+  function toggleExercicio(id: number) {
+    setExercicios(ex => ex.map(e => e.id === id ? { ...e, feito: !e.feito } : e))
+  }
+  function alterarCarga(id: number, delta: number) {
+    setExercicios(ex => ex.map(e => e.id === id ? { ...e, carga: Math.max(0, e.carga + delta) } : e))
+  }
+
+  function salvarFormPerfil() {
+    if (!formPerfil.nome || !formPerfil.pesoAtual || !formPerfil.pesoMeta || !formPerfil.altura) return
+    const novo: PerfilAluno = {
+      nome: formPerfil.nome,
+      objetivo: formPerfil.objetivo as PerfilAluno['objetivo'],
+      pesoAtual: parseFloat(formPerfil.pesoAtual),
+      pesoMeta: parseFloat(formPerfil.pesoMeta),
+      altura: parseFloat(formPerfil.altura),
+      periodoMeta: formPerfil.periodoMeta,
+      freqSemanal: parseInt(formPerfil.freqSemanal),
+      nivel: formPerfil.nivel as PerfilAluno['nivel'],
+    }
+    salvarPerfil(novo)
+    setPerfil(novo)
+    setShowCadastro(false)
+    setShowEditarPerfil(false)
+  }
+
+  function abrirEditarPerfil() {
+    if (perfil) {
+      setFormPerfil({
+        nome: perfil.nome,
+        objetivo: perfil.objetivo,
+        pesoAtual: perfil.pesoAtual.toString(),
+        pesoMeta: perfil.pesoMeta.toString(),
+        altura: perfil.altura?.toString() || '',
+        periodoMeta: perfil.periodoMeta || '',
+        freqSemanal: perfil.freqSemanal.toString(),
+        nivel: perfil.nivel
       })
-    } else {
-      setMensagem('❌ Geolocalização não suportada')
-      setTimeout(() => setMensagem(''), 3000)
+      setShowEditarPerfil(true)
     }
   }
 
-  const salvarAcademia = () => {
-    const dadosCompletos = {
-      ...formAcademia,
-      lat: localizacao?.lat,
-      lng: localizacao?.lng
-    }
-    setDadosAcademia(dadosCompletos)
-    localStorage.setItem('academia_dados_academia', JSON.stringify(dadosCompletos))
-    localStorage.setItem('academia_cadastrado', 'true')
-    setCadastrado(true)
-    setShowModalAcademia(false)
-    setMensagem('✅ Academia salva com sucesso!')
-    setTimeout(() => setMensagem(''), 3000)
+  const totalFeitos = exercicios.filter(e => e.feito).length
+  const pctFeitos = Math.round((totalFeitos / exercicios.length) * 100)
+  const incent = INCENTIVOS[incentIdx]
+  const corMap: Record<string, string> = {
+    amber:  'bg-amber-50 border-amber-200 text-amber-800',
+    violet: 'bg-violet-50 border-violet-200 text-violet-800',
+    blue:   'bg-blue-50 border-blue-200 text-blue-800',
   }
 
-  const salvarEsporte = () => {
-    if (editandoEsporte) {
-      const novosEsportes = esportes.map(e => 
-        e.id === editandoEsporte.id ? { ...formEsporte, id: e.id, lat: localizacao?.lat, lng: localizacao?.lng } : e
-      )
-      setEsportes(novosEsportes)
-      localStorage.setItem('academia_esportes', JSON.stringify(novosEsportes))
-      setMensagem('✏️ Esporte atualizado!')
-    } else {
-      const novoEsporte: EsporteLocal = {
-        id: Date.now().toString(),
-        ...formEsporte,
-        lat: localizacao?.lat,
-        lng: localizacao?.lng
-      }
-      const novosEsportes = [...esportes, novoEsporte]
-      setEsportes(novosEsportes)
-      localStorage.setItem('academia_esportes', JSON.stringify(novosEsportes))
-      setMensagem('➕ Esporte adicionado!')
-    }
-    setShowModalEsporte(false)
-    setEditandoEsporte(null)
-    setFormEsporte({ nome: '', local: '', endereco: '', diasSemana: [], duracao: 60, horario: '18:00' })
-    setTimeout(() => setMensagem(''), 3000)
-  }
-
-  const removerEsporte = (id: string) => {
-    const novosEsportes = esportes.filter(e => e.id !== id)
-    setEsportes(novosEsportes)
-    localStorage.setItem('academia_esportes', JSON.stringify(novosEsportes))
-    setMensagem('🗑️ Esporte removido')
-    setTimeout(() => setMensagem(''), 3000)
-  }
-
-  const enviarLembrete = (tipo: string, nome?: string) => {
-    const numero = localStorage.getItem('academia_telefone') || ''
-    let mensagemWhats = ''
-    
-    if (tipo === 'agua') {
-      mensagemWhats = '💧 *Hora de hidratar!* 💧\n\nNão esqueça de beber água durante o treino. Mantenha-se saudável! 🏋️‍♂️'
-    } else if (tipo === 'treino') {
-      mensagemWhats = `⏰ *Hora do treino!* ⏰\n\nSeu treino na ${dadosAcademia?.nome || 'academia'} está marcado para agora. Prepare-se e vamos com tudo! 💪`
-    } else if (tipo === 'esporte' && nome) {
-      mensagemWhats = `⚽ *Hora do ${nome}!* ⚽\n\nSua atividade está marcada para agora. Divirta-se e aproveite! 🎉`
-    }
-    
-    if (numero) {
-      window.open(`https://wa.me/${numero.replace(/\D/g, '')}?text=${encodeURIComponent(mensagemWhats)}`, '_blank')
-    } else {
-      setMensagem('📱 Cadastre seu telefone primeiro!')
-      setTimeout(() => setMensagem(''), 3000)
-    }
-  }
-
-  const dicas = [
-    { icone: Droplet, texto: 'Beba água a cada 30 minutos', cor: 'text-blue-400', ação: 'agua' },
-    { icone: Clock, texto: 'Chegue 15 minutos antes para aquecer', cor: 'text-yellow-400' },
-    { icone: Activity, texto: 'Você está a 2 treinos de bater sua meta!', cor: 'text-green-400' },
-    { icone: Heart, texto: 'Seu batimento ideal é 120-140 bpm', cor: 'text-red-400' },
-    { icone: Battery, texto: 'Descanço é tão importante quanto o treino', cor: 'text-purple-400' },
-    { icone: Flame, texto: 'Você queimou 450 calorias esta semana', cor: 'text-orange-400' },
-  ]
-
-  const toggleDia = (diaId: number) => {
-    setFormEsporte(prev => ({
-      ...prev,
-      diasSemana: prev.diasSemana.includes(diaId)
-        ? prev.diasSemana.filter(d => d !== diaId)
-        : [...prev.diasSemana, diaId]
-    }))
-  }
-
-  const toggleExercicio = (exercicio: string) => {
-    setFormAcademia(prev => ({
-      ...prev,
-      exercicios: prev.exercicios.includes(exercicio)
-        ? prev.exercicios.filter(e => e !== exercicio)
-        : [...prev.exercicios, exercicio]
-    }))
-  }
-
-  const noticias = [
-    { id: 1, titulo: 'Desafio de 30 dias', descricao: 'Participe e ganhe prêmios exclusivos', data: 'Amanhã', cor: 'from-blue-500 to-cyan-500' },
-    { id: 2, titulo: 'Avaliação física gratuita', descricao: 'Agende sua avaliação com nossos profissionais', data: 'Essa semana', cor: 'from-green-500 to-emerald-500' },
-  ]
+  // --- Banner de geo ---
+  const geoBanner = geoState === 'dentro' && isCheckIn
+    ? { txt: '\uD83D\uDCCD Voc\u00ea est\u00e1 na academia \u2014 treino em andamento', cls: 'bg-emerald-100 text-emerald-700' }
+    : geoState === 'dentro' && !isCheckIn
+    ? { txt: '\uD83D\uDCCD Voc\u00ea est\u00e1 no local \u2014 contagem inicia em 5 min',  cls: 'bg-blue-100 text-blue-700' }
+    : geoState === 'fora'
+    ? { txt: '\uD83D\uDCCD Voc\u00ea saiu da academia',              cls: 'bg-orange-100 text-orange-700' }
+    : geoState === 'watching'
+    ? { txt: '\uD83D\uDCCD Detectando localiza\u00e7\u00e3o...',     cls: 'bg-slate-100 text-slate-500' }
+    : geoState === 'negado'
+    ? { txt: '\uD83D\uDCCD Localiza\u00e7\u00e3o negada pelo dispositivo', cls: 'bg-red-100 text-red-600' }
+    : null
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white pb-24">
-      {/* Header - sem o texto "Minha Academia" */}
-      <header className="sticky top-0 z-40 bg-zinc-900/95 backdrop-blur border-b border-zinc-800 px-4 py-4">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <Link href="/" className="p-2 bg-zinc-800 rounded-xl">
-            <ChevronLeft className="w-5 h-5 text-zinc-400" />
-          </Link>
-          <div className="w-10" />
-          {cadastrado && dadosAcademia && (
-            <button onClick={() => setShowModalAcademia(true)} className="p-2 bg-zinc-800 rounded-xl">
-              <Settings className="w-5 h-5 text-zinc-400" />
-            </button>
-          )}
-        </div>
-      </header>
+    <div className="min-h-screen bg-slate-50 pb-28">
+      <NotificationPermission />
+      <AcademiaHeader isAdmin={isAdmin} isCheckIn={isCheckIn} elapsedTime={elapsedTime} onActionClick={() => {}} />
 
-      <main className="max-w-2xl mx-auto p-4 space-y-6">
-        {/* Carrossel Fixo */}
-        <div className="sticky top-16 z-30 bg-zinc-950 pt-2 pb-2 -mt-2">
-          <div className="relative">
-            <div className="overflow-hidden rounded-2xl">
-              <div 
-                className="flex transition-transform duration-500 ease-out"
-                style={{ transform: `translateX(-${slideAtual * 100}%)` }}
-              >
-                {slides.map((slide, index) => (
-                  <div key={index} className="w-full flex-shrink-0">
-                    <div className={`bg-gradient-to-r ${slide.cor} rounded-2xl p-6 text-center min-h-[140px] flex flex-col justify-between`}>
-                      <div>
-                        <h3 className="text-xl font-black text-white">{slide.titulo}</h3>
-                        <p className="text-white/80 text-sm mt-2">{slide.descricao}</p>
-                      </div>
-                      <button className="mt-4 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl text-white text-sm font-bold transition w-fit mx-auto">
-                        {slide.acao} →
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <button onClick={slideAnterior} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-2 transition-all">
-              <ChevronLeftIcon className="w-5 h-5 text-white" />
-            </button>
-            <button onClick={proximoSlide} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-2 transition-all">
-              <ChevronRightIcon className="w-5 h-5 text-white" />
-            </button>
-            
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-              {slides.map((_, index) => (
-                <button key={index} onClick={() => setSlideAtual(index)} className={`h-1.5 rounded-full transition-all ${slideAtual === index ? 'w-6 bg-yellow-400' : 'w-1.5 bg-white/50'}`} />
-              ))}
-            </div>
-          </div>
+      {/* Banner de localização ativo */}
+      {geoBanner && (
+        <div className={`mx-4 mt-3 px-4 py-2 rounded-2xl flex items-center gap-2 text-sm font-semibold ${geoBanner.cls}`}>
+          {geoState === 'watching' ? <Wifi className="w-4 h-4 flex-shrink-0" /> : geoState === 'negado' ? <WifiOff className="w-4 h-4 flex-shrink-0" /> : <MapPin className="w-4 h-4 flex-shrink-0" />}
+          <span>{geoBanner.txt}</span>
+        </div>
+      )}
+
+      <main className="max-w-2xl mx-auto px-4 pt-4 space-y-4">
+        <PlanoAdminCard />
+        {/* Botão Editar Perfil - só aparece se perfil já cadastrado */}
+        {perfil && (
+          <button
+            onClick={abrirEditarPerfil}
+            className="w-full py-3 bg-white border-2 border-indigo-200 rounded-2xl flex items-center justify-center gap-2 text-indigo-700 font-bold hover:bg-indigo-50 transition-all active:scale-95"
+          >
+            <Edit className="w-5 h-5" />
+            Editar Meus Dados
+          </button>
+        )}
+
+        {/* Botão de entrada — só aparece se ainda não deu permissão */}
+        {geoState === 'idle' && (
+          <button
+            onClick={iniciarGeo}
+            className="w-full py-5 bg-gradient-to-r from-indigo-600 to-violet-700 text-white rounded-3xl font-black text-lg flex items-center justify-center gap-3 shadow-lg active:scale-95 transition-all"
+          >
+            <MapPin className="w-6 h-6" />
+            ESTOU NA ACADEMIA
+          </button>
+        )}
+
+        {/* Incentivo rotativo */}
+        <div className={`border rounded-2xl px-4 py-3 flex items-center gap-3 transition-all ${corMap[incent.cor]}`}>
+          <span className="text-2xl">{incent.emoji}</span>
+          <p className="text-sm font-bold">{incent.txt}</p>
         </div>
 
-        {/* Card da Academia */}
-        <div className="bg-gradient-to-r from-amber-800/50 to-orange-800/50 rounded-2xl p-5 border border-amber-700/30">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <Dumbbell className="w-5 h-5 text-yellow-400" />
-              <h2 className="font-bold text-white text-sm uppercase tracking-wider">MINHA ACADEMIA</h2>
-            </div>
-            <button onClick={() => setShowModalAcademia(true)} className="p-1 hover:bg-white/10 rounded-lg transition">
-              <Edit2 className="w-4 h-4 text-zinc-400" />
-            </button>
-          </div>
-          
-          <h3 className="text-xl font-black text-white mb-3">
-            {dadosAcademia?.nome || 'Nenhuma academia cadastrada'}
-          </h3>
-          
-          {dadosAcademia ? (
-            <div className="space-y-2 text-sm">
-              <p className="text-zinc-300 flex items-center gap-2"><MapPin className="w-3 h-3" />{dadosAcademia.endereco}</p>
-              <p className="text-zinc-300 flex items-center gap-2"><Clock className="w-3 h-3" />{dadosAcademia.horarioInicio} - {dadosAcademia.horarioFim}</p>
-              <p className="text-zinc-300 flex items-center gap-2"><Calendar className="w-3 h-3" />{dadosAcademia.frequenciaSemanal} dias/semana</p>
-              <div className="flex flex-wrap gap-1 mt-1">
-                {dadosAcademia.exercicios.slice(0, 3).map(ex => (
-                  <span key={ex} className="text-xs bg-amber-500/20 px-2 py-0.5 rounded-full text-amber-300">{ex}</span>
-                ))}
-                {dadosAcademia.exercicios.length > 3 && (
-                  <span className="text-xs text-zinc-500">+{dadosAcademia.exercicios.length - 3}</span>
-                )}
-              </div>
-            </div>
-          ) : (
-            <button onClick={() => setShowModalAcademia(true)} className="w-full py-3 bg-yellow-500 text-black rounded-xl font-bold text-sm mt-2">
-              Configurar Academia →
-            </button>
-          )}
-        </div>
-
-        {/* Card de Esportes */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-bold text-white flex items-center gap-2">
-              <Activity className="w-5 h-5 text-green-400" />
-              Esportes
-            </h2>
-            <button onClick={() => { setEditandoEsporte(null); setFormEsporte({ nome: '', local: '', endereco: '', diasSemana: [], duracao: 60, horario: '18:00' }); setShowModalEsporte(true) }} className="p-1 hover:bg-white/10 rounded-lg transition">
-              <Plus className="w-5 h-5 text-yellow-400" />
-            </button>
-          </div>
-          
-          {esportes.length === 0 ? (
-            <p className="text-sm text-zinc-500 text-center py-4">Nenhum esporte cadastrado. Clique em + para adicionar.</p>
-          ) : (
-            <div className="space-y-3">
-              {esportes.map(esporte => (
-                <div key={esporte.id} className="bg-zinc-800/50 rounded-xl p-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3 className="font-bold text-white">{esporte.nome}</h3>
-                      <p className="text-xs text-zinc-400 flex items-center gap-1 mt-0.5">
-                        <MapPin className="w-3 h-3" />
-                        {esporte.local} - {esporte.endereco}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1 text-xs text-zinc-500">
-                        <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{esporte.horario}</span>
-                        <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{esporte.duracao} min</span>
-                      </div>
-                      <div className="flex gap-1 mt-1">
-                        {dias.filter(d => esporte.diasSemana.includes(d.id)).map(d => (
-                          <span key={d.id} className="text-xs bg-green-500/20 px-1.5 py-0.5 rounded text-green-400">{d.abreviado}</span>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="flex gap-1">
-                      <button onClick={() => enviarLembrete('esporte', esporte.nome)} className="p-1.5 bg-green-600 rounded-lg hover:bg-green-500 transition" title="Enviar lembrete">
-                        <Bell className="w-3 h-3 text-white" />
-                      </button>
-                      <button onClick={() => { setEditandoEsporte(esporte); setFormEsporte({ nome: esporte.nome, local: esporte.local, endereco: esporte.endereco, diasSemana: esporte.diasSemana, duracao: esporte.duracao, horario: esporte.horario }); setShowModalEsporte(true) }} className="p-1.5 bg-zinc-700 rounded-lg hover:bg-zinc-600 transition">
-                        <Edit2 className="w-3 h-3 text-zinc-400" />
-                      </button>
-                      <button onClick={() => removerEsporte(esporte.id)} className="p-1.5 bg-red-500/20 rounded-lg hover:bg-red-500/30 transition">
-                        <Trash2 className="w-3 h-3 text-red-400" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Botão Começar Agora */}
-        <Link href="/academia/cadastro" className="block w-full py-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-black rounded-2xl font-black text-lg text-center hover:scale-105 transition">
-          Começar Agora →
-        </Link>
-
-        {/* Notícias */}
-        <div className="space-y-3">
-          <h3 className="font-bold text-white text-lg flex items-center gap-2">📢 Novidades</h3>
-          {noticias.map(noticia => (
-            <div key={noticia.id} className={`bg-gradient-to-r ${noticia.cor} rounded-2xl p-4`}>
-              <h4 className="font-bold text-black">{noticia.titulo}</h4>
-              <p className="text-black/80 text-sm">{noticia.descricao}</p>
-              <span className="text-black/60 text-xs mt-2 inline-block">{noticia.data}</span>
+        {/* Stats rápidos */}
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { icon: <Flame className="w-5 h-5 text-amber-500" />, val: '5',          label: 'dias seguidos' },
+            { icon: <Trophy className="w-5 h-5 text-yellow-500" />, val: '12',        label: 'treinos/m\u00eas' },
+            { icon: <Star className="w-5 h-5 text-indigo-500" />,   val: `${pctFeitos}%`, label: 'treino hoje' },
+          ].map(s => (
+            <div key={s.label} className="bg-white rounded-2xl p-4 text-center shadow-sm border border-slate-100">
+              <div className="flex justify-center mb-1">{s.icon}</div>
+              <p className="font-black text-xl text-gray-800">{s.val}</p>
+              <p className="text-xs text-gray-500 leading-tight">{s.label}</p>
             </div>
           ))}
         </div>
 
-        {/* Dicas e curiosidades */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
-          <h3 className="font-bold text-white mb-3 flex items-center gap-2">
-            <Zap className="w-4 h-4 text-yellow-400" />
-            Dicas e Curiosidades
-          </h3>
-          <div className="space-y-2">
-            {dicas.map((dica, idx) => {
-              const Icon = dica.icone
-              return (
-                <div key={idx} className="flex items-center gap-3 p-2 hover:bg-zinc-800/50 rounded-lg transition">
-                  <Icon className={`w-4 h-4 ${dica.cor}`} />
-                  <p className="text-sm text-zinc-300 flex-1">{dica.texto}</p>
-                  {dica.ação && (
-                    <button onClick={() => enviarLembrete(dica.ação as string)} className="text-xs text-green-400 hover:underline">
-                      Lembrar
-                    </button>
-                  )}
+        {/* Treino do dia */}
+        <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="font-black text-lg text-gray-800">TREINO DO DIA</h3>
+            <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-black">S\u00c9RIE A</span>
+          </div>
+          <div className="space-y-1">
+            <div className="flex justify-between text-xs text-gray-500 font-semibold">
+              <span>{totalFeitos}/{exercicios.length} exerc\u00edcios</span>
+              <span>{pctFeitos}%</span>
+            </div>
+            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-full bg-indigo-600 rounded-full transition-all" style={{ width: `${pctFeitos}%` }} />
+            </div>
+          </div>
+          {exercicios.map(ex => (
+            <div key={ex.id} className={`rounded-2xl border p-4 space-y-3 transition-all ${ex.feito ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200'}`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm ${ex.feito ? 'bg-emerald-500 text-white' : 'bg-indigo-600 text-white'}`}>
+                    {ex.feito ? <CheckCircle className="w-5 h-5" /> : ex.id}
+                  </div>
+                  <div>
+                    <p className="font-bold text-sm text-gray-800">{ex.nome}</p>
+                    <p className="text-xs text-slate-400">{ex.series} s\u00e9ries \u00d7 {ex.reps} reps</p>
+                  </div>
                 </div>
-              )
-            })}
+                <button onClick={() => toggleExercicio(ex.id)} className={`text-xs font-black px-3 py-1.5 rounded-xl transition-all active:scale-95 ${ex.feito ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600'}`}>
+                  {ex.feito ? 'FEITO' : 'MARCAR'}
+                </button>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-gray-500 font-semibold w-12">Carga:</span>
+                <button onClick={() => alterarCarga(ex.id, -2.5)} className="w-8 h-8 bg-slate-200 rounded-xl flex items-center justify-center active:scale-90 transition-all">
+                  <Minus className="w-4 h-4 text-gray-600" />
+                </button>
+                <span className="font-black text-base text-gray-800 w-16 text-center">{ex.carga} kg</span>
+                <button onClick={() => alterarCarga(ex.id, 2.5)} className="w-8 h-8 bg-slate-200 rounded-xl flex items-center justify-center active:scale-90 transition-all">
+                  <Plus className="w-4 h-4 text-gray-600" />
+                </button>
+                <div className="flex-1">
+                  <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                    <div className="h-full bg-indigo-400 rounded-full transition-all" style={{ width: `${Math.min(100, Math.round((ex.carga / ex.metaCarga) * 100))}%` }} />
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-0.5">meta: {ex.metaCarga} kg</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Metas */}
+        <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 space-y-4">
+          <h3 className="font-black text-lg text-gray-800 flex items-center gap-2">
+            <Target className="w-5 h-5 text-violet-500" /> Minhas Metas
+          </h3>
+          {METAS_ALUNO.map(m => (
+            <div key={m.label} className="space-y-1.5">
+              <div className="flex justify-between text-sm">
+                <span className="font-semibold text-gray-700">{m.label}</span>
+                <span className="font-black text-gray-800">{m.valor} <span className="text-xs text-gray-400 font-normal">\u2192 {m.meta}</span></span>
+              </div>
+              <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                <div className={`h-full rounded-full transition-all ${m.cor}`} style={{ width: `${m.pct}%` }} />
+              </div>
+              <p className="text-xs text-gray-400 text-right">{m.pct}% da meta</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Histórico + Biblioteca + Cadastrar Atividade */}
+        <div className="grid grid-cols-2 gap-3">
+          <button onClick={() => window.location.href = '/academia/historico-carga'} className="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center gap-2 shadow-sm active:scale-95 transition-all">
+            <TrendingUp className="w-6 h-6 text-indigo-500" />
+            <p className="font-bold text-sm text-gray-700">Histórico de Cargas</p>
+            <p className="text-xs text-gray-400 text-center">Configure suas atividades</p>
+          </button>
+          <button onClick={() => window.location.href = '/academia/biblioteca'} className="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center gap-2 shadow-sm active:scale-95 transition-all">
+            <BookOpen className="w-6 h-6 text-violet-500" />
+            <p className="font-bold text-sm text-gray-700">Biblioteca</p>
+            <p className="text-xs text-gray-400 text-center">Exercícios e técnicas</p>
+          </button>
+        </div>
+
+        {/* Botão Cadastrar Outras Atividades Físicas */}
+        <button
+          onClick={() => window.location.href = '/academia/historico-carga'}
+          className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl font-bold flex items-center justify-center gap-2 shadow-sm active:scale-95 transition-all"
+        >
+          <Dumbbell className="w-5 h-5" />
+          Cadastrar Outras Atividades Físicas
+        </button>
+
+        {/* Conquistas */}
+        <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
+          <h3 className="font-black text-base text-gray-800 flex items-center gap-2 mb-3">
+            <Star className="w-5 h-5 text-yellow-400" /> Conquistas
+          </h3>
+          <div className="flex gap-3 overflow-x-auto pb-1">
+            {[
+              { emoji: '\uD83C\uDFC6', nome: 'Primeiro Treino', ok: true },
+              { emoji: '\uD83D\uDD25', nome: '5 dias seguidos', ok: true },
+              { emoji: '\uD83D\uDCAA', nome: '10 treinos',      ok: true },
+              { emoji: '\u2B50',        nome: '20 treinos',      ok: false },
+              { emoji: '\uD83C\uDFC5', nome: '30 treinos',      ok: false },
+            ].map(c => (
+              <div key={c.nome} className={`flex-shrink-0 flex flex-col items-center gap-1 w-16 p-2 rounded-2xl border ${c.ok ? 'bg-yellow-50 border-yellow-200' : 'bg-slate-50 border-slate-200 opacity-40'}`}>
+                <span className="text-2xl">{c.emoji}</span>
+                <p className="text-[9px] font-bold text-center text-gray-600 leading-tight">{c.nome}</p>
+              </div>
+            ))}
           </div>
         </div>
+
+        {isAdmin && <AdminPanel />}
       </main>
 
-      {/* Mensagem flutuante */}
-      {mensagem && (
-        <div className="fixed bottom-24 left-4 right-4 bg-zinc-800 border border-yellow-500/30 rounded-xl p-3 text-center animate-slide-up z-50">
-          <p className="text-sm text-yellow-400">{mensagem}</p>
-        </div>
-      )}
+      <BottomNav isAdmin={isAdmin} />
 
-      {/* Modais... (manter iguais) */}
-      {showModalAcademia && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-zinc-900 p-4 border-b border-zinc-800 flex justify-between items-center">
-              <h3 className="font-bold text-white text-lg">Configurar Academia</h3>
-              <button onClick={() => setShowModalAcademia(false)} className="p-1 hover:bg-zinc-800 rounded-lg"><Trash2 className="w-5 h-5 text-zinc-400" /></button>
+      {/* Modal de cadastro de perfil — aparece só se não tiver perfil */}
+      {showCadastro && (
+        <div className="fixed inset-0 z-50 bg-indigo-950/90 flex items-end justify-center">
+          <div className="bg-white rounded-t-3xl w-full max-w-md p-6 space-y-4 overflow-y-auto max-h-[90vh]">
+            <div className="text-center">
+              <span className="text-4xl">\uD83C\uDFCB\uFE0F</span>
+              <h2 className="text-xl font-black text-gray-800 mt-2">Seu Perfil de Treino</h2>
+              <p className="text-sm text-gray-500 mt-1">As notifica\u00e7\u00f5es de incentivo ser\u00e3o personalizadas para voc\u00ea</p>
             </div>
-            <div className="p-5 space-y-4">
-              <div><label className="block text-white text-sm font-bold mb-1">Nome da academia *</label><input type="text" value={formAcademia.nome} onChange={e => setFormAcademia({...formAcademia, nome: e.target.value})} placeholder="Ex: Smart Fit" className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white" /></div>
-              <div><label className="block text-white text-sm font-bold mb-1">Endereço *</label><input type="text" value={formAcademia.endereco} onChange={e => setFormAcademia({...formAcademia, endereco: e.target.value})} placeholder="Rua, número, bairro" className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white" /></div>
-              <button onClick={capturarLocalizacao} className="w-full py-2 bg-blue-600 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2"><Navigation className="w-4 h-4" /> Capturar Localização</button>
-              {localizacao && <p className="text-xs text-green-400 text-center">✅ Localização capturada!</p>}
-              <div className="grid grid-cols-2 gap-3"><div><label className="block text-white text-sm font-bold mb-1">Horário início</label><input type="time" value={formAcademia.horarioInicio} onChange={e => setFormAcademia({...formAcademia, horarioInicio: e.target.value})} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white" /></div><div><label className="block text-white text-sm font-bold mb-1">Horário fim</label><input type="time" value={formAcademia.horarioFim} onChange={e => setFormAcademia({...formAcademia, horarioFim: e.target.value})} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white" /></div></div>
-              <div><label className="block text-white text-sm font-bold mb-1">Dias por semana</label><div className="flex gap-2">{ [1,2,3,4,5,6,7].map(num => (<button key={num} onClick={() => setFormAcademia({...formAcademia, frequenciaSemanal: num})} className={`w-10 h-10 rounded-full text-sm font-bold ${formAcademia.frequenciaSemanal === num ? 'bg-yellow-500 text-black' : 'bg-zinc-800 text-zinc-400'}`}>{num}</button>)) }</div></div>
-              <div><label className="block text-white text-sm font-bold mb-2">Tipos de exercício</label><div className="flex flex-wrap gap-2">{exerciciosLista.map(ex => (<button key={ex} onClick={() => toggleExercicio(ex)} className={`px-3 py-2 rounded-full text-xs ${formAcademia.exercicios.includes(ex) ? 'bg-yellow-500 text-black' : 'bg-zinc-800 text-zinc-400'}`}>{ex}</button>))}</div></div>
-              <button onClick={salvarAcademia} className="w-full py-4 bg-yellow-500 text-black rounded-2xl font-black">Salvar Academia</button>
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-bold text-gray-800 uppercase tracking-wide">Seu nome</label>
+                <input value={formPerfil.nome} onChange={e => setFormPerfil(f => ({ ...f, nome: e.target.value }))} placeholder="Como quer ser chamado?" className="mt-1 w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base text-gray-900 font-medium bg-white" />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-800 uppercase tracking-wide">Objetivo principal</label>
+                <div className="grid grid-cols-2 gap-2 mt-1">
+                  {[
+                    { val: 'emagrecer',       emoji: '\uD83D\uDD25', label: 'Emagrecer' },
+                    { val: 'hipertrofia',     emoji: '\uD83D\uDCAA', label: 'Hipertrofia' },
+                    { val: 'condicionamento', emoji: '\u26A1',        label: 'Condicionamento' },
+                    { val: 'saude',           emoji: '\uD83D\uDC9A', label: 'Sa\u00fade geral' },
+                  ].map(o => (
+                    <button key={o.val} onClick={() => setFormPerfil(f => ({ ...f, objetivo: o.val }))} className={`py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 border-2 transition-all ${formPerfil.objetivo === o.val ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-600'}`}>
+                      <span>{o.emoji}</span>{o.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-gray-800 uppercase tracking-wide">Peso atual (kg)</label>
+                  <input type="number" value={formPerfil.pesoAtual} onChange={e => setFormPerfil(f => ({ ...f, pesoAtual: e.target.value }))} placeholder="Ex: 82" className="mt-1 w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base text-gray-900 font-medium bg-white" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-800 uppercase tracking-wide">Meta de peso (kg)</label>
+                  <input type="number" value={formPerfil.pesoMeta} onChange={e => setFormPerfil(f => ({ ...f, pesoMeta: e.target.value }))} placeholder="Ex: 72" className="mt-1 w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base text-gray-900 font-medium bg-white" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-gray-800 uppercase tracking-wide">Altura (cm)</label>
+                  <input type="number" value={formPerfil.altura} onChange={e => setFormPerfil(f => ({ ...f, altura: e.target.value }))} placeholder="Ex: 175" className="mt-1 w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base text-gray-900 font-medium bg-white" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-800 uppercase tracking-wide">Período para meta</label>
+                  <input type="text" value={formPerfil.periodoMeta} onChange={e => setFormPerfil(f => ({ ...f, periodoMeta: e.target.value }))} placeholder="Ex: 3 meses" className="mt-1 w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base text-gray-900 font-medium bg-white" />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-800 uppercase tracking-wide">Frequência desejada por semana</label>
+                <div className="flex gap-2 mt-1">
+                  {['1','2','3','4','5','6','7'].map(n => (
+                    <button key={n} onClick={() => setFormPerfil(f => ({ ...f, freqSemanal: n }))} className={`flex-1 py-3 rounded-xl text-sm font-black border-2 transition-all ${formPerfil.freqSemanal === n ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-gray-300 text-gray-700'}`}>{n}x</button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-800 uppercase tracking-wide">Nível</label>
+                <div className="flex gap-2 mt-1">
+                  {[
+                    { val: 'iniciante', label: 'Iniciante' },
+                    { val: 'intermediario', label: 'Interm.' },
+                    { val: 'avancado', label: 'Avan\u00e7ado' },
+                  ].map(n => (
+                    <button key={n.val} onClick={() => setFormPerfil(f => ({ ...f, nivel: n.val }))} className={`flex-1 py-3 rounded-xl text-sm font-bold border-2 transition-all ${formPerfil.nivel === n.val ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-600'}`}>{n.label}</button>
+                  ))}
+                </div>
+              </div>
             </div>
+            <button onClick={salvarFormPerfil} disabled={!formPerfil.nome || !formPerfil.pesoAtual || !formPerfil.pesoMeta || !formPerfil.altura} className="w-full py-4 bg-gradient-to-r from-indigo-600 to-violet-700 text-white rounded-2xl font-black text-lg active:scale-95 transition-all disabled:opacity-40">
+              Salvar e Começar 🚀
+            </button>
           </div>
         </div>
       )}
 
-      {showModalEsporte && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-zinc-900 p-4 border-b border-zinc-800 flex justify-between items-center">
-              <h3 className="font-bold text-white text-lg">{editandoEsporte ? 'Editar Esporte' : 'Adicionar Esporte'}</h3>
-              <button onClick={() => setShowModalEsporte(false)} className="p-1 hover:bg-zinc-800 rounded-lg"><Trash2 className="w-5 h-5 text-zinc-400" /></button>
+      {/* Modal de edição de perfil — aparece quando clicar em Editar Meus Dados */}
+      {showEditarPerfil && (
+        <div className="fixed inset-0 z-50 bg-indigo-950/90 flex items-end justify-center">
+          <div className="bg-white rounded-t-3xl w-full max-w-md p-6 space-y-4 overflow-y-auto max-h-[90vh]">
+            <div className="text-center">
+              <span className="text-4xl">✏️</span>
+              <h2 className="text-xl font-black text-gray-800 mt-2">Editar Meus Dados</h2>
+              <p className="text-sm text-gray-500 mt-1">Atualize suas informações de treino</p>
             </div>
-            <div className="p-5 space-y-4">
-              <div><label className="block text-white text-sm font-bold mb-1">Nome do esporte/atividade *</label><input type="text" value={formEsporte.nome} onChange={e => setFormEsporte({...formEsporte, nome: e.target.value})} placeholder="Ex: Futebol, Corrida, Natação" className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white" /></div>
-              <div><label className="block text-white text-sm font-bold mb-1">Nome do local *</label><input type="text" value={formEsporte.local} onChange={e => setFormEsporte({...formEsporte, local: e.target.value})} placeholder="Ex: Campo do bairro, Praia, Parque" className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white" /></div>
-              <div><label className="block text-white text-sm font-bold mb-1">Endereço completo *</label><input type="text" value={formEsporte.endereco} onChange={e => setFormEsporte({...formEsporte, endereco: e.target.value})} placeholder="Rua, número, bairro, cidade" className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white" /></div>
-              <button onClick={capturarLocalizacao} className="w-full py-2 bg-blue-600 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2"><Navigation className="w-4 h-4" /> Capturar Localização</button>
-              {localizacao && <p className="text-xs text-green-400 text-center">✅ Localização capturada!</p>}
-              <div className="grid grid-cols-2 gap-3"><div><label className="block text-white text-sm font-bold mb-1">Horário</label><input type="time" value={formEsporte.horario} onChange={e => setFormEsporte({...formEsporte, horario: e.target.value})} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white" /></div><div><label className="block text-white text-sm font-bold mb-1">Duração (min)</label><input type="number" value={formEsporte.duracao} onChange={e => setFormEsporte({...formEsporte, duracao: Number(e.target.value)})} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white" /></div></div>
-              <div><label className="block text-white text-sm font-bold mb-2">Dias da semana</label><div className="flex gap-2">{dias.map(dia => (<button key={dia.id} onClick={() => toggleDia(dia.id)} className={`w-10 h-10 rounded-full text-sm font-bold ${formEsporte.diasSemana.includes(dia.id) ? 'bg-yellow-500 text-black' : 'bg-zinc-800 text-zinc-400'}`}>{dia.abreviado}</button>))}</div></div>
-              <button onClick={salvarEsporte} className="w-full py-4 bg-yellow-500 text-black rounded-2xl font-black">{editandoEsporte ? 'Atualizar' : 'Adicionar'} Esporte</button>
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-bold text-gray-800 uppercase tracking-wide">Seu nome</label>
+                <input value={formPerfil.nome} onChange={e => setFormPerfil(f => ({ ...f, nome: e.target.value }))} placeholder="Como quer ser chamado?" className="mt-1 w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base text-gray-900 font-medium bg-white" />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-800 uppercase tracking-wide">Objetivo principal</label>
+                <div className="grid grid-cols-2 gap-2 mt-1">
+                  {[
+                    { val: 'emagrecer',       emoji: '🔥', label: 'Emagrecer' },
+                    { val: 'hipertrofia',     emoji: '💪', label: 'Hipertrofia' },
+                    { val: 'condicionamento', emoji: '⚡',        label: 'Condicionamento' },
+                    { val: 'saude',           emoji: '💚', label: 'Saúde geral' },
+                  ].map(o => (
+                    <button key={o.val} onClick={() => setFormPerfil(f => ({ ...f, objetivo: o.val }))} className={`py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 border-2 transition-all ${formPerfil.objetivo === o.val ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-600'}`}>
+                      <span>{o.emoji}</span>{o.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-gray-800 uppercase tracking-wide">Peso atual (kg)</label>
+                  <input type="number" value={formPerfil.pesoAtual} onChange={e => setFormPerfil(f => ({ ...f, pesoAtual: e.target.value }))} placeholder="Ex: 82" className="mt-1 w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base text-gray-900 font-medium bg-white" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-800 uppercase tracking-wide">Meta de peso (kg)</label>
+                  <input type="number" value={formPerfil.pesoMeta} onChange={e => setFormPerfil(f => ({ ...f, pesoMeta: e.target.value }))} placeholder="Ex: 72" className="mt-1 w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base text-gray-900 font-medium bg-white" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-gray-800 uppercase tracking-wide">Altura (cm)</label>
+                  <input type="number" value={formPerfil.altura} onChange={e => setFormPerfil(f => ({ ...f, altura: e.target.value }))} placeholder="Ex: 175" className="mt-1 w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base text-gray-900 font-medium bg-white" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-800 uppercase tracking-wide">Período para meta</label>
+                  <input type="text" value={formPerfil.periodoMeta} onChange={e => setFormPerfil(f => ({ ...f, periodoMeta: e.target.value }))} placeholder="Ex: 3 meses" className="mt-1 w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base text-gray-900 font-medium bg-white" />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-800 uppercase tracking-wide">Frequência desejada por semana</label>
+                <div className="flex gap-2 mt-1">
+                  {['1','2','3','4','5','6','7'].map(n => (
+                    <button key={n} onClick={() => setFormPerfil(f => ({ ...f, freqSemanal: n }))} className={`flex-1 py-3 rounded-xl text-sm font-black border-2 transition-all ${formPerfil.freqSemanal === n ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-gray-300 text-gray-700'}`}>{n}x</button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-800 uppercase tracking-wide">Nível</label>
+                <div className="flex gap-2 mt-1">
+                  {[
+                    { val: 'iniciante', label: 'Iniciante' },
+                    { val: 'intermediario', label: 'Interm.' },
+                    { val: 'avancado', label: 'Avançado' },
+                  ].map(n => (
+                    <button key={n.val} onClick={() => setFormPerfil(f => ({ ...f, nivel: n.val }))} className={`flex-1 py-3 rounded-xl text-sm font-bold border-2 transition-all ${formPerfil.nivel === n.val ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-600'}`}>{n.label}</button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => setShowEditarPerfil(false)} className="flex-1 py-4 border-2 border-gray-300 text-gray-700 rounded-2xl font-black text-lg active:scale-95 transition-all">
+                Cancelar
+              </button>
+              <button onClick={salvarFormPerfil} disabled={!formPerfil.nome || !formPerfil.pesoAtual || !formPerfil.pesoMeta || !formPerfil.altura} className="flex-1 py-4 bg-gradient-to-r from-indigo-600 to-violet-700 text-white rounded-2xl font-black text-lg active:scale-95 transition-all disabled:opacity-40">
+                Salvar Alterações
+              </button>
             </div>
           </div>
         </div>
       )}
-
-      <style jsx>{`
-        @keyframes slide-up {
-          from { transform: translateY(100%); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
-        }
-        .animate-slide-up { animation: slide-up 0.3s ease-out; }
-      `}</style>
     </div>
   )
 }

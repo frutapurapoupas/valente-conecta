@@ -1,344 +1,586 @@
-﻿'use client'
-import { useState } from 'react'
-import Link from 'next/link'
-import {
-  ArrowLeft, Plus, TrendingUp, TrendingDown, Wallet, AlertCircle, Clock,
-  ChevronLeft, ChevronRight, DollarSign, Bell, Star, Printer, CreditCard, RefreshCw, X,
-} from 'lucide-react'
-import {
-  useFinanceiroPessoal,
-  CATEGORIAS_RECEITA, CATEGORIAS_DESPESA,
-  type Lancamento, type LancamentoTipo, type LancamentoStatus,
-  type Cartao,
-} from '@/hooks/useFinanceiroPessoal'
-import ModalLancamento from './financeiro-pessoal/ModalLancamento'
-import LinhaLancamento from './financeiro-pessoal/LinhaLancamento'
-import ModalCartao from './financeiro-pessoal/ModalCartao'
-import CartaoCard from './financeiro-pessoal/CartaoCard'
-import BannerAlerta from './financeiro-pessoal/BannerAlerta'
-import ModalImpressao from './financeiro-pessoal/ModalImpressao'
+﻿// components/admin-master/FinanceiroPessoalScreen.tsx
+'use client';
 
-// ─── helpers ──────────────────────────────────────────────────────────────────
+import { useState } from 'react';
+import Link from 'next/link';
+import { 
+  Plus, 
+  TrendingUp, 
+  TrendingDown, 
+  Wallet, 
+  CreditCard, 
+  Users, 
+  Tag, 
+  Filter, 
+  Calendar,
+  BarChart3,
+  FileText,
+  ArrowLeft
+} from 'lucide-react';
+import { LinhaLancamento } from './financeiro-pessoal/LinhaLancamento';
+import { ModalCategoria } from './financeiro-pessoal/ModalCategoria';
+import { ModalFornecedor } from './financeiro-pessoal/ModalFornecedor';
+import { ModalCartao } from './financeiro-pessoal/ModalCartao';
+import { ModalImpressao } from './financeiro-pessoal/ModalImpressao';
+import { BannerAlerta } from './financeiro-pessoal/BannerAlerta';
 
-const fmt = (v: number) =>
-  v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-
-function mesLabel(mes: string) {
-  const [ano, m] = mes.split('-')
-  const nomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
-  return `${nomes[Number(m) - 1]} ${ano}`
+interface Categoria {
+  id: string;
+  nome: string;
+  tipo: 'receita' | 'despesa';
+  icone: string;
+  cor: string;
 }
 
-function navMes(mes: string, delta: number) {
-  const [ano, m] = mes.split('-').map(Number)
-  const d = new Date(ano, m - 1 + delta, 1)
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+interface Lancamento {
+  id: string;
+  descricao: string;
+  valor: number;
+  data: string;
+  categoriaId: string;
+  tipo: 'receita' | 'despesa';
+  recorrente?: boolean;
+  recorrenciaMeses?: number;
+  fornecedorId?: string;
+  cartaoId?: string;
+  parcela?: number;
+  parcelasTotais?: number;
 }
 
-const STATUS_LABEL: Record<LancamentoStatus, { label: string; cls: string }> = {
-  pendente:  { label: 'Pendente',  cls: 'bg-amber-500/20 text-amber-300 border-amber-500/30' },
-  pago:      { label: 'Pago',      cls: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
-  atrasado:  { label: 'Atrasado',  cls: 'bg-red-500/20 text-red-300 border-red-500/30' },
-  cancelado: { label: 'Cancelado', cls: 'bg-zinc-700/40 text-zinc-500 border-zinc-700' },
+interface CartaoCredito {
+  id: string;
+  nome: string;
+  limite: number;
+  diaFechamento: number;
+  diaVencimento: number;
+  cor: string;
 }
 
-const TIPO_LABEL: Record<LancamentoTipo, string> = {
-  receita: 'Receita',
-  despesa: 'Despesa',
-  fatura:  'Fatura',
+interface Fornecedor {
+  id: string;
+  nome: string;
+  telefone?: string;
+  email?: string;
 }
 
-// ─── Tela principal ───────────────────────────────────────────────────────────
+interface FinanceiroPessoalScreenProps {
+  lancamentos: Lancamento[];
+  todosLancamentos: Lancamento[];
+  categorias: Categoria[];
+  cartoes: CartaoCredito[];
+  fornecedores: Fornecedor[];
+  loading: boolean;
+  anoSelecionado: number;
+  mesSelecionado: number;
+  setAnoSelecionado: (ano: number) => void;
+  setMesSelecionado: (mes: number) => void;
+  salvarLancamento: (lancamento: Omit<Lancamento, 'id'>) => Promise<void>;
+  atualizarLancamento: (id: string, updates: Partial<Lancamento>) => Promise<void>;
+  deletarLancamento: (id: string) => Promise<void>;
+  salvarCategoria: (categoria: Omit<Categoria, 'id'>) => Promise<void>;
+  deletarCategoria: (id: string) => Promise<void>;
+  salvarCartao: (cartao: Omit<CartaoCredito, 'id'>) => Promise<void>;
+  deletarCartao: (id: string) => Promise<void>;
+  salvarFornecedor: (fornecedor: Omit<Fornecedor, 'id'>) => Promise<void>;
+  deletarFornecedor: (id: string) => Promise<void>;
+  getSaldoPeriodo: () => { totalReceitas: number; totalDespesas: number; saldo: number };
+  getLancamentosPorCategoria: () => Record<string, number>;
+}
 
-export default function FinanceiroPessoalScreen() {
-  const {
-    lancamentos, resumo,
-    filtroMes, setFiltroMes,
-    filtroTipo, setFiltroTipo,
-    filtroStatus, setFiltroStatus,
-    showModal, editando,
-    abrirNovo, abrirEdicao, fecharModal,
-    adicionarLancamento, atualizarLancamento,
-    removerLancamento, removerGrupoRecorrencia,
-    marcarPago, adicionarProlabore,
-    cartoes, adicionarCartao, atualizarCartao, removerCartao,
-    alertasCartoes,
-  } = useFinanceiroPessoal()
+export function FinanceiroPessoalScreen({
+  lancamentos,
+  todosLancamentos,
+  categorias,
+  cartoes,
+  fornecedores,
+  loading,
+  anoSelecionado,
+  mesSelecionado,
+  setAnoSelecionado,
+  setMesSelecionado,
+  salvarLancamento,
+  atualizarLancamento,
+  deletarLancamento,
+  salvarCategoria,
+  deletarCategoria,
+  salvarCartao,
+  deletarCartao,
+  salvarFornecedor,
+  deletarFornecedor,
+  getSaldoPeriodo,
+  getLancamentosPorCategoria,
+}: FinanceiroPessoalScreenProps) {
+  const [activeTab, setActiveTab] = useState<'lancamentos' | 'categorias' | 'cartoes' | 'fornecedores'>('lancamentos');
+  const [showNewLancamento, setShowNewLancamento] = useState(false);
+  const [novoLancamento, setNovoLancamento] = useState({
+    descricao: '',
+    valor: '',
+    data: new Date().toISOString().split('T')[0],
+    tipo: 'despesa' as 'receita' | 'despesa',
+    categoriaId: '',
+    recorrente: false,
+    recorrenciaMeses: 1,
+  });
+  const [modalCategoria, setModalCategoria] = useState<{ isOpen: boolean; categoria?: Categoria | null }>({ isOpen: false });
+  const [modalCartao, setModalCartao] = useState<{ isOpen: boolean; cartao?: CartaoCredito | null }>({ isOpen: false });
+  const [modalFornecedor, setModalFornecedor] = useState<{ isOpen: boolean; fornecedor?: Fornecedor | null }>({ isOpen: false });
+  const [modalImpressao, setModalImpressao] = useState(false);
 
-  const [aba, setAba] = useState<'lancamentos' | 'cartoes'>('lancamentos')
-  const [showProlabore, setShowProlabore] = useState(false)
-  const [valorProlabore, setValorProlabore] = useState('')
-  const [showModalCartao, setShowModalCartao] = useState(false)
-  const [editandoCartao, setEditandoCartao] = useState<Cartao | null>(null)
-  const [showImpressao, setShowImpressao] = useState(false)
+  const { totalReceitas, totalDespesas, saldo } = getSaldoPeriodo();
+  const despesasPorCategoria = getLancamentosPorCategoria();
 
-  function confirmarProlabore() {
-    const v = parseFloat(valorProlabore.replace(',', '.'))
-    if (!isNaN(v) && v > 0) {
-      adicionarProlabore(v)
-      setShowProlabore(false)
-      setValorProlabore('')
-    }
+  const handleSalvarLancamento = async () => {
+    if (!novoLancamento.descricao.trim() || !novoLancamento.valor || !novoLancamento.categoriaId) return;
+    await salvarLancamento({
+      descricao: novoLancamento.descricao,
+      valor: parseFloat(novoLancamento.valor),
+      data: novoLancamento.data,
+      tipo: novoLancamento.tipo,
+      categoriaId: novoLancamento.categoriaId,
+      recorrente: novoLancamento.recorrente,
+      recorrenciaMeses: novoLancamento.recorrente ? novoLancamento.recorrenciaMeses : undefined,
+    });
+    setShowNewLancamento(false);
+    setNovoLancamento({
+      descricao: '',
+      valor: '',
+      data: new Date().toISOString().split('T')[0],
+      tipo: 'despesa',
+      categoriaId: '',
+      recorrente: false,
+      recorrenciaMeses: 1,
+    });
+  };
+
+  const meses = [
+    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+  ];
+
+  const formatarMoeda = (valor: number) => {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-500">Carregando dados financeiros...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white pb-28">
-
-      {/* header */}
-      <header className="sticky top-0 z-30 bg-zinc-950/95 backdrop-blur border-b border-zinc-900 px-4 py-4 flex items-center gap-3">
-        <Link href="/admin-master/dashboard" className="p-2 bg-zinc-900 border border-zinc-800 rounded-xl">
-          <ArrowLeft className="w-5 h-5 text-zinc-400" />
-        </Link>
-        <div className="flex-1">
-          <h1 className="text-lg font-black text-white">Finanças Pessoais</h1>
-          <p className="text-xs text-zinc-500">Controle particular · Admin Master</p>
+    <div className="min-h-screen bg-zinc-950 text-white pb-24">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-zinc-900/95 backdrop-blur border-b border-zinc-800">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center gap-3">
+            <Link
+              href="/admin-master/dashboard"
+              className="p-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors"
+              title="Voltar para Dashboard"
+            >
+              <ArrowLeft className="w-5 h-5 text-zinc-400" />
+            </Link>
+            <Wallet className="w-6 h-6 text-emerald-500" />
+            <div>
+              <h1 className="text-xl font-bold">Financeiro Pessoal</h1>
+              <p className="text-zinc-400 text-sm">Admin Master</p>
+            </div>
+          </div>
         </div>
-        <button
-          onClick={() => setShowProlabore(true)}
-          className="flex items-center gap-2 px-3 py-2 bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 rounded-xl text-sm font-bold hover:bg-emerald-500/20"
-        >
-          <DollarSign className="w-4 h-4" /> Pró-labore
-        </button>
       </header>
 
-      {/* alertas de cartão — sempre visíveis no topo */}
-      {alertasCartoes.length > 0 && (
-        <div className="px-4 pt-4 max-w-2xl mx-auto flex flex-col gap-2">
-          {alertasCartoes.map((a, i) => <BannerAlerta key={i} urgencia={a.urgencia} tipo={a.tipo} mensagem={a.mensagem} />)}
-        </div>
-      )}
+      <div className="max-w-7xl mx-auto px-4 py-6">
 
-      {/* tabs */}
-      <div className="px-4 pt-4 max-w-2xl mx-auto">
-        <div className="grid grid-cols-2 gap-2 bg-zinc-900 border border-zinc-800 rounded-2xl p-1">
+      {/* Alertas */}
+      <BannerAlerta cartoes={cartoes} lancamentos={todosLancamentos} />
+
+      {/* Resumo */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-zinc-400">Receitas</p>
+              <p className="text-2xl font-bold text-emerald-400">{formatarMoeda(totalReceitas)}</p>
+            </div>
+            <TrendingUp size={32} className="text-emerald-500" />
+          </div>
+        </div>
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-zinc-400">Despesas</p>
+              <p className="text-2xl font-bold text-red-400">{formatarMoeda(totalDespesas)}</p>
+            </div>
+            <TrendingDown size={32} className="text-red-500" />
+          </div>
+        </div>
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-zinc-400">Saldo do mês</p>
+              <p className={`text-2xl font-bold ${saldo >= 0 ? 'text-blue-400' : 'text-orange-400'}`}>
+                {formatarMoeda(saldo)}
+              </p>
+            </div>
+            <Wallet size={32} className={saldo >= 0 ? 'text-blue-500' : 'text-orange-500'} />
+          </div>
+        </div>
+      </div>
+
+      {/* Filtros */}
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2">
+            <Calendar size={18} className="text-zinc-400" />
+            <select
+              value={mesSelecionado}
+              onChange={(e) => setMesSelecionado(parseInt(e.target.value))}
+              className="outline-none bg-transparent text-white"
+            >
+              {meses.map((mes, index) => (
+                <option key={index} value={index + 1}>{mes}</option>
+              ))}
+            </select>
+            <select
+              value={anoSelecionado}
+              onChange={(e) => setAnoSelecionado(parseInt(e.target.value))}
+              className="outline-none bg-transparent text-white"
+            >
+              {[2023, 2024, 2025, 2026].map(ano => (
+                <option key={ano} value={ano}>{ano}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div className="flex gap-2">
           <button
-            onClick={() => setAba('lancamentos')}
-            className={`py-2.5 rounded-xl font-black text-sm transition-all flex items-center justify-center gap-2 ${aba === 'lancamentos' ? 'bg-indigo-600 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+            onClick={() => setModalImpressao(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-zinc-800 text-zinc-300 rounded-xl hover:bg-zinc-700 border border-zinc-700"
           >
-            <Wallet className="w-4 h-4" /> Lançamentos
+            <FileText size={18} /> Extrato
           </button>
           <button
-            onClick={() => setAba('cartoes')}
-            className={`py-2.5 rounded-xl font-black text-sm transition-all flex items-center justify-center gap-2 relative ${aba === 'cartoes' ? 'bg-indigo-600 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+            onClick={() => setShowNewLancamento(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700"
           >
-            <CreditCard className="w-4 h-4" /> Cartões
-            {alertasCartoes.length > 0 && (
-              <span className="absolute top-1.5 right-3 w-2 h-2 bg-red-500 rounded-full" />
-            )}
+            <Plus size={18} /> Novo Lançamento
           </button>
         </div>
       </div>
 
-      <div className="px-4 py-5 max-w-2xl mx-auto flex flex-col gap-5">
+      {/* Tabs */}
+      <div className="flex gap-2 border-b border-zinc-800 mb-4">
+        {[
+          { id: 'lancamentos', label: '📋 Lançamentos', icon: <BarChart3 size={18} /> },
+          { id: 'categorias', label: '🏷️ Categorias', icon: <Tag size={18} /> },
+          { id: 'cartoes', label: '💳 Cartões', icon: <CreditCard size={18} /> },
+          { id: 'fornecedores', label: '🏢 Fornecedores', icon: <Users size={18} /> },
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as any)}
+            className={`flex items-center gap-2 px-4 py-2 transition-all ${
+              activeTab === tab.id
+                ? 'border-b-2 border-blue-500 text-blue-400 font-medium'
+                : 'text-zinc-400 hover:text-zinc-300'
+            }`}
+          >
+            {tab.icon} {tab.label}
+          </button>
+        ))}
+      </div>
 
-        {aba === 'lancamentos' && (
-          <>
-            {/* navegação de mês */}
-            <div className="flex items-center justify-between">
-              <button onClick={() => setFiltroMes(navMes(filtroMes, -1))} className="p-2 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-zinc-600">
-                <ChevronLeft className="w-5 h-5 text-zinc-400" />
-              </button>
-              <p className="font-black text-xl text-white">{mesLabel(filtroMes)}</p>
-              <button onClick={() => setFiltroMes(navMes(filtroMes, 1))} className="p-2 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-zinc-600">
-                <ChevronRight className="w-5 h-5 text-zinc-400" />
-              </button>
-            </div>
-
-            {/* resumo cards */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className={`col-span-2 rounded-2xl p-4 border flex items-center gap-4 ${
-                resumo.saldoMes >= 0 ? 'bg-emerald-500/10 border-emerald-500/25' : 'bg-red-500/10 border-red-500/25'
-              }`}>
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${resumo.saldoMes >= 0 ? 'bg-emerald-500/20' : 'bg-red-500/20'}`}>
-                  <Wallet className={`w-6 h-6 ${resumo.saldoMes >= 0 ? 'text-emerald-400' : 'text-red-400'}`} />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-zinc-500 uppercase">Saldo do mês</p>
-                  <p className={`text-2xl font-black ${resumo.saldoMes >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{fmt(resumo.saldoMes)}</p>
-                </div>
-              </div>
-
-              <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
-                <TrendingUp className="w-5 h-5 text-emerald-400 mb-2" />
-                <p className="text-xs text-zinc-500 font-bold">RECEITAS</p>
-                <p className="text-xl font-black text-emerald-400">{fmt(resumo.totalReceitas)}</p>
-              </div>
-              <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
-                <TrendingDown className="w-5 h-5 text-red-400 mb-2" />
-                <p className="text-xs text-zinc-500 font-bold">DESPESAS</p>
-                <p className="text-xl font-black text-red-400">{fmt(resumo.totalDespesas)}</p>
-              </div>
-              <div className="bg-zinc-900 border border-amber-500/20 rounded-2xl p-4">
-                <Clock className="w-5 h-5 text-amber-400 mb-2" />
-                <p className="text-xs text-zinc-500 font-bold">A VENCER</p>
-                <p className="text-xl font-black text-amber-400">{fmt(resumo.aVencer)}</p>
-              </div>
-              <div className="bg-zinc-900 border border-red-500/20 rounded-2xl p-4">
-                <AlertCircle className="w-5 h-5 text-red-400 mb-2" />
-                <p className="text-xs text-zinc-500 font-bold">ATRASADOS</p>
-                <p className="text-xl font-black text-red-400">{fmt(resumo.atrasados)}</p>
-              </div>
-            </div>
-
-            {/* filtros + botão imprimir */}
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-              <button
-                onClick={() => setShowImpressao(true)}
-                className="flex items-center gap-1.5 px-3 py-2 bg-zinc-900 border border-zinc-700 text-zinc-300 rounded-xl text-sm font-bold hover:border-zinc-500 flex-shrink-0 transition-all"
-              >
-                <Printer className="w-4 h-4" /> Imprimir
-              </button>
-              <div className="w-px bg-zinc-800 flex-shrink-0 self-stretch" />
-              {(['todos', 'receita', 'despesa', 'fatura'] as const).map(t => (
-                <button key={t} onClick={() => setFiltroTipo(t)} 
-                  className={`px-4 py-2 rounded-xl font-bold text-sm whitespace-nowrap border transition-all ${filtroTipo === t ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300' : 'bg-zinc-900 border-zinc-800 text-zinc-400'}`}>
-                  {t === 'todos' ? 'Todos' : TIPO_LABEL[t]}
-                </button>
-              ))}
-              <div className="w-px bg-zinc-800 flex-shrink-0 self-stretch" />
-              {(['todos', 'pendente', 'atrasado', 'pago', 'cancelado'] as const).map(s => (
-                <button key={s} onClick={() => setFiltroStatus(s)}
-                  className={`px-4 py-2 rounded-xl font-bold text-sm whitespace-nowrap border transition-all ${filtroStatus === s ? 'bg-zinc-700 border-zinc-600 text-white' : 'bg-zinc-900 border-zinc-800 text-zinc-400'}`}>
-                  {s === 'todos' ? 'Todos status' : s.charAt(0).toUpperCase() + s.slice(1)}
-                </button>
-              ))}
-            </div>
-
-            {/* lista */}
-            {lancamentos.length === 0 ? (
-              <div className="text-center py-16">
-                <CreditCard className="w-12 h-12 text-zinc-800 mx-auto mb-4" />
-                <p className="text-zinc-600 font-bold">Nenhum lançamento neste período</p>
-                <p className="text-zinc-700 text-sm mt-1">Toque em + para adicionar</p>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {lancamentos
-                  .sort((a, b) => a.vencimento.localeCompare(b.vencimento))
-                  .map(l => (
-                    <LinhaLancamento key={l.id} l={l}
-                      onPago={() => marcarPago(l.id)}
-                      onEditar={() => abrirEdicao(l)}
-                      onRemover={() => removerLancamento(l.id)}
-                      onRemoverGrupo={() => l.grupoRecorrencia && removerGrupoRecorrencia(l.grupoRecorrencia)}
-                    />
+      {/* Conteúdo das Tabs */}
+      {activeTab === 'lancamentos' && (
+        <div>
+          {showNewLancamento && (
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 mb-4">
+              <h3 className="font-medium mb-3 text-white">Novo Lançamento</h3>
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+                <input
+                  type="text"
+                  placeholder="Descrição"
+                  value={novoLancamento.descricao}
+                  onChange={(e) => setNovoLancamento(prev => ({ ...prev, descricao: e.target.value }))}
+                  className="bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-white placeholder-zinc-400"
+                />
+                <input
+                  type="number"
+                  placeholder="Valor"
+                  value={novoLancamento.valor}
+                  onChange={(e) => setNovoLancamento(prev => ({ ...prev, valor: e.target.value }))}
+                  className="bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-white placeholder-zinc-400"
+                />
+                <input
+                  type="date"
+                  value={novoLancamento.data}
+                  onChange={(e) => setNovoLancamento(prev => ({ ...prev, data: e.target.value }))}
+                  className="bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-white"
+                />
+                <select
+                  value={novoLancamento.tipo}
+                  onChange={(e) => setNovoLancamento(prev => ({ ...prev, tipo: e.target.value as any }))}
+                  className="bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-white"
+                >
+                  <option value="despesa">💸 Despesa</option>
+                  <option value="receita">💰 Receita</option>
+                </select>
+                <select
+                  value={novoLancamento.categoriaId}
+                  onChange={(e) => setNovoLancamento(prev => ({ ...prev, categoriaId: e.target.value }))}
+                  className="bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-white"
+                >
+                  <option value="">Selecione uma categoria</option>
+                  {categorias.filter(c => c.tipo === novoLancamento.tipo).map(c => (
+                    <option key={c.id} value={c.id}>{c.nome}</option>
                   ))}
+                </select>
               </div>
-            )}
-          </>
-        )}
-
-        {aba === 'cartoes' && (
-          <>
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="font-black text-xl text-white">Meus Cartões</h2>
-                <p className="text-xs text-zinc-500">Alertas automáticos de vencimento e melhor dia</p>
+              <div className="flex gap-2 mt-3">
+                <label className="flex items-center gap-2 text-zinc-300">
+                  <input
+                    type="checkbox"
+                    checked={novoLancamento.recorrente}
+                    onChange={(e) => setNovoLancamento(prev => ({ ...prev, recorrente: e.target.checked }))}
+                  />
+                  Lançamento recorrente
+                </label>
+                {novoLancamento.recorrente && (
+                  <select
+                    value={novoLancamento.recorrenciaMeses}
+                    onChange={(e) => setNovoLancamento(prev => ({ ...prev, recorrenciaMeses: parseInt(e.target.value) }))}
+                    className="bg-zinc-800 border border-zinc-700 rounded-xl px-2 py-1 text-white"
+                  >
+                    <option value={1}>Todo mês</option>
+                    <option value={3}>A cada 3 meses</option>
+                    <option value={6}>A cada 6 meses</option>
+                    <option value={12}>Anual</option>
+                  </select>
+                )}
               </div>
-              <button
-                onClick={() => { setEditandoCartao(null); setShowModalCartao(true) }}
-                className="flex items-center gap-2 px-3 py-2 bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 rounded-xl text-sm font-bold hover:bg-indigo-500/20"
-              >
-                <Plus className="w-4 h-4" /> Novo
+              <div className="flex gap-2 mt-3">
+                <button onClick={handleSalvarLancamento} className="px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700">
+                  Salvar
+                </button>
+                <button onClick={() => setShowNewLancamento(false)} className="px-4 py-2 bg-zinc-700 text-zinc-300 rounded-xl hover:bg-zinc-600">
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          )}
+          {lancamentos.length === 0 ? (
+            <div className="text-center py-12 bg-zinc-900 border border-zinc-800 rounded-2xl">
+              <Wallet size={48} className="mx-auto text-zinc-600 mb-3" />
+              <p className="text-zinc-400">Nenhum lançamento neste período</p>
+              <button onClick={() => setShowNewLancamento(true)} className="mt-3 text-blue-400 hover:underline">
+                Criar primeiro lançamento
               </button>
             </div>
-
-            {cartoes.length === 0 ? (
-              <div className="text-center py-16">
-                <CreditCard className="w-12 h-12 text-zinc-800 mx-auto mb-4" />
-                <p className="text-zinc-600 font-bold">Nenhum cartão cadastrado</p>
-                <p className="text-zinc-700 text-sm mt-1">Cadastre para receber alertas de vencimento</p>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-4">
-                {cartoes.map(c => (
-                  <CartaoCard key={c.id} c={c}
-                    onEditar={() => { setEditandoCartao(c); setShowModalCartao(true) }}
-                    onRemover={() => removerCartao(c.id)}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* legenda */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex flex-col gap-2">
-              <p className="text-xs font-black text-zinc-500 uppercase">Como funciona</p>
-              <div className="flex items-start gap-2 text-sm text-zinc-400">
-                <Bell className="w-4 h-4 text-indigo-400 mt-0.5 flex-shrink-0" />
-                <span>Alertas aparecem automaticamente no topo da tela conforme o vencimento se aproxima</span>
-              </div>
-              <div className="flex items-start gap-2 text-sm text-zinc-400">
-                <Star className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
-                <span>O melhor dia de compra é calculado como 10 dias antes do vencimento — maximizando seu prazo de pagamento</span>
-              </div>
-              <div className="flex items-start gap-2 text-sm text-zinc-400">
-                <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
-                <span>Alertas críticos (vermelho) aparecem quando faltam 2 dias ou menos para o vencimento</span>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* FAB — só na aba lançamentos */}
-      {aba === 'lancamentos' && (
-        <button
-          onClick={abrirNovo}
-          className="fixed bottom-6 right-6 w-16 h-16 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl shadow-xl flex items-center justify-center transition-all active:scale-95 z-40"
-        >
-          <Plus className="w-8 h-8" />
-        </button>
+          ) : (
+            lancamentos.map(l => (
+              <LinhaLancamento
+                key={l.id}
+                lancamento={l}
+                categorias={categorias}
+                onUpdate={atualizarLancamento}
+                onDelete={deletarLancamento}
+              />
+            ))
+          )}
+        </div>
       )}
 
-      {/* modal pró-labore */}
-      {showProlabore && (
-        <div className="fixed inset-0 z-50 bg-zinc-950/90 flex items-center justify-center p-4">
-          <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-sm flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-black text-white">Lançar Pró-labore</h3>
-              <button onClick={() => setShowProlabore(false)} className="p-2 bg-zinc-800 rounded-xl">
-                <X className="w-4 h-4 text-zinc-400" />
-              </button>
-            </div>
-            <p className="text-sm text-zinc-400">Mês de referência: <span className="text-white font-bold">{mesLabel(filtroMes)}</span></p>
-            <input type="number" inputMode="decimal" placeholder="Valor em R$" value={valorProlabore}
-              onChange={e => setValorProlabore(e.target.value)}
-              className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white text-xl font-black focus:outline-none focus:border-emerald-500" />
-            <button onClick={confirmarProlabore}
-              className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95">
-              <DollarSign className="w-5 h-5" /> Adicionar receita
+      {activeTab === 'categorias' && (
+        <div>
+          <div className="flex justify-end mb-4">
+            <button
+              onClick={() => setModalCategoria({ isOpen: true })}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700"
+            >
+              <Plus size={18} /> Nova Categoria
             </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {categorias.map(c => (
+              <div
+                key={c.id}
+                className="flex items-center justify-between p-3 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-zinc-700 transition-shadow"
+                style={{ borderLeftColor: c.cor, borderLeftWidth: '4px' }}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${c.cor}20` }}>
+                    <span className="text-lg">{c.icone === 'ShoppingBag' && '🛍️'}{c.icone === 'Utensils' && '🍽️'}{c.icone === 'Home' && '🏠'}{c.icone === 'Car' && '🚗'}{c.icone === 'DollarSign' && '💰'}</span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-white">{c.nome}</p>
+                    <p className={`text-xs ${c.tipo === 'receita' ? 'text-emerald-400' : 'text-red-400'}`}>
+                      {c.tipo === 'receita' ? 'Receita' : 'Despesa'}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => setModalCategoria({ isOpen: true, categoria: c })}
+                    className="p-2 text-zinc-400 hover:text-blue-400"
+                  >
+                    ✏️
+                  </button>
+                  <button
+                    onClick={() => deletarCategoria(c.id)}
+                    className="p-2 text-zinc-400 hover:text-red-400"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
 
-      {/* modal impressão */}
-      {showImpressao && (
-        <ModalImpressao
-          lancamentos={lancamentos}
-          filtroMes={filtroMes}
-          filtroTipo={filtroTipo}
-          filtroStatus={filtroStatus}
-          onFechar={() => setShowImpressao(false)}
-        />
+      {activeTab === 'cartoes' && (
+        <div>
+          <div className="flex justify-end mb-4">
+            <button
+              onClick={() => setModalCartao({ isOpen: true })}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700"
+            >
+              <Plus size={18} /> Novo Cartão
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {cartoes.map(c => (
+              <div key={c.id} className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+                <div className="p-4" style={{ backgroundColor: c.cor }}>
+                  <div className="flex justify-between items-start text-white">
+                    <div>
+                      <p className="text-sm opacity-80">Cartão de Crédito</p>
+                      <p className="font-bold text-lg">{c.nome}</p>
+                    </div>
+                    <CreditCard size={24} />
+                  </div>
+                </div>
+                <div className="p-4">
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <p className="text-xs text-zinc-400">Limite</p>
+                      <p className="font-semibold text-white">{formatarMoeda(c.limite)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-zinc-400">Fechamento</p>
+                      <p className="font-semibold text-white">Dia {c.diaFechamento}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-zinc-400">Vencimento</p>
+                      <p className="font-semibold text-white">Dia {c.diaVencimento}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-zinc-400">Status</p>
+                      <p className="font-semibold text-emerald-400">Ativo</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setModalCartao({ isOpen: true, cartao: c })}
+                      className="flex-1 py-2 border border-zinc-700 rounded-xl text-sm text-zinc-300 hover:bg-zinc-800"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => deletarCartao(c.id)}
+                      className="flex-1 py-2 bg-red-600 text-white rounded-xl text-sm hover:bg-red-700"
+                    >
+                      Excluir
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
-      {/* modal lançamento */}
-      {showModal && (
-        <ModalLancamento editando={editando} filtroMes={filtroMes}
-          onSalvar={adicionarLancamento} onAtualizar={atualizarLancamento} onFechar={fecharModal} />
+      {activeTab === 'fornecedores' && (
+        <div>
+          <div className="flex justify-end mb-4">
+            <button
+              onClick={() => setModalFornecedor({ isOpen: true })}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700"
+            >
+              <Plus size={18} /> Novo Fornecedor
+            </button>
+          </div>
+          <div className="space-y-2">
+            {fornecedores.map(f => (
+              <div key={f.id} className="flex items-center justify-between p-3 bg-zinc-900 border border-zinc-800 rounded-xl">
+                <div>
+                  <p className="font-medium text-white">{f.nome}</p>
+                  {(f.telefone || f.email) && (
+                    <p className="text-sm text-zinc-400">
+                      {f.telefone && <span>📞 {f.telefone}</span>}
+                      {f.email && <span className="ml-2">✉️ {f.email}</span>}
+                    </p>
+                  )}
+                </div>
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => setModalFornecedor({ isOpen: true, fornecedor: f })}
+                    className="p-2 text-zinc-400 hover:text-blue-400"
+                  >
+                    ✏️
+                  </button>
+                  <button
+                    onClick={() => deletarFornecedor(f.id)}
+                    className="p-2 text-zinc-400 hover:text-red-400"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
-      {/* modal cartão */}
-      {showModalCartao && (
-        <ModalCartao
-          editando={editandoCartao}
-          onSalvar={adicionarCartao}
-          onAtualizar={atualizarCartao}
-          onFechar={() => { setShowModalCartao(false); setEditandoCartao(null) }}
-        />
-      )}
+      {/* Modais */}
+      <ModalCategoria
+        isOpen={modalCategoria.isOpen}
+        onClose={() => setModalCategoria({ isOpen: false })}
+        onSave={salvarCategoria}
+        onDelete={deletarCategoria}
+        categoria={modalCategoria.categoria}
+        categoriasExistentes={categorias}
+      />
+
+      <ModalCartao
+        isOpen={modalCartao.isOpen}
+        onClose={() => setModalCartao({ isOpen: false })}
+        onSave={salvarCartao}
+        onDelete={deletarCartao}
+        cartao={modalCartao.cartao}
+      />
+
+      <ModalFornecedor
+        isOpen={modalFornecedor.isOpen}
+        onClose={() => setModalFornecedor({ isOpen: false })}
+        onSave={salvarFornecedor}
+        onDelete={deletarFornecedor}
+        fornecedor={modalFornecedor.fornecedor}
+      />
+
+      <ModalImpressao
+        isOpen={modalImpressao}
+        onClose={() => setModalImpressao(false)}
+        lancamentos={lancamentos}
+        categorias={categorias}
+        periodo={{ ano: anoSelecionado, mes: mesSelecionado }}
+      />
+      </div>
     </div>
-  )
+  );
 }
-

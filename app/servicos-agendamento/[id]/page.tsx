@@ -50,6 +50,7 @@ export default function ProfissionalDetalhePage() {
   const [enviando, setEnviando] = useState(false)
   const [agendamentoConfirmado, setAgendamentoConfirmado] = useState<any>(null)
   const [favorito, setFavorito] = useState(false)
+  const [atendenteSelecionado, setAtendenteSelecionado] = useState<string>('qualquer')
 
   // Dados mockados com mais profissionais
   useEffect(() => {
@@ -501,6 +502,67 @@ _Agendamento recebido via Valente Conecta_
                   </div>
                 </div>
               )}
+
+              <div>
+                <label className="text-xs text-zinc-500 font-bold uppercase mb-2 block">Selecione o atendente (opcional)</label>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => setAtendenteSelecionado('qualquer')}
+                    className={`w-full p-3 rounded-xl text-left transition-all ${atendenteSelecionado === 'qualquer' ? 'bg-yellow-500/20 border-2 border-yellow-500' : 'bg-zinc-800 border-2 border-zinc-700'}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-zinc-700 rounded-full flex items-center justify-center">
+                        <User className="w-5 h-5 text-zinc-400" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-white font-medium">Qualquer atendente disponível</p>
+                        <p className="text-xs text-zinc-500">O admin atribuirá automaticamente</p>
+                      </div>
+                      <div className="px-2 py-1 bg-green-500/20 rounded-full">
+                        <span className="text-xs text-green-400 font-medium">Recomendado</span>
+                      </div>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setAtendenteSelecionado('pedro')}
+                    className={`w-full p-3 rounded-xl text-left transition-all ${atendenteSelecionado === 'pedro' ? 'bg-yellow-500/20 border-2 border-yellow-500' : 'bg-zinc-800 border-2 border-zinc-700'}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center">
+                        <User className="w-5 h-5 text-blue-400" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-white font-medium">Pedro Costa</p>
+                        <p className="text-xs text-zinc-500">Cabeleireiro • 4.8 ★</p>
+                      </div>
+                      <div className="px-2 py-1 bg-blue-500/20 rounded-full">
+                        <span className="text-xs text-blue-400 font-medium">Disponível</span>
+                      </div>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setAtendenteSelecionado('ana')}
+                    className={`w-full p-3 rounded-xl text-left transition-all ${atendenteSelecionado === 'ana' ? 'bg-yellow-500/20 border-2 border-yellow-500' : 'bg-zinc-800 border-2 border-zinc-700'}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-purple-500/20 rounded-full flex items-center justify-center">
+                        <User className="w-5 h-5 text-purple-400" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-white font-medium">Ana Silva</p>
+                        <p className="text-xs text-zinc-500">Médica • 4.9 ★</p>
+                      </div>
+                      <div className="px-2 py-1 bg-purple-500/20 rounded-full">
+                        <span className="text-xs text-purple-400 font-medium">Disponível</span>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+                <p className="text-xs text-zinc-500 mt-2 flex items-center gap-1">
+                  <CheckCircle className="w-3 h-3 text-green-400" />
+                  Colaboradores disponíveis para atendimento
+                </p>
+              </div>
 
               <div>
                 <label className="text-xs text-zinc-500 font-bold uppercase mb-1 block">Observações (opcional)</label>

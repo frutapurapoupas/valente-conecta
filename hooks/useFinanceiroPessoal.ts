@@ -1,327 +1,237 @@
-'use client'
-import { useState, useEffect, useCallback } from 'react'
+// hooks/useFinanceiroPessoal.ts
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/lib/supabase-client-switch';
+import { isMockMode } from '@/lib/supabase-client-switch';
+import { MOCK_DATA } from '@/lib/mock/mock-data';
 
-// ─── Tipos ────────────────────────────────────────────────────────────────────
-
-export type LancamentoTipo = 'receita' | 'despesa' | 'fatura'
-
-export type LancamentoStatus = 'pendente' | 'pago' | 'atrasado' | 'cancelado'
-
-export type LancamentoCategoria =
-  | 'pro-labore' | 'salario' | 'bonus' | 'dividendos' | 'outros_receita'
-  | 'alimentacao' | 'moradia' | 'transporte' | 'saude' | 'educacao'
-  | 'lazer' | 'cartao_credito' | 'financiamento' | 'assinatura' | 'outros_despesa'
-
-export type Periodicidade = 'mensal' | 'quinzenal' | 'semanal' | 'anual'
-
-export interface Lancamento {
-  id: string
-  tipo: LancamentoTipo
-  descricao: string
-  valor: number
-  categoria: LancamentoCategoria
-  vencimento: string        // YYYY-MM-DD
-  status: LancamentoStatus
-  recorrente: boolean
-  periodos?: number         // quantos meses repetir (0 = indefinido)
-  periodicidade?: Periodicidade
-  grupoRecorrencia?: string // ID compartilhado entre instâncias recorrentes
-  observacoes?: string
-  criadoEm: string
-  atualizadoEm: string
+export interface CategoriaFinanceira {
+  id: string;
+  nome: string;
+  tipo: 'receita' | 'despesa';
+  icone: string;
+  cor: string;
 }
 
-export interface ResumoPessoal {
-  saldoMes: number
-  totalReceitas: number
-  totalDespesas: number
-  aVencer: number           // soma de pendentes com venc. futura
-  atrasados: number         // soma de pendentes vencidos
+export interface LancamentoFinanceiro {
+  id: string;
+  descricao: string;
+  valor: number;
+  data: string;
+  categoriaId: string;
+  tipo: 'receita' | 'despesa';
+  recorrente?: boolean;
+  recorrenciaMeses?: number;
+  fornecedorId?: string;
+  cartaoId?: string;
+  parcela?: number;
+  parcelasTotais?: number;
 }
 
-// ─── Constantes ───────────────────────────────────────────────────────────────
-
-export const CATEGORIAS_RECEITA: { value: LancamentoCategoria; label: string; emoji: string }[] = [
-  { value: 'pro-labore',      label: 'Pró-labore',        emoji: '💼' },
-  { value: 'salario',         label: 'Salário',           emoji: '💰' },
-  { value: 'bonus',           label: 'Bônus',             emoji: '🎁' },
-  { value: 'dividendos',      label: 'Dividendos',        emoji: '📈' },
-  { value: 'outros_receita',  label: 'Outros (receita)',  emoji: '➕' },
-]
-
-export const CATEGORIAS_DESPESA: { value: LancamentoCategoria; label: string; emoji: string }[] = [
-  { value: 'moradia',         label: 'Moradia',           emoji: '🏠' },
-  { value: 'alimentacao',     label: 'Alimentação',       emoji: '🍽️' },
-  { value: 'transporte',      label: 'Transporte',        emoji: '🚗' },
-  { value: 'saude',           label: 'Saúde',             emoji: '❤️‍🩹' },
-  { value: 'educacao',        label: 'Educação',          emoji: '📚' },
-  { value: 'lazer',           label: 'Lazer',             emoji: '🎮' },
-  { value: 'cartao_credito',  label: 'Cartão de Crédito', emoji: '💳' },
-  { value: 'financiamento',   label: 'Financiamento',     emoji: '🏦' },
-  { value: 'assinatura',      label: 'Assinatura',        emoji: '📱' },
-  { value: 'outros_despesa',  label: 'Outros (despesa)',  emoji: '📌' },
-]
-
-const STORAGE_KEY = 'fin_pessoal_lancamentos'
-const STORAGE_KEY_CARTOES = 'fin_pessoal_cartoes'
-const now = () => new Date().toISOString()
-const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-
-// ─── Cartões ──────────────────────────────────────────────────────────────────
-
-export type BandeiraCartao = 'visa' | 'mastercard' | 'elo' | 'amex' | 'hipercard' | 'outro'
-
-export interface Cartao {
-  id: string
-  apelido: string           // "Nubank principal", "Inter débito"
-  bandeira: BandeiraCartao
-  ultimos4: string          // últimos 4 dígitos
-  limite: number
-  diaVencimento: number     // 1-31
-  melhorDiaCompra: number   // calculado: vencimento - 10 dias
-  cor: string               // hex ou tailwind p/ personalização
-  criadoEm: string
-  atualizadoEm: string
+export interface CartaoCredito {
+  id: string;
+  nome: string;
+  limite: number;
+  diaFechamento: number;
+  diaVencimento: number;
+  cor: string;
 }
 
-export interface AlertaCartao {
-  cartaoId: string
-  apelido: string
-  tipo: 'melhor_dia' | 'fatura_proxima' | 'fatura_hoje' | 'fatura_atrasada'
-  diasRestantes: number     // negativo = já passou
-  mensagem: string
-  urgencia: 'info' | 'aviso' | 'critico'
+export interface Fornecedor {
+  id: string;
+  nome: string;
+  telefone?: string;
+  email?: string;
 }
 
-// ─── Hook ─────────────────────────────────────────────────────────────────────
+export const useFinanceiroPessoal = () => {
+  const [lancamentos, setLancamentos] = useState<LancamentoFinanceiro[]>([]);
+  const [categorias, setCategorias] = useState<CategoriaFinanceira[]>([]);
+  const [cartoes, setCartoes] = useState<CartaoCredito[]>([]);
+  const [fornecedores, setFornecedores] = useState<Fornecedor[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [anoSelecionado, setAnoSelecionado] = useState(new Date().getFullYear());
+  const [mesSelecionado, setMesSelecionado] = useState(new Date().getMonth() + 1);
 
-export function useFinanceiroPessoal() {
-  const [lancamentos, setLancamentos] = useState<Lancamento[]>([])
-  const [cartoes, setCartoes] = useState<Cartao[]>([])
-  const [filtroMes, setFiltroMes] = useState<string>(() => {
-    const d = new Date()
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-  })
-  const [filtroTipo, setFiltroTipo] = useState<LancamentoTipo | 'todos'>('todos')
-  const [filtroStatus, setFiltroStatus] = useState<LancamentoStatus | 'todos'>('todos')
-  const [showModal, setShowModal] = useState(false)
-  const [editando, setEditando] = useState<Lancamento | null>(null)
-
-  // load
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY)
-      if (raw) setLancamentos(JSON.parse(raw))
-    } catch { /* noop */ }
-    try {
-      const rawC = localStorage.getItem(STORAGE_KEY_CARTOES)
-      if (rawC) setCartoes(JSON.parse(rawC))
-    } catch { /* noop */ }
-  }, [])
-
-  // persist
-  const persist = useCallback((list: Lancamento[]) => {
-    setLancamentos(list)
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
-  }, [])
-
-  const persistCartoes = useCallback((list: Cartao[]) => {
-    setCartoes(list)
-    localStorage.setItem(STORAGE_KEY_CARTOES, JSON.stringify(list))
-  }, [])
-
-  // ─── CRUD cartões ────────────────────────────────────────────────────────────
-
-  const adicionarCartao = useCallback((dados: Omit<Cartao, 'id' | 'melhorDiaCompra' | 'criadoEm' | 'atualizadoEm'>) => {
-    // melhor dia = vencimento - 10, ajustado p/ mês
-    const melhor = dados.diaVencimento > 10 ? dados.diaVencimento - 10 : dados.diaVencimento + 20
-    const novo: Cartao = { ...dados, id: uid(), melhorDiaCompra: melhor, criadoEm: now(), atualizadoEm: now() }
-    persistCartoes([...cartoes, novo])
-  }, [cartoes, persistCartoes])
-
-  const atualizarCartao = useCallback((id: string, dados: Partial<Omit<Cartao, 'id' | 'criadoEm'>>) => {
-    const melhor = dados.diaVencimento
-      ? dados.diaVencimento > 10 ? dados.diaVencimento - 10 : dados.diaVencimento + 20
-      : undefined
-    persistCartoes(cartoes.map(c => c.id === id
-      ? { ...c, ...dados, ...(melhor !== undefined ? { melhorDiaCompra: melhor } : {}), atualizadoEm: now() }
-      : c
-    ))
-  }, [cartoes, persistCartoes])
-
-  const removerCartao = useCallback((id: string) => {
-    persistCartoes(cartoes.filter(c => c.id !== id))
-  }, [cartoes, persistCartoes])
-
-  // ─── Alertas de cartão ───────────────────────────────────────────────────────
-
-  const alertasCartoes: AlertaCartao[] = cartoes.flatMap(c => {
-    const hoje = new Date()
-    const diaHoje = hoje.getDate()
-    const alertas: AlertaCartao[] = []
-
-    // melhor dia de compra: avisa no dia exato
-    if (diaHoje === c.melhorDiaCompra) {
-      alertas.push({
-        cartaoId: c.id, apelido: c.apelido,
-        tipo: 'melhor_dia', diasRestantes: 0,
-        mensagem: `Hoje é o melhor dia para comprar no ${c.apelido}!`,
-        urgencia: 'info',
-      })
-    }
-
-    // próximo vencimento de fatura
-    const proxVenc = new Date(hoje.getFullYear(), hoje.getMonth(), c.diaVencimento)
-    if (proxVenc < hoje) proxVenc.setMonth(proxVenc.getMonth() + 1)
-    const diff = Math.round((proxVenc.getTime() - hoje.getTime()) / 86400000)
-
-    if (diff < 0) {
-      alertas.push({
-        cartaoId: c.id, apelido: c.apelido,
-        tipo: 'fatura_atrasada', diasRestantes: diff,
-        mensagem: `Fatura ${c.apelido} está ${Math.abs(diff)} dia(s) em atraso!`,
-        urgencia: 'critico',
-      })
-    } else if (diff === 0) {
-      alertas.push({
-        cartaoId: c.id, apelido: c.apelido,
-        tipo: 'fatura_hoje', diasRestantes: 0,
-        mensagem: `Fatura ${c.apelido} vence HOJE!`,
-        urgencia: 'critico',
-      })
-    } else if (diff <= 5) {
-      alertas.push({
-        cartaoId: c.id, apelido: c.apelido,
-        tipo: 'fatura_proxima', diasRestantes: diff,
-        mensagem: `Fatura ${c.apelido} vence em ${diff} dia(s)`,
-        urgencia: diff <= 2 ? 'critico' : 'aviso',
-      })
-    }
-
-    return alertas
-  })
-
-  // ─── CRUD ───────────────────────────────────────────────────────────────────
-
-  const adicionarLancamento = useCallback((dados: Omit<Lancamento, 'id' | 'criadoEm' | 'atualizadoEm'>) => {
-    const lista: Lancamento[] = []
-    const grupoId = dados.recorrente ? uid() : undefined
-    const totalPeriodos = dados.recorrente && (dados.periodos ?? 0) > 0 ? dados.periodos! : dados.recorrente ? 12 : 1
-
-    for (let i = 0; i < totalPeriodos; i++) {
-      const baseDate = new Date(dados.vencimento + 'T12:00:00')
-      let venc = new Date(baseDate)
-
-      if (i > 0) {
-        const per = dados.periodicidade ?? 'mensal'
-        if (per === 'mensal')     { venc.setMonth(venc.getMonth() + i) }
-        else if (per === 'anual') { venc.setFullYear(venc.getFullYear() + i) }
-        else if (per === 'quinzenal') { venc.setDate(venc.getDate() + 15 * i) }
-        else if (per === 'semanal')   { venc.setDate(venc.getDate() + 7 * i) }
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    if (isMockMode()) {
+      console.log('📊 Usando dados MOCK para Financeiro Pessoal');
+      setCategorias([]);
+      setLancamentos([]);
+      setCartoes([]);
+      setFornecedores([]);
+    } else {
+      console.log('📡 Buscando dados reais do Supabase para Financeiro Pessoal');
+      try {
+        const [lancamentosRes, categoriasRes, cartoesRes, fornecedoresRes] = await Promise.all([
+          supabase.from('financeiro_lancamentos').select('*'),
+          supabase.from('financeiro_categorias').select('*'),
+          supabase.from('financeiro_cartoes').select('*'),
+          supabase.from('financeiro_fornecedores').select('*'),
+        ]);
+        if (lancamentosRes.data) setLancamentos(lancamentosRes.data);
+        if (categoriasRes.data) setCategorias(categoriasRes.data);
+        if (cartoesRes.data) setCartoes(cartoesRes.data);
+        if (fornecedoresRes.data) setFornecedores(fornecedoresRes.data);
+      } catch (error) {
+        console.error('Erro ao buscar dados:', error);
       }
-
-      lista.push({
-        ...dados,
-        id: uid(),
-        vencimento: venc.toISOString().slice(0, 10),
-        grupoRecorrencia: grupoId,
-        criadoEm: now(),
-        atualizadoEm: now(),
-      })
     }
+    setLoading(false);
+  }, []);
 
-    persist([...lancamentos, ...lista])
-  }, [lancamentos, persist])
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
-  const atualizarLancamento = useCallback((id: string, dados: Partial<Lancamento>) => {
-    persist(lancamentos.map(l => l.id === id ? { ...l, ...dados, atualizadoEm: now() } : l))
-  }, [lancamentos, persist])
+  const salvarLancamento = async (lancamento: Omit<LancamentoFinanceiro, 'id'>) => {
+    const novoLancamento = { ...lancamento, id: Date.now().toString() };
+    if (isMockMode()) {
+      setLancamentos(prev => [novoLancamento, ...prev]);
+      return novoLancamento;
+    }
+    const { data, error } = await supabase.from('financeiro_lancamentos').insert(lancamento).select().single();
+    if (error) throw error;
+    setLancamentos(prev => [data, ...prev]);
+    return data;
+  };
 
-  const removerLancamento = useCallback((id: string) => {
-    persist(lancamentos.filter(l => l.id !== id))
-  }, [lancamentos, persist])
+  const atualizarLancamento = async (id: string, updates: Partial<LancamentoFinanceiro>) => {
+    if (isMockMode()) {
+      setLancamentos(prev => prev.map(l => l.id === id ? { ...l, ...updates } : l));
+      return;
+    }
+    const { error } = await supabase.from('financeiro_lancamentos').update(updates).eq('id', id);
+    if (error) throw error;
+    setLancamentos(prev => prev.map(l => l.id === id ? { ...l, ...updates } : l));
+  };
 
-  const removerGrupoRecorrencia = useCallback((grupoId: string) => {
-    persist(lancamentos.filter(l => l.grupoRecorrencia !== grupoId))
-  }, [lancamentos, persist])
+  const deletarLancamento = async (id: string) => {
+    if (isMockMode()) {
+      setLancamentos(prev => prev.filter(l => l.id !== id));
+      return;
+    }
+    const { error } = await supabase.from('financeiro_lancamentos').delete().eq('id', id);
+    if (error) throw error;
+    setLancamentos(prev => prev.filter(l => l.id !== id));
+  };
 
-  const marcarPago = useCallback((id: string) => {
-    atualizarLancamento(id, { status: 'pago' })
-  }, [atualizarLancamento])
+  const salvarCategoria = async (categoria: Omit<CategoriaFinanceira, 'id'>) => {
+    const novaCategoria = { ...categoria, id: Date.now().toString() };
+    if (isMockMode()) {
+      setCategorias(prev => [...prev, novaCategoria]);
+      return novaCategoria;
+    }
+    const { data, error } = await supabase.from('financeiro_categorias').insert(categoria).select().single();
+    if (error) throw error;
+    setCategorias(prev => [...prev, data]);
+    return data;
+  };
 
-  // ─── Pró-labore automático ───────────────────────────────────────────────────
+  const deletarCategoria = async (id: string) => {
+    if (isMockMode()) {
+      setCategorias(prev => prev.filter(c => c.id !== id));
+      return;
+    }
+    const { error } = await supabase.from('financeiro_categorias').delete().eq('id', id);
+    if (error) throw error;
+    setCategorias(prev => prev.filter(c => c.id !== id));
+  };
 
-  const adicionarProlabore = useCallback((valor: number, mesRef?: string) => {
-    const ref = mesRef ?? filtroMes
-    const venc = ref + '-05' // dia 5 do mês referência
-    const jaExiste = lancamentos.some(
-      l => l.categoria === 'pro-labore' && l.vencimento.startsWith(ref)
-    )
-    if (jaExiste) return
-    adicionarLancamento({
-      tipo: 'receita',
-      descricao: `Pró-labore ${ref}`,
-      valor,
-      categoria: 'pro-labore',
-      vencimento: venc,
-      status: 'pendente',
-      recorrente: false,
-    })
-  }, [lancamentos, adicionarLancamento, filtroMes])
+  const salvarCartao = async (cartao: Omit<CartaoCredito, 'id'>) => {
+    const novoCartao = { ...cartao, id: Date.now().toString() };
+    if (isMockMode()) {
+      setCartoes(prev => [...prev, novoCartao]);
+      return novoCartao;
+    }
+    const { data, error } = await supabase.from('financeiro_cartoes').insert(cartao).select().single();
+    if (error) throw error;
+    setCartoes(prev => [...prev, data]);
+    return data;
+  };
 
-  // ─── Filtros + cálculos ─────────────────────────────────────────────────────
+  const deletarCartao = async (id: string) => {
+    if (isMockMode()) {
+      setCartoes(prev => prev.filter(c => c.id !== id));
+      return;
+    }
+    const { error } = await supabase.from('financeiro_cartoes').delete().eq('id', id);
+    if (error) throw error;
+    setCartoes(prev => prev.filter(c => c.id !== id));
+  };
 
-  const hoje = new Date().toISOString().slice(0, 10)
+  const salvarFornecedor = async (fornecedor: Omit<Fornecedor, 'id'>) => {
+    const novoFornecedor = { ...fornecedor, id: Date.now().toString() };
+    if (isMockMode()) {
+      setFornecedores(prev => [...prev, novoFornecedor]);
+      return novoFornecedor;
+    }
+    const { data, error } = await supabase.from('financeiro_fornecedores').insert(fornecedor).select().single();
+    if (error) throw error;
+    setFornecedores(prev => [...prev, data]);
+    return data;
+  };
 
-  // atualiza status de atrasados automaticamente
-  const lancamentosNormalizados: Lancamento[] = lancamentos.map(l => {
-    if (l.status === 'pendente' && l.vencimento < hoje) return { ...l, status: 'atrasado' as LancamentoStatus }
-    return l
-  })
+  const deletarFornecedor = async (id: string) => {
+    if (isMockMode()) {
+      setFornecedores(prev => prev.filter(f => f.id !== id));
+      return;
+    }
+    const { error } = await supabase.from('financeiro_fornecedores').delete().eq('id', id);
+    if (error) throw error;
+    setFornecedores(prev => prev.filter(f => f.id !== id));
+  };
 
-  const lancamentosFiltrados = lancamentosNormalizados.filter(l => {
-    const noMes    = l.vencimento.startsWith(filtroMes)
-    const tipoOk   = filtroTipo === 'todos' || l.tipo === filtroTipo
-    const statusOk = filtroStatus === 'todos' || l.status === filtroStatus
-    return noMes && tipoOk && statusOk
-  })
+  const getLancamentosFiltrados = useCallback(() => {
+    return lancamentos.filter(l => {
+      const dataLancamento = new Date(l.data);
+      return dataLancamento.getFullYear() === anoSelecionado && 
+             dataLancamento.getMonth() + 1 === mesSelecionado;
+    });
+  }, [lancamentos, anoSelecionado, mesSelecionado]);
 
-  const todosMes = lancamentosNormalizados.filter(l => l.vencimento.startsWith(filtroMes))
+  const getSaldoPeriodo = useCallback(() => {
+    const filtrados = getLancamentosFiltrados();
+    const totalReceitas = filtrados.filter(l => l.tipo === 'receita').reduce((s, l) => s + l.valor, 0);
+    const totalDespesas = filtrados.filter(l => l.tipo === 'despesa').reduce((s, l) => s + l.valor, 0);
+    return { totalReceitas, totalDespesas, saldo: totalReceitas - totalDespesas };
+  }, [getLancamentosFiltrados]);
 
-  const resumo: ResumoPessoal = {
-    totalReceitas: todosMes.filter(l => l.tipo === 'receita').reduce((s, l) => s + l.valor, 0),
-    totalDespesas: todosMes.filter(l => l.tipo !== 'receita').reduce((s, l) => s + l.valor, 0),
-    saldoMes: todosMes.filter(l => l.tipo === 'receita').reduce((s, l) => s + l.valor, 0)
-              - todosMes.filter(l => l.tipo !== 'receita').reduce((s, l) => s + l.valor, 0),
-    aVencer: todosMes.filter(l => l.status === 'pendente' && l.vencimento >= hoje).reduce((s, l) => s + l.valor, 0),
-    atrasados: lancamentosNormalizados.filter(l => l.status === 'atrasado').reduce((s, l) => s + l.valor, 0),
-  }
-
-  // ─── Modal helpers ──────────────────────────────────────────────────────────
-
-  const abrirNovo = useCallback(() => { setEditando(null); setShowModal(true) }, [])
-  const abrirEdicao = useCallback((l: Lancamento) => { setEditando(l); setShowModal(true) }, [])
-  const fecharModal = useCallback(() => { setEditando(null); setShowModal(false) }, [])
+  const getLancamentosPorCategoria = useCallback(() => {
+    const filtrados = getLancamentosFiltrados();
+    const porCategoria: Record<string, number> = {};
+    filtrados.forEach(l => {
+      const categoria = categorias.find(c => c.id === l.categoriaId);
+      if (categoria) {
+        const key = categoria.nome;
+        porCategoria[key] = (porCategoria[key] || 0) + l.valor;
+      }
+    });
+    return porCategoria;
+  }, [getLancamentosFiltrados, categorias]);
 
   return {
-    lancamentos: lancamentosFiltrados,
-    todosMes,
-    resumo,
-    filtroMes, setFiltroMes,
-    filtroTipo, setFiltroTipo,
-    filtroStatus, setFiltroStatus,
-    showModal, editando,
-    abrirNovo, abrirEdicao, fecharModal,
-    adicionarLancamento,
-    atualizarLancamento,
-    removerLancamento,
-    removerGrupoRecorrencia,
-    marcarPago,
-    adicionarProlabore,
+    lancamentos: getLancamentosFiltrados(),
+    todosLancamentos: lancamentos,
+    categorias,
     cartoes,
-    adicionarCartao,
-    atualizarCartao,
-    removerCartao,
-    alertasCartoes,
-  }
-}
+    fornecedores,
+    loading,
+    anoSelecionado,
+    mesSelecionado,
+    setAnoSelecionado,
+    setMesSelecionado,
+    salvarLancamento,
+    atualizarLancamento,
+    deletarLancamento,
+    salvarCategoria,
+    deletarCategoria,
+    salvarCartao,
+    deletarCartao,
+    salvarFornecedor,
+    deletarFornecedor,
+    getSaldoPeriodo,
+    getLancamentosPorCategoria,
+    refresh: fetchData,
+  };
+};

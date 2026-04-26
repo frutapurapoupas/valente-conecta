@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { User, Mail, Phone, MapPin, Edit2, Save, X, Package, Heart, ChevronLeft } from 'lucide-react'
+import { User, Mail, Phone, MapPin, Edit2, Save, X, Package, Heart, ChevronLeft, Dumbbell, Navigation } from 'lucide-react'
 
 export default function PerfilPage() {
   const [isEditing, setIsEditing] = useState(false)
@@ -13,8 +13,24 @@ export default function PerfilPage() {
     endereco: 'Rua Principal, 123 - Centro, Valente-BA'
   })
   const [tempData, setTempData] = useState(formData)
+  const [academiaDados, setAcademiaDados] = useState<any>(null)
+  const [esportesDados, setEsportesDados] = useState<any[]>([])
 
   const stats = { compras: 47, economias: 156.90, avaliacoes: 12, favoritos: 8 }
+
+  useEffect(() => {
+    // Carregar dados da academia
+    const academiaSalva = localStorage.getItem('academia_dados')
+    if (academiaSalva) {
+      setAcademiaDados(JSON.parse(academiaSalva))
+    }
+
+    // Carregar dados dos esportes
+    const esportesSalvos = localStorage.getItem('academia_esportes')
+    if (esportesSalvos) {
+      setEsportesDados(JSON.parse(esportesSalvos))
+    }
+  }, [])
 
   const handleSave = () => {
     setFormData(tempData)
@@ -75,6 +91,51 @@ export default function PerfilPage() {
             </div>
           )}
         </div>
+
+        {/* Academia e Esportes */}
+        {(academiaDados || esportesDados.length > 0) && (
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 space-y-4">
+            <h3 className="font-bold text-white flex items-center gap-2"><Dumbbell className="w-4 h-4 text-cyan-400" />Academia e Esportes</h3>
+            
+            {academiaDados && (
+              <div className="bg-zinc-800 rounded-xl p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold text-white">{academiaDados.nome}</h4>
+                  <Link href="/academia/configurar-academia" className="text-xs text-cyan-400 hover:text-cyan-300">Editar</Link>
+                </div>
+                <div className="flex items-center gap-2 text-zinc-400 text-sm">
+                  <MapPin className="w-4 h-4" />
+                  <span>{academiaDados.endereco}</span>
+                </div>
+                {academiaDados.localizadorCapturado && (
+                  <div className="flex items-center gap-2 text-emerald-400 text-xs">
+                    <Navigation className="w-3 h-3" />
+                    <span>Localização capturada</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {esportesDados.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-bold text-zinc-500 uppercase tracking-wide">Esportes Cadastrados</p>
+                {esportesDados.map((esporte) => (
+                  <div key={esporte.id} className="bg-zinc-800 rounded-xl p-3 flex items-center justify-between">
+                    <div>
+                      <p className="font-bold text-white text-sm">{esporte.nome || esporte.tipo}</p>
+                      <p className="text-zinc-400 text-xs">{esporte.diaSemana} · {esporte.horario}</p>
+                    </div>
+                    {esporte.localizadorCapturado ? (
+                      <Navigation className="w-4 h-4 text-emerald-400" />
+                    ) : (
+                      <div className="w-4 h-4 bg-orange-500 rounded-full animate-pulse" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="text-center py-4"><p className="text-xs text-zinc-600">Valente Conecta v2.0.0</p></div>
       </main>

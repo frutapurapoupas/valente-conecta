@@ -1,5 +1,10 @@
-import FinanceiroPessoalScreen from '@/components/admin-master/FinanceiroPessoalScreen'
+'use client'
+
+import { useFinanceiroPessoal } from '@/hooks/useFinanceiroPessoal'
+import { FinanceiroPessoalScreen } from '@/components/admin-master/FinanceiroPessoalScreen'
 
 export default function FinanceiroPessoalPage() {
-  return <FinanceiroPessoalScreen />
+  const financeiroData = useFinanceiroPessoal()
+
+  return <FinanceiroPessoalScreen {...financeiroData} />
 }

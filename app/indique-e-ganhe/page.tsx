@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { QRCodeSVG } from 'qrcode.react'
-import { Share2, Copy, Check, Gift, Users, TrendingUp, Store, Briefcase, Dumbbell, QrCode, Download, ChevronLeft } from 'lucide-react'
+import { Share2, Copy, Check, Gift, Users, TrendingUp, Store, Briefcase, Dumbbell, QrCode, Download, ChevronLeft, Wallet } from 'lucide-react'
 
 type TabType = 'amigos' | 'empresa' | 'profissionais' | 'academia'
 
@@ -74,6 +74,24 @@ export default function IndiqueEGanhePage() {
       </header>
 
       <main className="max-w-2xl mx-auto p-4 space-y-6">
+        {/* Card Carteira */}
+        <Link 
+          href="/carteira"
+          className="group relative flex justify-between items-center p-6 rounded-[32px] bg-gradient-to-r from-yellow-400/90 to-orange-500/90 backdrop-blur-xl border border-white/20 shadow-2xl hover:shadow-yellow-400/25 transition-all duration-300 hover:scale-105"
+        >
+          <div className="flex items-center gap-3">
+            <Wallet className="w-8 h-8 text-black" />
+            <div>
+              <p className="font-black text-black text-lg">Carteira</p>
+              <p className="text-black/70 text-xs">Seu saldo disponível</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-2xl font-black text-black">R$ 156.50</p>
+            <p className="text-black/70 text-xs">Saldo</p>
+          </div>
+        </Link>
+
         {/* Cards de estatísticas */}
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-gradient-to-br from-yellow-600/20 to-orange-600/20 border border-yellow-500/20 rounded-2xl p-4">
@@ -85,6 +103,18 @@ export default function IndiqueEGanhePage() {
             <p className="text-emerald-400 text-xs font-bold uppercase">Bônus Acumulado</p>
             <p className="text-2xl font-black text-white">R$ 156.50</p>
             <p className="text-emerald-400/70 text-xs mt-1">Disponível para saque</p>
+          </div>
+        </div>
+
+        {/* Nota Explicativa do Admin da Loja */}
+        <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-2xl p-4">
+          <div className="flex items-start gap-3">
+            <Gift className="w-5 h-5 text-blue-400 mt-0.5" />
+            <div>
+              <h4 className="font-bold text-white text-sm mb-1">Bônus Configurado pela Loja</h4>
+              <p className="text-zinc-300 text-sm">Indique amigos e ganhe <span className="text-green-400 font-bold">R$ 2,00</span> de bônus para usar em nossos serviços!</p>
+              <p className="text-zinc-500 text-xs mt-2">*Valor configurado pelo administrador da loja</p>
+            </div>
           </div>
         </div>
 
@@ -139,6 +169,26 @@ export default function IndiqueEGanhePage() {
             </button>
           </div>
         </div>
+
+        {/* Card Usuários Comuns */}
+        <Link
+          href="/indique-e-ganhe/usuarios-comuns"
+          className="block bg-gradient-to-br from-green-600/20 to-emerald-600/20 border border-green-500/30 rounded-2xl p-5 hover:from-green-600/30 hover:to-emerald-600/30 transition-all"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-bold text-white">Indique Usuários Comuns</h3>
+              <p className="text-zinc-400 text-sm">A cada 10 indicações validadas, ganhe R$ 2,00</p>
+            </div>
+            <Users className="w-8 h-8 text-green-400" />
+          </div>
+          <div className="mt-3 flex items-center gap-2">
+            <div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full" style={{ width: '70%' }} />
+            </div>
+            <span className="text-xs text-green-400 font-bold">7/10</span>
+          </div>
+        </Link>
 
         {/* Abas */}
         <div className="flex gap-2 overflow-x-auto pb-2">

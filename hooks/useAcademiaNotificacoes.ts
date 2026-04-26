@@ -5,6 +5,8 @@ export interface PerfilAluno {
   objetivo: 'emagrecer' | 'hipertrofia' | 'condicionamento' | 'saude'
   pesoAtual: number
   pesoMeta: number
+  altura?: number
+  periodoMeta?: string
   freqSemanal: number   // vezes por semana desejadas
   nivel: 'iniciante' | 'intermediario' | 'avancado'
   ultimoTreino?: string // ISO date

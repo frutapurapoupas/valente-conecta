@@ -7,11 +7,13 @@ import {
   ShoppingBag, Gift, Lock, MapPin, Phone, Mail, Navigation,
   ChevronRight, TrendingDown,
   Building2, Loader2, AlertTriangle, Crown, User, Store, Bike,
-  LayoutGrid, Calendar, Megaphone, Package
+  LayoutGrid, Calendar, Megaphone, Package, Truck, Home
 } from 'lucide-react'
 import { useHomePage } from '@/hooks/useHomePage'
 import SmartSearchBar from '@/components/ui/SmartSearchBar'
 import OnboardingTutorial from '@/components/ui/OnboardingTutorial'
+import { GestaoCard } from '@/components/GestaoCard'
+import { PlanoAtivoCard } from '@/components/PlanoAtivoCard'
 
 export default function HomePage() {
   const {
@@ -40,6 +42,7 @@ export default function HomePage() {
   } = useHomePage()
 
   const [showTutorial, setShowTutorial] = useState(false)
+  const [alertaLocalizador, setAlertaLocalizador] = useState<{ tipo: 'academia' | 'esporte' | 'ambos'; mensagem: string } | null>(null)
 
   useEffect(() => {
     const viewCount = parseInt(localStorage.getItem('onboarding_view_count') || '0')
@@ -47,6 +50,30 @@ export default function HomePage() {
     
     if (viewCount < 3 && !hasSeenOnboarding) {
       setShowTutorial(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    // Verificar alertas de localizador pendente
+    const academiaAlerta = localStorage.getItem('academia_alerta_localizador')
+    const esportes = JSON.parse(localStorage.getItem('academia_esportes') || '[]')
+    const esportesSemLocalizador = esportes.filter((e: any) => !e.localizadorCapturado)
+
+    if (academiaAlerta === 'true' && esportesSemLocalizador.length > 0) {
+      setAlertaLocalizador({
+        tipo: 'ambos',
+        mensagem: `Você precisa capturar a localização da academia e de ${esportesSemLocalizador.length} esporte(s). Vá até o local e clique em capturar.`
+      })
+    } else if (academiaAlerta === 'true') {
+      setAlertaLocalizador({
+        tipo: 'academia',
+        mensagem: 'Você precisa capturar a localização da academia. Vá até o local e clique em capturar.'
+      })
+    } else if (esportesSemLocalizador.length > 0) {
+      setAlertaLocalizador({
+        tipo: 'esporte',
+        mensagem: `Você precisa capturar a localização de ${esportesSemLocalizador.length} esporte(s). Vá até o local e clique em capturar.`
+      })
     }
   }, [])
 
@@ -91,6 +118,10 @@ export default function HomePage() {
       </header>
 
       <main className="max-w-2xl mx-auto px-4 pt-6 space-y-6 relative z-10">
+        <GestaoCard />
+        
+        <PlanoAtivoCard />
+        
         <div className="relative">
           <div className="relative bg-white/10 backdrop-blur-xl border border-white/20 rounded-[32px] p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
@@ -126,11 +157,13 @@ export default function HomePage() {
           <ActionCard href="/pdv/colaborativo" icon={Store} label="PDV Colaborativo" color="text-emerald-400" />
           <ActionCard href="/catalogo" icon={Package} label="Catálogo" color="text-blue-400" />
           <ActionCard href="/servicos-agendamento" icon={Calendar} label="Serviços com Agendamento" color="text-pink-400" />
-          <ActionCard href="/academia" icon={Dumbbell} label="Academia" color="text-cyan-400" />
+          <ActionCard href="/academia/selecao" icon={Dumbbell} label="Academia" color="text-cyan-400" hasAlert={!!alertaLocalizador} alertMessage={alertaLocalizador?.mensagem} />
           <ActionCard href="/planos" icon={Crown} label="Planos" color="text-purple-400" />
           <ActionCard href="/profissional/catalogo" icon={User} label="Área do Profissional" color="text-indigo-400" />
           <ActionCard href="/anuncios" icon={Megaphone} label="Anúncios" color="text-orange-400" />
           <ActionCard href="/ambulantes" icon={Bike} label="Ambulantes" color="text-amber-400" />
+          <ActionCard href="/transportes-delivery" icon={Truck} label="Transportes e Delivery" color="text-teal-400" />
+          <ActionCard href="/imoveis" icon={Home} label="Imóveis" color="text-rose-400" />
         </div>
       </main>
 
@@ -167,12 +200,22 @@ export default function HomePage() {
   )
 }
 
-function ActionCard({ href, icon: Icon, label, color }: { href: string; icon: any; label: string; color: string }) {
+function ActionCard({ href, icon: Icon, label, color, hasAlert, alertMessage }: { href: string; icon: any; label: string; color: string; hasAlert?: boolean; alertMessage?: string }) {
   return (
     <Link href={href} className="relative group">
       <div className="relative bg-white/10 backdrop-blur-xl border border-white/20 rounded-[24px] p-4 flex flex-col items-center justify-center h-28 hover:bg-white/15 transition-all duration-300 group-hover:scale-105">
+        {hasAlert && (
+          <div className="absolute top-2 right-2 w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center animate-pulse z-10">
+            <AlertTriangle className="w-3 h-3 text-white" />
+          </div>
+        )}
         <Icon className={`w-8 h-8 ${color} mb-2`} />
         <span className="text-xs font-bold text-white/90 text-center">{label}</span>
+        {hasAlert && alertMessage && (
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-orange-500/95 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
+            {alertMessage}
+          </div>
+        )}
       </div>
     </Link>
   )

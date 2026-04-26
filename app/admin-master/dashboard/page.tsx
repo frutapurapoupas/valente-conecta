@@ -10,7 +10,7 @@ import {
   LayoutDashboard, CreditCard, Tag, BookOpen, Settings,
   Package, UserCheck, BarChart3, Megaphone, GraduationCap, MapPin,
   ShoppingCart, Search, Award, Bell, FileText, CalendarClock,
-  Clock, CheckCircle, XCircle, Truck, Store, Phone, Mail, User
+  Clock, CheckCircle, XCircle, Truck, Store, Phone, Mail, User, Shield, Home
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import FinanceiroPessoalShortcut from '@/components/admin-master/FinanceiroPessoalShortcut'
@@ -34,6 +34,9 @@ const dadosPizza = [
 const ATALHOS = [
   { label: 'Dashboard',      icon: LayoutDashboard, href: '/admin/dashboard',                 cor: 'text-indigo-400' },
   { label: 'Usuarios',       icon: Users,           href: '/admin/usuarios',                  cor: 'text-indigo-400' },
+  { label: 'Gest. Usuários', icon: Shield,         href: '/admin-master/usuarios',            cor: 'text-red-400' },
+  { label: 'Config. Bônus',  icon: Award,           href: '/admin-master/bonus',               cor: 'text-amber-400' },
+  { label: 'Rel. Cidades',   icon: BarChart3,       href: '/admin-master/multi-cidade/relatorios', cor: 'text-purple-400' },
   { label: 'Empresas',       icon: Building2,       href: '/admin/empresas',                  cor: 'text-blue-400' },
   { label: 'Profissionais',  icon: UserCheck,       href: '/admin/profissionais',             cor: 'text-violet-400' },
   { label: 'Financeiro',     icon: BarChart3,       href: '/admin/financeiro',                cor: 'text-emerald-400' },
@@ -57,6 +60,11 @@ const ATALHOS = [
   { label: 'Busca',          icon: Search,          href: '/busca/produtos',                  cor: 'text-blue-400' },
   { label: 'Caixa',          icon: CreditCard,      href: '/admin/financeiro/controle',       cor: 'text-emerald-400' },
   { label: 'Serv. Agendado', icon: CalendarClock,   href: '/admin/agenda',                    cor: 'text-fuchsia-400' },
+  { label: 'Fila Espera',    icon: Clock,          href: '/admin/agendamento/fila-espera',    cor: 'text-yellow-400' },
+  { label: 'Ambulantes',     icon: Store,           href: '/ambulantes',                      cor: 'text-orange-400' },
+  { label: 'Usr. Cidade',    icon: Users,           href: '/admin-master/multi-cidade/usuarios', cor: 'text-cyan-400' },
+  { label: 'Transportes',    icon: Truck,           href: '/admin-master/gerenciar-transportes', cor: 'text-teal-400' },
+  { label: 'Config. Imóveis', icon: Home,          href: '/admin-master/configuracoes-imoveis', cor: 'text-rose-400' },
 ]
 
 function TTip({ active, payload, label }: any) {
@@ -74,8 +82,13 @@ function TTip({ active, payload, label }: any) {
 }
 
 export default function DashboardMaster() {
-  const [stats, setStats] = useState({ usuarios: 0, empresas: 0, transacoes: 0 })
+  const [stats, setStats] = useState({ usuarios: 0, empresas: 0, transacoes: 0, imoveis: 0, motoristas: 0, agendamentos: 0 })
   const [loading, setLoading] = useState(true)
+  const [alertas, setAlertas] = useState([
+    { tipo: 'warning', mensagem: '3 motoristas pendentes de aprovação', tempo: '5 min' },
+    { tipo: 'info', mensagem: 'Novo plano gratuito adicionado: Serviço com Agendamento', tempo: '1 hora' },
+    { tipo: 'success', mensagem: 'Volume de transações aumentou 12% este mês', tempo: '2 horas' },
+  ])
 
   // Dashboard sem autenticação - acesso direto
   const [orders, setOrders] = useState([
@@ -108,15 +121,29 @@ export default function DashboardMaster() {
     async function load() {
       try {
         const [u, e, t] = await Promise.all([
-          supabase.from('users').select('*', { count: 'exact', head: true }),
-          supabase.from('companies').select('*', { count: 'exact', head: true }),
-          supabase.from('transactions').select('amount').gte(
+          (supabase as any).from('users').select('*', { count: 'exact', head: true }),
+          (supabase as any).from('companies').select('*', { count: 'exact', head: true }),
+          (supabase as any).from('transactions').select('amount').gte(
             'created_at',
             new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
           ),
         ])
         const vol = (t.data || []).reduce((s: number, r: { amount: number }) => s + r.amount, 0)
-        setStats({ usuarios: u.count || 0, empresas: e.count || 0, transacoes: Math.round(vol) })
+        
+        // Buscar dados de imóveis e motoristas
+        const [imoveisData, motoristasData] = await Promise.all([
+          (supabase as any).from('imoveis_anuncios').select('*', { count: 'exact', head: true }),
+          (supabase as any).from('motoristas_transportes').select('*', { count: 'exact', head: true }),
+        ])
+        
+        setStats({ 
+          usuarios: u.count || 0, 
+          empresas: e.count || 0, 
+          transacoes: Math.round(vol),
+          imoveis: imoveisData.count || 0,
+          motoristas: motoristasData.count || 0,
+          agendamentos: 0 // TODO: implementar contagem de agendamentos
+        })
       } catch { } finally { setLoading(false) }
     }
     load()
@@ -177,22 +204,46 @@ export default function DashboardMaster() {
       <div className="p-6 space-y-8 pb-24">
 
         {/* KPIs */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {[
             { label: 'Usuarios',    value: loading ? '...' : stats.usuarios.toLocaleString(),          icon: Users,      cor: 'text-indigo-400', borda: 'border-indigo-500/30' },
             { label: 'Empresas',    value: loading ? '...' : stats.empresas.toLocaleString(),          icon: Building2,  cor: 'text-blue-400',   borda: 'border-blue-500/30' },
             { label: 'Volume/mes',  value: loading ? '...' : `R$${stats.transacoes.toLocaleString()}`, icon: TrendingUp, cor: 'text-emerald-400', borda: 'border-emerald-500/30' },
             { label: 'Crescimento', value: '+12%',                                                     icon: BarChart3,  cor: 'text-amber-400',  borda: 'border-amber-500/30' },
+            { label: 'Imóveis',     value: loading ? '...' : stats.imoveis.toLocaleString(),         icon: Home,       cor: 'text-rose-400',   borda: 'border-rose-500/30' },
+            { label: 'Motoristas',  value: loading ? '...' : stats.motoristas.toLocaleString(),      icon: Truck,      cor: 'text-teal-400',   borda: 'border-teal-500/30' },
           ].map(k => {
             const Icon = k.icon
             return (
-              <div key={k.label} className={`bg-zinc-900 border ${k.borda} rounded-2xl p-5`}>
-                <Icon className={`w-6 h-6 ${k.cor} mb-3`} />
-                <p className={`text-3xl font-black ${k.cor}`}>{k.value}</p>
-                <p className="text-zinc-500 text-sm font-bold mt-1">{k.label}</p>
+              <div key={k.label} className={`bg-zinc-900 border ${k.borda} rounded-2xl p-4`}>
+                <Icon className={`w-5 h-5 ${k.cor} mb-2`} />
+                <p className={`text-2xl font-black ${k.cor}`}>{k.value}</p>
+                <p className="text-zinc-500 text-xs font-bold mt-1">{k.label}</p>
               </div>
             )
           })}
+        </div>
+
+        {/* Alertas */}
+        <div>
+          <h2 className="text-xs font-black uppercase tracking-widest text-zinc-500 mb-4">ALERTAS E NOTIFICAÇÕES</h2>
+          <div className="space-y-2">
+            {alertas.map((alerta, idx) => (
+              <div key={idx} className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${
+                alerta.tipo === 'warning' ? 'bg-amber-500/10 border-amber-500/30' :
+                alerta.tipo === 'info' ? 'bg-blue-500/10 border-blue-500/30' :
+                'bg-emerald-500/10 border-emerald-500/30'
+              }`}>
+                <div className={`w-2 h-2 rounded-full ${
+                  alerta.tipo === 'warning' ? 'bg-amber-500' :
+                  alerta.tipo === 'info' ? 'bg-blue-500' :
+                  'bg-emerald-500'
+                }`} />
+                <span className="text-sm text-zinc-300 flex-1">{alerta.mensagem}</span>
+                <span className="text-xs text-zinc-500">{alerta.tempo}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Graficos */}
@@ -332,7 +383,7 @@ export default function DashboardMaster() {
                         ) : order.status === 'confirmed' ? (
                           <div className="flex items-center gap-2 text-emerald-400 text-xs">
                             <CheckCircle className="w-4 h-4" />
-                            <span>{order.treatment?.message}</span>
+                            <span>Confirmado</span>
                           </div>
                         ) : (
                           <div className="flex items-center gap-2 text-red-400 text-xs">

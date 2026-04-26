@@ -10,6 +10,7 @@ import {
   Plus, History, TrendingUp, Sparkles
 } from 'lucide-react'
 import NotificacaoPush from '@/components/agendamento/NotificacaoPush'
+import PlanoAdminCard from '@/components/PlanoAdminCard'
 import { categorias, Categoria, ServicoItem, buscarServicos } from '@/lib/servicosCategorias'
 
 interface Profissional {
@@ -57,6 +58,9 @@ export default function ServicosAgendamentoPage() {
   const [categoriaSelecionada, setCategoriaSelecionada] = useState<string>('todas')
   const [subcategoriaSelecionada, setSubcategoriaSelecionada] = useState<string>('todas')
   const [especialidadeSelecionada, setEspecialidadeSelecionada] = useState('todas')
+  const [especialidadeInput, setEspecialidadeInput] = useState('')
+  const [showEspecialidadeDropdown, setShowEspecialidadeDropdown] = useState(false)
+  const [showNovaEspecialidadeModal, setShowNovaEspecialidadeModal] = useState(false)
   const [statusSelecionado, setStatusSelecionado] = useState('todos')
   const [ordenacao, setOrdenacao] = useState('relevancia')
   const [loading, setLoading] = useState(true)
@@ -264,7 +268,7 @@ export default function ServicosAgendamentoPage() {
     }, 500)
   }, [])
 
-  const especialidades = ['todas', 'Mecânico', 'Dentista', 'Cabeleireiro', 'Fisioterapeuta']
+  const especialidades = ['todas', 'Mecânico', 'Dentista', 'Cabeleireiro', 'Fisioterapeuta', 'Pedreiro', 'Eletricista', 'Encanador', 'Pintor', 'Jardineiro', 'Veterinário', 'Psicólogo', 'Nutricionista', 'Personal Trainer', 'Professor de Música', 'Advogado', 'Contador', 'Arquiteto', 'Designer', 'Programador', 'Mecânico de Motos', 'Chaveiro', 'Serralheiro', 'Marceneiro', 'Costureira', 'Manicure', 'Maquiador', 'Fotógrafo', 'Videomaker', 'DJ', 'Cozinheiro', 'Garçom', 'Padeiro', 'Açougueiro', 'Farmacêutico', 'Enfermeiro', 'Médico', 'Técnico em Informática', 'Técnico em Celulares', 'Técnico em Ar Condicionado', 'Técnico em TV', 'Técnico em Geladeira', 'Técnico em Máquinas de Lavar', 'Técnico em Fogões', 'Técnico em Micro-ondas', 'Técnico em Cafeteiras', 'Técnico em Ferros', 'Técnico em Aspiradores', 'Técnico em Batedeiras', 'Técnico em Processadores', 'Técnico em Liquidificadores', 'Técnico em Espremedores', 'Técnico em Centrífugas', 'Técnico em Batedeiras Planetárias', 'Técnico em Câmaras Frias', 'Técnico em Freezers', 'Técnico em Geladeiras Comerciais', 'Técnico em Máquinas de Gelo', 'Técnico em Máquinas de Sorvete', 'Técnico em Máquinas de Café', 'Técnico em Máquinas de Chá', 'Técnico em Máquinas de Chocolate', 'Técnico em Máquinas de Pão', 'Técnico em Máquinas de Massa', 'Técnico em Máquinas de Pizza', 'Técnico em Máquinas de Hambúrguer', 'Técnico em Máquinas de Batata', 'Técnico em Máquinas de Pastel', 'Técnico em Máquinas de Coxinha', 'Técnico em Máquinas de Açaí', 'Técnico em Máquinas de Sucos', 'Técnico em Máquinas de Vitaminas', 'Técnico em Máquinas de Smoothies', 'Técnico em Máquinas de Milkshakes', 'Técnico em Máquinas de Sorvetes', 'Técnico em Máquinas de Picolé', 'Técnico em Máquinas de Geladinho', 'Técnico em Máquinas de Churros', 'Técnico em Máquinas de Pipoca', 'Técnico em Máquinas de Caramelos', 'Técnico em Máquinas de Algodão Doce', 'Técnico em Máquinas de Donuts', 'Técnico em Máquinas de Cupcakes', 'Técnico em Máquinas de Brownies', 'Técnico em Máquinas de Cookies', 'Técnico em Máquinas de Bolos', 'Técnico em Máquinas de Tortas', 'Técnico em Máquinas de Pizzas', 'Técnico em Máquinas de Calzones', 'Técnico em Máquinas de Lasanhas', 'Técnico em Máquinas de Raviólis', 'Técnico em Máquinas de Gnocchi', 'Técnico em Máquinas de Macarrão', 'Técnico em Máquinas de Arroz', 'Técnico em Máquinas de Feijão', 'Técnico em Máquinas de Grãos', 'Técnico em Máquinas de Legumes', 'Técnico em Máquinas de Frutas', 'Técnico em Máquinas de Carnes', 'Técnico em Máquinas de Peixes', 'Técnico em Máquinas de Frutos do Mar', 'Técnico em Máquinas de Aves', 'Técnico em Máquinas de Ovos', 'Técnico em Máquinas de Laticínios', 'Técnico em Máquinas de Queijos', 'Técnico em Máquinas de Iogurtes', 'Técnico em Máquinas de Manteigas', 'Técnico em Máquinas de Cremes', 'Técnico em Máquinas de Sobremesas', 'Técnico em Máquinas de Doces', 'Técnico em Máquinas de Salgados', 'Técnico em Máquinas de Lanches', 'Técnico em Máquinas de Refeições', 'Técnico em Máquinas de Pratos Prontos', 'Técnico em Máquinas de Congelados', 'Técnico em Máquinas de Resfriados', 'Técnico em Máquinas de Conservas', 'Técnico em Máquinas de Enlatados', 'Técnico em Máquinas de Embalagens', 'Técnico em Máquinas de Rotulagem', 'Técnico em Máquinas de Selagem', 'Técnico em Máquinas de Empacotamento', 'Técnico em Máquinas de Palletização', 'Técnico em Máquinas de Armazenagem', 'Técnico em Máquinas de Transporte', 'Técnico em Máquinas de Logística', 'Técnico em Máquinas de Distribuição', 'Técnico em Máquinas de Venda', 'Técnico em Máquinas de Marketing', 'Técnico em Máquinas de Publicidade', 'Técnico em Máquinas de Propaganda', 'Técnico em Máquinas de Promoção', 'Técnico em Máquinas de Vendas', 'Técnico em Máquinas de Atendimento', 'Técnico em Máquinas de Suporte', 'Técnico em Máquinas de Assistência', 'Técnico em Máquinas de Manutenção', 'Técnico em Máquinas de Reparo', 'Técnico em Máquinas de Instalação', 'Técnico em Máquinas de Montagem', 'Técnico em Máquinas de Desmontagem', 'Técnico em Máquinas de Limpeza', 'Técnico em Máquinas de Higienização', 'Técnico em Máquinas de Desinfecção', 'Técnico em Máquinas de Esterilização', 'Técnico em Máquinas de Conservação', 'Técnico em Máquinas de Preservação', 'Técnico em Máquinas de Armazenamento', 'Técnico em Máquinas de Estocagem', 'Técnico em Máquinas de Expedição', 'Técnico em Máquinas de Recebimento', 'Técnico em Máquinas de Conferência', 'Técnico em Máquinas de Controle', 'Técnico em Máquinas de Qualidade', 'Técnico em Máquinas de Inspeção', 'Técnico em Máquinas de Teste', 'Técnico em Máquinas de Análise', 'Técnico em Máquinas de Pesquisa', 'Técnico em Máquinas de Desenvolvimento', 'Técnico em Máquinas de Inovação', 'Técnico em Máquinas de Criação', 'Técnico em Máquinas de Design', 'Técnico em Máquinas de Projeto', 'Técnico em Máquinas de Planejamento', 'Técnico em Máquinas de Organização', 'Técnico em Máquinas de Coordenação', 'Técnico em Máquinas de Gestão', 'Técnico em Máquinas de Administração', 'Técnico em Máquinas de Direção', 'Técnico em Máquinas de Liderança', 'Técnico em Máquinas de Supervisão', 'Técnico em Máquinas de Orientação', 'Técnico em Máquinas de Treinamento', 'Técnico em Máquinas de Ensino', 'Técnico em Máquinas de Aprendizagem', 'Técnico em Máquinas de Educação', 'Técnico em Máquinas de Formação', 'Técnico em Máquinas de Capacitação', 'Técnico em Máquinas de Desenvolvimento', 'Técnico em Máquinas de Crescimento', 'Técnico em Máquinas de Evolução', 'Técnico em Máquinas de Progresso', 'Técnico em Máquinas de Melhoria', 'Técnico em Máquinas de Otimização', 'Técnico em Máquinas de Eficiência', 'Técnico em Máquinas de Produtividade', 'Técnico em Máquinas de Rentabilidade', 'Técnico em Máquinas de Lucratividade', 'Técnico em Máquinas de Competitividade', 'Técnico em Máquinas de Sustentabilidade', 'Técnico em Máquinas de Inovação', 'Técnico em Máquinas de Criatividade', 'Técnico em Máquinas de Originalidade', 'Técnico em Máquinas de Diferenciação', 'Técnico em Máquinas de Excelência', 'Técnico em Máquinas de Qualidade', 'Técnico em Máquinas de Perfeição', 'Técnico em Máquinas de Sucesso', 'Técnico em Máquinas de Conquista', 'Técnico em Máquinas de Vitória', 'Técnico em Máquinas de Triunfo', 'Técnico em Máquinas de Realização', 'Técnico em Máquinas de Conclusão', 'Técnico em Máquinas de Finalização', 'Técnico em Máquinas de Encerramento', 'Técnico em Máquinas de Término', 'Técnico em Máquinas de Fim', 'Técnico em Máquinas de Encerramento', 'Técnico em Máquinas de Conclusão', 'Técnico em Máquinas de Finalização', 'Técnico em Máquinas de Término', 'Técnico em Máquinas de Fim', 'Técnico em Máquinas de Encerramento', 'Técnico em Máquinas de Conclusão', 'Técnico em Máquinas de Finalização', 'Técnico em Máquinas de Término', 'Técnico em Máquinas de Fim']
   const cidades = ['todas', 'Valente', 'Coité']
 
   const profissionaisFiltrados = profissionais.filter(p => {
@@ -336,6 +340,7 @@ export default function ServicosAgendamentoPage() {
       </header>
 
       <main className="max-w-2xl mx-auto p-4 space-y-4">
+        <PlanoAdminCard />
         <NotificacaoPush />
 
         {/* Barra de busca com autocompletar */}
@@ -445,13 +450,64 @@ export default function ServicosAgendamentoPage() {
 
             <div>
               <label className="text-xs text-zinc-500 font-bold uppercase mb-1 block">Especialidade</label>
-              <div className="flex gap-2 flex-wrap">
-                {especialidades.map(esp => (
-                  <button key={esp} onClick={() => setEspecialidadeSelecionada(esp)} className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${especialidadeSelecionada === esp ? 'bg-yellow-500 text-black' : 'bg-zinc-800 text-zinc-400'}`}>
-                    {esp === 'todas' ? 'Todas' : esp}
-                  </button>
-                ))}
+              <div className="relative">
+                <input
+                  type="text"
+                  value={especialidadeInput}
+                  onChange={(e) => {
+                    setEspecialidadeInput(e.target.value)
+                    setShowEspecialidadeDropdown(true)
+                  }}
+                  onFocus={() => setShowEspecialidadeDropdown(true)}
+                  placeholder="Buscar especialidade..."
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-sm placeholder-zinc-500 focus:outline-none focus:border-yellow-500"
+                />
+                {showEspecialidadeDropdown && (
+                  <div className="absolute z-50 left-0 right-0 mt-1 bg-zinc-900 border border-zinc-800 rounded-lg shadow-2xl max-h-60 overflow-y-auto">
+                    {especialidades
+                      .filter(esp => esp !== 'todas' && esp.toLowerCase().includes(especialidadeInput.toLowerCase()))
+                      .slice(0, 10)
+                      .map(esp => (
+                        <button
+                          key={esp}
+                          onClick={() => {
+                            setEspecialidadeSelecionada(esp)
+                            setEspecialidadeInput(esp)
+                            setShowEspecialidadeDropdown(false)
+                          }}
+                          className={`w-full text-left px-3 py-2 hover:bg-zinc-800 transition-colors text-sm ${
+                            especialidadeSelecionada === esp ? 'bg-yellow-500/20 text-yellow-400' : 'text-zinc-300'
+                          }`}
+                        >
+                          {esp}
+                        </button>
+                      ))}
+                    {especialidadeInput && !especialidades.some(esp => esp.toLowerCase() === especialidadeInput.toLowerCase()) && (
+                      <button
+                        onClick={() => {
+                          setShowNovaEspecialidadeModal(true)
+                          setShowEspecialidadeDropdown(false)
+                        }}
+                        className="w-full text-left px-3 py-2 hover:bg-zinc-800 transition-colors text-sm text-yellow-400 border-t border-zinc-800 flex items-center gap-2"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Cadastrar "{especialidadeInput}" como nova especialidade
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
+              {especialidadeSelecionada !== 'todas' && (
+                <button
+                  onClick={() => {
+                    setEspecialidadeSelecionada('todas')
+                    setEspecialidadeInput('')
+                  }}
+                  className="mt-2 text-xs text-yellow-400 hover:text-yellow-300"
+                >
+                  Limpar filtro: {especialidadeSelecionada}
+                </button>
+              )}
             </div>
 
             <div>
@@ -565,6 +621,65 @@ export default function ServicosAgendamentoPage() {
           )}
         </div>
       </main>
+
+      {/* Modal para cadastrar nova especialidade */}
+      {showNovaEspecialidadeModal && (
+        <div className="fixed inset-0 z-50 bg-zinc-950/90 flex items-center justify-center p-4">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 w-full max-w-md space-y-4">
+            <div className="text-center">
+              <span className="text-4xl">✨</span>
+              <h2 className="text-xl font-black text-white mt-2">Nova Especialidade</h2>
+              <p className="text-sm text-zinc-400 mt-1">Cadastrar "{especialidadeInput}" no sistema</p>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs text-zinc-500 font-bold uppercase mb-1 block">Nome da especialidade</label>
+                <input
+                  type="text"
+                  value={especialidadeInput}
+                  onChange={(e) => setEspecialidadeInput(e.target.value)}
+                  placeholder="Ex: Técnico em Piscinas"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-sm placeholder-zinc-500 focus:outline-none focus:border-yellow-500"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-zinc-500 font-bold uppercase mb-1 block">Descrição (opcional)</label>
+                <textarea
+                  placeholder="Descreva brevemente o serviço..."
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-sm placeholder-zinc-500 focus:outline-none focus:border-yellow-500 resize-none"
+                  rows={3}
+                />
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowNovaEspecialidadeModal(false)
+                  setEspecialidadeInput('')
+                }}
+                className="flex-1 py-3 bg-zinc-800 text-zinc-400 rounded-xl font-bold text-sm hover:bg-zinc-700 transition"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  // Adicionar especialidade à lista
+                  setEspecialidadeSelecionada(especialidadeInput)
+                  setShowNovaEspecialidadeModal(false)
+                  setShowEspecialidadeDropdown(false)
+                  // Salvar no localStorage para persistência
+                  const novasEspecialidades = [...especialidades, especialidadeInput]
+                  localStorage.setItem('especialidades_customizadas', JSON.stringify([especialidadeInput]))
+                  alert(`✅ "${especialidadeInput}" cadastrada com sucesso!`)
+                }}
+                className="flex-1 py-3 bg-yellow-500 text-black rounded-xl font-bold text-sm hover:bg-yellow-400 transition"
+              >
+                Cadastrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

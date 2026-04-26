@@ -4,6 +4,40 @@ import path from 'path'
 
 const catalogosPath = path.join(process.cwd(), 'catalogos.json')
 
+// Função para buscar no Google Places API (fallback)
+async function buscarGooglePlaces(termo: string, cidade: string = 'Valente - BA') {
+  try {
+    // Nota: Em produção, usar uma API key real do Google Places
+    // Aqui simulamos uma resposta para demonstração
+    const mockGoogleResults = [
+      {
+        id: 'google_1',
+        nome: termo,
+        descricao: 'Encontrado via Google Places',
+        preco: null,
+        precoOriginal: null,
+        unidade: 'un',
+        foto: null,
+        loja: 'Fornecedor Externo',
+        lojaId: 'google_external',
+        cidade: cidade,
+        bairro: 'Centro',
+        endereco: 'Endereço não disponível',
+        telefone: null,
+        tipo: 'externo',
+        avaliacao: 4.0,
+        pontuacao: 0.5,
+        matchTipo: 'google_places',
+        fonte: 'google'
+      }
+    ]
+    return mockGoogleResults
+  } catch (error) {
+    console.error('Erro ao buscar no Google Places:', error)
+    return []
+  }
+}
+
 // Função para remover acentos e caracteres especiais
 function normalizarTexto(texto: string): string {
   return texto
@@ -152,14 +186,25 @@ export async function GET(request: Request) {
     }
   }
   
-  // Ordenar por pontuação
+  // Ordenar por pontuação - catálogos publicados têm prioridade
   resultados.sort((a, b) => b.pontuacao - a.pontuacao)
   
-  // Sugestões inteligentes
-  const sugestoesInteligentes = [...new Set(resultados.map(r => r.nome))].slice(0, 8)
+  // Separar resultados por fonte
+  const resultadosLocais = resultados.filter(r => r.fonte !== 'google')
+  const resultadosExternos = resultados.filter(r => r.fonte === 'google')
   
-  // Se não houver resultados, buscar sugestões de termos similares nos catálogos
-  if (resultados.length === 0 && termoNormalizado.length > 2) {
+  // Se não houver resultados locais, buscar no Google Places
+  let resultadosFinais = resultadosLocais
+  if (resultadosLocais.length === 0 && termoNormalizado.length > 2) {
+    const googleResults = await buscarGooglePlaces(q)
+    resultadosFinais = [...resultadosLocais, ...googleResults]
+  }
+  
+  // Sugestões inteligentes
+  const sugestoesInteligentes = [...new Set(resultadosFinais.map(r => r.nome))].slice(0, 8)
+  
+  // Se ainda não houver resultados, buscar sugestões de termos similares nos catálogos
+  if (resultadosFinais.length === 0 && termoNormalizado.length > 2) {
     const todosTermos: string[] = []
     for (const catalogo of catalogos) {
       if (catalogo.itens) {
@@ -172,13 +217,14 @@ export async function GET(request: Request) {
       }
     }
     const sugestoes = [...new Set(todosTermos)].filter(t => similaridade(normalizarTexto(t), termoNormalizado) > 0.3).slice(0, 5)
-    return NextResponse.json({ results: [], suggestions: sugestoes, termoOriginal: q })
+    return NextResponse.json({ results: [], suggestions: sugestoes, termoOriginal: q, fonte: 'catalogo_sugestoes' })
   }
   
   return NextResponse.json({ 
-    results: resultados,
+    results: resultadosFinais,
     suggestions: sugestoesInteligentes,
-    total: resultados.length,
-    termoOriginal: q
+    total: resultadosFinais.length,
+    termoOriginal: q,
+    fonte: resultadosFinais.some(r => r.fonte === 'google') ? 'híbrido' : 'catalogo'
   })
 }

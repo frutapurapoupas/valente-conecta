@@ -1,99 +1,166 @@
-'use client'
-import { useState } from 'react'
-import { RefreshCw, CheckCircle2, Trash2, Edit3, RotateCcw } from 'lucide-react'
-import {
-  CATEGORIAS_RECEITA, CATEGORIAS_DESPESA,
-  type Lancamento, type LancamentoStatus,
-} from '@/hooks/useFinanceiroPessoal'
+// components/admin-master/financeiro-pessoal/LinhaLancamento.tsx
+'use client';
 
-const STATUS_LABEL: Record<LancamentoStatus, { label: string; cls: string }> = {
-  pendente:  { label: 'Pendente',  cls: 'bg-amber-500/20 text-amber-300 border-amber-500/30' },
-  pago:      { label: 'Pago',      cls: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
-  atrasado:  { label: 'Atrasado',  cls: 'bg-red-500/20 text-red-300 border-red-500/30' },
-  cancelado: { label: 'Cancelado', cls: 'bg-zinc-700/40 text-zinc-500 border-zinc-700' },
+import { useState } from 'react';
+import { Edit2, Trash2, Check, X, AlertCircle } from 'lucide-react';
+
+interface Lancamento {
+  id: string;
+  descricao: string;
+  valor: number;
+  data: string;
+  categoriaId: string;
+  tipo: 'receita' | 'despesa';
+  recorrente?: boolean;
+  recorrenciaMeses?: number;
 }
 
-const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+interface Categoria {
+  id: string;
+  nome: string;
+  tipo: 'receita' | 'despesa';
+  icone: string;
+  cor: string;
+}
 
 interface LinhaLancamentoProps {
-  l: Lancamento
-  onPago: () => void
-  onEditar: () => void
-  onRemover: () => void
-  onRemoverGrupo: () => void
+  lancamento: Lancamento;
+  categorias: Categoria[];
+  onUpdate: (id: string, updates: Partial<Lancamento>) => void;
+  onDelete: (id: string) => void;
 }
 
-export default function LinhaLancamento({ l, onPago, onEditar, onRemover, onRemoverGrupo }: LinhaLancamentoProps) {
-  const [expandido, setExpandido] = useState(false)
-  const cat = [...CATEGORIAS_RECEITA, ...CATEGORIAS_DESPESA].find(c => c.value === l.categoria)
-  const s = STATUS_LABEL[l.status]
+export function LinhaLancamento({ lancamento, categorias, onUpdate, onDelete }: LinhaLancamentoProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({
+    descricao: lancamento.descricao,
+    valor: lancamento.valor,
+    data: lancamento.data,
+    categoriaId: lancamento.categoriaId,
+  });
 
-  return (
-    <div
-      className={`bg-zinc-900 border rounded-2xl overflow-hidden transition-all ${
-        l.status === 'atrasado' ? 'border-red-500/30' :
-        l.status === 'pago'     ? 'border-zinc-800' :
-        'border-zinc-800 hover:border-zinc-700'
-      }`}
-    >
-      <button onClick={() => setExpandido(!expandido)} className="w-full p-4 flex items-center gap-3 text-left">
-        <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
-          l.tipo === 'receita' ? 'bg-emerald-500/15' : l.tipo === 'fatura' ? 'bg-violet-500/15' : 'bg-red-500/15'
-        }`}>
-          <span className="text-lg">{cat?.emoji ?? '📌'}</span>
-        </div>
+  const categoria = categorias.find(c => c.id === lancamento.categoriaId);
+  const isRecorrente = lancamento.recorrente;
 
-        <div className="flex-1 min-w-0">
-          <p className={`font-bold text-sm truncate ${l.status === 'pago' ? 'text-zinc-500' : 'text-white'}`}>
-            {l.descricao}
-            {l.recorrente && <RefreshCw className="w-3 h-3 inline ml-1 text-zinc-500" />}
-          </p>
-          <p className="text-xs text-zinc-500">{cat?.label} · {l.vencimento}</p>
-        </div>
+  const formatarMoeda = (valor: number) => {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
+  };
 
-        <div className="text-right flex-shrink-0">
-          <p className={`font-black text-base ${
-            l.tipo === 'receita' ? 'text-emerald-400' :
-            l.tipo === 'fatura'  ? 'text-violet-400' :
-            l.status === 'pago'  ? 'text-zinc-600'   : 'text-red-400'
-          }`}>
-            {l.tipo === 'receita' ? '+' : '-'}{fmt(l.valor)}
-          </p>
-          <span className={`text-xs px-2 py-0.5 rounded-full border font-bold ${s.cls}`}>{s.label}</span>
-        </div>
-      </button>
+  const formatarData = (data: string) => {
+    return new Date(data).toLocaleDateString('pt-BR');
+  };
 
-      {expandido && (
-        <div className="border-t border-zinc-800 p-4 flex flex-col gap-3">
-          {l.observacoes && (
-            <p className="text-sm text-zinc-400 italic">{l.observacoes}</p>
-          )}
-          {l.recorrente && l.grupoRecorrencia && (
-            <p className="text-xs text-indigo-400">
-              <RefreshCw className="w-3 h-3 inline mr-1" />
-              Recorrente · {l.periodicidade} · grupo vinculado
-            </p>
-          )}
-          <div className="flex gap-2 flex-wrap">
-            {l.status !== 'pago' && l.status !== 'cancelado' && (
-              <button onClick={onPago} className="flex items-center gap-1.5 px-3 py-2 bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 rounded-xl text-sm font-bold hover:bg-emerald-500/25 transition-all">
-                <CheckCircle2 className="w-4 h-4" /> Marcar pago
-              </button>
-            )}
-            <button onClick={onEditar} className="flex items-center gap-1.5 px-3 py-2 bg-zinc-800 border border-zinc-700 text-zinc-300 rounded-xl text-sm font-bold hover:border-zinc-600 transition-all">
-              <Edit3 className="w-4 h-4" /> Editar
+  const handleSave = () => {
+    if (!editData.descricao.trim() || editData.valor <= 0) return;
+    onUpdate(lancamento.id, {
+      descricao: editData.descricao,
+      valor: editData.valor,
+      data: editData.data,
+      categoriaId: editData.categoriaId,
+    });
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditData({
+      descricao: lancamento.descricao,
+      valor: lancamento.valor,
+      data: lancamento.data,
+      categoriaId: lancamento.categoriaId,
+    });
+    setIsEditing(false);
+  };
+
+  if (isEditing) {
+    return (
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 mb-2">
+        <div className="grid grid-cols-12 gap-2 items-center">
+          <div className="col-span-4">
+            <input
+              type="text"
+              value={editData.descricao}
+              onChange={(e) => setEditData(prev => ({ ...prev, descricao: e.target.value }))}
+              className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-2 py-1 text-sm text-white placeholder-zinc-400"
+              placeholder="Descrição"
+              autoFocus
+            />
+          </div>
+          <div className="col-span-2">
+            <div className="relative">
+              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-zinc-400">R$</span>
+              <input
+                type="number"
+                step="0.01"
+                value={editData.valor}
+                onChange={(e) => setEditData(prev => ({ ...prev, valor: parseFloat(e.target.value) || 0 }))}
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-xl pl-7 pr-2 py-1 text-sm text-white"
+              />
+            </div>
+          </div>
+          <div className="col-span-2">
+            <input
+              type="date"
+              value={editData.data}
+              onChange={(e) => setEditData(prev => ({ ...prev, data: e.target.value }))}
+              className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-2 py-1 text-sm text-white"
+            />
+          </div>
+          <div className="col-span-2">
+            <select
+              value={editData.categoriaId}
+              onChange={(e) => setEditData(prev => ({ ...prev, categoriaId: e.target.value }))}
+              className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-2 py-1 text-sm text-white"
+            >
+              {categorias.filter(c => c.tipo === lancamento.tipo).map(c => (
+                <option key={c.id} value={c.id}>{c.nome}</option>
+              ))}
+            </select>
+          </div>
+          <div className="col-span-2 flex gap-1 justify-end">
+            <button onClick={handleSave} className="p-1 text-emerald-400 hover:bg-zinc-800 rounded">
+              <Check size={18} />
             </button>
-            <button onClick={onRemover} className="flex items-center gap-1.5 px-3 py-2 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm font-bold hover:bg-red-500/20 transition-all">
-              <Trash2 className="w-4 h-4" /> Remover
+            <button onClick={handleCancel} className="p-1 text-red-400 hover:bg-zinc-800 rounded">
+              <X size={18} />
             </button>
-            {l.grupoRecorrencia && (
-              <button onClick={onRemoverGrupo} className="flex items-center gap-1.5 px-3 py-2 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm font-bold hover:bg-red-500/20 transition-all">
-                <RotateCcw className="w-4 h-4" /> Remover serie
-              </button>
-            )}
           </div>
         </div>
-      )}
+      </div>
+    );
+  }
+
+  return (
+    <div className={`bg-zinc-900 border border-zinc-800 rounded-xl p-3 mb-2 hover:border-zinc-700 transition-shadow ${lancamento.tipo === 'receita' ? 'border-l-4 border-l-emerald-500' : 'border-l-4 border-l-red-500'}`}>
+      <div className="grid grid-cols-12 gap-2 items-center">
+        <div className="col-span-4 flex items-center gap-2">
+          {isRecorrente && <AlertCircle size={14} className="text-blue-400" title="Lançamento recorrente" />}
+          <span className="font-medium text-sm truncate text-white">{lancamento.descricao}</span>
+        </div>
+        <div className="col-span-2 text-right">
+          <span className={`text-sm font-semibold ${lancamento.tipo === 'receita' ? 'text-emerald-400' : 'text-red-400'}`}>
+            {lancamento.tipo === 'receita' ? '+' : '-'} {formatarMoeda(lancamento.valor)}
+          </span>
+        </div>
+        <div className="col-span-2 text-sm text-zinc-400">{formatarData(lancamento.data)}</div>
+        <div className="col-span-2">
+          {categoria && (
+            <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: `${categoria.cor}20`, color: categoria.cor }}>
+              {categoria.nome}
+            </span>
+          )}
+          {isRecorrente && lancamento.recorrenciaMeses && (
+            <span className="text-xs text-zinc-500 ml-2">a cada {lancamento.recorrenciaMeses} meses</span>
+          )}
+        </div>
+        <div className="col-span-2 flex gap-1 justify-end">
+          <button onClick={() => setIsEditing(true)} className="p-1 text-blue-400 hover:bg-zinc-800 rounded">
+            <Edit2 size={16} />
+          </button>
+          <button onClick={() => onDelete(lancamento.id)} className="p-1 text-red-400 hover:bg-zinc-800 rounded">
+            <Trash2 size={16} />
+          </button>
+        </div>
+      </div>
     </div>
-  )
+  );
 }

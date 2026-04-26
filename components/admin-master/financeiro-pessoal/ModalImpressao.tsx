@@ -1,203 +1,202 @@
-'use client'
-import { X, Printer } from 'lucide-react'
-import {
-  CATEGORIAS_RECEITA, CATEGORIAS_DESPESA,
-  type Lancamento, type LancamentoTipo, type LancamentoStatus,
-} from '@/hooks/useFinanceiroPessoal'
+// components/admin-master/financeiro-pessoal/ModalImpressao.tsx
+'use client';
 
-const TIPO_LABEL: Record<LancamentoTipo, string> = {
-  receita: 'Receita',
-  despesa: 'Despesa',
-  fatura:  'Fatura',
+import { useRef } from 'react';
+import { X, Printer, Download } from 'lucide-react';
+
+interface Lancamento {
+  id: string;
+  descricao: string;
+  valor: number;
+  data: string;
+  categoriaId: string;
+  tipo: 'receita' | 'despesa';
 }
 
-const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-
-function mesLabel(mes: string) {
-  const [ano, m] = mes.split('-')
-  const nomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
-  return `${nomes[Number(m) - 1]} ${ano}`
+interface Categoria {
+  id: string;
+  nome: string;
+  tipo: 'receita' | 'despesa';
+  icone: string;
+  cor: string;
 }
 
 interface ModalImpressaoProps {
-  lancamentos: Lancamento[]
-  filtroMes: string
-  filtroTipo: LancamentoTipo | 'todos'
-  filtroStatus: LancamentoStatus | 'todos'
-  onFechar: () => void
+  isOpen: boolean;
+  onClose: () => void;
+  lancamentos: Lancamento[];
+  categorias: Categoria[];
+  periodo: { ano: number; mes: number };
 }
 
-export default function ModalImpressao({ lancamentos, filtroMes, filtroTipo, filtroStatus, onFechar }: ModalImpressaoProps) {
-  const sorted = [...lancamentos].sort((a, b) => a.vencimento.localeCompare(b.vencimento))
-  const totalReceitas = sorted.filter(l => l.tipo === 'receita').reduce((s, l) => s + l.valor, 0)
-  const totalDespesas = sorted.filter(l => l.tipo !== 'receita').reduce((s, l) => s + l.valor, 0)
-  const saldo = totalReceitas - totalDespesas
+export function ModalImpressao({ isOpen, onClose, lancamentos, categorias, periodo }: ModalImpressaoProps) {
+  const printRef = useRef<HTMLDivElement>(null);
 
-  const tipoLabel = filtroTipo === 'todos' ? 'Todos os tipos' : TIPO_LABEL[filtroTipo]
-  const statusLabel = filtroStatus === 'todos' ? 'Todos os status' : filtroStatus.charAt(0).toUpperCase() + filtroStatus.slice(1)
+  const getCategoriaNome = (categoriaId: string) => {
+    return categorias.find(c => c.id === categoriaId)?.nome || 'Sem categoria';
+  };
+
+  const totalReceitas = lancamentos.filter(l => l.tipo === 'receita').reduce((s, l) => s + l.valor, 0);
+  const totalDespesas = lancamentos.filter(l => l.tipo === 'despesa').reduce((s, l) => s + l.valor, 0);
+  const saldo = totalReceitas - totalDespesas;
+
+  const formatarMoeda = (valor: number) => {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
+  };
+
+  const formatarData = (data: string) => {
+    return new Date(data).toLocaleDateString('pt-BR');
+  };
+
+  const handlePrint = () => {
+    const printContent = printRef.current?.innerHTML;
+    const originalTitle = document.title;
+    document.title = `Extrato Financeiro - ${periodo.mes}/${periodo.ano}`;
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow && printContent) {
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Extrato Financeiro - ${periodo.mes}/${periodo.ano}</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 20px; }
+              h1 { color: #333; border-bottom: 2px solid #3b82f6; padding-bottom: 10px; }
+              .resumo { display: flex; gap: 20px; margin: 20px 0; padding: 15px; background: #f3f4f6; border-radius: 8px; }
+              .receita { color: #10b981; }
+              .despesa { color: #ef4444; }
+              .saldo { font-weight: bold; font-size: 1.2em; }
+              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+              th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+              th { background: #f3f4f6; }
+              .text-right { text-align: right; }
+            </style>
+          </head>
+          <body>
+            ${printContent}
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+      printWindow.close();
+    }
+    document.title = originalTitle;
+  };
+
+  const handleDownloadCSV = () => {
+    const headers = ['Data', 'Descrição', 'Categoria', 'Valor', 'Tipo'];
+    const rows = lancamentos.map(l => [
+      formatarData(l.data),
+      l.descricao,
+      getCategoriaNome(l.categoriaId),
+      l.valor.toFixed(2),
+      l.tipo === 'receita' ? 'Receita' : 'Despesa',
+    ]);
+
+    const csvContent = [headers, ...rows].map(row => row.join(';')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `extrato_${periodo.mes}_${periodo.ano}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  if (!isOpen) return null;
 
   return (
-    <>
-      <div className="fixed inset-0 z-50 bg-zinc-950/95 flex items-start justify-center overflow-y-auto p-4 print:hidden">
-        <div className="bg-white rounded-2xl w-full max-w-2xl my-4 overflow-hidden shadow-2xl">
-          <div className="flex items-center justify-between px-6 py-4 bg-zinc-900 print:hidden">
-            <p className="text-white font-black text-base">Pré-visualização de Impressão</p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => window.print()}
-                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-sm transition-all"
-              >
-                <Printer className="w-4 h-4" /> Imprimir / Salvar PDF
-              </button>
-              <button onClick={onFechar} className="p-2 bg-zinc-800 rounded-xl">
-                <X className="w-4 h-4 text-zinc-400" />
-              </button>
-            </div>
-          </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] mx-4 flex flex-col">
+        <div className="flex justify-between items-center p-4 border-b border-zinc-800">
+          <h2 className="text-xl font-semibold text-white">Extrato Financeiro</h2>
+          <button onClick={onClose} className="p-1 hover:bg-zinc-800 rounded-lg text-zinc-400">
+            <X size={20} />
+          </button>
+        </div>
 
-          <div id="print-area" className="p-8 bg-white text-zinc-900">
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <h1 className="text-2xl font-black text-zinc-900">Finanças Pessoais</h1>
-                <p className="text-zinc-500 text-sm mt-0.5">Relatório de lançamentos · Valente Conecta</p>
-              </div>
-              <div className="text-right text-sm text-zinc-500">
-                <p className="font-bold text-zinc-700">{mesLabel(filtroMes)}</p>
-                <p>{tipoLabel} · {statusLabel}</p>
-                <p>Gerado em {new Date().toLocaleDateString('pt-BR')}</p>
-              </div>
+        <div className="flex-1 overflow-auto p-4">
+          <div ref={printRef}>
+            <div className="text-center mb-6">
+              <h1 className="text-2xl font-bold text-white">Valente Conecta</h1>
+              <p className="text-zinc-400">Extrato Financeiro - {periodo.mes}/{periodo.ano}</p>
             </div>
 
-            <div className="grid grid-cols-3 gap-3 mb-6">
-              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center">
-                <p className="text-xs font-bold text-emerald-700 uppercase">Receitas</p>
-                <p className="text-lg font-black text-emerald-700">{fmt(totalReceitas)}</p>
+            <div className="grid grid-cols-3 gap-4 mb-6">
+              <div className="bg-emerald-900/30 border border-emerald-800 p-4 rounded-xl text-center">
+                <p className="text-sm text-zinc-400">Receitas</p>
+                <p className="text-2xl font-bold text-emerald-400">{formatarMoeda(totalReceitas)}</p>
               </div>
-              <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-center">
-                <p className="text-xs font-bold text-red-700 uppercase">Despesas</p>
-                <p className="text-lg font-black text-red-700">{fmt(totalDespesas)}</p>
+              <div className="bg-red-900/30 border border-red-800 p-4 rounded-xl text-center">
+                <p className="text-sm text-zinc-400">Despesas</p>
+                <p className="text-2xl font-bold text-red-400">{formatarMoeda(totalDespesas)}</p>
               </div>
-              <div className={`border rounded-xl p-3 text-center ${
-                saldo >= 0 ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200'
-              }`}>
-                <p className={`text-xs font-bold uppercase ${saldo >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>Saldo</p>
-                <p className={`text-lg font-black ${saldo >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>{fmt(saldo)}</p>
+              <div className={`p-4 rounded-xl text-center border ${saldo >= 0 ? 'bg-blue-900/30 border-blue-800' : 'bg-orange-900/30 border-orange-800'}`}>
+                <p className="text-sm text-zinc-400">Saldo</p>
+                <p className={`text-2xl font-bold ${saldo >= 0 ? 'text-blue-400' : 'text-orange-400'}`}>
+                  {formatarMoeda(saldo)}
+                </p>
               </div>
             </div>
 
-            {sorted.length === 0 ? (
-              <p className="text-center text-zinc-400 py-8">Nenhum lançamento encontrado</p>
-            ) : (
-              <table className="w-full border-collapse text-sm">
-                <thead>
-                  <tr className="border-b-2 border-zinc-300">
-                    <th className="text-left py-2 pr-3 font-black text-zinc-700 text-xs uppercase">Descrição</th>
-                    <th className="text-left py-2 pr-3 font-black text-zinc-700 text-xs uppercase">Categoria</th>
-                    <th className="text-left py-2 pr-3 font-black text-zinc-700 text-xs uppercase">Vencimento</th>
-                    <th className="text-left py-2 pr-3 font-black text-zinc-700 text-xs uppercase">Status</th>
-                    <th className="text-right py-2 font-black text-zinc-700 text-xs uppercase">Valor</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sorted.map((l, i) => {
-                    const cat = [...CATEGORIAS_RECEITA, ...CATEGORIAS_DESPESA].find(c => c.value === l.categoria)
-                    return (
-                      <tr key={l.id} className={`border-b border-zinc-100 ${i % 2 === 0 ? '' : 'bg-zinc-50'}`}>
-                        <td className="py-2 pr-3 font-semibold text-zinc-800">{l.descricao}</td>
-                        <td className="py-2 pr-3 text-zinc-500">{cat?.emoji} {cat?.label}</td>
-                        <td className="py-2 pr-3 text-zinc-500 font-mono text-xs">{l.vencimento}</td>
-                        <td className="py-2 pr-3">
-                          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                            l.status === 'pago'     ? 'bg-emerald-100 text-emerald-700' :
-                            l.status === 'atrasado' ? 'bg-red-100 text-red-700' :
-                            l.status === 'pendente' ? 'bg-amber-100 text-amber-700' :
-                            'bg-zinc-100 text-zinc-500'
-                          }`}>{l.status}</span>
-                        </td>
-                        <td className={`py-2 text-right font-black ${
-                          l.tipo === 'receita' ? 'text-emerald-700' : 'text-red-700'
-                        }`}>
-                          {l.tipo === 'receita' ? '+' : '-'}{fmt(l.valor)}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-                <tfoot>
-                  <tr className="border-t-2 border-zinc-300">
-                    <td colSpan={4} className="pt-3 font-black text-zinc-700 text-sm">Total ({sorted.length} lançamentos)</td>
-                    <td className={`pt-3 text-right font-black text-base ${saldo >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>{fmt(saldo)}</td>
-                  </tr>
-                </tfoot>
-              </table>
-            )}
-
-            <p className="text-xs text-zinc-400 mt-8 text-center">Valente Conecta · Finanças Pessoais · Documento gerado automaticamente</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="hidden print:block fixed inset-0 bg-white z-[9999] p-8">
-        <div className="flex items-start justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-black text-zinc-900">Finanças Pessoais</h1>
-            <p className="text-zinc-500 text-sm mt-0.5">Relatório de lançamentos · Valente Conecta</p>
-          </div>
-          <div className="text-right text-sm text-zinc-500">
-            <p className="font-bold text-zinc-700">{mesLabel(filtroMes)}</p>
-            <p>{tipoLabel} · {statusLabel}</p>
-            <p>Gerado em {new Date().toLocaleDateString('pt-BR')}</p>
-          </div>
-        </div>
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="border border-emerald-300 rounded-xl p-3 text-center">
-            <p className="text-xs font-bold text-emerald-700 uppercase">Receitas</p>
-            <p className="text-lg font-black text-emerald-700">{fmt(totalReceitas)}</p>
-          </div>
-          <div className="border border-red-300 rounded-xl p-3 text-center">
-            <p className="text-xs font-bold text-red-700 uppercase">Despesas</p>
-            <p className="text-lg font-black text-red-700">{fmt(totalDespesas)}</p>
-          </div>
-          <div className="border rounded-xl p-3 text-center">
-            <p className="text-xs font-bold uppercase text-zinc-700">Saldo</p>
-            <p className={`text-lg font-black ${saldo >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>{fmt(saldo)}</p>
-          </div>
-        </div>
-        <table className="w-full border-collapse text-sm">
-          <thead>
-            <tr className="border-b-2 border-zinc-300">
-              <th className="text-left py-2 pr-3 font-black text-zinc-700 text-xs uppercase">Descrição</th>
-              <th className="text-left py-2 pr-3 font-black text-zinc-700 text-xs uppercase">Categoria</th>
-              <th className="text-left py-2 pr-3 font-black text-zinc-700 text-xs uppercase">Vencimento</th>
-              <th className="text-left py-2 pr-3 font-black text-zinc-700 text-xs uppercase">Status</th>
-              <th className="text-right py-2 font-black text-zinc-700 text-xs uppercase">Valor</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sorted.map((l, i) => {
-              const cat = [...CATEGORIAS_RECEITA, ...CATEGORIAS_DESPESA].find(c => c.value === l.categoria)
-              return (
-                <tr key={l.id} className={i % 2 === 0 ? '' : 'bg-zinc-50'}>
-                  <td className="py-1.5 pr-3 font-semibold text-zinc-800">{l.descricao}</td>
-                  <td className="py-1.5 pr-3 text-zinc-500">{cat?.emoji} {cat?.label}</td>
-                  <td className="py-1.5 pr-3 text-zinc-500 font-mono text-xs">{l.vencimento}</td>
-                  <td className="py-1.5 pr-3 text-zinc-500">{l.status}</td>
-                  <td className={`py-1.5 text-right font-black ${l.tipo === 'receita' ? 'text-emerald-700' : 'text-red-700'}`}>
-                    {l.tipo === 'receita' ? '+' : '-'}{fmt(l.valor)}
-                  </td>
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-zinc-800">
+                  <th className="border border-zinc-700 p-2 text-left text-zinc-300">Data</th>
+                  <th className="border border-zinc-700 p-2 text-left text-zinc-300">Descrição</th>
+                  <th className="border border-zinc-700 p-2 text-left text-zinc-300">Categoria</th>
+                  <th className="border border-zinc-700 p-2 text-right text-zinc-300">Valor</th>
                 </tr>
-              )
-            })}
-          </tbody>
-          <tfoot>
-            <tr className="border-t-2 border-zinc-300">
-              <td colSpan={4} className="pt-3 font-black text-zinc-700">Total ({sorted.length} lançamentos)</td>
-              <td className={`pt-3 text-right font-black text-base ${saldo >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>{fmt(saldo)}</td>
-            </tr>
-          </tfoot>
-        </table>
-        <p className="text-xs text-zinc-400 mt-8 text-center">Valente Conecta · Finanças Pessoais · Documento gerado automaticamente</p>
+              </thead>
+              <tbody>
+                {lancamentos.map(l => (
+                  <tr key={l.id}>
+                    <td className="border border-zinc-700 p-2 text-zinc-300">{formatarData(l.data)}</td>
+                    <td className="border border-zinc-700 p-2 text-white">{l.descricao}</td>
+                    <td className="border border-zinc-700 p-2 text-zinc-300">{getCategoriaNome(l.categoriaId)}</td>
+                    <td className={`border border-zinc-700 p-2 text-right ${l.tipo === 'receita' ? 'text-emerald-400' : 'text-red-400'}`}>
+                      {l.tipo === 'receita' ? '+' : '-'} {formatarMoeda(l.valor)}
+                    </td>
+                  </tr>
+                ))}
+                {lancamentos.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="border border-zinc-700 p-8 text-center text-zinc-500">
+                      Nenhum lançamento neste período
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="flex gap-3 p-4 border-t border-zinc-800">
+          <button
+            onClick={handlePrint}
+            className="flex items-center gap-2 px-4 py-2 bg-zinc-800 text-zinc-300 rounded-xl hover:bg-zinc-700 border border-zinc-700"
+          >
+            <Printer size={18} /> Imprimir
+          </button>
+          <button
+            onClick={handleDownloadCSV}
+            className="flex items-center gap-2 px-4 py-2 bg-zinc-800 text-zinc-300 rounded-xl hover:bg-zinc-700 border border-zinc-700"
+          >
+            <Download size={18} /> Exportar CSV
+          </button>
+          <button
+            onClick={onClose}
+            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700"
+          >
+            Fechar
+          </button>
+        </div>
       </div>
-    </>
-  )
+    </div>
+  );
 }

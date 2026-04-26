@@ -1,4 +1,2 @@
-﻿import { createClient } from '@supabase/supabase-js'
-import { supabaseUrl, supabaseAnonKey } from './supabase-config'
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+﻿// Usar o switch mock/real para desenvolvimento
+export { supabase, isMockMode, realSupabase, mockSupabase } from './supabase-client-switch'

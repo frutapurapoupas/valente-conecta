@@ -1,7 +1,13 @@
 "use client";
 
-import Link from "next/link";
-import { Zap, Crown, Store, Wrench, Star, MapPin, Users, ShieldCheck } from "lucide-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Zap, Crown, Store, Wrench, Star, MapPin, Users, Dumbbell, Calendar, ChevronRight, Check, Truck, Building2, Home } from "lucide-react";
+import { usePlanos } from "@/hooks/usePlanos";
+import { useAuth } from "@/hooks/useAuth";
+import { TipoPlano, CategoriaPlano, getPlanosPorCategoria, getCamposCadastro } from "@/types/planos";
+import { FormularioCadastroPlano } from "@/components/FormularioCadastroPlano";
+import { CardConfiguracaoLoja } from "@/components/CardConfiguracaoLoja";
 
 const planosEmpresa = [
   {
@@ -203,12 +209,68 @@ const planosUsuario = [
   },
 ];
 
-function PlanoCard({ plano }: { plano: any }) {
+const planosTransporteDelivery = [
+  {
+    id: "motorista",
+    nome: "Motorista",
+    preco: "R$ 25,00/mês",
+    descricao: "Para motoristas de transporte e delivery",
+    cor: "border-teal-500/40",
+    icone: <Truck className="w-5 h-5 text-teal-400" />,
+    beneficios: [
+      "Perfil público como motorista",
+      "Aparecer na busca de transportes",
+      "Contato visível para clientes",
+      "Badge 'Motorista Verificado ✓'",
+      "Histórico de entregas",
+      "Avaliação e reputação",
+    ],
+  },
+];
+
+const planosImoveis = [
+  {
+    id: "aluguel",
+    nome: "Aluguel",
+    preco: "R$ 20,00/mês",
+    descricao: "Para anunciar imóveis para alugar",
+    cor: "border-cyan-500/40",
+    icone: <Home className="w-5 h-5 text-cyan-400" />,
+    beneficios: [
+      "Até 10 anúncios de aluguel",
+      "Renovação mensal automática",
+      "Contato visível para interessados",
+      "Destaque na busca de imóveis",
+      "Fotos ilimitadas por anúncio",
+      "Badge 'Imóvel Verificado ✓'",
+    ],
+  },
+  {
+    id: "venda",
+    nome: "Venda",
+    preco: "R$ 50,00/mês",
+    descricao: "Para anunciar imóveis para vender",
+    cor: "border-orange-500/40",
+    icone: <Home className="w-5 h-5 text-orange-400" />,
+    beneficios: [
+      "Até 10 anúncios de venda",
+      "Renovação mensal automática",
+      "Contato visível para interessados",
+      "Destaque premium na busca",
+      "Fotos ilimitadas por anúncio",
+      "Badge 'Imóvel Premium ✓'",
+      "Prioridade nos resultados",
+    ],
+  },
+];
+
+function PlanoCard({ plano, onSelect, planoAtivo, isGratis }: { plano: any; onSelect?: () => void; planoAtivo?: boolean; isGratis?: boolean }) {
   return (
-    <div className={`bg-zinc-900 border ${plano.cor} rounded-2xl p-5 flex-1 min-w-[260px] max-w-xs flex flex-col`}>
+    <div className={`bg-zinc-900 border ${plano.cor} rounded-2xl p-5 flex-1 min-w-[260px] max-w-xs flex flex-col ${planoAtivo ? 'ring-2 ring-green-500' : ''}`}>
       <div className="flex items-center gap-2 mb-2">
         {plano.icone}
         <h3 className="font-black text-lg text-white">{plano.nome}</h3>
+        {planoAtivo && <Check className="w-5 h-5 text-green-500 ml-auto" />}
       </div>
       <p className="text-2xl font-black text-white mb-1">{plano.preco}</p>
       <p className="text-xs text-zinc-400 mb-3">{plano.descricao}</p>
@@ -223,43 +285,290 @@ function PlanoCard({ plano }: { plano: any }) {
           </ul>
         </div>
       )}
+      {onSelect && (
+        <button
+          onClick={isGratis ? undefined : onSelect}
+          disabled={planoAtivo}
+          className={`mt-4 w-full py-2 rounded-lg font-bold transition ${
+            planoAtivo
+              ? 'bg-zinc-600 text-zinc-400 cursor-not-allowed'
+              : isGratis
+              ? 'bg-green-500 text-zinc-900 cursor-default'
+              : 'bg-yellow-500 text-zinc-900 hover:bg-yellow-400'
+          }`}
+        >
+          {planoAtivo ? 'Plano Ativo' : isGratis ? 'Já estou cadastrado' : 'Assinar'}
+        </button>
+      )}
     </div>
   );
 }
 
 export default function TodosPlanosPage() {
+  const router = useRouter();
+  const { user } = useAuth();
+  const planosHook = usePlanos(user?.id);
+  const [planoSelecionado, setPlanoSelecionado] = useState<TipoPlano | null>(null);
+  const [showCadastro, setShowCadastro] = useState(false);
+  const [showConfiguracaoLoja, setShowConfiguracaoLoja] = useState(false);
+  const [nomeLoja, setNomeLoja] = useState('');
+
+  const handleSelecionarPlano = (tipoPlano: TipoPlano) => {
+    setPlanoSelecionado(tipoPlano);
+    // Não abre mais o formulário para planos grátis - botão é estático
+    const isGratis = tipoPlano.includes('gratis') || tipoPlano === 'academia_gratis'
+    if (!isGratis) {
+      setShowCadastro(true);
+    }
+  };
+
+  // Função para teste: simular assinatura de plano de serviço com agendamento
+  const handleTesteServicoAgendamento = async () => {
+    try {
+      await planosHook.assinarPlano('servico_agendamento_basico', { nome: 'Teste', whatsapp: '75988888888' }, 'pix');
+      await planosHook.confirmarPagamento('temp-id');
+      router.push('/admin-servico');
+    } catch (error) {
+      console.error('Erro ao simular assinatura:', error);
+    }
+  };
+
+  const handleConfirmarAssinatura = async (dados: Record<string, string>) => {
+    if (!planoSelecionado) return;
+
+    try {
+      const isGratis = planoSelecionado.includes('gratis') || planoSelecionado === 'academia_gratis'
+      
+      await planosHook.assinarPlano(planoSelecionado, dados, 'pix');
+      
+      // Para planos grátis, ativa imediatamente
+      if (isGratis) {
+        await planosHook.confirmarPagamento('temp-id');
+      }
+      
+      // Verifica se é plano de loja/empresa para mostrar configuração
+      const isPlanoLoja = planoSelecionado.includes('empresa') || 
+                         planoSelecionado.includes('loja')
+      const isPlanoServicoAgendamento = planoSelecionado.includes('servico_agendamento')
+      
+      if (isPlanoServicoAgendamento) {
+        setShowCadastro(false);
+        setPlanoSelecionado(null);
+        router.push('/admin-servico');
+      } else if (isPlanoLoja && dados.nomeFantasia) {
+        setNomeLoja(dados.nomeFantasia);
+        setShowConfiguracaoLoja(true);
+      } else {
+        setShowCadastro(false);
+        setPlanoSelecionado(null);
+        router.push('/');
+      }
+    } catch (error) {
+      console.error('Erro ao assinar plano:', error);
+    }
+  };
+
+  const handleConcluirConfiguracao = (configuracoes: any) => {
+    // Salvar configurações da loja
+    localStorage.setItem('configuracao_loja', JSON.stringify(configuracoes));
+    setShowConfiguracaoLoja(false);
+    setShowCadastro(false);
+    setPlanoSelecionado(null);
+    router.push('/admin-loja');
+  };
+
+  const handlePularConfiguracao = () => {
+    setShowConfiguracaoLoja(false);
+    setShowCadastro(false);
+    setPlanoSelecionado(null);
+    router.push('/');
+  };
+
+  const planosAtivos = planosHook.getPlanosAtivos();
+
+  const isPlanoGratis = planoSelecionado?.includes('gratis') || planoSelecionado === 'academia_gratis'
+  const camposCadastro = planoSelecionado ? getCamposCadastro(planoSelecionado, isPlanoGratis) : []
+
   return (
     <div className="min-h-screen bg-zinc-950 text-white pb-20">
       <header className="sticky top-0 z-30 bg-zinc-950/95 backdrop-blur border-b border-zinc-900 px-4 py-5 flex flex-col gap-2">
         <h1 className="text-3xl font-black uppercase italic text-white leading-none">Planos e Benefícios</h1>
         <p className="text-zinc-400">Veja todos os planos disponíveis para cada tipo de usuário</p>
       </header>
+
+      {planosAtivos.length > 0 && (
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4">
+            <h3 className="font-bold text-green-400 mb-2">Meus Planos Ativos</h3>
+            <div className="flex flex-wrap gap-2">
+              {planosAtivos.map(plano => {
+                const config = planosHook.configuracoes.find(c => c.id === plano.tipoPlano);
+                return (
+                  <div key={plano.id} className="bg-zinc-800 px-3 py-2 rounded-lg text-sm">
+                    <span className="font-bold">{config?.nome}</span>
+                    <span className="text-zinc-400 ml-2">• Ativo desde {new Date(plano.dataInicio).toLocaleDateString()}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
       <main className="max-w-6xl mx-auto p-4 space-y-12">
         <section>
           <h2 className="text-xl font-black text-blue-400 mb-4 flex items-center gap-2"><Store className="w-5 h-5" /> Empresas & Lojas</h2>
           <div className="flex flex-wrap gap-5">
-            {planosEmpresa.map(plano => <PlanoCard key={plano.id} plano={plano} />)}
+            {planosEmpresa.map(plano => (
+              <PlanoCard
+                key={plano.id}
+                plano={plano}
+                isGratis={plano.id === 'gratuito'}
+                onSelect={() => handleSelecionarPlano(plano.id as TipoPlano)}
+              />
+            ))}
           </div>
         </section>
         <section>
           <h2 className="text-xl font-black text-violet-400 mb-4 flex items-center gap-2"><Star className="w-5 h-5" /> Profissionais Liberais</h2>
           <div className="flex flex-wrap gap-5">
-            {planosProfissional.map(plano => <PlanoCard key={plano.id} plano={plano} />)}
+            {planosProfissional.map(plano => (
+              <PlanoCard
+                key={plano.id}
+                plano={plano}
+                isGratis={plano.id === 'gratuito'}
+                onSelect={() => handleSelecionarPlano(plano.id as TipoPlano)}
+              />
+            ))}
           </div>
         </section>
         <section>
           <h2 className="text-xl font-black text-amber-400 mb-4 flex items-center gap-2"><Zap className="w-5 h-5" /> Ambulantes</h2>
           <div className="flex flex-wrap gap-5">
-            {planosAmbulante.map(plano => <PlanoCard key={plano.id} plano={plano} />)}
+            {planosAmbulante.map(plano => (
+              <PlanoCard
+                key={plano.id}
+                plano={plano}
+                isGratis={plano.id === 'gratuito'}
+                onSelect={() => handleSelecionarPlano(plano.id as TipoPlano)}
+              />
+            ))}
           </div>
         </section>
         <section>
           <h2 className="text-xl font-black text-green-400 mb-4 flex items-center gap-2"><Users className="w-5 h-5" /> Usuário Geral</h2>
           <div className="flex flex-wrap gap-5">
-            {planosUsuario.map(plano => <PlanoCard key={plano.id} plano={plano} />)}
+            {planosUsuario.map(plano => (
+              <PlanoCard
+                key={plano.id}
+                plano={plano}
+                isGratis={plano.id === 'gratuito'}
+                onSelect={() => handleSelecionarPlano(plano.id as TipoPlano)}
+              />
+            ))}
+          </div>
+        </section>
+        <section>
+          <h2 className="text-xl font-black text-emerald-400 mb-4 flex items-center gap-2"><Dumbbell className="w-5 h-5" /> Academia</h2>
+          <div className="flex flex-wrap gap-5">
+            {getPlanosPorCategoria('academia').map(plano => {
+              const planoAtivo = planosAtivos.some(p => p.tipoPlano === plano.id);
+              return (
+                <PlanoCard
+                  key={plano.id}
+                  plano={{
+                    id: plano.id,
+                    nome: plano.nome,
+                    preco: plano.preco === 0 ? 'R$ 0' : `R$ ${plano.preco.toFixed(2)}/mês`,
+                    descricao: plano.descricao,
+                    cor: plano.preco === 0 ? 'border-zinc-700' : 'border-emerald-500/40',
+                    icone: plano.preco === 0 ? <Dumbbell className="w-5 h-5 text-zinc-400" /> : <Crown className="w-5 h-5 text-emerald-400" />,
+                    beneficios: plano.recursos,
+                  }}
+                  planoAtivo={planoAtivo}
+                  isGratis={plano.preco === 0}
+                  onSelect={() => handleSelecionarPlano(plano.id)}
+                />
+              );
+            })}
+          </div>
+        </section>
+        <section>
+          <h2 className="text-xl font-black text-purple-400 mb-4 flex items-center gap-2"><Calendar className="w-5 h-5" /> Serviço com Agendamento</h2>
+          <div className="flex flex-wrap gap-5">
+            {getPlanosPorCategoria('servico_agendamento').map(plano => {
+              const planoAtivo = planosAtivos.some(p => p.tipoPlano === plano.id);
+              return (
+                <PlanoCard
+                  key={plano.id}
+                  plano={{
+                    id: plano.id,
+                    nome: plano.nome,
+                    preco: plano.preco === 0 ? 'R$ 0' : `R$ ${plano.preco.toFixed(2)}/mês`,
+                    descricao: plano.descricao,
+                    cor: plano.preco === 0 ? 'border-zinc-700' : plano.id.includes('basico') ? 'border-violet-500/40' : 'border-yellow-500/40',
+                    icone: plano.preco === 0 ? <Calendar className="w-5 h-5 text-zinc-400" /> : plano.id.includes('basico') ? <Zap className="w-5 h-5 text-violet-400" /> : <Crown className="w-5 h-5 text-yellow-400" />,
+                    beneficios: plano.recursos,
+                  }}
+                  planoAtivo={planoAtivo}
+                  isGratis={plano.preco === 0}
+                  onSelect={() => handleSelecionarPlano(plano.id)}
+                />
+              );
+            })}
+          </div>
+        </section>
+        <section>
+          <h2 className="text-xl font-black text-teal-400 mb-4 flex items-center gap-2"><Truck className="w-5 h-5" /> Transporte e Delivery</h2>
+          <div className="flex flex-wrap gap-5">
+            {planosTransporteDelivery.map(plano => (
+              <PlanoCard
+                key={plano.id}
+                plano={plano}
+                isGratis={plano.id === 'gratuito'}
+                onSelect={() => handleSelecionarPlano(plano.id as TipoPlano)}
+              />
+            ))}
+          </div>
+        </section>
+        <section>
+          <h2 className="text-xl font-black text-rose-400 mb-4 flex items-center gap-2"><Home className="w-5 h-5" /> Imóveis</h2>
+          <div className="flex flex-wrap gap-5">
+            {planosImoveis.map(plano => (
+              <PlanoCard
+                key={plano.id}
+                plano={plano}
+                isGratis={plano.id === 'gratuito'}
+                onSelect={() => handleSelecionarPlano(plano.id as TipoPlano)}
+              />
+            ))}
           </div>
         </section>
       </main>
+
+      {showCadastro && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-zinc-800 rounded-xl p-6 w-full max-w-md">
+            <h3 className="text-xl font-bold mb-4">
+              {isPlanoGratis ? 'Cadastro Gratuito' : 'Concluir Assinatura'}
+            </h3>
+            <FormularioCadastroPlano
+              campos={camposCadastro}
+              onSubmit={handleConfirmarAssinatura}
+              onCancel={() => { setShowCadastro(false); setPlanoSelecionado(null); }}
+              isGratis={isPlanoGratis}
+            />
+          </div>
+        </div>
+      )}
+
+      {showConfiguracaoLoja && (
+        <CardConfiguracaoLoja
+          nomeLoja={nomeLoja}
+          onConcluir={handleConcluirConfiguracao}
+          onPular={handlePularConfiguracao}
+        />
+      )}
     </div>
   );
 }
