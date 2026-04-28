@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { User, Mail, Phone, MapPin, Edit2, Save, X, Package, Heart, ChevronLeft, Dumbbell, Navigation } from 'lucide-react'
+import { User, Mail, Phone, MapPin, Edit2, Save, X, Package, Heart, ChevronLeft, Dumbbell, Navigation, Brain, Activity, Target, Calendar, Scale, Ruler } from 'lucide-react'
 
 export default function PerfilPage() {
   const [isEditing, setIsEditing] = useState(false)
@@ -15,6 +15,7 @@ export default function PerfilPage() {
   const [tempData, setTempData] = useState(formData)
   const [academiaDados, setAcademiaDados] = useState<any>(null)
   const [esportesDados, setEsportesDados] = useState<any[]>([])
+  const [perfilIA, setPerfilIA] = useState<any>(null)
 
   const stats = { compras: 47, economias: 156.90, avaliacoes: 12, favoritos: 8 }
 
@@ -29,6 +30,12 @@ export default function PerfilPage() {
     const esportesSalvos = localStorage.getItem('academia_esportes')
     if (esportesSalvos) {
       setEsportesDados(JSON.parse(esportesSalvos))
+    }
+
+    // Carregar perfil IA
+    const perfilIASalvo = localStorage.getItem('academia_perfil_ia')
+    if (perfilIASalvo) {
+      setPerfilIA(JSON.parse(perfilIASalvo))
     }
   }, [])
 
@@ -72,31 +79,16 @@ export default function PerfilPage() {
         {/* Estatísticas */}
         <div className="grid grid-cols-4 gap-2">
           <div className="bg-zinc-900 rounded-xl p-3 text-center"><Package className="w-5 h-5 text-yellow-400 mx-auto mb-1" /><p className="text-xl font-black text-white">{stats.compras}</p><p className="text-[10px] text-zinc-500">Compras</p></div>
-          <div className="bg-zinc-900 rounded-xl p-3 text-center"><Package className="w-5 h-5 text-emerald-400 mx-auto mb-1" /><p className="text-xl font-black text-white">R$ {stats.economias.toFixed(0)}</p><p className="text-[10px] text-zinc-500">Economia</p></div>
+          <div className="bg-zinc-900 rounded-xl p-3 text-center"><Package className="w-5 h-5 text-emerald-400 mx-auto mb-1" /><p className="text-xl font-black text-white">R$ {stats.economias.toFixed(2)}</p><p className="text-[10px] text-zinc-500">Economia</p></div>
           <div className="bg-zinc-900 rounded-xl p-3 text-center"><Heart className="w-5 h-5 text-red-400 mx-auto mb-1" /><p className="text-xl font-black text-white">{stats.favoritos}</p><p className="text-[10px] text-zinc-500">Favoritos</p></div>
-        </div>
-
-        {/* Informações */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 space-y-4">
-          <h3 className="font-bold text-white flex items-center gap-2"><User className="w-4 h-4 text-yellow-400" />Informações</h3>
-          <div className="space-y-3">
-            <div className="flex items-center gap-3 text-zinc-400"><Mail className="w-4 h-4" />{isEditing ? <input type="email" value={tempData.email} onChange={(e) => setTempData({ ...tempData, email: e.target.value })} className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-yellow-500" /> : <span className="text-sm">{formData.email}</span>}</div>
-            <div className="flex items-center gap-3 text-zinc-400"><Phone className="w-4 h-4" />{isEditing ? <input type="tel" value={tempData.telefone} onChange={(e) => setTempData({ ...tempData, telefone: e.target.value })} className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-yellow-500" /> : <span className="text-sm">{formData.telefone}</span>}</div>
-            <div className="flex items-center gap-3 text-zinc-400"><MapPin className="w-4 h-4" />{isEditing ? <input type="text" value={tempData.endereco} onChange={(e) => setTempData({ ...tempData, endereco: e.target.value })} className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-yellow-500" /> : <span className="text-sm">{formData.endereco}</span>}</div>
-          </div>
-          {isEditing && (
-            <div className="flex gap-3 pt-2">
-              <button onClick={handleCancel} className="flex-1 py-2 bg-zinc-800 rounded-xl text-sm font-bold text-zinc-400">Cancelar</button>
-              <button onClick={handleSave} className="flex-1 py-2 bg-yellow-500 rounded-xl text-sm font-bold text-black">Salvar</button>
-            </div>
-          )}
+          <div className="bg-zinc-900 rounded-xl p-3 text-center"><Activity className="w-5 h-5 text-blue-400 mx-auto mb-1" /><p className="text-xl font-black text-white">{stats.avaliacoes}</p><p className="text-[10px] text-zinc-500">Avaliações</p></div>
         </div>
 
         {/* Academia e Esportes */}
         {(academiaDados || esportesDados.length > 0) && (
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 space-y-4">
             <h3 className="font-bold text-white flex items-center gap-2"><Dumbbell className="w-4 h-4 text-cyan-400" />Academia e Esportes</h3>
-            
+
             {academiaDados && (
               <div className="bg-zinc-800 rounded-xl p-4 space-y-3">
                 <div className="flex items-center justify-between">
@@ -132,6 +124,97 @@ export default function PerfilPage() {
                     )}
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Inteligência IA */}
+        {perfilIA && (
+          <div className="bg-gradient-to-br from-purple-900/50 to-indigo-900/50 border border-purple-500/30 rounded-2xl p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-white flex items-center gap-2"><Brain className="w-4 h-4 text-purple-400" />Perfil Inteligência IA</h3>
+              <Link href="/academia/cadastro-inicial" className="text-xs text-purple-400 hover:text-purple-300">Editar</Link>
+            </div>
+
+            {/* Dados Físicos */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-zinc-800/50 rounded-xl p-3 text-center">
+                <Scale className="w-5 h-5 text-emerald-400 mx-auto mb-1" />
+                <p className="text-lg font-black text-white">{perfilIA.peso_atual} kg</p>
+                <p className="text-[10px] text-zinc-400">Peso Atual</p>
+              </div>
+              <div className="bg-zinc-800/50 rounded-xl p-3 text-center">
+                <Target className="w-5 h-5 text-blue-400 mx-auto mb-1" />
+                <p className="text-lg font-black text-white">{perfilIA.peso_meta} kg</p>
+                <p className="text-[10px] text-zinc-400">Meta</p>
+              </div>
+              <div className="bg-zinc-800/50 rounded-xl p-3 text-center">
+                <Ruler className="w-5 h-5 text-cyan-400 mx-auto mb-1" />
+                <p className="text-lg font-black text-white">{perfilIA.altura} m</p>
+                <p className="text-[10px] text-zinc-400">Altura</p>
+              </div>
+            </div>
+
+            {/* Objetivo e Nível */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-zinc-800/50 rounded-xl p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <Target className="w-4 h-4 text-purple-400" />
+                  <p className="text-xs font-bold text-zinc-400 uppercase">Objetivo</p>
+                </div>
+                <p className="text-sm font-bold text-white capitalize">{perfilIA.objetivo}</p>
+              </div>
+              <div className="bg-zinc-800/50 rounded-xl p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <Activity className="w-4 h-4 text-orange-400" />
+                  <p className="text-xs font-bold text-zinc-400 uppercase">Nível</p>
+                </div>
+                <p className="text-sm font-bold text-white capitalize">{perfilIA.nivel}</p>
+              </div>
+            </div>
+
+            {/* Frequência e Idade */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-zinc-800/50 rounded-xl p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <Calendar className="w-4 h-4 text-pink-400" />
+                  <p className="text-xs font-bold text-zinc-400 uppercase">Frequência</p>
+                </div>
+                <p className="text-sm font-bold text-white">{perfilIA.freq_semanal}x/semana</p>
+              </div>
+              <div className="bg-zinc-800/50 rounded-xl p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <User className="w-4 h-4 text-yellow-400" />
+                  <p className="text-xs font-bold text-zinc-400 uppercase">Idade</p>
+                </div>
+                <p className="text-sm font-bold text-white">{perfilIA.idade} anos</p>
+              </div>
+            </div>
+
+            {/* Condições e Tipos de Exercício */}
+            {(perfilIA.condicoes_fisicas?.length > 0 || perfilIA.tipo_exercicio?.length > 0) && (
+              <div className="space-y-2">
+                {perfilIA.condicoes_fisicas?.length > 0 && (
+                  <div>
+                    <p className="text-xs font-bold text-zinc-400 uppercase tracking-wide mb-2">Condições Físicas</p>
+                    <div className="flex flex-wrap gap-2">
+                      {perfilIA.condicoes_fisicas.map((cond: string, idx: number) => (
+                        <span key={idx} className="px-3 py-1 bg-red-500/30 text-red-300 rounded-full text-xs">{cond}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {perfilIA.tipo_exercicio?.length > 0 && (
+                  <div>
+                    <p className="text-xs font-bold text-zinc-400 uppercase tracking-wide mb-2">Tipos de Exercício</p>
+                    <div className="flex flex-wrap gap-2">
+                      {perfilIA.tipo_exercicio.map((tipo: string, idx: number) => (
+                        <span key={idx} className="px-3 py-1 bg-emerald-500/30 text-emerald-300 rounded-full text-xs capitalize">{tipo}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

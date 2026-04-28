@@ -25,19 +25,10 @@ export function usePDVColaborativo() {
       id: 'perfil',
       label: 'Perfil',
       descricao: 'Dados da loja e horários',
-      href: '/profissional/catalogo',
+      href: '#perfil',
       emoji: '🏪',
       cor: 'from-purple-500 to-violet-600',
       sombra: 'shadow-purple-200',
-    },
-    {
-      id: 'planos',
-      label: 'Planos',
-      descricao: 'Assinatura e funcionalidades',
-      href: '/admin/master/planos',
-      emoji: '⭐',
-      cor: 'from-amber-500 to-orange-500',
-      sombra: 'shadow-amber-200',
     },
   ]
 

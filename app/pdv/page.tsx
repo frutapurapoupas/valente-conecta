@@ -41,7 +41,7 @@ export default function PDVPage() {
           </button>
           <span className="font-bold text-xl text-white">Cadastro Rápido</span>
         </header>
-        <div className="p-4 max-w-md mx-auto">
+        <div className="p-4 max-w-7xl mx-auto">
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
             <div className="text-center mb-4">
               <div className="w-20 h-20 bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -121,7 +121,7 @@ export default function PDVPage() {
           <h1 className="text-3xl font-bold text-white">{confirmacao.titulo}</h1>
           <p className="text-lg mt-2 text-zinc-400">{confirmacao.subtitulo}</p>
         </div>
-        <div className="p-6 max-w-md mx-auto">
+        <div className="p-6 max-w-7xl mx-auto">
           <button onClick={novaVenda} className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-lg mb-3 transition">
             Nova Venda
           </button>
@@ -143,7 +143,7 @@ export default function PDVPage() {
           </button>
           <span className="font-bold text-xl text-white">Pagamento</span>
         </header>
-        <div className="p-4 max-w-md mx-auto">
+        <div className="p-4 max-w-7xl mx-auto">
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-5">
             <h2 className="font-bold text-lg text-white mb-3">Itens da Compra</h2>
             {carrinho.map(item => (
@@ -219,6 +219,13 @@ export default function PDVPage() {
 
           {formaPagamento === 'fiado' && (
             <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-4">
+              <div className="text-center mb-4">
+                <div className="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <ShoppingCart className="w-8 h-8 text-amber-400" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">Venda no Fiado</h3>
+                <p className="text-sm text-zinc-400">Registre os dados do cliente para confirmação</p>
+              </div>
               <input
                 type="text"
                 value={clienteNome}
@@ -231,17 +238,26 @@ export default function PDVPage() {
                 value={clienteTelefone}
                 onChange={(e) => setClienteTelefone(e.target.value)}
                 className="w-full p-4 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
-                placeholder="WhatsApp"
+                placeholder="WhatsApp (com DDD)"
               />
-              <div className="bg-blue-500/10 border border-blue-500/20 p-3 rounded-xl text-sm text-center text-blue-300">
-                📱 O cliente receberá a notificação com endereço da loja e saldo disponível
+              <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-xl text-sm text-amber-300">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span className="font-semibold">Resumo da Transação:</span>
+                </div>
+                <div className="space-y-1 text-xs">
+                  <p>• Venda registrada no sistema Valente Conecta</p>
+                  <p>• Cliente receberá notificação via WhatsApp</p>
+                  <p>• Endereço da loja e informações de pagamento incluídas</p>
+                  <p>• Saldo atualizado automaticamente</p>
+                </div>
               </div>
               <button
                 onClick={finalizarVenda}
                 disabled={!clienteNome || !clienteTelefone}
-                className="w-full py-4 bg-amber-500 hover:bg-amber-400 text-black rounded-xl font-bold transition disabled:opacity-50"
+                className="w-full py-4 bg-amber-500 hover:bg-amber-400 text-black rounded-xl font-bold transition disabled:opacity-50 text-lg"
               >
-                Registrar Fiado
+                Confirmar Venda no Fiado
               </button>
             </div>
           )}
@@ -279,7 +295,7 @@ export default function PDVPage() {
           </button>
           <span className="font-bold text-xl text-white">Checkout</span>
         </header>
-        <div className="p-4 max-w-md mx-auto">
+        <div className="p-4 max-w-7xl mx-auto">
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-5">
             <h2 className="font-bold text-xl text-white mb-4">Resumo da Compra</h2>
             {carrinho.map(item => (
@@ -364,7 +380,7 @@ export default function PDVPage() {
         )}
       </header>
 
-      <div className="p-4 max-w-md mx-auto">
+      <div className="p-4 max-w-7xl mx-auto">
         {mensagem && (
           <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/20 text-blue-300 rounded-xl text-center">
             {mensagem}
@@ -377,183 +393,190 @@ export default function PDVPage() {
           </div>
         )}
 
-        {modo === 'leitor' && cameraSuportada ? (
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
-            <div className="text-center mb-4">
-              <div className="w-24 h-24 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Camera className="w-12 h-12 text-blue-400" />
-              </div>
-              <h2 className="text-xl font-bold text-white">Leitor de Código</h2>
-              <p className="text-sm text-zinc-400">Aponte a câmera para o código de barras</p>
-            </div>
-            {!scanning ? (
-              <button
-                onClick={iniciarCamera}
-                disabled={loadingCamera}
-                className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition disabled:opacity-50"
-              >
-                {loadingCamera ? <Loader2 className="w-5 h-5 animate-spin" /> : <Camera className="w-5 h-5" />}
-                {loadingCamera ? 'Iniciando...' : 'Iniciar Câmera'}
-              </button>
-            ) : (
-              <>
-                <div id="reader" className="w-full rounded-xl overflow-hidden mb-3" style={{ minHeight: '250px' }}></div>
-                <button onClick={pararCamera} className="w-full py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl font-bold transition">
-                  Parar Câmera
-                </button>
-              </>
-            )}
-            <button onClick={() => setModo('busca')} className="w-full mt-4 py-2 text-blue-400 hover:text-blue-300 transition text-sm">
-              Não consegue ler? Buscar por nome →
-            </button>
-          </div>
-        ) : (
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
-            <div className="text-center mb-4">
-              <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Search className="w-12 h-12 text-green-400" />
-              </div>
-              <h2 className="text-xl font-bold text-white">Buscar Produto</h2>
-              <p className="text-sm text-zinc-400">Digite o nome ou código de barras</p>
-            </div>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={buscaTermo}
-                onChange={(e) => setBuscaTermo(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    const produto = produtos.find(p => p.codigo === buscaTermo || p.nome.toLowerCase().includes(buscaTermo.toLowerCase()))
-                    if (produto) {
-                      adicionarAoCarrinho({ ...produto, quantidade: 1 })
-                      setBuscaTermo('')
-                    } else if (buscaTermo.length >= 2) {
-                      setNovoProdutoNome(buscaTermo)
-                      setNovoProdutoCodigo('')
-                      setNovoProdutoPreco('')
-                      setNovoProdutoQuantidade('1')
-                      setShowCadastroRapido(true)
-                    }
-                  }
-                }}
-                className="flex-1 p-4 bg-zinc-800 border-2 border-zinc-700 rounded-xl text-white placeholder-zinc-500 text-base focus:outline-none focus:ring-2 focus:ring-green-500"
-                placeholder="Ex: Arroz ou 7891234567890..."
-                autoFocus
-              />
-              <button
-                onClick={() => {
-                  const produto = produtos.find(p => p.codigo === buscaTermo || p.nome.toLowerCase().includes(buscaTermo.toLowerCase()))
-                  if (produto) {
-                    adicionarAoCarrinho({ ...produto, quantidade: 1 })
-                    setBuscaTermo('')
-                  } else if (buscaTermo.length >= 2) {
-                    setNovoProdutoNome(buscaTermo)
-                    setNovoProdutoCodigo('')
-                    setNovoProdutoPreco('')
-                    setNovoProdutoQuantidade('1')
-                    setShowCadastroRapido(true)
-                  }
-                }}
-                className="px-5 bg-green-600 hover:bg-green-500 text-white rounded-xl transition"
-              >
-                Buscar
-              </button>
-            </div>
-
-            {produtosFiltrados.length > 0 && (
-              <div className="mt-3 border border-zinc-700 rounded-xl overflow-hidden max-h-64 overflow-auto bg-zinc-900">
-                {produtosFiltrados.map(produto => (
-                  <button
-                    key={produto.id}
-                    onClick={() => adicionarAoCarrinho({ ...produto, quantidade: 1 })}
-                    className="w-full p-3 text-left hover:bg-zinc-800 flex items-center gap-3 border-b border-zinc-800 last:border-b-0 transition"
-                  >
-                    <div className="w-12 h-12 bg-zinc-700 rounded-lg flex items-center justify-center overflow-hidden">
-                      {produto.imagem ? (
-                        <img src={produto.imagem} alt={produto.nome} className="w-full h-full object-cover" />
-                      ) : (
-                        <Package className="w-6 h-6 text-zinc-400" />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-white">{produto.nome}</p>
-                      <p className="text-xs text-green-400">R$ {produto.preco.toFixed(2)}</p>
-                      {produto.codigo && <p className="text-xs text-zinc-500 font-mono">{produto.codigo}</p>}
-                    </div>
-                    <span className="text-green-400 font-bold">+</span>
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {buscaTermo.length >= 2 && produtosFiltrados.length === 0 && (
-              <div className="mt-3 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl text-center">
-                <p className="text-amber-300 mb-2">Produto "{buscaTermo}" não encontrado</p>
-                <button
-                  onClick={() => {
-                    setNovoProdutoNome(buscaTermo)
-                    setNovoProdutoCodigo('')
-                    setNovoProdutoPreco('')
-                    setNovoProdutoQuantidade('1')
-                    setShowCadastroRapido(true)
-                  }}
-                  className="text-blue-400 hover:text-blue-300 transition text-sm"
-                >
-                  Cadastrar novo produto →
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* CARRINHO */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden mt-4">
-          <div className="bg-zinc-800 p-4 border-b border-zinc-700 flex justify-between items-center">
-            <span className="font-semibold text-lg text-white">Carrinho ({carrinho.length})</span>
-            {carrinho.length > 0 && (
-              <button onClick={limparCarrinho} className="text-red-400 text-sm hover:text-red-300 transition">Limpar</button>
-            )}
-          </div>
-
-          {carrinho.length === 0 ? (
-            <div className="p-10 text-center text-zinc-500">
-              <ShoppingCart className="w-16 h-16 mx-auto mb-3 opacity-50" />
-              <p>Carrinho vazio</p>
-              <p className="text-xs mt-1">Use a câmera ou digite o código</p>
-            </div>
-          ) : (
-            <>
-              <div className="max-h-80 overflow-auto">
-                {carrinho.map(item => (
-                  <div key={item.id} className="p-4 border-b border-zinc-800 flex items-center gap-3">
-                    <div className="flex-1">
-                      <p className="font-medium text-white">{item.nome}</p>
-                      <div className="flex justify-between items-center mt-1">
-                        <p className="text-green-400 font-bold">R$ {(item.preco || 0).toFixed(2)}</p>
-                        <p className="text-xs text-zinc-500 font-mono">{item.codigo || '---'}</p>
-                      </div>
-                      {item.status === 'pendente' && <p className="text-xs text-amber-400">⏳ Pendente validação</p>}
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <button onClick={() => atualizarQuantidade(item.id, -1)} className="w-8 h-8 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full transition">-</button>
-                      <span className="w-8 text-center text-white">{item.quantidade}</span>
-                      <button onClick={() => atualizarQuantidade(item.id, 1)} className="w-8 h-8 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full transition">+</button>
-                      <button onClick={() => removerItem(item.id)} className="w-8 h-8 text-red-400 hover:text-red-300 transition">✕</button>
-                    </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* COLUNA ESQUERDA - BUSCA/SCANNER */}
+          <div className="lg:col-span-2">
+            {modo === 'leitor' && cameraSuportada ? (
+              <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+                <div className="text-center mb-6">
+                  <div className="w-32 h-32 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Camera className="w-16 h-16 text-blue-400" />
                   </div>
-                ))}
-              </div>
-              <div className="p-5 border-t border-zinc-800 bg-zinc-800/50">
-                <div className="flex justify-between items-center mb-4">
-                  <span className="font-bold text-xl text-white">Total</span>
-                  <span className="text-3xl font-bold text-green-400">R$ {totalCompra.toFixed(2)}</span>
+                  <h2 className="text-2xl font-bold text-white mb-2">Leitor de Código</h2>
+                  <p className="text-sm text-zinc-400">Aponte a câmera para o código de barras</p>
                 </div>
-                <button onClick={irParaCheckout} className="w-full py-4 bg-green-600 hover:bg-green-500 text-white rounded-xl font-bold text-lg transition">
-                  Finalizar Compra
+                {!scanning ? (
+                  <button
+                    onClick={iniciarCamera}
+                    disabled={loadingCamera}
+                    className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold flex items-center justify-center gap-3 transition disabled:opacity-50 text-lg"
+                  >
+                    {loadingCamera ? <Loader2 className="w-6 h-6 animate-spin" /> : <Camera className="w-6 h-6" />}
+                    {loadingCamera ? 'Iniciando...' : 'Iniciar Câmera'}
+                  </button>
+                ) : (
+                  <>
+                    <div id="reader" className="w-full rounded-xl overflow-hidden mb-4" style={{ minHeight: '300px' }}></div>
+                    <button onClick={pararCamera} className="w-full py-4 bg-red-600 hover:bg-red-500 text-white rounded-xl font-bold transition text-lg">
+                      Parar Câmera
+                    </button>
+                  </>
+                )}
+                <button onClick={() => setModo('busca')} className="w-full mt-6 py-3 text-blue-400 hover:text-blue-300 transition text-base">
+                  Não consegue ler? Buscar por nome →
                 </button>
               </div>
-            </>
-          )}
+            ) : (
+              <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+                <div className="text-center mb-6">
+                  <div className="w-32 h-32 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Search className="w-16 h-16 text-green-400" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-white mb-2">Buscar Produto</h2>
+                  <p className="text-sm text-zinc-400">Digite o nome ou código de barras</p>
+                </div>
+                <div className="flex gap-3 mb-4">
+                  <input
+                    type="text"
+                    value={buscaTermo}
+                    onChange={(e) => setBuscaTermo(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        const produto = produtos.find(p => p.codigo === buscaTermo || p.nome.toLowerCase().includes(buscaTermo.toLowerCase()))
+                        if (produto) {
+                          adicionarAoCarrinho({ ...produto, quantidade: 1 })
+                          setBuscaTermo('')
+                        } else if (buscaTermo.length >= 2) {
+                          setNovoProdutoNome(buscaTermo)
+                          setNovoProdutoCodigo('')
+                          setNovoProdutoPreco('')
+                          setNovoProdutoQuantidade('1')
+                          setShowCadastroRapido(true)
+                        }
+                      }
+                    }}
+                    className="flex-1 p-4 bg-zinc-800 border-2 border-zinc-700 rounded-xl text-white placeholder-zinc-500 text-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Ex: Arroz ou 7891234567890..."
+                    autoFocus
+                  />
+                  <button
+                    onClick={() => {
+                      const produto = produtos.find(p => p.codigo === buscaTermo || p.nome.toLowerCase().includes(buscaTermo.toLowerCase()))
+                      if (produto) {
+                        adicionarAoCarrinho({ ...produto, quantidade: 1 })
+                        setBuscaTermo('')
+                      } else if (buscaTermo.length >= 2) {
+                        setNovoProdutoNome(buscaTermo)
+                        setNovoProdutoCodigo('')
+                        setNovoProdutoPreco('')
+                        setNovoProdutoQuantidade('1')
+                        setShowCadastroRapido(true)
+                      }
+                    }}
+                    className="px-6 bg-green-600 hover:bg-green-500 text-white rounded-xl transition text-lg font-semibold"
+                  >
+                    Buscar
+                  </button>
+                </div>
+
+                {produtosFiltrados.length > 0 && (
+                  <div className="border border-zinc-700 rounded-xl overflow-hidden max-h-96 overflow-auto bg-zinc-900">
+                    {produtosFiltrados.map(produto => (
+                      <button
+                        key={produto.id}
+                        onClick={() => adicionarAoCarrinho({ ...produto, quantidade: 1 })}
+                        className="w-full p-4 text-left hover:bg-zinc-800 flex items-center gap-4 border-b border-zinc-800 last:border-b-0 transition"
+                      >
+                        <div className="w-16 h-16 bg-zinc-700 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
+                          {produto.imagem ? (
+                            <img src={produto.imagem} alt={produto.nome} className="w-full h-full object-cover" />
+                          ) : (
+                            <Package className="w-8 h-8 text-zinc-400" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-white text-lg">{produto.nome}</p>
+                          <p className="text-sm text-green-400 font-bold">R$ {produto.preco.toFixed(2)}</p>
+                          {produto.codigo && <p className="text-xs text-zinc-500 font-mono">{produto.codigo}</p>}
+                        </div>
+                        <span className="text-green-400 font-bold text-xl">+</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {buscaTermo.length >= 2 && produtosFiltrados.length === 0 && (
+                  <div className="p-6 bg-amber-500/10 border border-amber-500/20 rounded-xl text-center">
+                    <p className="text-amber-300 mb-3 text-lg">Produto "{buscaTermo}" não encontrado</p>
+                    <button
+                      onClick={() => {
+                        setNovoProdutoNome(buscaTermo)
+                        setNovoProdutoCodigo('')
+                        setNovoProdutoPreco('')
+                        setNovoProdutoQuantidade('1')
+                        setShowCadastroRapido(true)
+                      }}
+                      className="text-blue-400 hover:text-blue-300 transition text-base font-semibold"
+                    >
+                      Cadastrar novo produto →
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* COLUNA DIREITA - CARRINHO */}
+          <div className="lg:col-span-1">
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden sticky top-24">
+              <div className="bg-zinc-800 p-4 border-b border-zinc-700 flex justify-between items-center">
+                <span className="font-semibold text-lg text-white">Carrinho ({carrinho.length})</span>
+                {carrinho.length > 0 && (
+                  <button onClick={limparCarrinho} className="text-red-400 text-sm hover:text-red-300 transition">Limpar</button>
+                )}
+              </div>
+
+              {carrinho.length === 0 ? (
+                <div className="p-10 text-center text-zinc-500">
+                  <ShoppingCart className="w-16 h-16 mx-auto mb-3 opacity-50" />
+                  <p>Carrinho vazio</p>
+                  <p className="text-xs mt-1">Use a câmera ou digite o código</p>
+                </div>
+              ) : (
+                <>
+                  <div className="max-h-96 overflow-auto">
+                    {carrinho.map(item => (
+                      <div key={item.id} className="p-4 border-b border-zinc-800 flex items-center gap-3">
+                        <div className="flex-1">
+                          <p className="font-medium text-white">{item.nome}</p>
+                          <div className="flex justify-between items-center mt-1">
+                            <p className="text-green-400 font-bold">R$ {(item.preco || 0).toFixed(2)}</p>
+                            <p className="text-xs text-zinc-500 font-mono">{item.codigo || '---'}</p>
+                          </div>
+                          {item.status === 'pendente' && <p className="text-xs text-amber-400">⏳ Pendente validação</p>}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button onClick={() => atualizarQuantidade(item.id, -1)} className="w-8 h-8 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full transition">-</button>
+                          <span className="w-8 text-center text-white">{item.quantidade}</span>
+                          <button onClick={() => atualizarQuantidade(item.id, 1)} className="w-8 h-8 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full transition">+</button>
+                          <button onClick={() => removerItem(item.id)} className="w-8 h-8 text-red-400 hover:text-red-300 transition">✕</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="p-5 border-t border-zinc-800 bg-zinc-800/50">
+                    <div className="flex justify-between items-center mb-4">
+                      <span className="font-bold text-xl text-white">Total</span>
+                      <span className="text-3xl font-bold text-green-400">R$ {totalCompra.toFixed(2)}</span>
+                    </div>
+                    <button onClick={irParaCheckout} className="w-full py-4 bg-green-600 hover:bg-green-500 text-white rounded-xl font-bold text-lg transition">
+                      Finalizar Compra
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

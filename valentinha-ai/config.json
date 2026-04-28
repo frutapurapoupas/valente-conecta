@@ -1,0 +1,27 @@
+{
+  "deepseek": {
+    "api_key": "sk-4cfde5dbdf8149d18b1b0d7d4d427f36",
+    "model": "deepseek-chat",
+    "base_url": "https://api.deepseek.com/v1"
+  },
+  "piper": {
+    "model_path": "",
+    "voice": "pt_BR-female-medium"
+  },
+  "ffmpeg": {
+    "path": "C:\\ffmpeg\\ffmpeg-2026-04-22-git-162ad61486-full_build\\bin\\ffmpeg.exe",
+    "output_format": "mp4",
+    "video_codec": "libx264",
+    "audio_codec": "aac",
+    "resolution": "1080x1920"
+  },
+  "valentinha": {
+    "avatar_path": "input/valentinha.png",
+    "style": "energetic",
+    "tone": "friendly"
+  },
+  "output": {
+    "duration_max": 25,
+    "sentences_max": 3
+  }
+}

@@ -7,7 +7,7 @@ import {
   ShoppingBag, Gift, Lock, MapPin, Phone, Mail, Navigation,
   ChevronRight, TrendingDown,
   Building2, Loader2, AlertTriangle, Crown, User, Store, Bike,
-  LayoutGrid, Calendar, Megaphone, Package, Truck, Home
+  LayoutGrid, Calendar, Megaphone, Package, Truck, Home, Car, Briefcase
 } from 'lucide-react'
 import { useHomePage } from '@/hooks/useHomePage'
 import SmartSearchBar from '@/components/ui/SmartSearchBar'
@@ -103,9 +103,7 @@ export default function HomePage() {
 
       <header className="sticky top-0 z-50 bg-white/10 backdrop-blur-2xl border border-white/20 shadow-2xl">
         <div className="h-16 max-w-2xl mx-auto flex items-center justify-between px-4">
-          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="relative group">
-            <Menu className="w-6 h-6 text-yellow-400 cursor-pointer hover:text-yellow-300 transition-colors" />
-          </button>
+          <div className="w-6" />
           
           <div className="font-black uppercase italic text-white text-sm tracking-widest">
             <span>VALENTE CONECTA</span>
@@ -164,6 +162,8 @@ export default function HomePage() {
           <ActionCard href="/ambulantes" icon={Bike} label="Ambulantes" color="text-amber-400" />
           <ActionCard href="/transportes-delivery" icon={Truck} label="Transportes e Delivery" color="text-teal-400" />
           <ActionCard href="/imoveis" icon={Home} label="Imóveis" color="text-rose-400" />
+          <ActionCard href="/veiculos" icon={Car} label="Veículos" color="text-blue-500" />
+          <ActionCard href="/empregos" icon={Briefcase} label="Empregos" color="text-green-500" />
         </div>
       </main>
 

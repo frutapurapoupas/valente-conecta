@@ -5,14 +5,14 @@
 // ============================================
 export function enviarWhatsApp(telefone: string, mensagem: string): void {
   if (!telefone || telefone.length < 10) {
-    console.log('Telefone inválido para notificação:', telefone)
+    console.log('Telefone invalido para notificacao:', telefone)
     return
   }
   
   // Limpar telefone
   const telefoneLimpo = telefone.replace(/\D/g, '')
   
-  // Formatar para padrão internacional
+  // Formatar para padrao internacional
   let telefoneInternacional = telefoneLimpo
   if (!telefoneLimpo.startsWith('55') && telefoneLimpo.length === 11) {
     telefoneInternacional = `55${telefoneLimpo}`
@@ -23,22 +23,16 @@ export function enviarWhatsApp(telefone: string, mensagem: string): void {
   // Codificar mensagem
   const mensagemCodificada = encodeURIComponent(mensagem)
   
-  // Usar api.whatsapp.com/send (não pede instalação)
-  const linkWhatsApp = `https://api.whatsapp.com/send?phone=${telefoneInternacional}&text=${mensagemCodificada}`
-  
-  // Abrir em nova aba
-  window.open(linkWhatsApp, '_blank')
-  
-  // Salvar notificação
+  // Salvar notificacao (sem abrir WhatsApp)
   salvarNotificacao({
     tipo: 'whatsapp',
     destinatario: telefone,
     mensagem,
     data: new Date().toISOString(),
-    link: linkWhatsApp
+    link: "https://api.whatsapp.com/send?phone=" + telefoneInternacional + "&text=" + mensagemCodificada
   })
   
-  console.log(`📱 WhatsApp enviado para ${telefone}`)
+  console.log('Notificacao WhatsApp registrada para ' + telefone)
 }
 
 // ============================================
@@ -49,7 +43,7 @@ export async function inicializarPushNotifications(): Promise<boolean> {
   if (typeof window === 'undefined') return false
   
   if (!('Notification' in window)) {
-    console.log('Este navegador não suporta notificações')
+    console.log('Este navegador nao suporta notificacoes')
     return false
   }
   
@@ -69,7 +63,7 @@ export function enviarPushNotification(titulo: string, corpo: string, dados?: an
   if (typeof window === 'undefined') return
   
   if (!('Notification' in window)) {
-    console.log('Navegador não suporta notificações')
+    console.log('Navegador nao suporta notificacoes')
     return
   }
   
@@ -91,7 +85,7 @@ export function enviarPushNotification(titulo: string, corpo: string, dados?: an
         }
       }
       
-      console.log(`📱 Push enviado: ${titulo} - ${corpo}`)
+      console.log(`Push enviado: ${titulo} - ${corpo}`)
     } catch (error) {
       console.error('Erro ao enviar push:', error)
     }
@@ -103,7 +97,7 @@ export function enviarPushNotification(titulo: string, corpo: string, dados?: an
     })
   }
   
-  // Salvar notificação
+  // Salvar notificacao
   salvarNotificacao({
     tipo: 'push',
     titulo,
@@ -114,7 +108,7 @@ export function enviarPushNotification(titulo: string, corpo: string, dados?: an
 }
 
 // ============================================
-// FUNÇÕES GERAIS
+// FUNCOES GERAIS
 // ============================================
 
 interface Notificacao {
@@ -140,12 +134,12 @@ function salvarNotificacao(notificacao: Omit<Notificacao, 'id'>): void {
     })
     localStorage.setItem('notificacoes_enviadas', JSON.stringify(lista))
   } catch (error) {
-    console.error('Erro ao salvar notificação:', error)
+    console.error('Erro ao salvar notificacao:', error)
   }
 }
 
 // ============================================
-// NOTIFICAÇÕES DO PDV - VERSÃO CORRIGIDA
+// NOTIFICACOES DO PDV - VERSAO CORRIGIDA
 // ============================================
 
 interface LojaInfo {
@@ -163,11 +157,11 @@ export function notificarCompraFiado(
   lojaInfo?: LojaInfo,
   saldoFiadoDisponivel: number = 500
 ): void {
-  // Dados da loja (padrão ou do parâmetro)
+  // Dados da loja (padrao ou do parametro)
   const loja = lojaInfo || {
     nome: 'Valente Conecta',
     endereco: 'Rua Principal, 123 - Centro',
-    cidade: 'Coité - BA',
+    cidade: 'Coite - BA',
     telefone: '(00) 00000-0000'
   }
   
@@ -175,50 +169,34 @@ export function notificarCompraFiado(
   const saldoRestante = saldoFiadoDisponivel - total
   
   // Mensagem completa para WhatsApp
-  const mensagemWhatsApp = `✅ *VALENTE CONECTA* - SUA COMPRA FOI REALIZADA COM SUCESSO!
-
-🏪 *Loja:* ${loja.nome}
-📍 *Endereço:* ${loja.endereco}
-📞 *Telefone:* ${loja.telefone}
-
-👤 *Cliente:* ${clienteNome}
-💰 *Valor da compra:* R$ ${total.toFixed(2)}
-📅 *Data de vencimento:* ${dataVencimento}
-
-💳 *Limite de fiado disponível:* R$ ${saldoRestante.toFixed(2)}
-
-✅ Seu pedido foi aprovado e registrado em nosso sistema.
-
-*Formas de pagamento disponíveis:*
-• Dinheiro
-• PIX
-• Cartão
-• Moeda Conecta
-
-Agradecemos pela preferência! 🙏
-
----
-Valente Conecta - Seu PDV Colaborativo`
+  const mensagemWhatsApp = "VALENTE CONECTA - SUA COMPRA FOI REALIZADA COM SUCESSO!\n\nLoja: " + loja.nome + "\nEndereco: " + loja.endereco + "\nTelefone: " + loja.telefone + "\n\nCliente: " + clienteNome + "\nValor da compra: R$ " + total.toFixed(2) + "\nData de vencimento: " + dataVencimento + "\n\nLimite de fiado disponivel: R$ " + saldoRestante.toFixed(2) + "\n\nSeu pedido foi aprovado e registrado em nosso sistema.\n\nFormas de pagamento disponiveis:\n• Dinheiro\n• PIX\n• Cartao\n• Moeda Conecta\n\nAgradecemos pela preferencia!\n\n---\nValente Conecta - Seu PDV Colaborativo"
 
   // Mensagem resumida para Push
-  const mensagemPush = `✅ Compra realizada com sucesso!\n\nLoja: ${loja.nome}\nValor: R$ ${total.toFixed(2)}\nVence: ${dataVencimento}\nSaldo disponível: R$ ${saldoRestante.toFixed(2)}`
+  const mensagemPush = "Compra realizada com sucesso!\n\nLoja: " + loja.nome + "\nValor: R$ " + total.toFixed(2) + "\nVence: " + dataVencimento + "\nSaldo disponivel: R$ " + saldoRestante.toFixed(2)
 
-  // Enviar WhatsApp
+  // Enviar WhatsApp (apenas registrar, sem abrir)
   if (clienteTelefone && clienteTelefone.length >= 10) {
-    enviarWhatsApp(clienteTelefone, mensagemWhatsApp)
+    // Salvar notificacao sem abrir WhatsApp
+    salvarNotificacao({
+      tipo: 'whatsapp',
+      destinatario: clienteTelefone,
+      mensagem: mensagemWhatsApp,
+      data: new Date().toISOString(),
+      link: "https://api.whatsapp.com/send?phone=" + (clienteTelefone.replace(/\D/g, '').startsWith('55') ? clienteTelefone.replace(/\D/g, '') : "55" + clienteTelefone.replace(/\D/g, '')) + "&text=" + encodeURIComponent(mensagemWhatsApp)
+    })
   }
   
-  // Enviar Push (para o lojista e para o cliente se tiver permissão)
-  enviarPushNotification('🛍️ Venda no Fiado Registrada', mensagemPush, { 
+  // Enviar Push (para o lojista e para o cliente se tiver permissao)
+  enviarPushNotification('Venda no Fiado Registrada', mensagemPush, { 
     clienteNome, 
     total, 
     lojaNome: loja.nome,
-    url: '/pdv/fiado'
+    url: '/admin-fiado'
   })
   
   // Registrar no console
-  console.log(`✅ Notificação enviada para ${clienteNome} (${clienteTelefone})`)
-  console.log(`💰 Valor: R$ ${total.toFixed(2)} | Vence: ${dataVencimento}`)
+  console.log('Notificacao enviada para ' + clienteNome + ' (' + clienteTelefone + ')')
+  console.log('Valor: R$ ' + total.toFixed(2) + ' | Vence: ' + dataVencimento)
 }
 
 export function notificarCompraConfirmada(
@@ -230,29 +208,23 @@ export function notificarCompraConfirmada(
   const loja = lojaInfo || {
     nome: 'Valente Conecta',
     endereco: 'Rua Principal, 123 - Centro',
-    cidade: 'Coité - BA',
+    cidade: 'Coite - BA',
     telefone: '(00) 00000-0000'
   }
   
-  const mensagemWhatsApp = `✅ *VALENTE CONECTA* - COMPRA CONFIRMADA!
+  const mensagemWhatsApp = "VALENTE CONECTA - COMPRA CONFIRMADA!\n\nLoja: " + loja.nome + "\nEndereco: " + loja.endereco + "\n\nValor: R$ " + total.toFixed(2) + "\nPagamento: " + metodo.toUpperCase() + "\n\nSua compra foi finalizada com sucesso!\n\nVolte sempre!\n\n---\nValente Conecta - Seu PDV Colaborativo"
 
-🏪 *Loja:* ${loja.nome}
-📍 *Endereço:* ${loja.endereco}
-
-💰 *Valor:* R$ ${total.toFixed(2)}
-💳 *Pagamento:* ${metodo.toUpperCase()}
-
-✅ Sua compra foi finalizada com sucesso!
-
-Volte sempre! 🛍️
-
----
-Valente Conecta - Seu PDV Colaborativo`
-
-  const mensagemPush = `✅ Compra confirmada!\nValor: R$ ${total.toFixed(2)}\nMétodo: ${metodo}`
+  const mensagemPush = "Compra confirmada!\nValor: R$ " + total.toFixed(2) + "\nMetodo: " + metodo
 
   if (clienteTelefone && clienteTelefone.length >= 10) {
-    enviarWhatsApp(clienteTelefone, mensagemWhatsApp)
+    // Salvar notificacao sem abrir WhatsApp
+    salvarNotificacao({
+      tipo: 'whatsapp',
+      destinatario: clienteTelefone,
+      mensagem: mensagemWhatsApp,
+      data: new Date().toISOString(),
+      link: "https://api.whatsapp.com/send?phone=" + (clienteTelefone.replace(/\D/g, '').startsWith('55') ? clienteTelefone.replace(/\D/g, '') : "55" + clienteTelefone.replace(/\D/g, '')) + "&text=" + encodeURIComponent(mensagemWhatsApp)
+    })
   }
   enviarPushNotification('Compra Confirmada', mensagemPush, { total, metodo })
 }
@@ -261,7 +233,7 @@ export function notificarProdutoPendente(
   lojaNome: string,
   produtoNome: string
 ): void {
-  const mensagemPush = `📦 Novo produto pendente!\nLoja: ${lojaNome}\nProduto: ${produtoNome}`
+  const mensagemPush = "Novo produto pendente!\nLoja: " + lojaNome + "\nProduto: " + produtoNome
   
-  enviarPushNotification('Produto Aguardando Validação', mensagemPush, { lojaNome, produtoNome })
+  enviarPushNotification('Produto Aguardando Validacao', mensagemPush, { lojaNome, produtoNome })
 }

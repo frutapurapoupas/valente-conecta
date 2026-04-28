@@ -3,13 +3,15 @@
 import { useState, useEffect, useRef } from 'react'
 import {
   CheckCircle, Flame, MapPin, Plus, Minus,
-  TrendingUp, BookOpen, Target, Trophy, Star, Wifi, WifiOff, Edit, Dumbbell
+  TrendingUp, BookOpen, Target, Trophy, Star, Wifi, WifiOff, Edit, Dumbbell, Brain,
+  Activity, Heart, Zap, BarChart3, Calendar, Clock, User, Settings, Bell, Smartphone, MessageCircle, Scale, Ruler
 } from 'lucide-react'
 import AcademiaHeader from '@/components/academia/Header'
 import BottomNav from '@/components/academia/BottomNav'
 import AdminPanel from '@/components/academia/AdminPanel'
 import NotificationPermission from '@/components/academia/NotificationPermission'
 import PlanoAdminCard from '@/components/PlanoAdminCard'
+import Link from 'next/link'
 import {
   type PerfilAluno, salvarPerfil, carregarPerfil,
   notificarCheckIn, notificarEmAndamento, notificarCheckOut,
@@ -53,10 +55,25 @@ const METAS_ALUNO = [
 ]
 
 const INCENTIVOS = [
-  { emoji: '\uD83D\uDD25', txt: '5 treinos consecutivos \u2014 voc\u00ea est\u00e1 em chamas!', cor: 'amber' },
-  { emoji: '\uD83C\uDFAF', txt: 'Supino a 75% da meta. Continue assim!', cor: 'violet' },
-  { emoji: '\u2B50',        txt: '12 treinos esse m\u00eas \u2014 recorde pessoal!', cor: 'blue' },
+  { emoji: '🔥', txt: '5 treinos consecutivos — você está em chamas!', cor: 'amber' },
+  { emoji: '🎯', txt: 'Supino a 75% da meta. Continue assim!', cor: 'violet' },
+  { emoji: '⭐',        txt: '12 treinos esse mês — recorde pessoal!', cor: 'blue' },
 ]
+
+// Dados mockados da IA
+const mockIAData = {
+  scoreRecuperacao: 75,
+  passosHoje: 8500,
+  frequenciaCardiaca: 72,
+  nivelEnergia: 'Ótimo',
+  recomendacaoIA: 'Treino de peito hoje - seu corpo está pronto!',
+  proximoTreino: 'Peito e Tríceps',
+  tempoDescanso: '48h',
+  alertasAtivos: [
+    { tipo: 'hidratacao', mensagem: 'Beba 500ml de água', urgencia: 'media' },
+    { tipo: 'descanso', mensagem: 'Descanso de 90s entre séries', urgencia: 'baixa' }
+  ]
+}
 
 export default function AcademiaPage() {
   const [isAdmin] = useState(false)
@@ -70,6 +87,11 @@ export default function AcademiaPage() {
   const [elapsedTime, setElapsedTime] = useState(0)
   const [exercicios, setExercicios] = useState<Exercicio[]>(TREINO_INICIAL)
   const [incentIdx, setIncentIdx] = useState(0)
+  const [alertasAtivos, setAlertasAtivos] = useState(mockIAData.alertasAtivos)
+  const [notificacoesPush, setNotificacoesPush] = useState(true)
+  const [notificacoesWhatsApp, setNotificacoesWhatsApp] = useState(false)
+  const [perfilIA, setPerfilIA] = useState<any>(null)
+  const [academiaDados, setAcademiaDados] = useState<any>(null)
   const watchRef    = useRef<number | null>(null)
   const timerRef    = useRef<NodeJS.Timeout | null>(null)
   const warmupRef   = useRef<NodeJS.Timeout | null>(null) // timer dos 5 min de espera
@@ -134,9 +156,36 @@ export default function AcademiaPage() {
 
   // Carrega perfil ao iniciar
   useEffect(() => {
-    const p = carregarPerfil()
-    if (p) setPerfil(p)
-    else setShowCadastro(true)
+    // Tenta carregar perfil do cadastro inicial da IA primeiro
+    const perfilIA = localStorage.getItem('academia_perfil_ia')
+    if (perfilIA) {
+      const perfilIAData = JSON.parse(perfilIA)
+      setPerfilIA(perfilIAData)
+      // Converte para formato da página principal
+      const perfilConvertido = {
+        nome: perfilIAData.nome,
+        objetivo: perfilIAData.objetivo,
+        pesoAtual: perfilIAData.peso_atual.toString(),
+        pesoMeta: perfilIAData.peso_meta.toString(),
+        altura: perfilIAData.altura.toString(),
+        periodoMeta: '3 meses',
+        freqSemanal: perfilIAData.freq_semanal.toString(),
+        nivel: perfilIAData.nivel
+      }
+      setFormPerfil(perfilConvertido)
+      setPerfil(perfilIAData)
+    } else {
+      // Se não tem perfil IA, tenta carregar perfil antigo
+      const p = carregarPerfil()
+      if (p) setPerfil(p)
+      else setShowCadastro(true)
+    }
+
+    // Carrega dados da academia
+    const academiaSalva = localStorage.getItem('academia_dados')
+    if (academiaSalva) {
+      setAcademiaDados(JSON.parse(academiaSalva))
+    }
   }, [])
 
   // Retoma monitoramento se já deu permissão antes
@@ -185,6 +234,22 @@ export default function AcademiaPage() {
     return () => clearInterval(t)
   }, [])
 
+  // Simulação de alertas IA
+  useEffect(() => {
+    if (isCheckIn) {
+      const interval = setInterval(() => {
+        const novosAlertas = [
+          { tipo: 'hidratacao', mensagem: 'Beba 500ml de água', urgencia: 'media' },
+          { tipo: 'descanso', mensagem: 'Descanso de 90s entre séries', urgencia: 'baixa' },
+          { tipo: 'postura', mensagem: 'Corrija sua postura no supino', urgencia: 'alta' },
+          { tipo: 'energia', mensagem: 'Nível de energia ótimo! Continue!', urgencia: 'baixa' }
+        ]
+        setAlertasAtivos(novosAlertas.slice(0, 2))
+      }, 30000) // A cada 30 segundos
+      return () => clearInterval(interval)
+    }
+  }, [isCheckIn])
+
   function toggleExercicio(id: number) {
     setExercicios(ex => ex.map(e => e.id === id ? { ...e, feito: !e.feito } : e))
   }
@@ -208,6 +273,25 @@ export default function AcademiaPage() {
     setPerfil(novo)
     setShowCadastro(false)
     setShowEditarPerfil(false)
+
+    // Sincroniza com o perfil da IA
+    const perfilIA = {
+      id: 1,
+      user_id: 'demo-user',
+      nome: formPerfil.nome,
+      peso_atual: parseFloat(formPerfil.pesoAtual),
+      peso_meta: parseFloat(formPerfil.pesoMeta),
+      altura: parseFloat(formPerfil.altura),
+      idade: 30, // valor padrão, pode ser ajustado
+      sexo: 'masculino', // valor padrão, pode ser ajustado
+      objetivo: formPerfil.objetivo,
+      nivel: formPerfil.nivel,
+      freq_semanal: parseInt(formPerfil.freqSemanal),
+      condicoes_fisicas: [],
+      tipo_exercicio: [],
+      ativo: true
+    }
+    localStorage.setItem('academia_perfil_ia', JSON.stringify(perfilIA))
   }
 
   function abrirEditarPerfil() {
@@ -226,6 +310,12 @@ export default function AcademiaPage() {
     }
   }
 
+  function formatTime(minutes: number): string {
+    const h = Math.floor(minutes / 60)
+    const m = minutes % 60
+    return `${h}h${m}m`
+  }
+
   const totalFeitos = exercicios.filter(e => e.feito).length
   const pctFeitos = Math.round((totalFeitos / exercicios.length) * 100)
   const incent = INCENTIVOS[incentIdx]
@@ -237,19 +327,19 @@ export default function AcademiaPage() {
 
   // --- Banner de geo ---
   const geoBanner = geoState === 'dentro' && isCheckIn
-    ? { txt: '\uD83D\uDCCD Voc\u00ea est\u00e1 na academia \u2014 treino em andamento', cls: 'bg-emerald-100 text-emerald-700' }
+    ? { txt: '📍 Você está na academia — treino em andamento', cls: 'bg-emerald-100 text-emerald-700' }
     : geoState === 'dentro' && !isCheckIn
-    ? { txt: '\uD83D\uDCCD Voc\u00ea est\u00e1 no local \u2014 contagem inicia em 5 min',  cls: 'bg-blue-100 text-blue-700' }
+    ? { txt: '📍 Você está no local — contagem inicia em 5 min',  cls: 'bg-blue-100 text-blue-700' }
     : geoState === 'fora'
-    ? { txt: '\uD83D\uDCCD Voc\u00ea saiu da academia',              cls: 'bg-orange-100 text-orange-700' }
+    ? { txt: '📍 Você saiu da academia',              cls: 'bg-orange-100 text-orange-700' }
     : geoState === 'watching'
-    ? { txt: '\uD83D\uDCCD Detectando localiza\u00e7\u00e3o...',     cls: 'bg-slate-100 text-slate-500' }
+    ? { txt: '📍 Detectando localização...',     cls: 'bg-slate-100 text-slate-500' }
     : geoState === 'negado'
-    ? { txt: '\uD83D\uDCCD Localiza\u00e7\u00e3o negada pelo dispositivo', cls: 'bg-red-100 text-red-600' }
+    ? { txt: '📍 Localização negada pelo dispositivo', cls: 'bg-red-100 text-red-600' }
     : null
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-28">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 text-white pb-20">
       <NotificationPermission />
       <AcademiaHeader isAdmin={isAdmin} isCheckIn={isCheckIn} elapsedTime={elapsedTime} onActionClick={() => {}} />
 
@@ -261,166 +351,387 @@ export default function AcademiaPage() {
         </div>
       )}
 
-      <main className="max-w-2xl mx-auto px-4 pt-4 space-y-4">
-        <PlanoAdminCard />
-        {/* Botão Editar Perfil - só aparece se perfil já cadastrado */}
-        {perfil && (
-          <button
-            onClick={abrirEditarPerfil}
-            className="w-full py-3 bg-white border-2 border-indigo-200 rounded-2xl flex items-center justify-center gap-2 text-indigo-700 font-bold hover:bg-indigo-50 transition-all active:scale-95"
-          >
-            <Edit className="w-5 h-5" />
-            Editar Meus Dados
-          </button>
-        )}
-
-        {/* Botão de entrada — só aparece se ainda não deu permissão */}
-        {geoState === 'idle' && (
-          <button
-            onClick={iniciarGeo}
-            className="w-full py-5 bg-gradient-to-r from-indigo-600 to-violet-700 text-white rounded-3xl font-black text-lg flex items-center justify-center gap-3 shadow-lg active:scale-95 transition-all"
-          >
-            <MapPin className="w-6 h-6" />
-            ESTOU NA ACADEMIA
-          </button>
-        )}
-
-        {/* Incentivo rotativo */}
-        <div className={`border rounded-2xl px-4 py-3 flex items-center gap-3 transition-all ${corMap[incent.cor]}`}>
-          <span className="text-2xl">{incent.emoji}</span>
-          <p className="text-sm font-bold">{incent.txt}</p>
-        </div>
-
-        {/* Stats rápidos */}
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            { icon: <Flame className="w-5 h-5 text-amber-500" />, val: '5',          label: 'dias seguidos' },
-            { icon: <Trophy className="w-5 h-5 text-yellow-500" />, val: '12',        label: 'treinos/m\u00eas' },
-            { icon: <Star className="w-5 h-5 text-indigo-500" />,   val: `${pctFeitos}%`, label: 'treino hoje' },
-          ].map(s => (
-            <div key={s.label} className="bg-white rounded-2xl p-4 text-center shadow-sm border border-slate-100">
-              <div className="flex justify-center mb-1">{s.icon}</div>
-              <p className="font-black text-xl text-gray-800">{s.val}</p>
-              <p className="text-xs text-gray-500 leading-tight">{s.label}</p>
+      <main className="max-w-2xl mx-auto px-4 pt-6 space-y-6">
+        {/* Alertas IA em Tempo Real */}
+        {alertasAtivos.length > 0 && (
+          <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-[32px] p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center animate-pulse">
+                  <Bell className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-white">Alertas IA Ativos</h3>
+                  <p className="text-xs text-zinc-400">Notificações inteligentes em tempo real</p>
+                </div>
+              </div>
             </div>
-          ))}
+            <div className="space-y-3">
+              {alertasAtivos.map((alerta, idx) => (
+                <div key={idx} className={`rounded-2xl p-4 border transition-all ${
+                  alerta.urgencia === 'alta' ? 'bg-red-500/20 border-red-500/30' :
+                  alerta.urgencia === 'media' ? 'bg-orange-500/20 border-orange-500/30' :
+                  'bg-yellow-500/20 border-yellow-500/30'
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {alerta.urgencia === 'alta' ? <Bell className="w-4 h-4 text-red-400" /> :
+                       alerta.urgencia === 'media' ? <Bell className="w-4 h-4 text-orange-400" /> :
+                       <Bell className="w-4 h-4 text-yellow-400" />}
+                      <p className="text-sm font-bold text-white">{alerta.mensagem}</p>
+                    </div>
+                    <span className={`text-xs px-2 py-1 rounded-full ${
+                      alerta.urgencia === 'alta' ? 'bg-red-500/30 text-red-300' :
+                      alerta.urgencia === 'media' ? 'bg-orange-500/30 text-orange-300' :
+                      'bg-yellow-500/30 text-yellow-300'
+                    }`}>
+                      {alerta.urgencia.toUpperCase()}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Configurações de Notificações */}
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-[32px] p-6 shadow-2xl">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
+              <Settings className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h3 className="font-bold text-white">Configurações de Alertas</h3>
+              <p className="text-xs text-zinc-400">Personalize suas notificações</p>
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-4 bg-white/10 rounded-2xl border border-white/20">
+              <div className="flex items-center gap-3">
+                <Smartphone className="w-5 h-5 text-blue-400" />
+                <div>
+                  <p className="text-sm font-bold text-white">Notificações Push</p>
+                  <p className="text-xs text-zinc-400">Alertas no seu celular</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setNotificacoesPush(!notificacoesPush)}
+                className={`w-12 h-6 rounded-full transition-all ${notificacoesPush ? 'bg-blue-500' : 'bg-zinc-600'}`}
+              >
+                <div className={`w-5 h-5 bg-white rounded-full transition-all ${notificacoesPush ? 'translate-x-6' : 'translate-x-0.5'}`} />
+              </button>
+            </div>
+            <div className="flex items-center justify-between p-4 bg-white/10 rounded-2xl border border-white/20">
+              <div className="flex items-center gap-3">
+                <MessageCircle className="w-5 h-5 text-green-400" />
+                <div>
+                  <p className="text-sm font-bold text-white">Alertas WhatsApp</p>
+                  <p className="text-xs text-zinc-400">Receba mensagens no WhatsApp</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setNotificacoesWhatsApp(!notificacoesWhatsApp)}
+                className={`w-12 h-6 rounded-full transition-all ${notificacoesWhatsApp ? 'bg-green-500' : 'bg-zinc-600'}`}
+              >
+                <div className={`w-5 h-5 bg-white rounded-full transition-all ${notificacoesWhatsApp ? 'translate-x-6' : 'translate-x-0.5'}`} />
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* Treino do dia */}
-        <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="font-black text-lg text-gray-800">TREINO DO DIA</h3>
-            <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-black">S\u00c9RIE A</span>
+        {/* Card de Check-in Modernizado */}
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-[32px] p-6 shadow-2xl">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full flex items-center justify-center">
+                <MapPin className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-white">Check-in Academia</h3>
+                <p className="text-xs text-zinc-400">{geoBanner ? geoBanner.txt : 'Localização não iniciada'}</p>
+              </div>
+            </div>
+            <div className={`w-3 h-3 rounded-full ${geoState === 'dentro' ? 'bg-emerald-500' : geoState === 'watching' ? 'bg-yellow-500' : 'bg-zinc-500'} animate-pulse`} />
           </div>
-          <div className="space-y-1">
-            <div className="flex justify-between text-xs text-gray-500 font-semibold">
-              <span>{totalFeitos}/{exercicios.length} exerc\u00edcios</span>
+
+          {/* Botão de entrada */}
+          {geoState === 'idle' && (
+            <button
+              onClick={iniciarGeo}
+              className="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-2xl font-black flex items-center justify-center gap-3 shadow-lg active:scale-95 transition-all"
+            >
+              <MapPin className="w-5 h-5" />
+              ESTOU NA ACADEMIA
+            </button>
+          )}
+
+          {/* Status do Check-in */}
+          {geoState !== 'idle' && (
+            <div className="flex items-center justify-between py-3 px-4 bg-white/10 rounded-2xl border border-white/20">
+              <div className="flex items-center gap-2">
+                {geoState === 'watching' ? <Wifi className="w-4 h-4 text-yellow-400" /> : geoState === 'dentro' ? <CheckCircle className="w-4 h-4 text-emerald-400" /> : <WifiOff className="w-4 h-4 text-zinc-400" />}
+                <span className="text-sm font-semibold text-white">
+                  {geoState === 'watching' ? 'Procurando academia...' : geoState === 'dentro' ? 'Dentro da academia' : 'Fora da área'}
+                </span>
+              </div>
+              {isCheckIn && (
+                <span className="text-xs text-zinc-400">{formatTime(elapsedTime)}</span>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Card ACADEMIA - Tabela Editável */}
+        {academiaDados && (
+          <div className="bg-gradient-to-br from-emerald-900/30 to-green-900/30 border border-emerald-500/30 rounded-[32px] p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-500 rounded-full flex items-center justify-center">
+                  <Dumbbell className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="font-bold text-lg text-white">ACADEMIA</h2>
+                  <p className="text-xs text-zinc-400">Dados da sua academia</p>
+                </div>
+              </div>
+              <Link href="/academia/configurar-academia" className="text-xs text-emerald-400">Editar Completo</Link>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <tbody>
+                  <tr className="border-b border-white/10">
+                    <td className="py-3 px-2 text-zinc-400 font-medium">Nome</td>
+                    <td className="py-3 px-2 text-white font-bold">{academiaDados.nome}</td>
+                  </tr>
+                  <tr className="border-b border-white/10">
+                    <td className="py-3 px-2 text-zinc-400 font-medium">Endereço</td>
+                    <td className="py-3 px-2 text-white font-bold">{academiaDados.endereco}</td>
+                  </tr>
+                  <tr className="border-b border-white/10">
+                    <td className="py-3 px-2 text-zinc-400 font-medium">Telefone</td>
+                    <td className="py-3 px-2 text-white font-bold">{academiaDados.telefone}</td>
+                  </tr>
+                  <tr className="border-b border-white/10">
+                    <td className="py-3 px-2 text-zinc-400 font-medium">Email</td>
+                    <td className="py-3 px-2 text-white font-bold">{academiaDados.email}</td>
+                  </tr>
+                  <tr className="border-b border-white/10">
+                    <td className="py-3 px-2 text-zinc-400 font-medium">Mensalidade</td>
+                    <td className="py-3 px-2 text-white font-bold">{academiaDados.mensalidade}</td>
+                  </tr>
+                  <tr className="border-b border-white/10">
+                    <td className="py-3 px-2 text-zinc-400 font-medium">Responsável</td>
+                    <td className="py-3 px-2 text-white font-bold">{academiaDados.responsavel}</td>
+                  </tr>
+                  <tr>
+                    <td className="py-3 px-2 text-zinc-400 font-medium">Tel. Responsável</td>
+                    <td className="py-3 px-2 text-white font-bold">{academiaDados.responsavelTelefone}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Card PERFIL - Dados da IA */}
+        <div className="bg-gradient-to-br from-yellow-900/30 to-orange-900/30 border border-yellow-500/30 rounded-[32px] p-6 shadow-2xl">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center">
+                <User className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="font-bold text-lg text-white">PERFIL</h2>
+                <p className="text-xs text-zinc-400">Condições e resultados da IA</p>
+              </div>
+            </div>
+            <Link href="/academia/cadastro-inicial" className="text-xs text-yellow-400">Editar</Link>
+          </div>
+          {perfilIA ? (
+            <>
+              <div className="grid grid-cols-3 gap-2 mb-3">
+                <div className="bg-zinc-800/50 rounded-xl p-2 text-center">
+                  <p className="text-sm font-bold text-white">{perfilIA.peso_atual} kg</p>
+                  <p className="text-[10px] text-zinc-400">Peso</p>
+                </div>
+                <div className="bg-zinc-800/50 rounded-xl p-2 text-center">
+                  <p className="text-sm font-bold text-white">{perfilIA.peso_meta} kg</p>
+                  <p className="text-[10px] text-zinc-400">Meta</p>
+                </div>
+                <div className="bg-zinc-800/50 rounded-xl p-2 text-center">
+                  <p className="text-sm font-bold text-white">{perfilIA.altura} m</p>
+                  <p className="text-[10px] text-zinc-400">Altura</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 mb-3">
+                <div className="bg-zinc-800/50 rounded-xl p-2">
+                  <p className="text-[10px] text-zinc-400">Objetivo</p>
+                  <p className="text-sm font-bold text-white capitalize">{perfilIA.objetivo}</p>
+                </div>
+                <div className="bg-zinc-800/50 rounded-xl p-2">
+                  <p className="text-[10px] text-zinc-400">Nível</p>
+                  <p className="text-sm font-bold text-white capitalize">{perfilIA.nivel}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 mb-3">
+                <div className="bg-zinc-800/50 rounded-xl p-2">
+                  <p className="text-[10px] text-zinc-400">Frequência</p>
+                  <p className="text-sm font-bold text-white">{perfilIA.freq_semanal}x/semana</p>
+                </div>
+                <div className="bg-zinc-800/50 rounded-xl p-2">
+                  <p className="text-[10px] text-zinc-400">Idade</p>
+                  <p className="text-sm font-bold text-white">{perfilIA.idade} anos</p>
+                </div>
+              </div>
+              {(perfilIA.condicoes_fisicas?.length > 0 || perfilIA.tipo_exercicio?.length > 0) && (
+                <div className="space-y-2">
+                  {perfilIA.condicoes_fisicas?.length > 0 && (
+                    <div>
+                      <p className="text-[10px] text-zinc-400 uppercase mb-1">Condições</p>
+                      <div className="flex flex-wrap gap-1">
+                        {perfilIA.condicoes_fisicas.map((cond: string, idx: number) => (
+                          <span key={idx} className="px-2 py-1 bg-red-500/30 text-red-300 rounded-full text-[10px]">{cond}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {perfilIA.tipo_exercicio?.length > 0 && (
+                    <div>
+                      <p className="text-[10px] text-zinc-400 uppercase mb-1">Exercícios</p>
+                      <div className="flex flex-wrap gap-1">
+                        {perfilIA.tipo_exercicio.map((tipo: string, idx: number) => (
+                          <span key={idx} className="px-2 py-1 bg-emerald-500/30 text-emerald-300 rounded-full text-[10px] capitalize">{tipo}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-center py-4">
+              <p className="text-sm text-zinc-400">Nenhum perfil cadastrado</p>
+              <Link href="/academia/cadastro-inicial" className="text-xs text-yellow-400 hover:text-yellow-300">Cadastrar perfil</Link>
+            </div>
+          )}
+        </div>
+
+        {/* Perfil e Configurações */}
+        <div className="grid grid-cols-2 gap-4">
+          {/* Editar Perfil */}
+          {perfil ? (
+            <button
+              onClick={abrirEditarPerfil}
+              className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-[24px] p-4 flex flex-col items-center justify-center h-24 hover:bg-white/15 transition-all group"
+            >
+              <User className="w-6 h-6 text-indigo-400 mb-2" />
+              <span className="text-xs font-bold text-white text-center">Meu Perfil</span>
+            </button>
+          ) : (
+            <Link 
+              href="/academia/cadastro-inicial"
+              className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-[24px] p-4 flex flex-col items-center justify-center h-24 hover:bg-white/15 transition-all group"
+            >
+              <User className="w-6 h-6 text-indigo-400 mb-2" />
+              <span className="text-xs font-bold text-white text-center">Cadastrar Perfil</span>
+            </Link>
+          )}
+
+          {/* Configurações IA */}
+          <Link 
+            href="/academia/cadastro-inicial"
+            className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-[24px] p-4 flex flex-col items-center justify-center h-24 hover:bg-white/15 transition-all group"
+          >
+            <Settings className="w-6 h-6 text-purple-400 mb-2" />
+            <span className="text-xs font-bold text-white text-center">Configurar IA</span>
+          </Link>
+        </div>
+
+        <PlanoAdminCard />
+
+        {/* Incentivo rotativo Modernizado */}
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-[32px] p-4 flex items-center gap-3 shadow-2xl">
+          <span className="text-2xl">{incent.emoji}</span>
+          <p className="text-sm font-bold text-white">{incent.txt}</p>
+        </div>
+
+        {/* Treino do Dia Modernizado */}
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-[32px] p-6 shadow-2xl space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-black text-lg text-white">TREINO DO DIA</h3>
+            <span className="bg-indigo-500/30 text-indigo-300 px-3 py-1 rounded-full text-xs font-black">SÉRIE A</span>
+          </div>
+          <div className="space-y-2">
+            <div className="flex justify-between text-xs text-zinc-400 font-semibold">
+              <span>{totalFeitos}/{exercicios.length} exercícios</span>
               <span>{pctFeitos}%</span>
             </div>
-            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-              <div className="h-full bg-indigo-600 rounded-full transition-all" style={{ width: `${pctFeitos}%` }} />
+            <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+              <div className="h-full bg-indigo-500 rounded-full transition-all" style={{ width: `${pctFeitos}%` }} />
             </div>
           </div>
-          {exercicios.map(ex => (
-            <div key={ex.id} className={`rounded-2xl border p-4 space-y-3 transition-all ${ex.feito ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200'}`}>
-              <div className="flex items-center justify-between">
+          <div className="space-y-3">
+            {exercicios.slice(0, 3).map(ex => (
+              <div key={ex.id} className={`rounded-2xl border p-4 space-y-3 transition-all ${ex.feito ? 'bg-emerald-500/20 border-emerald-500/30' : 'bg-white/10 border-white/20'}`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-sm ${ex.feito ? 'bg-emerald-500 text-white' : 'bg-indigo-500 text-white'}`}>
+                      {ex.feito ? <CheckCircle className="w-4 h-4" /> : ex.id}
+                    </div>
+                    <div>
+                      <p className="font-bold text-sm text-white">{ex.nome}</p>
+                      <p className="text-xs text-zinc-400">{ex.series} séries × {ex.reps} reps</p>
+                    </div>
+                  </div>
+                  <button onClick={() => toggleExercicio(ex.id)} className={`text-xs font-black px-3 py-1.5 rounded-xl transition-all active:scale-95 ${ex.feito ? 'bg-emerald-500 text-white' : 'bg-white/20 text-zinc-300'}`}>
+                    {ex.feito ? 'FEITO' : 'MARCAR'}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+          {exercicios.length > 3 && (
+            <div className="text-center">
+              <span className="text-xs text-zinc-400">+{exercicios.length - 3} exercícios</span>
+            </div>
+          )}
+        </div>
+
+        {/* Minhas Metas Modernizadas */}
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-[32px] p-6 shadow-2xl space-y-4">
+          <h3 className="font-black text-lg text-white">MINHAS METAS</h3>
+          <div className="space-y-3">
+            {METAS_ALUNO.slice(0, 2).map((meta, idx) => (
+              <div key={idx} className="flex items-center justify-between p-3 bg-white/10 rounded-2xl border border-white/20">
                 <div className="flex items-center gap-3">
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm ${ex.feito ? 'bg-emerald-500 text-white' : 'bg-indigo-600 text-white'}`}>
-                    {ex.feito ? <CheckCircle className="w-5 h-5" /> : ex.id}
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm ${meta.cor}`}>
+                    <Target className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <p className="font-bold text-sm text-gray-800">{ex.nome}</p>
-                    <p className="text-xs text-slate-400">{ex.series} s\u00e9ries \u00d7 {ex.reps} reps</p>
+                    <p className="font-bold text-sm text-white">{meta.label}</p>
+                    <p className="text-xs text-zinc-400">{meta.valor} → {meta.meta}</p>
                   </div>
                 </div>
-                <button onClick={() => toggleExercicio(ex.id)} className={`text-xs font-black px-3 py-1.5 rounded-xl transition-all active:scale-95 ${ex.feito ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600'}`}>
-                  {ex.feito ? 'FEITO' : 'MARCAR'}
-                </button>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-gray-500 font-semibold w-12">Carga:</span>
-                <button onClick={() => alterarCarga(ex.id, -2.5)} className="w-8 h-8 bg-slate-200 rounded-xl flex items-center justify-center active:scale-90 transition-all">
-                  <Minus className="w-4 h-4 text-gray-600" />
-                </button>
-                <span className="font-black text-base text-gray-800 w-16 text-center">{ex.carga} kg</span>
-                <button onClick={() => alterarCarga(ex.id, 2.5)} className="w-8 h-8 bg-slate-200 rounded-xl flex items-center justify-center active:scale-90 transition-all">
-                  <Plus className="w-4 h-4 text-gray-600" />
-                </button>
-                <div className="flex-1">
-                  <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                    <div className="h-full bg-indigo-400 rounded-full transition-all" style={{ width: `${Math.min(100, Math.round((ex.carga / ex.metaCarga) * 100))}%` }} />
-                  </div>
-                  <p className="text-[10px] text-slate-400 mt-0.5">meta: {ex.metaCarga} kg</p>
+                <div className="text-right">
+                  <p className="font-black text-lg text-white">{meta.pct}%</p>
+                  <p className="text-xs text-zinc-400">concluído</p>
                 </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Metas */}
-        <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 space-y-4">
-          <h3 className="font-black text-lg text-gray-800 flex items-center gap-2">
-            <Target className="w-5 h-5 text-violet-500" /> Minhas Metas
-          </h3>
-          {METAS_ALUNO.map(m => (
-            <div key={m.label} className="space-y-1.5">
-              <div className="flex justify-between text-sm">
-                <span className="font-semibold text-gray-700">{m.label}</span>
-                <span className="font-black text-gray-800">{m.valor} <span className="text-xs text-gray-400 font-normal">\u2192 {m.meta}</span></span>
-              </div>
-              <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                <div className={`h-full rounded-full transition-all ${m.cor}`} style={{ width: `${m.pct}%` }} />
-              </div>
-              <p className="text-xs text-gray-400 text-right">{m.pct}% da meta</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Histórico + Biblioteca + Cadastrar Atividade */}
-        <div className="grid grid-cols-2 gap-3">
-          <button onClick={() => window.location.href = '/academia/historico-carga'} className="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center gap-2 shadow-sm active:scale-95 transition-all">
-            <TrendingUp className="w-6 h-6 text-indigo-500" />
-            <p className="font-bold text-sm text-gray-700">Histórico de Cargas</p>
-            <p className="text-xs text-gray-400 text-center">Configure suas atividades</p>
-          </button>
-          <button onClick={() => window.location.href = '/academia/biblioteca'} className="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center gap-2 shadow-sm active:scale-95 transition-all">
-            <BookOpen className="w-6 h-6 text-violet-500" />
-            <p className="font-bold text-sm text-gray-700">Biblioteca</p>
-            <p className="text-xs text-gray-400 text-center">Exercícios e técnicas</p>
-          </button>
-        </div>
-
-        {/* Botão Cadastrar Outras Atividades Físicas */}
-        <button
-          onClick={() => window.location.href = '/academia/historico-carga'}
-          className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl font-bold flex items-center justify-center gap-2 shadow-sm active:scale-95 transition-all"
-        >
-          <Dumbbell className="w-5 h-5" />
-          Cadastrar Outras Atividades Físicas
-        </button>
-
-        {/* Conquistas */}
-        <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
-          <h3 className="font-black text-base text-gray-800 flex items-center gap-2 mb-3">
-            <Star className="w-5 h-5 text-yellow-400" /> Conquistas
-          </h3>
-          <div className="flex gap-3 overflow-x-auto pb-1">
-            {[
-              { emoji: '\uD83C\uDFC6', nome: 'Primeiro Treino', ok: true },
-              { emoji: '\uD83D\uDD25', nome: '5 dias seguidos', ok: true },
-              { emoji: '\uD83D\uDCAA', nome: '10 treinos',      ok: true },
-              { emoji: '\u2B50',        nome: '20 treinos',      ok: false },
-              { emoji: '\uD83C\uDFC5', nome: '30 treinos',      ok: false },
-            ].map(c => (
-              <div key={c.nome} className={`flex-shrink-0 flex flex-col items-center gap-1 w-16 p-2 rounded-2xl border ${c.ok ? 'bg-yellow-50 border-yellow-200' : 'bg-slate-50 border-slate-200 opacity-40'}`}>
-                <span className="text-2xl">{c.emoji}</span>
-                <p className="text-[9px] font-bold text-center text-gray-600 leading-tight">{c.nome}</p>
               </div>
             ))}
           </div>
         </div>
 
-        {isAdmin && <AdminPanel />}
+        {/* Ações rápidas Modernizadas */}
+        <div className="grid grid-cols-2 gap-4">
+          <Link href="/academia/historico" className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-[24px] p-4 flex flex-col items-center justify-center h-24 hover:bg-white/15 transition-all">
+            <TrendingUp className="w-6 h-6 text-emerald-400 mb-2" />
+            <span className="text-xs font-bold text-white text-center">Histórico</span>
+          </Link>
+          <Link href="/academia/biblioteca" className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-[24px] p-4 flex flex-col items-center justify-center h-24 hover:bg-white/15 transition-all">
+            <BookOpen className="w-6 h-6 text-indigo-400 mb-2" />
+            <span className="text-xs font-bold text-white text-center">Biblioteca</span>
+          </Link>
+        </div>
       </main>
 
       <BottomNav isAdmin={isAdmin} />
@@ -430,9 +741,9 @@ export default function AcademiaPage() {
         <div className="fixed inset-0 z-50 bg-indigo-950/90 flex items-end justify-center">
           <div className="bg-white rounded-t-3xl w-full max-w-md p-6 space-y-4 overflow-y-auto max-h-[90vh]">
             <div className="text-center">
-              <span className="text-4xl">\uD83C\uDFCB\uFE0F</span>
+              <span className="text-4xl">🏋️</span>
               <h2 className="text-xl font-black text-gray-800 mt-2">Seu Perfil de Treino</h2>
-              <p className="text-sm text-gray-500 mt-1">As notifica\u00e7\u00f5es de incentivo ser\u00e3o personalizadas para voc\u00ea</p>
+              <p className="text-sm text-gray-500 mt-1">As notificações de incentivo serão personalizadas para você</p>
             </div>
             <div className="space-y-3">
               <div>
@@ -443,10 +754,10 @@ export default function AcademiaPage() {
                 <label className="text-xs font-bold text-gray-800 uppercase tracking-wide">Objetivo principal</label>
                 <div className="grid grid-cols-2 gap-2 mt-1">
                   {[
-                    { val: 'emagrecer',       emoji: '\uD83D\uDD25', label: 'Emagrecer' },
-                    { val: 'hipertrofia',     emoji: '\uD83D\uDCAA', label: 'Hipertrofia' },
-                    { val: 'condicionamento', emoji: '\u26A1',        label: 'Condicionamento' },
-                    { val: 'saude',           emoji: '\uD83D\uDC9A', label: 'Sa\u00fade geral' },
+                    { val: 'emagrecer',       emoji: '🔥', label: 'Emagrecer' },
+                    { val: 'hipertrofia',     emoji: '💪', label: 'Hipertrofia' },
+                    { val: 'condicionamento', emoji: '⚡',        label: 'Condicionamento' },
+                    { val: 'saude',           emoji: '❤️', label: 'Saúde geral' },
                   ].map(o => (
                     <button key={o.val} onClick={() => setFormPerfil(f => ({ ...f, objetivo: o.val }))} className={`py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 border-2 transition-all ${formPerfil.objetivo === o.val ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-600'}`}>
                       <span>{o.emoji}</span>{o.label}
@@ -466,8 +777,8 @@ export default function AcademiaPage() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-bold text-gray-800 uppercase tracking-wide">Altura (cm)</label>
-                  <input type="number" value={formPerfil.altura} onChange={e => setFormPerfil(f => ({ ...f, altura: e.target.value }))} placeholder="Ex: 175" className="mt-1 w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base text-gray-900 font-medium bg-white" />
+                  <label className="text-xs font-bold text-gray-800 uppercase tracking-wide">Altura (m)</label>
+                  <input type="number" step="0.01" value={formPerfil.altura} onChange={e => setFormPerfil(f => ({ ...f, altura: e.target.value }))} placeholder="Ex: 1.75" className="mt-1 w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base text-gray-900 font-medium bg-white" />
                 </div>
                 <div>
                   <label className="text-xs font-bold text-gray-800 uppercase tracking-wide">Período para meta</label>
@@ -488,7 +799,7 @@ export default function AcademiaPage() {
                   {[
                     { val: 'iniciante', label: 'Iniciante' },
                     { val: 'intermediario', label: 'Interm.' },
-                    { val: 'avancado', label: 'Avan\u00e7ado' },
+                    { val: 'avancado', label: 'Avançado' },
                   ].map(n => (
                     <button key={n.val} onClick={() => setFormPerfil(f => ({ ...f, nivel: n.val }))} className={`flex-1 py-3 rounded-xl text-sm font-bold border-2 transition-all ${formPerfil.nivel === n.val ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-600'}`}>{n.label}</button>
                   ))}
@@ -523,7 +834,7 @@ export default function AcademiaPage() {
                     { val: 'emagrecer',       emoji: '🔥', label: 'Emagrecer' },
                     { val: 'hipertrofia',     emoji: '💪', label: 'Hipertrofia' },
                     { val: 'condicionamento', emoji: '⚡',        label: 'Condicionamento' },
-                    { val: 'saude',           emoji: '💚', label: 'Saúde geral' },
+                    { val: 'saude',           emoji: '❤️', label: 'Saúde geral' },
                   ].map(o => (
                     <button key={o.val} onClick={() => setFormPerfil(f => ({ ...f, objetivo: o.val }))} className={`py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 border-2 transition-all ${formPerfil.objetivo === o.val ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-600'}`}>
                       <span>{o.emoji}</span>{o.label}
@@ -543,8 +854,8 @@ export default function AcademiaPage() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-bold text-gray-800 uppercase tracking-wide">Altura (cm)</label>
-                  <input type="number" value={formPerfil.altura} onChange={e => setFormPerfil(f => ({ ...f, altura: e.target.value }))} placeholder="Ex: 175" className="mt-1 w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base text-gray-900 font-medium bg-white" />
+                  <label className="text-xs font-bold text-gray-800 uppercase tracking-wide">Altura (m)</label>
+                  <input type="number" step="0.01" value={formPerfil.altura} onChange={e => setFormPerfil(f => ({ ...f, altura: e.target.value }))} placeholder="Ex: 1.75" className="mt-1 w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base text-gray-900 font-medium bg-white" />
                 </div>
                 <div>
                   <label className="text-xs font-bold text-gray-800 uppercase tracking-wide">Período para meta</label>

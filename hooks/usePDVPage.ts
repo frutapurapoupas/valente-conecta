@@ -301,10 +301,22 @@ export function usePDVPage() {
       lista.push(vendaFiada)
       localStorage.setItem('vendas_fiadas', JSON.stringify(lista))
       const saldoRestante = 500 - totalCompra
-      notificarCompraFiado(clienteNome, clienteTelefone, totalCompra, new Date(vendaFiada.vencimento), lojaInfo, saldoRestante)
-      setMensagemNotificacao(`✅ Notificação enviada para ${clienteTelefone}`)
-      setMostrarNotificacao(true)
-      setConfirmacao({ titulo: 'Venda no Fiado Registrada!', subtitulo: `${clienteNome}\nR$ ${totalCompra.toFixed(2)}`, cor: 'bg-yellow-500' })
+
+      // Registrar venda primeiro
+      setConfirmacao({
+        titulo: '✅ Venda no Fiado Registrada!',
+        subtitulo: `Cliente: ${clienteNome}\nTotal: R$ ${totalCompra.toFixed(2)}\n\n📱 Notificação enviada via WhatsApp!`,
+        cor: 'bg-yellow-500'
+      })
+      setTela('confirmacao')
+
+      // Enviar notificação em background (sem abrir WhatsApp)
+      setTimeout(() => {
+        notificarCompraFiado(clienteNome, clienteTelefone, totalCompra, new Date(vendaFiada.vencimento), lojaInfo, saldoRestante)
+        setMensagemNotificacao(`✅ Notificação enviada para ${clienteTelefone}`)
+        setMostrarNotificacao(true)
+      }, 500)
+
     } else if (formaPagamento === 'dinheiro') {
       const recebido = parseFloat(valorRecebido)
       const troco = recebido - totalCompra
@@ -313,7 +325,7 @@ export function usePDVPage() {
         setMensagemNotificacao(`✅ Notificação enviada`)
         setMostrarNotificacao(true)
       }
-      setConfirmacao({ titulo: 'Venda Finalizada!', subtitulo: `Total: R$ ${totalCompra.toFixed(2)}\nTroco: R$ ${troco.toFixed(2)}`, cor: 'bg-green-500' })
+      setConfirmacao({ titulo: 'Venda Finalizada!', subtitulo: `R$ ${totalCompra.toFixed(2)} - ${formaPagamento.toUpperCase()}`, cor: 'bg-green-500' })
     } else {
       if (clienteTelefone) {
         notificarCompraConfirmada(clienteTelefone, totalCompra, formaPagamento, lojaInfo)
@@ -322,9 +334,14 @@ export function usePDVPage() {
       }
       setConfirmacao({ titulo: 'Venda Finalizada!', subtitulo: `R$ ${totalCompra.toFixed(2)} - ${formaPagamento.toUpperCase()}`, cor: 'bg-green-500' })
     }
+
+    // Limpar carrinho e forma de pagamento
     setCarrinho([])
+    setFormaPagamento('')
+    setValorRecebido('')
+    setClienteNome('')
+    setClienteTelefone('')
     setTela('confirmacao')
-    setTimeout(() => setMostrarNotificacao(false), 3000)
   }
 
   const novaVenda = () => {

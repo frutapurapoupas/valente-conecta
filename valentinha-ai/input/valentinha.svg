@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" width="1080" height="1080">
+  <!-- Fundo circular -->
+  <circle cx="540" cy="540" r="500" fill="#3B82F6" opacity="0.1"/>
+  
+  <!-- Cabelo -->
+  <ellipse cx="540" cy="380" rx="280" ry="300" fill="#4A3728"/>
+  <ellipse cx="540" cy="350" rx="260" ry="280" fill="#5D4A3A"/>
+  
+  <!-- Rosto -->
+  <ellipse cx="540" cy="520" rx="220" ry="260" fill="#FDBF9E"/>
+  
+  <!-- Bochechas -->
+  <ellipse cx="420" cy="580" rx="40" ry="25" fill="#FFB6C1" opacity="0.6"/>
+  <ellipse cx="660" cy="580" rx="40" ry="25" fill="#FFB6C1" opacity="0.6"/>
+  
+  <!-- Olhos -->
+  <ellipse cx="460" cy="480" rx="45" ry="50" fill="white"/>
+  <ellipse cx="620" cy="480" rx="45" ry="50" fill="white"/>
+  <circle cx="465" cy="485" r="25" fill="#4A3728"/>
+  <circle cx="625" cy="485" r="25" fill="#4A3728"/>
+  <circle cx="470" cy="480" r="10" fill="white"/>
+  <circle cx="630" cy="480" r="10" fill="white"/>
+  
+  <!-- Sobrancelhas -->
+  <path d="M 410 420 Q 460 400 510 420" stroke="#4A3728" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M 570 420 Q 620 400 670 420" stroke="#4A3728" stroke-width="8" fill="none" stroke-linecap="round"/>
+  
+  <!-- Nariz -->
+  <ellipse cx="540" cy="540" rx="15" ry="20" fill="#E8B896"/>
+  
+  <!-- Boca sorrindo -->
+  <path d="M 460 620 Q 540 700 620 620" stroke="#E85A5A" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M 460 620 Q 540 680 620 620" fill="#FF6B6B"/>
+  
+  <!-- Corpo/Blusa -->
+  <path d="M 350 750 Q 540 680 730 750 L 800 1080 L 280 1080 Z" fill="#3B82F6"/>
+  <path d="M 350 750 Q 540 680 730 750" stroke="#2563EB" stroke-width="4" fill="none"/>
+  
+  <!-- Colar -->
+  <path d="M 480 750 Q 540 780 600 750" stroke="#FFD700" stroke-width="6" fill="none"/>
+  <circle cx="540" cy="790" r="12" fill="#FFD700"/>
+  
+  <!-- Cabelo frontal (franja) -->
+  <path d="M 320 350 Q 400 250 540 230 Q 680 250 760 350" fill="#5D4A3A"/>
+  <path d="M 350 380 Q 420 300 540 280 Q 660 300 730 380" fill="#6B5A4A"/>
+  
+  <!-- Mechas loiras -->
+  <path d="M 380 320 Q 400 280 420 320" fill="#D4A574" opacity="0.7"/>
+  <path d="M 660 320 Q 680 280 700 320" fill="#D4A574" opacity="0.7"/>
+</svg>

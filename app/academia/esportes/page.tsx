@@ -376,9 +376,12 @@ export default function EsportesPage() {
                   className="px-4 py-3 bg-orange-600 hover:bg-orange-700 rounded-xl flex items-center gap-2 transition-all disabled:opacity-40"
                 >
                   <Navigation className="w-5 h-5" />
-                  {capturandoLocal ? 'Capturando...' : 'Capturar'}
+                  {capturandoLocal ? 'Capturando...' : novaAtividade.localizadorCapturado ? 'Refazer Captura' : 'Capturar'}
                 </button>
               </div>
+              {novaAtividade.localizadorCapturado && (
+                <p className="text-xs text-orange-400 mt-1">Clique em "Refazer Captura" se estiver em outro local</p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-3">

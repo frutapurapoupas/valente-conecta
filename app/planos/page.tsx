@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Zap, Crown, Store, Wrench, Star, MapPin, Users, Dumbbell, Calendar, ChevronRight, Check, Truck, Building2, Home } from "lucide-react";
+import { Zap, Crown, Store, Wrench, Star, MapPin, Users, Dumbbell, Calendar, ChevronRight, Check, Truck, Building2, Home, Car, Briefcase, FileText } from "lucide-react";
 import { usePlanos } from "@/hooks/usePlanos";
 import { useAuth } from "@/hooks/useAuth";
 import { TipoPlano, CategoriaPlano, getPlanosPorCategoria, getCamposCadastro } from "@/types/planos";
@@ -260,6 +260,77 @@ const planosImoveis = [
       "Fotos ilimitadas por anúncio",
       "Badge 'Imóvel Premium ✓'",
       "Prioridade nos resultados",
+    ],
+  },
+];
+
+const planosVeiculos = [
+  {
+    id: "aluguel",
+    nome: "Aluguel",
+    preco: "R$ 25,00/mês",
+    descricao: "Para anunciar veículos para alugar",
+    cor: "border-blue-500/40",
+    icone: <Car className="w-5 h-5 text-blue-400" />,
+    beneficios: [
+      "Até 10 anúncios de aluguel",
+      "Renovação mensal automática",
+      "Contato visível para interessados",
+      "Destaque na busca de veículos",
+      "Fotos ilimitadas por anúncio",
+      "Badge 'Veículo Verificado ✓'",
+    ],
+  },
+  {
+    id: "venda",
+    nome: "Venda",
+    preco: "R$ 35,00/mês",
+    descricao: "Para anunciar veículos para vender",
+    cor: "border-green-500/40",
+    icone: <Car className="w-5 h-5 text-green-400" />,
+    beneficios: [
+      "Até 10 anúncios de venda",
+      "Renovação mensal automática",
+      "Contato visível para interessados",
+      "Destaque premium na busca",
+      "Fotos ilimitadas por anúncio",
+      "Badge 'Veículo Premium ✓'",
+      "Prioridade nos resultados",
+    ],
+  },
+];
+
+const planosEmpregos = [
+  {
+    id: "curriculo",
+    nome: "Cadastro de Currículo",
+    preco: "R$ 10,00/mês",
+    descricao: "Para cadastrar seu currículo e ser encontrado por empresas",
+    cor: "border-blue-500/40",
+    icone: <FileText className="w-5 h-5 text-blue-400" />,
+    beneficios: [
+      "Perfil de currículo visível",
+      "Contato visível para empresas",
+      "Destaque na busca de candidatos",
+      "Badge 'Candidato Verificado ✓'",
+      "Renovação mensal automática",
+      "Acesso a vagas disponíveis",
+    ],
+  },
+  {
+    id: "vagas",
+    nome: "Cadastro de Vagas",
+    preco: "R$ 20,00/mês",
+    descricao: "Para empresas divulgarem oportunidades de emprego",
+    cor: "border-green-500/40",
+    icone: <Briefcase className="w-5 h-5 text-green-400" />,
+    beneficios: [
+      "Até 10 vagas ativas por mês",
+      "Contato visível para candidatos",
+      "Destaque na busca de vagas",
+      "Badge 'Empresa Verificada ✓'",
+      "Renovação mensal automática",
+      "Acesso a candidatos disponíveis",
     ],
   },
 ];
@@ -540,6 +611,38 @@ export default function TodosPlanosPage() {
                 plano={plano}
                 isGratis={plano.id === 'gratuito'}
                 onSelect={() => handleSelecionarPlano(plano.id as TipoPlano)}
+              />
+            ))}
+          </div>
+        </section>
+        <section>
+          <h2 className="text-xl font-black text-blue-500 mb-4 flex items-center gap-2"><Car className="w-5 h-5" /> Veículos</h2>
+          <div className="flex flex-wrap gap-5">
+            {planosVeiculos.map(plano => (
+              <PlanoCard
+                key={plano.id}
+                plano={plano}
+                isGratis={plano.id === 'gratuito'}
+                onSelect={() => handleSelecionarPlano(plano.id as TipoPlano)}
+              />
+            ))}
+          </div>
+        </section>
+        <section>
+          <h2 className="text-xl font-black text-green-500 mb-4 flex items-center gap-2"><Briefcase className="w-5 h-5" /> Empregos</h2>
+          <div className="flex flex-wrap gap-5">
+            {planosEmpregos.map(plano => (
+              <PlanoCard
+                key={plano.id}
+                plano={plano}
+                isGratis={plano.id === 'gratuito'}
+                onSelect={() => {
+                  if (plano.id === 'curriculo' || plano.id === 'vagas') {
+                    router.push('/empregos')
+                  } else {
+                    handleSelecionarPlano(plano.id as TipoPlano)
+                  }
+                }}
               />
             ))}
           </div>
