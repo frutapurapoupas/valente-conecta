@@ -1,0 +1,7 @@
+﻿generator client { provider = "prisma-client-js" }
+datasource db { provider = "postgresql" url = env("DATABASE_URL") }
+model User { id String @id @default(cuid()) name String email String @unique password String wallet Float @default(0) role Role @default(USER) plan String? createdAt DateTime @default(now()) updatedAt DateTime @updatedAt }
+model Product { id Int @id @default(autoincrement()) nome String preco Float descricao String? imagem String? categoria String? disponivel Boolean @default(true) }
+model Order { id String @id @default(cuid()) userId String items Json total Float status OrderStatus @default(PENDING) createdAt DateTime @default(now()) }
+enum Role { USER ADMIN }
+enum OrderStatus { PENDING CONFIRMED DELIVERED CANCELLED }

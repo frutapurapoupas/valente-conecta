@@ -1,0 +1,34 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body { @apply bg-gray-950 text-white; font-family: 'Inter', system-ui, sans-serif; }
+}
+
+@layer components {
+  .card { @apply transition-all duration-300; }
+  .card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3); }
+  .gradient-primary { @apply bg-gradient-to-r from-blue-600 to-indigo-600; }
+  .gradient-offer { @apply bg-gradient-to-r from-red-600 to-orange-600; }
+  .gradient-indicate { @apply bg-gradient-to-r from-emerald-600 to-green-600; }
+}
+
+@keyframes pulse-spin {
+  0% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.15) rotate(180deg); }
+  100% { transform: scale(1) rotate(360deg); }
+}
+
+.coin {
+  animation: pulse-spin 3s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

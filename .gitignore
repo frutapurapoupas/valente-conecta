@@ -1,0 +1,78 @@
+﻿# 🚀 Valente Conecta
+
+A economia da cidade na palma da sua mão!
+
+## 📱 Sobre o Projeto
+
+Valente Conecta é uma plataforma multifuncional que conecta a cidade de Valente, BA, através de diversos serviços digitais. O aplicativo serve como um hub central para comércio local, serviços profissionais, esportes, empregos, transporte e muito mais.
+
+## ✨ Funcionalidades
+
+- 🏠 **Home Principal** - Busca inteligente, ofertas, indicação
+- 🍳 **Cozinha** - Cardápio com 2 pratos por dia + carrinho
+- 💪 **Academia** - Treinos, geolocalização, metas, esportes
+- 🏍️ **Moto Táxi** - Solicitação de corridas, motoristas próximos
+- 🏪 **Comércio** - Mercearia, farmácia, água & gás
+- 🔧 **Serviços** - Profissionais, veículos, imóveis
+- 👑 **Admin Master** - Controle total do sistema
+
+## 🛠️ Tecnologias
+
+- Next.js 14
+- TypeScript
+- TailwindCSS
+- React Hot Toast
+
+## 🚀 Como Executar
+
+```bash
+# Instalar dependências
+npm install
+
+# Rodar em desenvolvimento
+npm run dev
+
+# Build para produção
+npm run build
+
+# Iniciar em produção
+npm start
+
+# Instalar Vercel CLI
+npm i -g vercel
+
+# Fazer deploy
+vercel --prod# Instalar Vercel CLI
+npm i -g vercel
+
+# Fazer deploy
+vercel --prod
+
+## 🚀 COMANDOS PARA DEPLOY:
+
+### Opção 1 - Deploy Automático (Recomendado)
+```powershell
+.\deploy.ps1
+## 🚀 COMANDOS PARA DEPLOY:
+
+### Opção 1 - Deploy Automático (Recomendado)
+```powershell
+.\deploy.ps1
+git init
+git add .
+git commit -m "Initial commit - Valente Conecta"
+git remote add origin https://github.com/seu-usuario/valente-conecta.git
+git push -u origin main
+npm install -g vercel
+vercel login
+cd C:\valente_conecta
+vercel --prod
+cd C:\valente_conecta
+
+# Criar .gitignore
+@'
+node_modules/
+.next/
+.env.local
+.DS_Store
+*.log
