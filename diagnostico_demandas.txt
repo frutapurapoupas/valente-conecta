@@ -1,0 +1,25 @@
+﻿===========================================
+RADIOGRAFIA - ATUALIZAÇÕES NÃO APARECEM
+===========================================
+Data: 05/28/2026 09:24:15
+
+1. ARQUIVOS CRIADOS:
+   - SolicitacaoModal.tsx: ✅
+   - Admin Demandas: ✅
+
+2. INTEGRAÇÃO NA HOME:
+   - Import: ✅
+   - Estado: ✅
+   - Função: ✅
+   - Renderização: ❌
+
+3. SERVIDOR:
+   - Node.js: ❌ PARADO
+   - Build: ✅ EXISTE
+
+4. CONCLUSÃO:
+   - O sistema de demandas FOI CRIADO
+   - Mas PODE NÃO ESTAR INTEGRADO na Home principal
+   - É necessário VERIFICAR se os cards chamam a função abrirSolicitacao()
+
+===========================================

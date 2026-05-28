@@ -1,0 +1,44 @@
+﻿===========================================
+RADIOGRAFIA - MÓDULO ACADEMIA
+===========================================
+Data: 05/28/2026 08:43:42
+
+1. ARQUIVOS ENCONTRADOS:
+   - Cadastro Inicial: ✅ app\academia\cadastro-inicial\page.tsx
+   - IA Fitness: ✅ app\academia\ia\page.tsx
+
+2. TAMANHO DOS ARQUIVOS:
+   - Cadastro Inicial: 10.8 KB
+   - IA Fitness: 14.6 KB
+
+3. COMPONENTES:
+   - HealthCheckpointModal: ✅
+   - HealthNotificationBell: ✅
+   - LocalizadorAcademia: ✅
+   - useAcademiaIA: ✅
+
+4. TEXTOS DO CADASTRO INICIAL:
+   - PERFIL
+   - {perfil.nome}
+   - {perfil.altura} cm
+   - {perfil.peso} kg
+   - {perfil.idade} anos
+   - ))}
+   - Ir para Academia
+   - CADASTRO INICIAL
+   - Configure suas caracterÃ­sticas e metas
+   - âš™ï¸ ConfiguraÃ§Ãµes da IA
+   - FrequÃªncia semanal
+   - NÃ­vel de treino
+   - Salvar Perfil e Configurar IA
+
+===========================================
+RECOMENDAÇÕES
+===========================================
+
+1. Limpar cache do navegador no celular
+2. Verificar se os textos estão completos (sem cortes)
+3. Testar em modo anônimo
+4. Verificar console do navegador para erros
+
+===========================================

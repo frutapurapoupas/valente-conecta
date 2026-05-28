@@ -1,505 +1,277 @@
 ﻿"use client";
-import { useState, useEffect, useRef } from "react";
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/app/context/AppContext";
-import toast from "react-hot-toast";
+import { 
+  User, Dumbbell, Trophy, Target, Activity, 
+  Heart, Bell, ChevronRight, ArrowLeft, Scale,
+  BookOpen, TrendingUp, Brain, CheckCircle, Clock
+} from "lucide-react";
 
-// Tipos
-interface Exercicio {
-  id: number;
+interface PerfilCompleto {
   nome: string;
-  grupoMuscular: string;
-  series: number;
-  repeticoes: string;
-  peso?: number;
-  concluido: boolean;
-}
-
-interface EsporteEvento {
-  id: number;
-  nome: string;
-  icone: string;
-  local: string;
-  horario: string;
-  participantes: number;
-  maxParticipantes: number;
-  distancia?: number;
-  data: string;
-}
-
-interface MetaAluno {
-  tipo: string;
-  meta: number;
-  atual: number;
-  progresso: number;
+  objetivo: string;
+  peso: number;
+  altura: number;
+  idade: number;
 }
 
 export default function AcademiaPage() {
   const router = useRouter();
   const { user } = useApp();
-  const [activeTab, setActiveTab] = useState<"treino" | "esportes" | "metas" | "perfil">("treino");
-  const [tempoAcademia, setTempoAcademia] = useState(0);
-  const [estaNaAcademia, setEstaNaAcademia] = useState(false);
-  const [localizacao, setLocalizacao] = useState<{ lat: number; lng: number } | null>(null);
-  const [esportes, setEsportes] = useState<EsporteEvento[]>([]);
-  const [novoEsporte, setNovoEsporte] = useState({ nome: "", local: "", horario: "" });
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [perfilCompleto, setPerfilCompleto] = useState(false);
+  const [academiaCadastrada, setAcademiaCadastrada] = useState(false);
+  const [esportesCadastrados, setEsportesCadastrados] = useState(false);
+  const [perfilData, setPerfilData] = useState<PerfilCompleto | null>(null);
+  const [ultimoTreino, setUltimoTreino] = useState<string | null>(null);
+  const [treinosSemana, setTreinosSemana] = useState(0);
+  const [mounted, setMounted] = useState(false);
 
-  // Dados do aluno
-  const [aluno, setAluno] = useState({
-    nome: user?.name || "Aluno",
-    peso: 72,
-    altura: 1.75,
-    idade: 28,
-    imc: 23.5,
-    gordura: 18,
-    nivel: "intermediario" as const,
-    objetivo: "ganhar_massa" as const,
-    diasSeguidos: 15
-  });
-
-  // Treino do dia
-  const [treino, setTreino] = useState<Exercicio[]>([
-    { id: 1, nome: "Supino Reto", grupoMuscular: "peito", series: 4, repeticoes: "12", peso: 40, concluido: false },
-    { id: 2, nome: "Agachamento Livre", grupoMuscular: "pernas", series: 4, repeticoes: "10", peso: 60, concluido: false },
-    { id: 3, nome: "Remada Curvada", grupoMuscular: "costas", series: 4, repeticoes: "12", peso: 35, concluido: false },
-    { id: 4, nome: "Desenvolvimento", grupoMuscular: "ombros", series: 3, repeticoes: "10", peso: 25, concluido: false },
-    { id: 5, nome: "Rosca Direta", grupoMuscular: "bracos", series: 3, repeticoes: "12", peso: 15, concluido: false },
-    { id: 6, nome: "Prancha", grupoMuscular: "abdomen", series: 3, repeticoes: "45s", peso: 0, concluido: false }
-  ]);
-
-  // Metas do aluno
-  const [metas, setMetas] = useState<MetaAluno[]>([
-    { tipo: "Perder Peso", meta: 5, atual: 2, progresso: 40 },
-    { tipo: "Treinos por Semana", meta: 5, atual: 3, progresso: 60 },
-    { tipo: "Minutos por Treino", meta: 60, atual: 45, progresso: 75 }
-  ]);
-
-  // Esportes disponíveis
-  const esportesDisponiveis = [
-    { nome: "Futebol", icone: "⚽", cores: "from-green-600 to-green-800" },
-    { nome: "Vôlei", icone: "🏐", cores: "from-yellow-600 to-yellow-800" },
-    { nome: "Basquete", icone: "🏀", cores: "from-orange-600 to-orange-800" },
-    { nome: "Natação", icone: "🏊", cores: "from-blue-600 to-blue-800" },
-    { nome: "Corrida", icone: "🏃", cores: "from-red-600 to-red-800" },
-    { nome: "Funcional", icone: "💪", cores: "from-purple-600 to-purple-800" },
-    { nome: "Crossfit", icone: "🏋️", cores: "from-gray-600 to-gray-800" },
-    { nome: "Muay Thai", icone: "🥊", cores: "from-red-700 to-red-900" }
-  ];
-
-  // Geolocalização para detectar presença na academia
   useEffect(() => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setLocalizacao({ lat: latitude, lng: longitude });
-          
-          // Simular detecção da academia (latitude/longitude da academia de Valente)
-          const academiaLat = -11.4123;
-          const academiaLng = -39.4625;
-          const distancia = Math.sqrt(
-            Math.pow(latitude - academiaLat, 2) + 
-            Math.pow(longitude - academiaLng, 2)
-          ) * 111; // Aproximação em km
-          
-          if (distancia < 0.5) { // Dentro de 500m
-            if (!estaNaAcademia) {
-              setEstaNaAcademia(true);
-              toast.success("📍 Você chegou na academia! Vamos registrar seu treino?");
-              
-              // Iniciar contagem de tempo
-              intervalRef.current = setInterval(() => {
-                setTempoAcademia(prev => prev + 1);
-              }, 60000); // a cada minuto
-            }
-          } else {
-            if (estaNaAcademia) {
-              setEstaNaAcademia(false);
-              if (intervalRef.current) clearInterval(intervalRef.current);
-              if (tempoAcademia > 0) {
-                toast.success(`🏋️ Treino finalizado! Você ficou ${tempoAcademia} minutos na academia.`);
-              }
-            }
-          }
-        },
-        (error) => {
-          console.log("Erro de geolocalização:", error);
-        }
-      );
+    setMounted(true);
+    const perfilIA = localStorage.getItem('academia_perfil_ia');
+    const perfilInicial = localStorage.getItem('academia_perfil_inicial');
+    const academia = localStorage.getItem('academia_local_dados');
+    const esportes = localStorage.getItem('academia_esportes');
+    const historicoCargas = localStorage.getItem('historico_carga_atividades');
+    
+    if (perfilIA) {
+      const data = JSON.parse(perfilIA);
+      setPerfilCompleto(true);
+      let objetivoTexto = "Saúde";
+      if (data.objetivo === 'emagrecer') objetivoTexto = "Emagrecimento";
+      else if (data.objetivo === 'hipertrofia') objetivoTexto = "Hipertrofia";
+      else if (data.objetivo === 'condicionamento') objetivoTexto = "Condicionamento Físico";
+      else if (data.objetivo === 'saude') objetivoTexto = "Saúde";
+      
+      setPerfilData({
+        nome: data.nome,
+        objetivo: objetivoTexto,
+        peso: data.peso_atual,
+        altura: data.altura,
+        idade: data.idade
+      });
+    } else if (perfilInicial) {
+      const data = JSON.parse(perfilInicial);
+      setPerfilCompleto(true);
+      let objetivoTexto = "Saúde";
+      if (data.objetivos?.includes('Emagrecimento')) objetivoTexto = "Emagrecimento";
+      else if (data.objetivos?.includes('Ganho de massa muscular')) objetivoTexto = "Hipertrofia";
+      else if (data.objetivos?.includes('Condicionamento físico')) objetivoTexto = "Condicionamento Físico";
+      
+      setPerfilData({
+        nome: data.nome,
+        objetivo: objetivoTexto,
+        peso: parseFloat(data.peso),
+        altura: parseFloat(data.altura),
+        idade: parseInt(data.idade)
+      });
     }
     
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [estaNaAcademia, tempoAcademia]);
-
-  // Carregar esportes salvos
-  useEffect(() => {
-    const saved = localStorage.getItem("academia_esportes");
-    if (saved) {
-      setEsportes(JSON.parse(saved));
+    setAcademiaCadastrada(!!academia);
+    setEsportesCadastrados(!!(esportes && JSON.parse(esportes).length > 0));
+    
+    if (historicoCargas) {
+      const cargas = JSON.parse(historicoCargas);
+      setTreinosSemana(Math.min(cargas.length, 5));
     } else {
-      // Dados de exemplo
-      setEsportes([
-        { id: 1, nome: "Futebol Society", icone: "⚽", local: "Campo Municipal", horario: "19:00", participantes: 8, maxParticipantes: 10, data: "15/06/2026" },
-        { id: 2, nome: "Corrida Noturna", icone: "🏃", local: "Parque da Cidade", horario: "18:30", participantes: 12, maxParticipantes: 20, data: "16/06/2026" },
-        { id: 3, nome: "Vôlei de Praia", icone: "🏐", local: "Quadra do Sesi", horario: "17:00", participantes: 4, maxParticipantes: 8, data: "17/06/2026" }
-      ]);
+      setTreinosSemana(perfilCompleto ? 2 : 0);
     }
+    
+    setUltimoTreino(new Date().toLocaleDateString('pt-BR'));
   }, []);
 
-  const toggleExercicio = (id: number) => {
-    setTreino(prev => prev.map(ex => 
-      ex.id === id ? { ...ex, concluido: !ex.concluido } : ex
-    ));
-    toast.success("Exercício registrado!");
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 text-white pb-20">
+        <div className="flex items-center justify-center h-screen">
+          <div className="text-center">
+            <Dumbbell className="w-16 h-16 text-yellow-400 animate-pulse mx-auto" />
+            <p className="text-white mt-4">Carregando...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const getSaudacao = () => {
+    const hora = new Date().getHours();
+    if (hora < 12) return "Bom dia";
+    if (hora < 18) return "Boa tarde";
+    return "Boa noite";
   };
 
-  const registrarTreino = () => {
-    const concluidos = treino.filter(e => e.concluido).length;
-    const novoDiasSeguidos = concluidos > 0 ? aluno.diasSeguidos + 1 : aluno.diasSeguidos;
-    
-    setAluno(prev => ({ ...prev, diasSeguidos: novoDiasSeguidos }));
-    
-    // Atualizar progresso das metas
-    setMetas(prev => prev.map(meta => {
-      if (meta.tipo === "Treinos por Semana" && concluidos > 0) {
-        const novoAtual = Math.min(meta.atual + 1, meta.meta);
-        return { ...meta, atual: novoAtual, progresso: (novoAtual / meta.meta) * 100 };
-      }
-      if (meta.tipo === "Minutos por Treino") {
-        const novoProgresso = Math.min((tempoAcademia / meta.meta) * 100, 100);
-        return { ...meta, progresso: novoProgresso };
-      }
-      return meta;
-    }));
-    
-    toast.success(`🏆 Treino finalizado! +${concluidos} exercícios concluídos. Dias seguidos: ${novoDiasSeguidos}`);
-  };
-
-  const participarEsporte = (id: number) => {
-    setEsportes(prev => prev.map(e => 
-      e.id === id ? { ...e, participantes: e.participantes + 1 } : e
-    ));
-    toast.success("✅ Participação confirmada!");
-  };
-
-  const criarEsporte = () => {
-    if (novoEsporte.nome && novoEsporte.local && novoEsporte.horario) {
-      const novoEvento: EsporteEvento = {
-        id: Date.now(),
-        nome: novoEsporte.nome,
-        icone: "🏆",
-        local: novoEsporte.local,
-        horario: novoEsporte.horario,
-        participantes: 1,
-        maxParticipantes: 10,
-        data: new Date().toLocaleDateString()
-      };
-      const novosEsportes = [...esportes, novoEvento];
-      setEsportes(novosEsportes);
-      localStorage.setItem("academia_esportes", JSON.stringify(novosEsportes));
-      setNovoEsporte({ nome: "", local: "", horario: "" });
-      toast.success("Evento esportivo criado!");
+  // CARDS - REMOVIDO O CARD "PERFIL E METAS"
+  const cards = [
+    {
+      id: "cadastro",
+      titulo: "📝 Cadastro Inicial",
+      descricao: perfilCompleto ? "✅ Perfil completo e IA configurada" : "Complete seu perfil físico e de saúde",
+      status: perfilCompleto ? "✅ Completo" : "⏳ Pendente",
+      statusCor: perfilCompleto ? "text-green-400" : "text-yellow-400",
+      href: perfilCompleto ? "/academia/perfil" : "/academia/cadastro-inicial",
+      icon: <User className="w-6 h-6" />,
+      bgGradient: "from-blue-500 to-cyan-500",
+      complemento: perfilCompleto && perfilData ? `${perfilData.nome} • ${perfilData.idade} anos • ${perfilData.peso}kg` : "Configure suas características"
+    },
+    {
+      id: "academia",
+      titulo: "🏋️ Academia Local",
+      descricao: academiaCadastrada ? "✅ Academia cadastrada e configurada" : "Cadastre onde você treina e suas atividades",
+      status: academiaCadastrada ? "✅ Cadastrada" : "⏳ Pendente",
+      statusCor: academiaCadastrada ? "text-green-400" : "text-yellow-400",
+      href: "/academia/academia-local",
+      icon: <Dumbbell className="w-6 h-6" />,
+      bgGradient: "from-emerald-500 to-teal-500",
+      complemento: academiaCadastrada ? "Seu local de treino já está registrado" : "Adicione sua academia e atividades"
+    },
+    {
+      id: "esportes",
+      titulo: "⚽ Esportes",
+      descricao: esportesCadastrados ? "✅ Atividades esportivas configuradas" : "Cadastre outras atividades físicas",
+      status: esportesCadastrados ? "✅ Ativo" : "⏳ Pendente",
+      statusCor: esportesCadastrados ? "text-green-400" : "text-yellow-400",
+      href: "/academia/esportes",
+      icon: <Trophy className="w-6 h-6" />,
+      bgGradient: "from-orange-500 to-red-500",
+      complemento: esportesCadastrados ? "Receba alertas no horário agendado" : "Adicione esportes e receba alertas"
+    },
+    {
+      id: "biblioteca",
+      titulo: "📚 Biblioteca de Exercícios",
+      descricao: "Exercícios, técnicas e instruções completas",
+      status: "📖 Disponível",
+      statusCor: "text-indigo-400",
+      href: "/academia/biblioteca",
+      icon: <BookOpen className="w-6 h-6" />,
+      bgGradient: "from-indigo-500 to-violet-500",
+      complemento: "+15 exercícios com vídeos e instruções"
+    },
+    {
+      id: "historico",
+      titulo: "📊 Histórico de Cargas",
+      descricao: "Acompanhe sua evolução de pesos",
+      status: "📈 Ativo",
+      statusCor: "text-emerald-400",
+      href: "/academia/historico-carga",
+      icon: <TrendingUp className="w-6 h-6" />,
+      bgGradient: "from-teal-500 to-green-500",
+      complemento: "Registre e acompanhe seu progresso"
+    },
+    {
+      id: "ia",
+      titulo: "🤖 Inteligência Fitness",
+      descricao: perfilCompleto ? "IA personalizada para seus treinos" : "Complete o cadastro para ativar a IA",
+      status: perfilCompleto ? "🧠 Ativo" : "🔒 Pendente",
+      statusCor: perfilCompleto ? "text-pink-400" : "text-gray-400",
+      href: perfilCompleto ? "/academia/ia" : "/academia/cadastro-inicial",
+      icon: <Brain className="w-6 h-6" />,
+      bgGradient: "from-pink-500 to-rose-500",
+      complemento: perfilCompleto ? "Recomendações personalizadas" : "Complete seu perfil primeiro"
     }
-  };
-
-  const atualizarMeta = (index: number, valor: number) => {
-    setMetas(prev => prev.map((meta, i) => 
-      i === index ? { ...meta, meta: valor, progresso: (meta.atual / valor) * 100 } : meta
-    ));
-    toast.success("Meta atualizada!");
-  };
-
-  const atualizarCondicaoFisica = (campo: string, valor: number) => {
-    const novoPeso = campo === "peso" ? valor : aluno.peso;
-    const novoImc = novoPeso / (aluno.altura * aluno.altura);
-    
-    setAluno(prev => ({ 
-      ...prev, 
-      [campo]: valor,
-      imc: novoImc
-    }));
-    toast.success("Dados físicos atualizados!");
-  };
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-900 pb-20">
-      {/* Header com indicador de tempo na academia */}
-      <header className="bg-gradient-to-r from-green-400 to-green-700 sticky top-0 z-40 p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button onClick={() => router.back()}><i className="fas fa-arrow-left text-white text-xl"></i></button>
-            <h1 className="text-white font-bold text-lg">💪 Academia Valente</h1>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 text-white pb-20">
+      <header className="sticky top-0 z-50 bg-white/10 backdrop-blur-2xl border border-white/20 shadow-2xl">
+        <div className="h-16 max-w-2xl mx-auto flex items-center justify-between px-4">
+          <button onClick={() => router.push("/")} className="relative group">
+            <ArrowLeft className="w-6 h-6 text-yellow-400 cursor-pointer hover:text-yellow-300 transition-colors" />
+          </button>
+          <div className="font-black uppercase italic text-white text-sm tracking-widest">
+            <span>MINHA ACADEMIA</span>
           </div>
-          {estaNaAcademia && (
-            <div className="bg-yellow-400/20 px-3 py-1 rounded-full">
-              <i className="fas fa-clock text-yellow-400 mr-1"></i>
-              <span className="text-yellow-400 text-sm font-bold">{tempoAcademia} min</span>
-            </div>
-          )}
+          <div className="w-6" />
         </div>
       </header>
 
-      {/* Cards de status do aluno */}
-      <div className="bg-gradient-to-r from-purple-800 to-indigo-800 p-4">
-        <div className="flex justify-between items-center">
-          <div>
-            <p className="text-white text-sm">Olá, {aluno.nome}</p>
-            <p className="text-2xl font-bold text-white">
-              Nível {aluno.nivel === "iniciante" ? "Iniciante" : aluno.nivel === "intermediario" ? "Intermediário" : "Avançado"}
-            </p>
-            <p className="text-purple-200 text-sm">🔥 {aluno.diasSeguidos} dias seguidos</p>
+      <main className="max-w-2xl mx-auto px-4 pt-8 space-y-6">
+        <div className="text-center mb-4">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full mb-4">
+            <Dumbbell className="w-10 h-10 text-white" />
           </div>
-          <div className="text-right">
-            <p className="text-white text-sm">IMC {aluno.imc.toFixed(1)}</p>
-            <p className="text-white text-sm">⚡ {aluno.gordura}% gordura</p>
-            <p className="text-white text-sm">🎯 {aluno.objetivo === "ganhar_massa" ? "Ganhar Massa" : "Emagrecer"}</p>
-          </div>
+          <h1 className="text-2xl font-black text-white mb-2">
+            {getSaudacao()}, {perfilData?.nome || (user?.name || "Atleta")}!
+          </h1>
+          <p className="text-zinc-400 text-sm">
+            {perfilCompleto 
+              ? `🎯 Foco em ${perfilData?.objetivo || "saúde"} • ${perfilData?.peso}kg • ${treinosSemana} treinos/semana`
+              : "Complete seu cadastro para começar"}
+          </p>
         </div>
-      </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-gray-800 bg-gray-900">
-        <button onClick={() => setActiveTab("treino")} className={`flex-1 py-3 text-center font-bold transition-all ${activeTab === "treino" ? "text-purple-400 border-b-2 border-purple-400 bg-gray-800" : "text-gray-400"}`}>
-          📋 Treino
-        </button>
-        <button onClick={() => setActiveTab("esportes")} className={`flex-1 py-3 text-center font-bold transition-all ${activeTab === "esportes" ? "text-purple-400 border-b-2 border-purple-400 bg-gray-800" : "text-gray-400"}`}>
-          ⚽ Esportes
-        </button>
-        <button onClick={() => setActiveTab("metas")} className={`flex-1 py-3 text-center font-bold transition-all ${activeTab === "metas" ? "text-purple-400 border-b-2 border-purple-400 bg-gray-800" : "text-gray-400"}`}>
-          🎯 Metas
-        </button>
-        <button onClick={() => setActiveTab("perfil")} className={`flex-1 py-3 text-center font-bold transition-all ${activeTab === "perfil" ? "text-purple-400 border-b-2 border-purple-400 bg-gray-800" : "text-gray-400"}`}>
-          👤 Perfil
-        </button>
-      </div>
-
-      {/* Conteúdo - Treino */}
-      {activeTab === "treino" && (
-        <div className="p-4">
-          <div className="bg-purple-500/20 rounded-2xl p-3 mb-4 text-center">
-            <p className="text-purple-300 text-sm">📍 Geolocalização ativa</p>
-            <p className="text-white text-xs">
-              {estaNaAcademia ? "✅ Você está na academia! Tempo registrado." : "❌ Você está fora da academia. Aproxime-se para registrar seu treino."}
-            </p>
-          </div>
-
-          <h2 className="text-white font-bold mb-3">🏋️ Treino de Hoje</h2>
-          <div className="space-y-3 mb-6">
-            {treino.map(ex => (
-              <div key={ex.id} className={`bg-gray-800 rounded-2xl p-3 flex items-center justify-between ${ex.concluido ? "opacity-60" : ""}`}>
-                <div>
-                  <p className="font-bold text-white">{ex.nome}</p>
-                  <p className="text-gray-400 text-sm">{ex.series}x {ex.repeticoes} {ex.peso ? `- ${ex.peso}kg` : ""}</p>
-                  <p className="text-purple-400 text-xs">{ex.grupoMuscular}</p>
-                </div>
-                <button 
-                  onClick={() => toggleExercicio(ex.id)} 
-                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${ex.concluido ? "bg-green-500" : "bg-gray-700"}`}
-                  disabled={!estaNaAcademia}
-                >
-                  <i className={`fas ${ex.concluido ? "fa-check text-white" : "fa-circle text-gray-500"}`}></i>
-                </button>
-              </div>
-            ))}
-          </div>
-
-          <button 
-            onClick={registrarTreino} 
-            className="w-full bg-purple-600 text-white py-3 rounded-2xl font-bold hover:bg-purple-500 transition"
-            disabled={!estaNaAcademia}
-          >
-            {estaNaAcademia ? "✅ REGISTRAR TREINO" : "📍 CHEGUE NA ACADEMIA PARA REGISTRAR"}
-          </button>
-
-          {tempoAcademia > 0 && (
-            <div className="mt-4 bg-green-500/20 rounded-2xl p-3 text-center">
-              <p className="text-green-400">⏱️ Tempo total na academia: {tempoAcademia} minutos</p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Conteúdo - Esportes com Geolocalização */}
-      {activeTab === "esportes" && (
-        <div className="p-4">
-          {/* Criar novo evento esportivo */}
-          <div className="bg-gray-800 rounded-2xl p-4 mb-6">
-            <h3 className="text-white font-bold mb-3">🏆 Criar Evento Esportivo</h3>
-            <div className="space-y-2">
-              <input
-                type="text"
-                placeholder="Nome do evento"
-                value={novoEsporte.nome}
-                onChange={(e) => setNovoEsporte({ ...novoEsporte, nome: e.target.value })}
-                className="w-full bg-gray-700 rounded-xl p-2 text-white placeholder-gray-400"
-              />
-              <input
-                type="text"
-                placeholder="Local (com geolocalização)"
-                value={novoEsporte.local}
-                onChange={(e) => setNovoEsporte({ ...novoEsporte, local: e.target.value })}
-                className="w-full bg-gray-700 rounded-xl p-2 text-white placeholder-gray-400"
-              />
-              <input
-                type="text"
-                placeholder="Horário"
-                value={novoEsporte.horario}
-                onChange={(e) => setNovoEsporte({ ...novoEsporte, horario: e.target.value })}
-                className="w-full bg-gray-700 rounded-xl p-2 text-white placeholder-gray-400"
-              />
-              <button onClick={criarEsporte} className="w-full bg-purple-600 text-white py-2 rounded-xl font-bold">
-                Criar Evento +
-              </button>
-            </div>
-          </div>
-
-          {/* Esportes disponíveis */}
-          <h3 className="text-white font-bold mb-3">⚽ Próximos Eventos</h3>
-          <div className="space-y-3">
-            {esportes.map(evento => (
-              <div key={evento.id} className="bg-gray-800 rounded-2xl p-3">
-                <div className="flex items-center gap-3">
-                  <div className="text-4xl">{evento.icone}</div>
-                  <div className="flex-1">
-                    <p className="font-bold text-white">{evento.nome}</p>
-                    <p className="text-gray-400 text-sm flex items-center gap-1">
-                      <i className="fas fa-map-marker-alt text-red-400 text-xs"></i> {evento.local}
-                    </p>
-                    <p className="text-gray-400 text-sm">
-                      <i className="far fa-clock text-blue-400 text-xs"></i> {evento.horario}
-                    </p>
-                    <p className="text-purple-400 text-xs">
-                      {evento.participantes}/{evento.maxParticipantes} participantes
+        <div className="space-y-4">
+          {cards.map((card) => (
+            <Link
+              key={card.id}
+              href={card.href}
+              className={`group relative block ${!perfilCompleto && card.id === 'ia' ? 'opacity-60 pointer-events-none' : ''}`}
+            >
+              <div className={`bg-gradient-to-r ${card.bgGradient} rounded-2xl p-5 backdrop-blur-xl border border-white/20 shadow-xl transition-all duration-300`}>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
+                    {card.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-bold text-white text-lg break-words">{card.titulo}</h3>
+                      <span className={`text-xs font-bold shrink-0 ${card.statusCor}`}>{card.status}</span>
+                    </div>
+                    <p className="text-white/70 text-sm mt-0.5 line-clamp-2">{card.descricao}</p>
+                    <p className="text-white/40 text-xs mt-1 flex items-center gap-1">
+                      <span className="text-[10px]">📌</span> 
+                      <span className="truncate">{card.complemento}</span>
                     </p>
                   </div>
-                  <button 
-                    onClick={() => participarEsporte(evento.id)}
-                    className="bg-green-500 text-black px-3 py-2 rounded-xl text-sm font-bold"
-                    disabled={evento.participantes >= evento.maxParticipantes}
-                  >
-                    Participar
-                  </button>
+                  <div className="shrink-0">
+                    <ChevronRight className="w-5 h-5 text-white/50 group-hover:text-white transition" />
+                  </div>
                 </div>
               </div>
-            ))}
+            </Link>
+          ))}
+        </div>
+
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-5">
+          <h3 className="font-bold text-white mb-3 flex items-center gap-2">
+            <Activity className="w-5 h-5 text-yellow-400" />
+            Resumo da Semana
+          </h3>
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div><p className="text-2xl font-black text-yellow-400">{treinosSemana}</p><p className="text-xs text-zinc-400">Treinos</p></div>
+            <div><p className="text-2xl font-black text-green-400">{treinosSemana * 45}</p><p className="text-xs text-zinc-400">Minutos</p></div>
+            <div><p className="text-2xl font-black text-blue-400">{treinosSemana * 320}</p><p className="text-xs text-zinc-400">Calorias</p></div>
           </div>
         </div>
-      )}
 
-      {/* Conteúdo - Metas */}
-      {activeTab === "metas" && (
-        <div className="p-4">
-          <h2 className="text-white font-bold mb-3">🎯 Minhas Metas</h2>
-          <div className="space-y-4">
-            {metas.map((meta, idx) => (
-              <div key={idx} className="bg-gray-800 rounded-2xl p-4">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-white font-bold">{meta.tipo}</span>
-                  <span className="text-purple-400">{meta.atual}/{meta.meta}</span>
-                </div>
-                <div className="w-full bg-gray-700 rounded-full h-2 mb-2">
-                  <div className="bg-purple-500 h-2 rounded-full" style={{ width: `${meta.progresso}%` }}></div>
-                </div>
-                <div className="flex justify-between items-center mt-2">
-                  <span className="text-gray-400 text-xs">Progresso: {Math.round(meta.progresso)}%</span>
-                  <input
-                    type="range"
-                    min="0"
-                    max={meta.tipo === "Perder Peso" ? 20 : meta.tipo === "Treinos por Semana" ? 7 : 120}
-                    value={meta.meta}
-                    onChange={(e) => atualizarMeta(idx, parseInt(e.target.value))}
-                    className="w-32"
-                  />
-                </div>
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-3"><Bell className="w-5 h-5 text-yellow-400" /><h3 className="font-bold text-white">Alertas</h3></div>
+          <div className="space-y-2">
+            {!perfilCompleto && (
+              <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
+                <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
+                <p className="text-sm text-white">📝 Complete seu cadastro inicial para ativar a IA!</p>
               </div>
-            ))}
+            )}
+            {!academiaCadastrada && perfilCompleto && (
+              <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
+                <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
+                <p className="text-sm text-white">🏋️ Cadastre sua academia para começar a treinar!</p>
+              </div>
+            )}
+            {perfilCompleto && academiaCadastrada && (
+              <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                <p className="text-sm text-white">🎯 Você está a {5 - treinosSemana} treinos de bater sua meta semanal!</p>
+              </div>
+            )}
           </div>
         </div>
-      )}
-
-      {/* Conteúdo - Perfil e Condições Físicas */}
-      {activeTab === "perfil" && (
-        <div className="p-4">
-          <div className="bg-gray-800 rounded-2xl p-4 mb-4 text-center">
-            <div className="w-20 h-20 bg-purple-600 rounded-full flex items-center justify-center text-4xl mx-auto">
-              {aluno.nome.charAt(0)}
-            </div>
-            <h2 className="text-white font-bold text-xl mt-2">{aluno.nome}</h2>
-            <p className="text-gray-400">Membro desde 2025</p>
-            <p className="text-purple-400 text-sm mt-1">Plano: Premium</p>
-          </div>
-
-          <h3 className="text-white font-bold mb-3">📊 Condições Físicas</h3>
-          <div className="space-y-3">
-            <div className="bg-gray-800 rounded-2xl p-3">
-              <label className="text-gray-400 text-sm block mb-1">Peso (kg)</label>
-              <input
-                type="number"
-                value={aluno.peso}
-                onChange={(e) => atualizarCondicaoFisica("peso", parseFloat(e.target.value))}
-                className="w-full bg-gray-700 rounded-xl p-2 text-white"
-                step="0.5"
-              />
-            </div>
-            <div className="bg-gray-800 rounded-2xl p-3">
-              <label className="text-gray-400 text-sm block mb-1">Altura (m)</label>
-              <input
-                type="number"
-                value={aluno.altura}
-                onChange={(e) => atualizarCondicaoFisica("altura", parseFloat(e.target.value))}
-                className="w-full bg-gray-700 rounded-xl p-2 text-white"
-                step="0.01"
-              />
-            </div>
-            <div className="bg-gray-800 rounded-2xl p-3">
-              <label className="text-gray-400 text-sm block mb-1">% Gordura</label>
-              <input
-                type="number"
-                value={aluno.gordura}
-                onChange={(e) => atualizarCondicaoFisica("gordura", parseFloat(e.target.value))}
-                className="w-full bg-gray-700 rounded-xl p-2 text-white"
-                step="0.5"
-              />
-            </div>
-            <div className="bg-gray-800 rounded-2xl p-3">
-              <label className="text-gray-400 text-sm block mb-1">IMC Calculado</label>
-              <input
-                type="text"
-                value={aluno.imc.toFixed(1)}
-                disabled
-                className="w-full bg-gray-700 rounded-xl p-2 text-white opacity-70"
-              />
-            </div>
-            <div className="bg-gray-800 rounded-2xl p-3">
-              <label className="text-gray-400 text-sm block mb-1">Objetivo Principal</label>
-              <select
-                value={aluno.objetivo}
-                onChange={(e) => setAluno(prev => ({ ...prev, objetivo: e.target.value as any }))}
-                className="w-full bg-gray-700 rounded-xl p-2 text-white"
-              >
-                <option value="emagrecer">Emagrecer</option>
-                <option value="ganhar_massa">Ganhar Massa Muscular</option>
-                <option value="definir">Definir o Corpo</option>
-                <option value="condicionamento">Condicionamento Físico</option>
-                <option value="saude">Saúde e Bem-estar</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Botão flutuante para registrar treino rápido */}
-      {estaNaAcademia && (
-        <button 
-          onClick={registrarTreino}
-          className="fixed bottom-20 right-4 bg-purple-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-2xl z-50 animate-bounce"
-        >
-          <i className="fas fa-dumbbell text-xl"></i>
-        </button>
-      )}
+      </main>
     </div>
   );
 }
+
+
