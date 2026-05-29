@@ -1,7 +1,11 @@
 ﻿"use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+
+// Adicionado para desabilitar renderização estática
+export const dynamic = 'force-dynamic';
 
 export default function MotoTaxiPage() {
   const router = useRouter();

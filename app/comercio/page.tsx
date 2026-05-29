@@ -1,4 +1,7 @@
 ﻿"use client";
+
+export const dynamic = 'force-dynamic';  // ← ÚNICA LINHA ADICIONADA
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";

@@ -2,6 +2,9 @@
 
 import { useState } from 'react';
 
+// Adicionado para desabilitar renderização estática
+export const dynamic = 'force-dynamic';
+
 export default function TesteGeoPage() {
   const [status, setStatus] = useState('Aguardando...');
   const [localizacao, setLocalizacao] = useState<{ lat: number; lng: number } | null>(null);
@@ -14,7 +17,7 @@ export default function TesteGeoPage() {
     setErro(null);
     
     // Verificar se o navegador suporta geolocalização
-    if (!navigator.geolocation) {
+    if (typeof window !== 'undefined' && !navigator.geolocation) {
       setStatus('❌ ERRO: Seu navegador NÃO suporta geolocalização');
       setErro('Geolocalização não suportada');
       setCarregando(false);
@@ -30,36 +33,38 @@ export default function TesteGeoPage() {
       maximumAge: 0
     };
     
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        // Sucesso
-        const { latitude, longitude } = position.coords;
-        setLocalizacao({ lat: latitude, lng: longitude });
-        setStatus(`✅ SUCESSO! Localização capturada: Lat: ${latitude.toFixed(6)}, Lng: ${longitude.toFixed(6)}`);
-        setCarregando(false);
-      },
-      (error) => {
-        // Erro
-        setCarregando(false);
-        let mensagemErro = '';
-        switch(error.code) {
-          case error.PERMISSION_DENIED:
-            mensagemErro = '❌ PERMISSÃO NEGADA: Você precisa permitir o acesso à localização no navegador. Clique no ícone de cadeado na barra de endereço e permita a localização.';
-            break;
-          case error.POSITION_UNAVAILABLE:
-            mensagemErro = '❌ POSIÇÃO INDISPONÍVEL: Não foi possível obter sua localização. Verifique se o GPS está ativo.';
-            break;
-          case error.TIMEOUT:
-            mensagemErro = '❌ TIMEOUT: A solicitação de localização demorou muito. Tente novamente.';
-            break;
-          default:
-            mensagemErro = `❌ ERRO DESCONHECIDO: ${error.message}`;
-        }
-        setStatus(mensagemErro);
-        setErro(mensagemErro);
-      },
-      options
-    );
+    if (typeof window !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          // Sucesso
+          const { latitude, longitude } = position.coords;
+          setLocalizacao({ lat: latitude, lng: longitude });
+          setStatus(`✅ SUCESSO! Localização capturada: Lat: ${latitude.toFixed(6)}, Lng: ${longitude.toFixed(6)}`);
+          setCarregando(false);
+        },
+        (error) => {
+          // Erro
+          setCarregando(false);
+          let mensagemErro = '';
+          switch(error.code) {
+            case error.PERMISSION_DENIED:
+              mensagemErro = '❌ PERMISSÃO NEGADA: Você precisa permitir o acesso à localização no navegador. Clique no ícone de cadeado na barra de endereço e permita a localização.';
+              break;
+            case error.POSITION_UNAVAILABLE:
+              mensagemErro = '❌ POSIÇÃO INDISPONÍVEL: Não foi possível obter sua localização. Verifique se o GPS está ativo.';
+              break;
+            case error.TIMEOUT:
+              mensagemErro = '❌ TIMEOUT: A solicitação de localização demorou muito. Tente novamente.';
+              break;
+            default:
+              mensagemErro = `❌ ERRO DESCONHECIDO: ${error.message}`;
+          }
+          setStatus(mensagemErro);
+          setErro(mensagemErro);
+        },
+        options
+      );
+    }
   };
 
   return (
@@ -86,8 +91,10 @@ export default function TesteGeoPage() {
             <p className="text-white">Longitude: {localizacao.lng}</p>
             <button
               onClick={() => {
-                navigator.clipboard.writeText(`${localizacao.lat}, ${localizacao.lng}`);
-                alert('Coordenadas copiadas!');
+                if (typeof window !== 'undefined') {
+                  navigator.clipboard.writeText(`${localizacao.lat}, ${localizacao.lng}`);
+                  alert('Coordenadas copiadas!');
+                }
               }}
               className="mt-3 px-4 py-2 bg-gray-700 rounded-xl text-sm"
             >

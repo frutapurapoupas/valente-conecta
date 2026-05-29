@@ -6,6 +6,9 @@ import { useApp } from "@/app/context/AppContext";
 import { User, Mail, Phone, Wallet, Copy, LogOut, ArrowLeft, CheckCircle, Edit2, Save, X, Calendar } from "lucide-react";
 import toast from "react-hot-toast";
 
+// Adicionado para desabilitar renderização estática
+export const dynamic = 'force-dynamic';
+
 export default function ProfilePage() {
   const router = useRouter();
   const { user, logout, updateWallet, isAdmin } = useApp();

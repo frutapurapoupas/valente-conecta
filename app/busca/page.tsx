@@ -1,7 +1,11 @@
 ﻿"use client";
+
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
 import toast from "react-hot-toast";
+
+// Adicionado para desabilitar renderização estática (força CSR)
+export const dynamic = 'force-dynamic';
 
 function BuscaContent() {
   const searchParams = useSearchParams();

@@ -1,8 +1,12 @@
 ﻿"use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/app/context/AppContext";
 import toast from "react-hot-toast";
+
+// Adicionado para desabilitar renderização estática
+export const dynamic = 'force-dynamic';
 
 export default function LoginPage() {
   const router = useRouter();

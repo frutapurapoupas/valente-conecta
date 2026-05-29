@@ -10,6 +10,9 @@ import {
   BookOpen, TrendingUp, Brain, CheckCircle, Clock
 } from "lucide-react";
 
+// Adicionado para desabilitar renderização estática
+export const dynamic = 'force-dynamic';
+
 interface PerfilCompleto {
   nome: string;
   objetivo: string;
@@ -273,5 +276,3 @@ export default function AcademiaPage() {
     </div>
   );
 }
-
-

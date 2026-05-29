@@ -1,8 +1,12 @@
 ﻿"use client";
+
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState, Suspense } from "react";
 import { useApp } from "@/app/context/AppContext";
 import toast from "react-hot-toast";
+
+// Adicionado para desabilitar renderização estática
+export const dynamic = 'force-dynamic';
 
 function ServicoIndisponivelContent() {
   const router = useRouter();

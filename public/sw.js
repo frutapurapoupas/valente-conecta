@@ -1,47 +1,25 @@
-﻿const CACHE_NAME = 'valente-conecta-v1';
+﻿// public/sw.js
+const CACHE_NAME = 'valente-conecta-v1';
 const urlsToCache = [
   '/',
-  '/manifest.json',
-  '/offline.html'
+  '/offline',
+  '/manifest.json'
 ];
 
-self.addEventListener('install', event => {
+// Instalação
+self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
-  );
-  self.skipWaiting();
-});
-
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request).then(
-          response => {
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-            const responseToCache = response.clone();
-            caches.open(CACHE_NAME)
-              .then(cache => {
-                cache.put(event.request, responseToCache);
-              });
-            return response;
-          }
-        );
-      })
+      .then((cache) => cache.addAll(urlsToCache))
   );
 });
 
-self.addEventListener('activate', event => {
+// Ativação
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
+    caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.map(cacheName => {
+        cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
             return caches.delete(cacheName);
           }
@@ -49,5 +27,27 @@ self.addEventListener('activate', event => {
       );
     })
   );
-  self.clients.claim();
+});
+
+// Fetch
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request)
+      .then((response) => {
+        if (response) {
+          return response;
+        }
+        return fetch(event.request).then((response) => {
+          if (!response || response.status !== 200 || response.type !== 'basic') {
+            return response;
+          }
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME)
+            .then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          return response;
+        });
+      })
+  );
 });

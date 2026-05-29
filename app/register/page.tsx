@@ -1,5 +1,7 @@
 ﻿"use client";
 
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/app/context/AppContext";
@@ -23,6 +25,16 @@ export default function RegisterPage() {
     confirmarSenha: ""
   });
 
+  // Capturar código de convite do localStorage (salvo pela página /convite/[codigo])
+  useEffect(() => {
+    const codigo = localStorage.getItem("convite_codigo");
+    if (codigo) {
+      setCodigoConvite(codigo);
+      // Limpar após usar para não reutilizar
+      localStorage.removeItem("convite_codigo");
+    }
+  }, []);
+
   // Detectar evento de instalação PWA
   useEffect(() => {
     const handler = (e: Event) => {
@@ -35,40 +47,27 @@ export default function RegisterPage() {
     
     // Verificar se o navegador suporta instalação
     if (!window.matchMedia('(display-mode: standalone)').matches) {
-      // Não está instalado ainda
       setInstallSupported(true);
     }
     
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
-  // Carregar código de convite do localStorage
-  useEffect(() => {
-    const codigo = localStorage.getItem("convite_codigo");
-    if (codigo) {
-      setCodigoConvite(codigo);
-    }
-  }, []);
-
   const handleInstall = async () => {
     if (deferredPrompt) {
-      // Mostrar o popup de instalação do navegador
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
-      
       if (outcome === "accepted") {
         toast.success("✅ App instalado com sucesso!");
         setShowInstallPopup(false);
-        // Aguardar um pouco e redirecionar para home
         setTimeout(() => {
           router.push("/");
         }, 1500);
       } else {
-        toast.error("Instalação cancelada. Você pode instalar depois pelo menu.");
+        toast.error("Instalação cancelada.");
       }
       setDeferredPrompt(null);
     } else {
-      // Fallback: instruções manuais
       toast.success("📱 Para instalar, clique em 'Adicionar à Tela Inicial' no menu do navegador", { duration: 5000 });
     }
   };
@@ -94,26 +93,33 @@ export default function RegisterPage() {
     
     setLoading(true);
     
-    // Simular cadastro
+    // 1. Calcular data de expiração (2 dias a partir de agora)
+    const dataExpira = new Date();
+    dataExpira.setDate(dataExpira.getDate() + 2);
+    
+    // 2. Simular cadastro e salvar cookies de sessão
     setTimeout(() => {
+      // Define os cookies de controle (serão lidos pelo middleware)
+      document.cookie = `sessao_temp_id=${Date.now()}; path=/; max-age=172800`;
+      document.cookie = `sessao_temp_expira=${dataExpira.toISOString()}; path=/; max-age=172800`;
+      document.cookie = `user_logged_in=true; path=/; max-age=172800`;
+      document.cookie = `user_role=user; path=/; max-age=172800`;
+
       const novoUsuario = {
         id: Date.now().toString(),
         name: formData.nome,
         email: formData.email,
         telefone: formData.telefone,
-        wallet: 15,
-        isAdmin: false,
-        plano: "Grátis"
+        wallet: codigoConvite ? 5 : 0, // Bônus de R$5 se veio por convite
+        plano: "Grátis",
+        isAdmin: false
       };
       
       localStorage.setItem("valente_user", JSON.stringify(novoUsuario));
       login(novoUsuario);
       
-      toast.success("✅ Cadastro realizado com sucesso! +R$5 de bônus!");
-      
-      // Mostrar popup de instalação APÓS o cadastro
+      toast.success(`✅ Acesso liberado por 48 horas!${codigoConvite ? " + R$5 de bônus!" : ""}`);
       setShowInstallPopup(true);
-      
       setLoading(false);
     }, 1500);
   };
@@ -293,18 +299,9 @@ export default function RegisterPage() {
       </main>
 
       <style jsx>{`
-        @keyframes fade-in {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes zoom-in {
-          from { transform: scale(0.95); opacity: 0; }
-          to { transform: scale(1); opacity: 1; }
-        }
-        .animate-in {
-          animation-duration: 0.3s;
-          animation-fill-mode: both;
-        }
+        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes zoom-in { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .animate-in { animation-duration: 0.3s; animation-fill-mode: both; }
         .fade-in { animation-name: fade-in; }
         .zoom-in { animation-name: zoom-in; }
       `}</style>

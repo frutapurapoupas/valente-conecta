@@ -11,7 +11,6 @@ const nextConfig = {
   },
   staticPageGenerationTimeout: 180,
   
-  // Configuração para build na Vercel
   generateBuildId: async () => {
     return `build-${Date.now()}`
   },

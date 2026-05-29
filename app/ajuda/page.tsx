@@ -1,7 +1,11 @@
 ﻿"use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Play, Youtube, Info, HelpCircle, Video } from "lucide-react";
+
+// Adicionado para desabilitar renderização estática
+export const dynamic = 'force-dynamic';
 
 interface VideoTutorial {
   id: number;

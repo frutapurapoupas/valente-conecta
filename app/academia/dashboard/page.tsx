@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = 'force-dynamic';  // ← ÚNICA LINHA ADICIONADA
+
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Dumbbell, Calendar, Clock, MapPin, Bell, Heart, Activity, Droplet, ChevronLeft, Edit2, User } from 'lucide-react';

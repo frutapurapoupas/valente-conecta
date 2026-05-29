@@ -6,6 +6,9 @@ import { useApp } from "@/app/context/AppContext";
 import toast from "react-hot-toast";
 import { Store, Plus, Edit, Trash2, Search, X, Package } from "lucide-react";
 
+// Adicionado para desabilitar renderização estática
+export const dynamic = 'force-dynamic';
+
 export default function AdminComercioPage() {
   const router = useRouter();
   const { user, isAdmin } = useApp();

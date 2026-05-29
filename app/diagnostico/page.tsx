@@ -1,5 +1,9 @@
 ﻿"use client";
+
 import { useState, useEffect } from "react";
+
+// Adicionado para desabilitar renderização estática
+export const dynamic = 'force-dynamic';
 
 export default function DiagnosticoPage() {
   const [dados, setDados] = useState<any>({});

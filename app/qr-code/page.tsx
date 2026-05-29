@@ -1,5 +1,7 @@
 ﻿"use client";
 
+export const dynamic = 'force-dynamic';
+
 import { useRouter } from "next/navigation";
 import { useApp } from "@/app/context/AppContext";
 import toast from "react-hot-toast";
@@ -15,14 +17,22 @@ export default function QRCodePage() {
   const [qrCodeUrl, setQrCodeUrl] = useState("");
   const [isClient, setIsClient] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [baseUrl, setBaseUrl] = useState("");
 
-  const codigoIndicacao = isAdmin ? "ADMIN_VALENTE_2026" : (user?.id || "VALENTE2026");
-  const linkIndicacao = `https://valente-conecta.clic.com.br/convite/${codigoIndicacao}`;
-
+  // PEGAR A URL BASE DINAMICAMENTE (funciona em qualquer ambiente)
   useEffect(() => {
     setIsClient(true);
+    // Obtém a URL base do navegador (localhost ou domínio de produção)
+    setBaseUrl(window.location.origin);
+  }, []);
+
+  const codigoIndicacao = isAdmin ? "ADMIN_VALENTE_2026" : (user?.id || "VALENTE2026");
+  const linkIndicacao = `${baseUrl}/convite/${codigoIndicacao}`;
+
+  useEffect(() => {
+    if (!baseUrl) return;
     
-    // Gerar QR Code
+    // Gerar QR Code usando API online (não precisa de biblioteca extra)
     const url = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(linkIndicacao)}`;
     setQrCodeUrl(url);
 
@@ -47,7 +57,7 @@ export default function QRCodePage() {
     }
 
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-  }, [isAdmin, linkIndicacao]);
+  }, [isAdmin, linkIndicacao, baseUrl]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(linkIndicacao);
@@ -104,7 +114,7 @@ export default function QRCodePage() {
   };
 
   // Loading durante hidratação
-  if (!isClient) {
+  if (!isClient || !baseUrl) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">

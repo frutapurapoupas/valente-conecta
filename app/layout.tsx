@@ -1,12 +1,23 @@
-﻿import type { Metadata } from "next";
-import "./globals.css";
-import { AppProvider } from "@/app/context/AppContext";
-import { Toaster } from "react-hot-toast";
+﻿import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import { AppProvider } from './context/AppContext';
+import { Toaster } from 'react-hot-toast';
+import { CadastroPopupWrapper } from '@/components/CadastroPopupWrapper';
+import { InstallPrompt } from '@/components/InstallPrompt';
+import { Suspense } from 'react';
+
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: "Valente Conecta",
-  description: "A economia da cidade na palma da sua mão",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=yes, viewport-fit=cover",
+  title: 'Valente Conecta',
+  description: 'Plataforma multifuncional que conecta Valente, BA',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Valente Conecta',
+  },
 };
 
 export default function RootLayout({
@@ -17,14 +28,18 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <head>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="theme-color" content="#22c55e" />
       </head>
-      <body className="bg-gray-950 text-white font-sans">
+      <body className={inter.className}>
         <AppProvider>
-          {children}
-          <Toaster position="bottom-center" />
+          <Suspense fallback={<div className="min-h-screen bg-gray-900 flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div></div>}>
+            {children}
+          </Suspense>
+          <Toaster position="top-right" />
+          <CadastroPopupWrapper />
+          <InstallPrompt />
         </AppProvider>
       </body>
     </html>
