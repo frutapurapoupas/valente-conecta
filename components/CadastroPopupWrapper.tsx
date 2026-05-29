@@ -1,25 +1,25 @@
 // components/CadastroPopupWrapper.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { CadastroPopup } from './CadastroPopup';
 import { isUserLoggedIn } from '@/lib/auth';
 
-export function CadastroPopupWrapper() {
-  const [codigoIndicacao, setCodigoIndicacao] = useState<string | undefined>();
+function CadastroPopupContent() {
   const searchParams = useSearchParams();
-
-  useEffect(() => {
-    // Se já logado, não mostrar
-    if (isUserLoggedIn()) return;
-    
-    // Verificar se tem código de indicação na URL
-    const ref = searchParams.get('ref');
-    if (ref) {
-      setCodigoIndicacao(ref);
-    }
-  }, [searchParams]);
-
+  const codigoIndicacao = searchParams.get('ref') || undefined;
+  
+  // Se já logado, não mostrar
+  if (isUserLoggedIn()) return null;
+  
   return <CadastroPopup codigoIndicacao={codigoIndicacao} />;
+}
+
+export function CadastroPopupWrapper() {
+  return (
+    <Suspense fallback={null}>
+      <CadastroPopupContent />
+    </Suspense>
+  );
 }
