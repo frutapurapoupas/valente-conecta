@@ -1,8 +1,5 @@
-﻿"use client";
+"use client";
 
-
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/app/context/AppContext";
@@ -48,8 +45,8 @@ export default function AdminNotificacoesPage() {
         setNotificacoes(JSON.parse(salvas));
       } else {
         const notificacoesPadrao: Notificacao[] = [
-          { id: 1, titulo: "📢 Novas funcionalidades!", mensagem: "Confira o novo cardápio da Cozinha com opções fitness.", importancia: "alta", data: new Date().toLocaleDateString(), ativa: true },
-          { id: 2, titulo: "🎁 Campanha de Indicação", mensagem: "Indique um amigo e ganhe R$5 de bônus!", importancia: "media", data: new Date().toLocaleDateString(), ativa: true },
+          { id: 1, titulo: "🎉 Novas funcionalidades!", mensagem: "Confira o novo cardápio da Cozinha com opções fitness.", importancia: "alta", data: new Date().toLocaleDateString(), ativa: true },
+          { id: 2, titulo: "💰 Campanha de Indicação", mensagem: "Indique um amigo e ganhe R$5 de bônus!", importancia: "media", data: new Date().toLocaleDateString(), ativa: true },
           { id: 3, titulo: "💪 Academia Atualizada", mensagem: "Nova funcionalidade de geolocalização disponível!", importancia: "alta", data: new Date().toLocaleDateString(), ativa: true }
         ];
         setNotificacoes(notificacoesPadrao);
@@ -142,7 +139,7 @@ export default function AdminNotificacoesPage() {
       n.id === id ? { ...n, ativa: !n.ativa } : n
     );
     salvarNotificacoes(novas);
-    toast.success(novas.find(n => n.id === id)?.ativa ? "✅ Notificação ativada!" : "🔕 Notificação desativada!");
+    toast.success(novas.find(n => n.id === id)?.ativa ? "✅ Notificação ativada!" : "❌ Notificação desativada!");
   };
 
   const getImportanciaCor = (importancia: string) => {
@@ -167,7 +164,7 @@ export default function AdminNotificacoesPage() {
             <ArrowLeft className="w-6 h-6" />
           </button>
           <Bell className="w-6 h-6 text-white" />
-          <h1 className="text-white font-bold text-xl">Comunicados Oficiais</h1>
+          <h1 className="text-white font-bold text-xl">📢 Comunicados Oficiais</h1>
         </div>
         <button 
           onClick={() => { setMostrarFormulario(true); setEditandoId(null); setNovaNotificacao({ titulo: "", mensagem: "", importancia: "media" }); }}
@@ -259,7 +256,7 @@ export default function AdminNotificacoesPage() {
                         : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                     }`}
                   >
-                    🚨 Urgente
+                    🔴 Urgente
                   </button>
                 </div>
               </div>
@@ -289,7 +286,7 @@ export default function AdminNotificacoesPage() {
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-bold text-gray-800">{notif.titulo}</h3>
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getImportanciaBadge(notif.importancia)}`}>
-                        {notif.importancia === "alta" ? "Urgente" : notif.importancia === "media" ? "Importante" : "Informativo"}
+                        {notif.importancia === "alta" ? "🔴 Urgente" : notif.importancia === "media" ? "⚠️ Importante" : "📘 Informativo"}
                       </span>
                       {!notif.ativa && (
                         <span className="text-xs bg-gray-300 text-gray-600 px-2 py-0.5 rounded-full">Inativa</span>

@@ -1,7 +1,5 @@
-﻿"use client";
+"use client";
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/app/context/AppContext";
@@ -32,7 +30,7 @@ export default function AdminPlanosPage() {
     <div className="min-h-screen bg-gray-900 pb-20">
       <header className="bg-gradient-to-r from-green-400 to-green-700 p-4 flex items-center gap-3 sticky top-0 z-40">
         <button onClick={() => router.push("/admin")}><i className="fas fa-arrow-left text-white text-xl"></i></button>
-        <h1 className="text-white font-bold text-xl">💎 Gerenciar Planos</h1>
+        <h1 className="text-white font-bold text-xl">💰 Gerenciar Planos</h1>
       </header>
 
       <div className="p-4">
@@ -58,7 +56,7 @@ export default function AdminPlanosPage() {
                   plano.ativo ? "bg-green-500 text-black" : "bg-gray-700 text-gray-400"
                 }`}
               >
-                {plano.ativo ? "Ativo" : "Inativo"}
+                {plano.ativo ? "✅ Ativo" : "❌ Inativo"}
               </button>
             </div>
           ))}

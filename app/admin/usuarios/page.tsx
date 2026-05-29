@@ -1,7 +1,5 @@
-﻿"use client";
+"use client";
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/app/context/AppContext";
@@ -135,7 +133,7 @@ export default function AdminUsuariosPage() {
                     usuario.status === "suspenso" ? "bg-red-500/20 text-red-400" :
                     "bg-yellow-500/20 text-yellow-400"
                   }`}>
-                    {usuario.status}
+                    {usuario.status === "ativo" ? "✅ Ativo" : usuario.status === "suspenso" ? "❌ Suspenso" : "⏳ Pendente"}
                   </span>
                 </div>
               </div>
@@ -157,7 +155,7 @@ export default function AdminUsuariosPage() {
             </div>
             <div className="mt-3 pt-3 border-t border-gray-700 flex justify-between text-xs text-gray-500">
               <span>📅 Cadastro: {usuario.dataCadastro}</span>
-              <span>🕒 Último acesso: {usuario.ultimoAcesso}</span>
+              <span>🕐 Último acesso: {usuario.ultimoAcesso}</span>
             </div>
           </div>
         ))}

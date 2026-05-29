@@ -1,7 +1,5 @@
-﻿"use client";
+"use client";
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/app/context/AppContext";
@@ -123,7 +121,7 @@ export default function AdminDemandasPage() {
           <ArrowLeft className="w-6 h-6" />
         </button>
         <Bell className="w-6 h-6 text-white" />
-        <h1 className="text-white font-bold text-xl">Demandas de Serviços</h1>
+        <h1 className="text-white font-bold text-xl">📋 Demandas de Serviços</h1>
       </header>
 
       <main className="max-w-4xl mx-auto p-6 space-y-6">
@@ -153,7 +151,7 @@ export default function AdminDemandasPage() {
                 : "text-gray-500 hover:text-gray-700"
             }`}
           >
-            📋 Solicitações ({solicitacoes.length})
+            📝 Solicitações ({solicitacoes.length})
           </button>
           <button
             onClick={() => setActiveTab("fornecedores")}

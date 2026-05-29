@@ -1,7 +1,4 @@
-﻿"use client";
-
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -43,7 +40,7 @@ export default function AdminComercioPage() {
       <header className="bg-gradient-to-r from-green-400 to-green-700 p-4 sticky top-0 z-40">
         <div className="flex items-center justify-between">
           <button onClick={() => router.push("/admin")} className="text-white text-xl">←</button>
-          <h1 className="text-white font-bold text-lg">Gerenciar Comércio</h1>
+          <h1 className="text-white font-bold text-lg">🛒 Gerenciar Comércio</h1>
           <div className="w-8"></div>
         </div>
       </header>

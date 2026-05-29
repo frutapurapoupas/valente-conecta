@@ -1,8 +1,5 @@
-﻿"use client";
+"use client";
 
-
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/app/context/AppContext";
@@ -25,7 +22,7 @@ const menuEstrutura = [
     icon: "fas fa-cog",
     items: [
       { nome: "Configuração da Home", href: "/admin/configuracoes", status: "ativo" },
-          { nome: "📢 Notificações do Sistema", href: "/admin/notificacoes", status: "ativo" },
+      { nome: "📢 Notificações do Sistema", href: "/admin/notificacoes", status: "ativo" },
       { nome: "Configurações Gerais", href: "/admin/configuracoes-gerais", status: "construcao" },
       { nome: "Aparência", href: "/admin/aparencia", status: "construcao" },
       { nome: "Segurança", href: "/admin/seguranca", status: "construcao" }
@@ -457,4 +454,3 @@ export default function AdminMasterPage() {
     </div>
   );
 }
-

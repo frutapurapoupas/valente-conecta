@@ -1,7 +1,5 @@
-﻿"use client";
+"use client";
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 import { useRouter } from "next/navigation";
 import { useApp } from "@/app/context/AppContext";
 
@@ -12,7 +10,11 @@ export default function AdminFinanceiroPage() {
   return (
     <div className="min-h-screen bg-gray-900 p-4">
       <button onClick={() => router.push("/admin")} className="text-white mb-4"><i className="fas fa-arrow-left"></i> Voltar</button>
-      <div className="bg-gray-800 rounded-2xl p-6 text-center"><i className="fas fa-chart-line text-6xl text-yellow-500 mb-4"></i><h1 className="text-white text-2xl font-bold">💰 Financeiro</h1><p className="text-gray-400 mt-2">Módulo em desenvolvimento</p></div>
+      <div className="bg-gray-800 rounded-2xl p-6 text-center">
+        <i className="fas fa-chart-line text-6xl text-yellow-500 mb-4"></i>
+        <h1 className="text-white text-2xl font-bold">💰 Financeiro</h1>
+        <p className="text-gray-400 mt-2">Módulo em desenvolvimento</p>
+      </div>
     </div>
   );
 }

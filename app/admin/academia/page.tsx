@@ -1,7 +1,5 @@
-﻿"use client";
+"use client";
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/app/context/AppContext";
@@ -56,7 +54,7 @@ export default function AdminAcademiaPage() {
     <div className="min-h-screen bg-gray-900 pb-20">
       <header className="bg-gradient-to-r from-green-400 to-green-700 p-4 flex items-center gap-3 sticky top-0 z-40">
         <button onClick={() => router.push("/admin")}><i className="fas fa-arrow-left text-white text-xl"></i></button>
-        <h1 className="text-white font-bold text-xl">💪 Admin Academia</h1>
+        <h1 className="text-white font-bold text-xl">🏋️ Admin Academia</h1>
       </header>
 
       {/* Estatísticas */}
@@ -102,14 +100,14 @@ export default function AdminAcademiaPage() {
                   <div className="flex gap-2 mt-1">
                     <span className="text-xs text-purple-400">🎯 {aluno.objetivo}</span>
                     <span className="text-xs text-yellow-400">💎 {aluno.plano}</span>
-                    <span className="text-xs text-green-400">🏋️ {aluno.treinosRealizados} treinos</span>
+                    <span className="text-xs text-green-400">💪 {aluno.treinosRealizados} treinos</span>
                   </div>
                 </div>
                 <button
                   onClick={() => alterarStatus(aluno.id)}
                   className={`px-3 py-1 rounded-full text-xs font-bold ${aluno.status === "ativo" ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}
                 >
-                  {aluno.status === "ativo" ? "Ativo" : "Inativo"}
+                  {aluno.status === "ativo" ? "✅ Ativo" : "❌ Inativo"}
                 </button>
               </div>
             </div>

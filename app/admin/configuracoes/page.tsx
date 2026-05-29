@@ -1,7 +1,5 @@
-﻿"use client";
+"use client";
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/app/context/AppContext";
@@ -15,10 +13,10 @@ const configuracaoPadrao = {
       titulo: "Bloco 1 - Categorias Principais",
       cards: [
         { id: 1, nome: "ACADEMIAS & ESPORTES", icone: "💪", href: "/academia", ativo: true, ordem: 1 },
-        { id: 2, nome: "MARMITA & BOLOS", icone: "🍱", href: "/cozinha", ativo: true, ordem: 2 },
+        { id: 2, nome: "MARMITA & BOLOS", icone: "🍲", href: "/cozinha", ativo: true, ordem: 2 },
         { id: 3, nome: "ALIMENTAÇÃO", icone: "🍔", href: "/comercio", ativo: true, ordem: 3 },
-        { id: 4, nome: "TRANSPORTE & DELIVERY", icone: "🏍️", href: "/mototaxi", ativo: true, ordem: 4 },
-        { id: 5, nome: "UTILIDADES", icone: "💡", href: "/servicos", ativo: false, ordem: 5 },
+        { id: 4, nome: "TRANSPORTE & DELIVERY", icone: "🚚", href: "/mototaxi", ativo: true, ordem: 4 },
+        { id: 5, nome: "UTILIDADES", icone: "🛒", href: "/servicos", ativo: false, ordem: 5 },
         { id: 6, nome: "SERVIÇOS", icone: "🔧", href: "/servicos", ativo: true, ordem: 6 }
       ]
     },
@@ -31,7 +29,7 @@ const configuracaoPadrao = {
         { id: 9, nome: "AGRO E CAMPO", icone: "🌾", href: "/servicos", ativo: false, ordem: 3 },
         { id: 10, nome: "CONSTRUÇÃO", icone: "🏗️", href: "/servicos", ativo: false, ordem: 4 },
         { id: 11, nome: "ALUGUEL MÁQUINAS", icone: "🔨", href: "/servicos", ativo: false, ordem: 5 },
-        { id: 12, nome: "TECNOLOGIA", icone: "💻", href: "/servicos", ativo: false, ordem: 6 }
+        { id: 12, nome: "TECNOLOGIA", icone: "📱", href: "/servicos", ativo: false, ordem: 6 }
       ]
     },
     {
@@ -39,20 +37,20 @@ const configuracaoPadrao = {
       titulo: "Bloco 3 - Moda e Estilo",
       cards: [
         { id: 13, nome: "AUTOMOTIVO", icone: "🚗", href: "/servicos", ativo: false, ordem: 1 },
-        { id: 14, nome: "EDUCAÇÃO", icone: "📚", href: "/servicos", ativo: false, ordem: 2 },
+        { id: 14, nome: "EDUCAÇÃO", icone: "🎓", href: "/servicos", ativo: false, ordem: 2 },
         { id: 15, nome: "SAÚDE", icone: "🏥", href: "/servicos", ativo: false, ordem: 3 },
         { id: 16, nome: "MODA MASCULINA", icone: "👔", href: "/servicos", ativo: false, ordem: 4 },
         { id: 17, nome: "MODA FEMININA", icone: "👗", href: "/servicos", ativo: false, ordem: 5 },
-        { id: 18, nome: "BELEZA & ESTÉTICA", icone: "💇", href: "/servicos", ativo: false, ordem: 6 }
+        { id: 18, nome: "BELEZA & ESTÉTICA", icone: "💄", href: "/servicos", ativo: false, ordem: 6 }
       ]
     },
     {
       id: 4,
       titulo: "Bloco 4 - Novas Categorias",
       cards: [
-        { id: 19, nome: "BELEZA & ESTÉTICA", icone: "💅", href: "/servicos", ativo: false, ordem: 1 },
+        { id: 19, nome: "BELEZA & ESTÉTICA", icone: "💄", href: "/servicos", ativo: false, ordem: 1 },
         { id: 20, nome: "EVENTOS & ENTRETENIMENTO", icone: "🎉", href: "/servicos", ativo: false, ordem: 2 },
-        { id: 21, nome: "PET SHOP & ANIMAIS", icone: "🐕", href: "/servicos", ativo: false, ordem: 3 },
+        { id: 21, nome: "PET SHOP & ANIMAIS", icone: "🐶", href: "/servicos", ativo: false, ordem: 3 },
         { id: 22, nome: "FINANCEIRO", icone: "💰", href: "/servicos", ativo: false, ordem: 4 }
       ]
     }
@@ -172,7 +170,7 @@ export default function AdminConfiguracoesPage() {
                       card.ativo ? "bg-green-500 text-white" : "bg-gray-600 text-gray-300"
                     }`}
                   >
-                    {card.ativo ? "✅ Ativo" : "🔧 Em Construção"}
+                    {card.ativo ? "✅ Ativo" : "🚧 Em Construção"}
                   </button>
                 </div>
               ))}
