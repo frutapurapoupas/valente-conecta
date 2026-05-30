@@ -1,12 +1,11 @@
 "use client";
 
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/app/context/AppContext";
-import toast from "react-hot-toast";
-
-// Adicionado para desabilitar renderização estática
-export const dynamic = 'force-dynamic';
+import { Menu, X, ChevronRight, ChevronDown, Crown, Users, Settings, Utensils, Dumbbell, Truck, Wrench, Store, Activity, Shield, LogOut, Gift } from "lucide-react";
 
 // Estrutura completa do menu lateral
 const menuEstrutura = [
@@ -37,6 +36,7 @@ const menuEstrutura = [
     items: [
       { nome: "Gerenciar Usuários", href: "/admin/usuarios", status: "ativo" },
       { nome: "Gerenciar Planos", href: "/admin/planos", status: "ativo" },
+      { nome: "Gerenciar Benefícios", href: "/admin/beneficios", status: "ativo" },
       { nome: "IA & Automação", href: "/admin/ia", status: "construcao" },
       { nome: "Financeiro", href: "/admin/financeiro", status: "construcao" },
       { nome: "Marketing", href: "/admin/marketing", status: "construcao" }
@@ -321,12 +321,25 @@ const menuEstrutura = [
 export default function AdminMasterPage() {
   const router = useRouter();
   const { isAdmin, user } = useApp();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
   const [mounted, setMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (!mobile) {
+        setSidebarOpen(true);
+      } else {
+        setSidebarOpen(false);
+      }
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   if (!mounted) return null;
@@ -352,26 +365,53 @@ export default function AdminMasterPage() {
 
   return (
     <div className="min-h-screen bg-gray-900">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-green-400 to-green-700 p-4 flex items-center justify-between sticky top-0 z-50">
+      <header className="bg-gradient-to-r from-green-400 to-green-700 p-4 flex items-center justify-between sticky top-0 z-50 shadow-lg">
         <div className="flex items-center gap-3">
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-white">
-            <i className="fas fa-bars text-xl"></i>
+          <button 
+            onClick={() => setSidebarOpen(!sidebarOpen)} 
+            className="text-white p-2 hover:bg-white/20 rounded-xl transition-colors"
+            aria-label="Menu"
+          >
+            {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
-          <h1 className="text-white font-bold text-lg">👑 Admin Master</h1>
+          <Crown className="w-6 h-6 text-yellow-300" />
+          <h1 className="text-white font-bold text-lg hidden sm:block">Admin Master</h1>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="text-white text-sm">{user?.name}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-white text-sm hidden sm:block">{user?.name || "Admin"}</span>
           <div className="w-8 h-8 bg-white/30 rounded-full flex items-center justify-center">
             <i className="fas fa-user text-white"></i>
           </div>
         </div>
       </header>
 
-      <div className="flex">
-        {/* Menu Lateral */}
-        <div className={`${sidebarOpen ? "w-80" : "w-0"} transition-all duration-300 bg-gray-800 min-h-screen overflow-y-auto`}>
+      <div className="flex relative">
+        <div 
+          className={`
+            fixed md:relative z-40 transition-all duration-300 ease-in-out
+            bg-gray-800 min-h-screen overflow-y-auto
+            ${sidebarOpen ? 'left-0' : '-left-80 md:left-0'}
+            w-80 shadow-xl
+          `}
+        >
+          {sidebarOpen && isMobile && (
+            <div 
+              className="fixed inset-0 bg-black/50 z-[-1] md:hidden"
+              onClick={() => setSidebarOpen(false)}
+            />
+          )}
+          
           <div className="p-4 space-y-2">
+            <div className="flex items-center gap-3 p-3 mb-4 bg-white/5 rounded-xl">
+              <div className="w-10 h-10 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center">
+                <Crown className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-white font-bold text-sm truncate">{user?.name || "Admin"}</p>
+                <p className="text-gray-400 text-xs">Administrador Master</p>
+              </div>
+            </div>
+
             {menuEstrutura.map((menu, idx) => (
               <div key={idx} className="border-b border-gray-700 pb-2">
                 <button
@@ -393,6 +433,7 @@ export default function AdminMasterPage() {
                         onClick={() => {
                           if (item.status === "ativo") {
                             router.push(item.href);
+                            if (isMobile) setSidebarOpen(false);
                           } else {
                             router.push(`/em-construcao?servico=${encodeURIComponent(item.nome)}&categoria=${encodeURIComponent(menu.titulo)}`);
                           }
@@ -414,43 +455,51 @@ export default function AdminMasterPage() {
           </div>
         </div>
 
-        {/* Conteúdo Principal */}
-        <div className="flex-1 p-4">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+        <div className="flex-1 p-4 md:p-6 overflow-x-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
             <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-3">
               <p className="text-white/80 text-xs">Total Usuários</p>
-              <p className="text-2xl font-bold text-white">{stats.totalUsuarios}</p>
+              <p className="text-xl md:text-2xl font-bold text-white">{stats.totalUsuarios}</p>
             </div>
             <div className="bg-gradient-to-r from-green-600 to-green-800 rounded-2xl p-3">
               <p className="text-white/80 text-xs">Ativos</p>
-              <p className="text-2xl font-bold text-white">{stats.usuariosAtivos}</p>
+              <p className="text-xl md:text-2xl font-bold text-white">{stats.usuariosAtivos}</p>
             </div>
             <div className="bg-gradient-to-r from-red-600 to-red-800 rounded-2xl p-3">
               <p className="text-white/80 text-xs">Suspensos</p>
-              <p className="text-2xl font-bold text-white">{stats.usuariosSuspensos}</p>
+              <p className="text-xl md:text-2xl font-bold text-white">{stats.usuariosSuspensos}</p>
             </div>
             <div className="bg-gradient-to-r from-yellow-600 to-yellow-800 rounded-2xl p-3">
               <p className="text-white/80 text-xs">Novos Hoje</p>
-              <p className="text-2xl font-bold text-white">{stats.novosHoje}</p>
+              <p className="text-xl md:text-2xl font-bold text-white">{stats.novosHoje}</p>
             </div>
             <div className="bg-gradient-to-r from-purple-600 to-purple-800 rounded-2xl p-3">
               <p className="text-white/80 text-xs">Receita Mês</p>
-              <p className="text-2xl font-bold text-white">R$ {stats.receitaMes}</p>
+              <p className="text-xl md:text-2xl font-bold text-white">R$ {stats.receitaMes}</p>
             </div>
           </div>
 
           <div className="bg-gray-800 rounded-2xl p-6 text-center">
             <i className="fas fa-crown text-6xl text-yellow-500 mb-4"></i>
             <h2 className="text-white text-xl font-bold mb-2">Bem-vindo ao Admin Master</h2>
-            <p className="text-gray-400">Selecione uma opção no menu lateral para gerenciar o sistema</p>
-            <div className="mt-4 flex justify-center gap-3">
-              <button onClick={() => router.push("/admin/configuracoes")} className="bg-yellow-500 text-black px-4 py-2 rounded-xl font-bold">
+            <p className="text-gray-400 text-sm">Selecione uma opção no menu lateral para gerenciar o sistema</p>
+            <div className="mt-4 flex flex-col sm:flex-row justify-center gap-3">
+              <button onClick={() => router.push("/admin/configuracoes")} className="bg-yellow-500 text-black px-4 py-2 rounded-xl font-bold text-sm">
                 ⚙️ Configurar Home
               </button>
-              <button onClick={() => router.push("/admin/usuarios")} className="bg-blue-500 text-white px-4 py-2 rounded-xl font-bold">
+              <button onClick={() => router.push("/admin/usuarios")} className="bg-blue-500 text-white px-4 py-2 rounded-xl font-bold text-sm">
                 👥 Gerenciar Usuários
               </button>
+              <button onClick={() => router.push("/admin/beneficios")} className="bg-purple-500 text-white px-4 py-2 rounded-xl font-bold text-sm">
+                🎁 Gerenciar Benefícios
+              </button>
             </div>
+          </div>
+
+          <div className="mt-6 bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-3 text-center md:hidden">
+            <p className="text-yellow-400 text-xs">
+              📱 Toque no ícone ☰ no topo para abrir o menu lateral
+            </p>
           </div>
         </div>
       </div>

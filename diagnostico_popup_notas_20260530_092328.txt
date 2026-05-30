@@ -1,0 +1,98 @@
+=
+?? RADIOGRAFIA: POP UP DE NOTAS + EXIBIÇÃO ABAIXO DO INDIQUE
+=
+Data: 30/05/2026 09:23:30
+
+?? 1. VERIFICANDO POP UP DE NOTAS NA HOME
+-
+Procurando por POP UP/MODAL/TOAST...
+  ? Encontrado: 'modal' (4 ocorrências)
+  ? Encontrado: 'Modal' (6 ocorrências)
+  ? Encontrado: 'toast' (5 ocorrências)
+
+Procurando lógica de 'exibir uma única vez'...
+  ?? Nenhuma lógica de 'exibir uma única vez' encontrada!
+
+?? 2. VERIFICANDO ARQUIVOS DE NOTIFICAÇÃO/POPUP
+-
+  ? NENHUM arquivo específico de POP UP encontrado!
+
+?? 3. VERIFICANDO LÓGICA DE 'JÁ EXIBIDO' (CONTROLE DE 1ª VEZ)
+-
+  ?? Chave encontrada: 'admin_notificacoes_sistema' em page.tsx
+  ?? Chave encontrada: 'academia_alertas_config' em HealthNotificationBell.tsx
+  ?? Chave encontrada: 'ultimo_tipo_popup' em PopupDailyReward.tsx
+  ?? Chave encontrada: 'admin_notificacoes_demandas' em SolicitacaoModal.tsx
+  ?? Chave encontrada: 'cadastro_popup_shown' em CadastroPopup.tsx
+  ? Total de 5 chaves de controle encontradas
+
+?? 4. VERIFICANDO FLUXO COMPLETO (ADMIN ? POPUP ? EXIBIÇÃO)
+-
+4.1 Admin Master - Emissão de notificações:
+
+4.2 Home - Recebimento de notificações:
+  ? Home NÃO escuta eventos de notificação em tempo real!
+
+?? 5. VERIFICANDO SEÇÃO ABAIXO DO CARD 'INDIQUE E GANHE'
+-
+  ? Card 'Indique e Ganhe' encontrado na posição 1451
+
+  Conteúdo após o card (próximos 500 caracteres):
+  
+  Indique um amigo e ganhe R$5 de bônus!", importancia: "media", data: "Hoje" },
+    { id: 3, mensagem: "?? ACADEMIA: Nova funcionalidade de geolocalização disponível!", importancia: "alta", data: "Ontem" },
+  ];
+
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false); // ALTERADO: removido banner
+  const [isInstalling, setIsInstalling] = useState(false);
+  const [installSupported, setInstallSupported] = useStat
+  
+
+  ? NENHUMA referência a notas/avisos após o card!
+     ? As notas NÃO estão sendo renderizadas abaixo do card
+
+?? 6. VERIFICANDO QUAL POPUP ESTÁ CONFIGURADO
+-
+  Popups importados encontrados:
+    ? react-hot-toast em layout.tsx
+    ? ./CadastroPopup em CadastroPopupWrapper.tsx
+
+?? 7. VERIFICANDO BIBLIOTECAS DE POPUP
+-
+  ? Biblioteca encontrada: react-hot-toast
+
+=
+?? RELATÓRIO DE STATUS - REGRA DO POPUP + EXIBIÇÃO
+=
+
+Status da Regra: 'POP UP (1x) + EXIBIÇÃO ABAIXO DO INDIQUE'
+
+  ?? POP UP implementado: ? SIM
+  ?? Controle 'exibir 1x': ? SIM
+  ?? Exibição abaixo do Indique: ? NÃO
+
+=
+
+?? ARQUIVOS PARA VOCÊ ME ENVIAR (PARA ANÁLISE PRECISA):
+-
+
+Com base na radiografia, preciso que você me envie ESTES arquivos exatos:
+
+  ?? app/page.tsx (22.31 KB)
+  ?? app/admin/demandas/page.tsx (15.16 KB)
+  ?? hooks\useNotification.ts (0.26 KB)
+
+=
+?? INSTRUÇÕES:
+=
+
+1. Copie o conteúdo de CADA um dos arquivos listados acima
+2. Cole em um único arquivo .txt ou me envie um por um
+3. Eu vou analisar linha por linha para encontrar:
+   - ONDE está o código do popup (se existir)
+   - POR QUE não está funcionando
+   - O QUE precisa ser corrigido
+
+?? Relatório salvo em: diagnostico_popup_notas_20260530_092328.txt
+

@@ -1,0 +1,151 @@
+=
+?? ANÁLISE CIRÚRGICA - VALENTE CONECTA
+=
+Data: 30/05/2026 14:12:09
+
+
+=
+?? 1. MAPEANDO HOME PRINCIPAL (app/page.tsx)
+=
+
+
+FUNÇÕES DE BUSCA EXISTENTES:
+  ? handleSearch encontrada
+     ? Nome da função: handleSearch
+  ? Busca por voz encontrada
+
+IMPORTS EXISTENTES:
+  ?? import { useState, useRef, useEffect, Suspense } from "react"
+  ?? import { useRouter } from "next/navigation"
+  ?? import { useApp } from "@/app/context/AppContext"
+  ?? import toast from "react-hot-toast"
+  ?? import SolicitacaoModal from "@/app/components/SolicitacaoModal"
+  ?? import { Smartphone, Download, X, Bell, Shield } from "lucide-react"
+  ?? import { gerarSessaoTemp, isSessaoTempValida, isUserLoggedIn } from "@/lib/auth"
+
+ESTADOS REACT EXISTENTES:
+  ?? useState("")
+  ?? useState(1)
+  ?? useState({ open: false, servico: "", categoria: "" })
+  ?? useState([
+    { id: 1, mensagem: "?? Você recebeu R$ 5,00 de bônus por indicação!", lida: false, tipo: "bonus" },
+    { id: 2, mensagem: "?? Seu pedido na Cozinha foi confirmado!", lida: false, tipo: "pedido" },
+    { id: 3, mensagem: "?? Novo treino disponível na Academia!", lida: false, tipo: "treino" }
+  ])
+  ?? useState<any>(null)
+  ?? useState(false)
+  ?? useState(false)
+  ?? useState(true)
+  ?? useState(false)
+
+=
+?? 2. MAPEANDO ADMIN MASTER
+=
+
+? app/admin/page.tsx - 23.94 KB
+  ? Contém módulo financeiro
+? app/admin/demandas/page.tsx - 15.16 KB
+  ? Contém gestão de demandas
+? app/admin/financeiro/page.tsx - 0.79 KB
+  ? Contém módulo financeiro
+? app/admin/notificacoes/page.tsx - 38.51 KB
+? app/admin/usuarios/page.tsx - 15.28 KB
+
+=
+?? 3. MAPEANDO SERVIÇOS
+=
+
+? services/notificacaoService.ts - 17.4 KB
+? services/configuracoesService.ts - 11.44 KB
+? services/search/intelligentSearch.ts - 0 KB
+? services/walletService.ts - NÃO ENCONTRADO (será criado)
+? services/buscaInteligenteService.ts - NÃO ENCONTRADO (será criado)
+
+=
+?? 4. MAPEANDO COMPONENTES
+=
+
+? components/BuscaInteligente.tsx - NÃO ENCONTRADO (será criado)
+? components/PagamentoPix.tsx - NÃO ENCONTRADO (será criado)
+? components/SolicitacaoModal.tsx - NÃO ENCONTRADO (será criado)
+? components/NotificacoesAdminCard.tsx - NÃO ENCONTRADO (será criado)
+
+=
+?? 5. MAPEANDO APIs
+=
+
+? app/api/busca/pendente/route.ts - NÃO ENCONTRADO (será criado)
+? app/api/pix/gerarQR/route.ts - NÃO ENCONTRADO (será criado)
+? app/api/pix/webhook/route.ts - NÃO ENCONTRADO (será criado)
+? app/api/telegram/send/route.ts
+? app/api/configuracoes/route.ts
+
+=
+?? 6. VERIFICANDO TABELAS SUPABASE
+=
+
+?? Verificação manual necessária no Supabase Console
+
+Tabelas que DEVEM existir para não conflitar:
+
+? TABELAS EXISTENTES (NÃO MODIFICAR):
+  • usuarios
+  • notificacoes_admin
+  • grupos_dinamicos
+  • usuarios_grupos
+  • configuracoes_sistema
+  • notificacoes_logs
+  • push_subscriptions
+
+?? TABELAS A SEREM CRIADAS (SEM CONFLITO):
+  • wallet (NOVA)
+  • transacoes (NOVA)
+  • pagamentos_pix (NOVA)
+  • busca_pendente (NOVA)
+  • busca_notificacoes (NOVA)
+
+=
+?? 7. VERIFICANDO BIBLIOTECAS
+=
+
+BIBLIOTECAS INSTALADAS:
+  ? react-hot-toast - INSTALADA
+  ? lucide-react - INSTALADA
+  ? bull - INSTALADA
+  ? ioredis - INSTALADA
+  ? @supabase/supabase-js - INSTALADA
+
+=
+?? 8. ARQUIVOS PARA VOCÊ ME ENVIAR
+=
+
+
+Para iniciar a implementação SEM CONFLITOS, me envie:
+
+  ?? app/page.tsx (25.96 KB) - ENVIAR
+  ?? app/admin/demandas/page.tsx (15.16 KB) - ENVIAR
+  ?? app/admin/financeiro/page.tsx (0.79 KB) - ENVIAR
+
+Após receber cada arquivo, eu:
+  1. Analiso linha por linha
+  2. Identifico onde adicionar código novo
+  3. Preservo 100% do código existente
+  4. Adiciono apenas o necessário
+  5. Devolvo o arquivo atualizado + novos arquivos
+
+=
+?? 9. GARANTIAS DE IMPLEMENTAÇÃO
+=
+
+
+?? COMPROMISSOS:
+
+  ? NENHUMA funcionalidade existente será removida
+  ? APENAS código NOVO será adicionado
+  ? FALLBACKS para garantir funcionamento original
+  ? COMPONENTES ISOLADOS (não interferem)
+  ? TESTES UNITÁRIOS antes de devolver
+
+=
+?? Relatório salvo em: analise_cirurgica_20260530_141207.txt
+=

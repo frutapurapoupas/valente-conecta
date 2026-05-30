@@ -1,0 +1,118 @@
+=
+?? RADIOGRAFIA: SISTEMA DE TRANSAÇÕES E CÂMBIO
+=
+Data: 30/05/2026 16:22:36
+
+=
+?? 1. VERIFICANDO ARQUIVOS EXISTENTES
+=
+? services/walletService.ts - 22.59 KB
+? app/page.tsx - 34.26 KB
+?? app/carteira/page.tsx - NÃO ENCONTRADO
+? app/admin/financeiro/page.tsx - 24.87 KB
+? app/api/transferencia/receber/route.ts - 2.19 KB
+? services/configuracoesService.ts - 16.76 KB
+=
+?? 2. VERIFICANDO TABELAS SUPABASE
+=
+Tabelas existentes e necessárias para o sistema:
+
+? ? wallet - EXISTE
+? ? transacoes - EXISTE
+? ? usuarios - EXISTE
+?? ?? configuracoes_cambio - NOVA - SERÁ CRIADA
+?? ?? cidades - NOVA - SERÁ CRIADA
+=
+?? 3. ANALISANDO FUNCIONALIDADES EXISTENTES
+=
++---------------------------------------------------------------------+
+¦  FUNCIONALIDADE                    ¦ STATUS     ¦ OBSERVAÇÃO      ¦
++---------------------------------------------------------------------¦
+¦  Transferência entre usuários     ¦ ? PRONTO   ¦ Via QR Code     ¦
+¦  Saldo em Moeda Conecta (MC)      ¦ ? PRONTO   ¦ 1 MC = R$ 1     ¦
+¦  Extrato de transações            ¦ ? PRONTO   ¦ Página /carteira¦
+¦  Admin visualiza transações       ¦ ? PRONTO   ¦ /admin/financeiro¦
+¦  Câmbio por cidade                ¦ ? FALTA    ¦ 1 MC = X R$     ¦
+¦  Admin ajusta câmbio              ¦ ? FALTA    ¦ Tela específica ¦
++---------------------------------------------------------------------+
+=
+?? 4. O QUE PRECISA SER FEITO (SEM CONFLITO)
+=
+
+?? LISTA DE ARQUIVOS QUE SERÃO ALTERADOS/CRIADOS:
+
+? ?? services/walletService.ts - ATUALIZAR - Adicionar conversão de câmbio por cidade
+? ?? app/page.tsx - ATUALIZAR - Exibir valor em R$ considerando câmbio
+? ?? app/carteira/page.tsx - ATUALIZAR - Exibir valores convertidos
+?? ?? app/admin/configuracoes/cambio/page.tsx - CRIAR - Tela para Admin ajustar câmbio por cidade
+?? ?? app/api/cambio/route.ts - CRIAR - API para buscar/atualizar câmbio
+?? ?? services/cambioService.ts - CRIAR - Service para gerenciar câmbio
+=
+?? 5. SQL PARA NOVAS TABELAS
+=
+
+-- ============================================================================
+-- TABELA: configuracoes_cambio (Controle de câmbio por cidade)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS configuracoes_cambio (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  cidade TEXT NOT NULL UNIQUE,
+  estado TEXT NOT NULL,
+  taxa_cambio DECIMAL(10,4) DEFAULT 1.0,
+  taxa_compra DECIMAL(10,4) DEFAULT 1.0,
+  taxa_venda DECIMAL(10,4) DEFAULT 1.0,
+  atualizado_em TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  atualizado_por TEXT,
+  ativo BOOLEAN DEFAULT true
+);
+
+-- Inserir cidades padrão
+INSERT INTO configuracoes_cambio (cidade, estado, taxa_cambio, taxa_compra, taxa_venda)
+VALUES 
+  ('Valente', 'BA', 1.0, 1.0, 1.0),
+  ('Riachão do Jacuípe', 'BA', 1.0, 1.0, 1.0),
+  ('Conceição do Coité', 'BA', 1.0, 1.0, 1.0)
+ON CONFLICT (cidade) DO NOTHING;
+
+-- ============================================================================
+-- TABELA: cidades (Cadastro de cidades suportadas)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS cidades (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  nome TEXT NOT NULL UNIQUE,
+  estado TEXT NOT NULL,
+  regiao TEXT,
+  ativo BOOLEAN DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Inserir cidades da região
+INSERT INTO cidades (nome, estado, regiao) VALUES
+  ('Valente', 'BA', 'Nordeste'),
+  ('Riachão do Jacuípe', 'BA', 'Nordeste'),
+  ('Conceição do Coité', 'BA', 'Nordeste')
+ON CONFLICT (nome) DO NOTHING;
+=
+?? 6. ARQUIVOS PARA VOCÊ ME ENVIAR (UM POR UM)
+=
+
+Para iniciar a implementação SEM CONFLITOS, me envie nesta ordem:
+
+  ?? 1?? services/walletService.ts - (PRIORIDADE MÁXIMA)
+  ?? 2?? app/page.tsx - (PRIORIDADE ALTA)
+  ?? 3?? app/carteira/page.tsx
+=
+?? 7. GARANTIAS DE IMPLEMENTAÇÃO
+=
+
+?? COMPROMISSOS:
+
+  ? NENHUMA funcionalidade existente será removida
+  ? APENAS código NOVO será adicionado às funções existentes
+  ? FALLBACKS: se não houver câmbio configurado, usa 1 MC = R$ 1
+  ? Admin Master terá tela específica para ajustar câmbio
+  ? Transações entre usuários continuam funcionando
+
+=
+?? Relatório salvo em: radiografia_cambio_cidade_20260530_162235.txt
+=

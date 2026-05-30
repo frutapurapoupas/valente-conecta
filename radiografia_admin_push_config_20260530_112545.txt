@@ -1,0 +1,124 @@
+=
+?? RADIOGRAFIA: ADMIN MASTER - LOCAL PARA CONFIGURAÇÕES PUSH
+=
+Data: 30/05/2026 11:25:47
+Local: C:\valente_conecta
+
+=
+?? 1. MAPEANDO PÁGINAS DO ADMIN MASTER
+=
+? Encontrado: app/admin/page.tsx (23.94 KB)
+? Encontrado: app/admin/dashboard/page.tsx (1.38 KB)
+? Encontrado: app/admin/notificacoes/page.tsx (34.88 KB)
+? Encontrado: app/admin/demandas/page.tsx (15.16 KB)
+? Encontrado: app/admin/usuarios/page.tsx (5.47 KB)
+? Encontrado: app/admin/planos/page.tsx (4.19 KB)
+? Encontrado: app/admin/comercio/page.tsx (3.12 KB)
+? Encontrado: app/admin/academia/page.tsx (5.44 KB)
+? Encontrado: app/admin/mototaxi/page.tsx (2.71 KB)
+? Encontrado: app/admin/servicos/page.tsx (0.78 KB)
+? Encontrado: app/admin/financeiro/page.tsx (0.79 KB)
+? Encontrado: app/admin/ia/page.tsx (0.79 KB)
+? Encontrado: app/admin/configuracoes/page.tsx (7.62 KB)
+  ? Não encontrado: app/admin/configuracoes/geral/page.tsx
+  ? Não encontrado: app/admin/configuracoes/notificacoes/page.tsx
+
+Total de páginas Admin encontradas: 13
+=
+?? 2. ANALISANDO FUNCIONALIDADES DE CADA PÁGINA
+=
+
+?? FUNÇÕES DETECTADAS POR PÁGINA:
+PÁGINA                              PUSH       NOTIFICAÇÃO  CONFIG       ENVIO       
+page.tsx                            ? SIM      ? SIM        ? SIM        ? NÃO       
+dashboard/page.tsx                  ? NÃO      ? NÃO        ? NÃO        ? NÃO       
+notificacoes/page.tsx               ? SIM      ? SIM        ? NÃO        ? SIM       
+demandas/page.tsx                   ? SIM      ? NÃO        ? NÃO        ? SIM       
+usuarios/page.tsx                   ? SIM      ? NÃO        ? NÃO        ? NÃO       
+planos/page.tsx                     ? SIM      ? NÃO        ? NÃO        ? NÃO       
+comercio/page.tsx                   ? SIM      ? NÃO        ? NÃO        ? NÃO       
+academia/page.tsx                   ? SIM      ? NÃO        ? NÃO        ? NÃO       
+mototaxi/page.tsx                   ? SIM      ? NÃO        ? NÃO        ? NÃO       
+servicos/page.tsx                   ? SIM      ? NÃO        ? NÃO        ? NÃO       
+financeiro/page.tsx                 ? SIM      ? NÃO        ? NÃO        ? NÃO       
+ia/page.tsx                         ? SIM      ? NÃO        ? NÃO        ? NÃO       
+configuracoes/page.tsx              ? SIM      ? NÃO        ? SIM        ? NÃO       
+=
+?? 3. ANALISANDO PÁGINA EXISTENTE DE NOTIFICAÇÕES
+=
+? Página encontrada: app/admin/notificacoes/page.tsx
+?   ? Já implementa envio de Push Notification
+?   ? Já tem seleção de público alvo (grupo/usuário)
+?   ? Tem opção de agendamento/expiração
+  ? Tamanho: 34.88 KB
+=
+?? 4. ANALISANDO PÁGINAS DE CONFIGURAÇÃO
+=
+? Encontrado: app/admin/configuracoes/page.tsx
+  ? Já tem configurações de canais de comunicação
+=
+?? 5. ANALISANDO MENU LATERAL DO ADMIN
+=
+=
+?? 6. VERIFICANDO MÓDULOS ESPECÍFICOS DE PUSH
+=
+? Encontrado: app/api/push
+  ? Não encontrado: services/pushService.ts
+  ? Não encontrado: hooks/usePushNotification.ts
+? Encontrado: components/PushSubscriptionManager.tsx
+  ? Não encontrado: components/AdminPushConfig.tsx
+=
+?? 7. RECOMENDAÇÃO: ONDE COLOCAR AS CONFIGURAÇÕES PUSH
+=
+
+Com base na análise, recomenda-se a seguinte estrutura:
+
++-----------------------------------------------------------------+
+¦                    ADMIN MASTER - ESTRUTURA                     ¦
++-----------------------------------------------------------------¦
+¦                                                                 ¦
+¦  ?? NOTIFICAÇÕES (/admin/notificacoes) - ? JÁ EXISTE           ¦
+¦     +-- Criar nova notificação                                  ¦
+¦     +-- Escolher tipo (aviso/alerta/promoção)                   ¦
+¦     +-- Escolher importância (alta/média/baixa)                 ¦
+¦     +-- ?? Canais: Telegram / Push / Popup única vez            ¦
+¦     +-- ?? Público alvo: Todos / Grupos / Usuário específico    ¦
+¦     +-- Listar notificações enviadas                            ¦
+¦                                                                 ¦
+¦  ?? CONFIGURAÇÕES (/admin/configuracoes) - ?? CRIAR SE NÃO EXISTE¦
+¦     +-- Geral (nome app, logo, etc)                             ¦
+¦     +-- ?? Push Notification (VAPID keys, Firebase config)      ¦
+¦     +-- ?? Telegram (bot token, chat ID, grupos)                ¦
+¦     +-- E-mail (SMTP, etc)                                      ¦
+¦     +-- WhatsApp (API, etc)                                     ¦
+¦                                                                 ¦
+¦  ?? USUÁRIOS (/admin/usuarios) - JÁ EXISTE                      ¦
+¦     +-- Listar usuários                                         ¦
+¦     +-- ?? Gerenciar grupos (atribuir usuários a grupos)        ¦
+¦     +-- ?? Ver subscriptions de push por usuário                ¦
+¦                                                                 ¦
++-----------------------------------------------------------------+
+
+=
+?? 8. CONCLUSÃO
+=
+?? ANÁLISE FINAL:
+
+1. A página para ENVIAR notificações já existe:
+   ? /admin/notificacoes/page.tsx
+   ? Deve ser NELA que o Admin Master cria e envia as mensagens
+
+2. Falta uma página de CONFIGURAÇÕES das APIs de Push:
+   ? /admin/configuracoes/notificacoes (OU /admin/configuracoes/push)
+   ? Deve conter: VAPID keys, Firebase config, Telegram bot
+
+3. Os arquivos QUE JÁ ESTÃO PRONTOS para integração:
+   ? app/api/telegram/send/route.ts (API do Telegram)
+   ? services/notificacaoService.ts (Service completo)
+
+4. Arquivo a ser CRIADO/ATUALIZADO:
+   ? app/admin/configuracoes/notificacoes/page.tsx (configurações de push)
+
+=
+?? Relatório salvo em: radiografia_admin_push_config_20260530_112545.txt
+=
