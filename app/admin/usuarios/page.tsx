@@ -1,19 +1,22 @@
 "use client";
 
-import { useState } from "react";
+export const dynamic = 'force-dynamic';
+
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/app/context/AppContext";
+import { supabase } from "@/lib/supabaseClient";
 import toast from "react-hot-toast";
 
 interface Usuario {
-  id: number;
+  id: string;
   nome: string;
+  whatsapp: string;
   email: string;
-  telefone: string;
   plano: string;
-  status: "ativo" | "suspenso" | "pendente";
-  dataCadastro: string;
-  ultimoAcesso: string;
+  role: string;
+  created_at: string;
+  wallet: number;
 }
 
 export default function AdminUsuariosPage() {
@@ -21,42 +24,60 @@ export default function AdminUsuariosPage() {
   const { isAdmin } = useApp();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("todos");
+  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    carregarUsuarios();
+  }, [isAdmin]);
+
+  const carregarUsuarios = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('usuarios')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error("Erro ao carregar usuários:", error);
+      toast.error("Erro ao carregar usuários");
+    } else {
+      setUsuarios(data || []);
+    }
+    setLoading(false);
+  };
 
   if (!isAdmin) {
     router.push("/login");
     return null;
   }
 
-  const [usuarios, setUsuarios] = useState<Usuario[]>([
-    { id: 1, nome: "João Silva", email: "joao@email.com", telefone: "(75) 99999-1111", plano: "Premium", status: "ativo", dataCadastro: "01/05/2026", ultimoAcesso: "10/05/2026" },
-    { id: 2, nome: "Maria Santos", email: "maria@email.com", telefone: "(75) 99999-2222", plano: "Básico", status: "ativo", dataCadastro: "02/05/2026", ultimoAcesso: "09/05/2026" },
-    { id: 3, nome: "Pedro Costa", email: "pedro@email.com", telefone: "(75) 99999-3333", plano: "Grátis", status: "suspenso", dataCadastro: "03/05/2026", ultimoAcesso: "05/05/2026" },
-    { id: 4, nome: "Ana Paula", email: "ana@email.com", telefone: "(75) 99999-4444", plano: "Premium", status: "ativo", dataCadastro: "04/05/2026", ultimoAcesso: "10/05/2026" },
-    { id: 5, nome: "Carlos Lima", email: "carlos@email.com", telefone: "(75) 99999-5555", plano: "Grátis", status: "pendente", dataCadastro: "07/05/2026", ultimoAcesso: "-" },
-  ]);
-
   const filtrarUsuarios = () => {
     let filtered = usuarios;
     if (searchTerm) {
-      filtered = filtered.filter(u => u.nome.toLowerCase().includes(searchTerm.toLowerCase()) || u.email.toLowerCase().includes(searchTerm.toLowerCase()));
-    }
-    if (filterStatus !== "todos") {
-      filtered = filtered.filter(u => u.status === filterStatus);
+      filtered = filtered.filter(u => 
+        u.nome?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        u.whatsapp?.includes(searchTerm)
+      );
     }
     return filtered;
   };
 
-  const alterarStatus = (id: number, novoStatus: "ativo" | "suspenso" | "pendente") => {
-    setUsuarios(prev => prev.map(u => u.id === id ? { ...u, status: novoStatus } : u));
-    toast.success(`Usuário ${novoStatus === "ativo" ? "liberado" : novoStatus === "suspenso" ? "suspenso" : "pendente"} com sucesso!`);
-  };
-
   const stats = {
     total: usuarios.length,
-    ativos: usuarios.filter(u => u.status === "ativo").length,
-    suspensos: usuarios.filter(u => u.status === "suspenso").length,
-    pendentes: usuarios.filter(u => u.status === "pendente").length
+    ativos: usuarios.filter(u => u.role === 'user').length,
+    admins: usuarios.filter(u => u.role === 'admin').length
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 pb-20">
@@ -65,107 +86,70 @@ export default function AdminUsuariosPage() {
         <h1 className="text-white font-bold text-xl">👥 Gerenciar Usuários</h1>
       </header>
 
-      {/* Stats */}
-      <div className="p-4 grid grid-cols-4 gap-3">
+      <div className="p-4 grid grid-cols-3 gap-3">
         <div className="bg-gray-800 rounded-2xl p-3 text-center">
           <p className="text-2xl font-bold text-white">{stats.total}</p>
           <p className="text-xs text-gray-400">Total</p>
         </div>
         <div className="bg-gray-800 rounded-2xl p-3 text-center">
           <p className="text-2xl font-bold text-green-400">{stats.ativos}</p>
-          <p className="text-xs text-gray-400">Ativos</p>
+          <p className="text-xs text-gray-400">Usuários</p>
         </div>
         <div className="bg-gray-800 rounded-2xl p-3 text-center">
-          <p className="text-2xl font-bold text-red-400">{stats.suspensos}</p>
-          <p className="text-xs text-gray-400">Suspensos</p>
-        </div>
-        <div className="bg-gray-800 rounded-2xl p-3 text-center">
-          <p className="text-2xl font-bold text-yellow-400">{stats.pendentes}</p>
-          <p className="text-xs text-gray-400">Pendentes</p>
+          <p className="text-2xl font-bold text-yellow-400">{stats.admins}</p>
+          <p className="text-xs text-gray-400">Admins</p>
         </div>
       </div>
 
-      {/* Busca e Filtros */}
       <div className="px-4 mb-4">
         <div className="flex gap-2">
           <div className="flex-1 flex items-center bg-gray-800 rounded-xl px-3 py-2">
             <i className="fas fa-search text-gray-400 mr-2"></i>
             <input
               type="text"
-              placeholder="Buscar por nome ou email..."
+              placeholder="Buscar por nome, email ou WhatsApp..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="flex-1 bg-transparent outline-none text-white"
             />
           </div>
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="bg-gray-800 rounded-xl px-3 py-2 text-white"
-          >
-            <option value="todos">Todos</option>
-            <option value="ativo">Ativos</option>
-            <option value="suspenso">Suspensos</option>
-            <option value="pendente">Pendentes</option>
-          </select>
+          <button onClick={carregarUsuarios} className="bg-blue-500 text-white px-4 py-2 rounded-xl">
+            <i className="fas fa-sync-alt"></i>
+          </button>
         </div>
       </div>
 
-      {/* Lista de Usuários */}
       <div className="px-4 space-y-3">
         {filtrarUsuarios().map(usuario => (
           <div key={usuario.id} className="bg-gray-800 rounded-2xl p-4">
             <div className="flex justify-between items-start">
               <div>
                 <h3 className="text-white font-bold">{usuario.nome}</h3>
-                <p className="text-gray-400 text-sm">{usuario.email}</p>
-                <p className="text-gray-500 text-xs">{usuario.telefone}</p>
+                <p className="text-gray-400 text-sm">{usuario.email || "Sem email"}</p>
+                <p className="text-gray-500 text-xs">{usuario.whatsapp}</p>
                 <div className="flex gap-3 mt-2">
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    usuario.plano === "Premium" ? "bg-yellow-500/20 text-yellow-400" :
-                    usuario.plano === "Básico" ? "bg-blue-500/20 text-blue-400" :
-                    "bg-gray-500/20 text-gray-400"
-                  }`}>
-                    {usuario.plano}
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400">
+                    {usuario.role === 'admin' ? '👑 Admin' : '👤 Usuário'}
                   </span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    usuario.status === "ativo" ? "bg-green-500/20 text-green-400" :
-                    usuario.status === "suspenso" ? "bg-red-500/20 text-red-400" :
-                    "bg-yellow-500/20 text-yellow-400"
-                  }`}>
-                    {usuario.status === "ativo" ? "✅ Ativo" : usuario.status === "suspenso" ? "❌ Suspenso" : "⏳ Pendente"}
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/20 text-green-400">
+                    💰 R$ {usuario.wallet || 0}
                   </span>
                 </div>
               </div>
-              <div className="flex gap-2">
-                {usuario.status !== "ativo" && (
-                  <button onClick={() => alterarStatus(usuario.id, "ativo")} className="bg-green-500/20 text-green-400 p-2 rounded-xl text-sm">
-                    <i className="fas fa-check-circle"></i>
-                  </button>
-                )}
-                {usuario.status !== "suspenso" && (
-                  <button onClick={() => alterarStatus(usuario.id, "suspenso")} className="bg-red-500/20 text-red-400 p-2 rounded-xl text-sm">
-                    <i className="fas fa-ban"></i>
-                  </button>
-                )}
-                <button className="bg-blue-500/20 text-blue-400 p-2 rounded-xl text-sm">
-                  <i className="fas fa-edit"></i>
-                </button>
-              </div>
             </div>
             <div className="mt-3 pt-3 border-t border-gray-700 flex justify-between text-xs text-gray-500">
-              <span>📅 Cadastro: {usuario.dataCadastro}</span>
-              <span>🕐 Último acesso: {usuario.ultimoAcesso}</span>
+              <span>📅 Cadastro: {new Date(usuario.created_at).toLocaleDateString()}</span>
+              <span>🆔 ID: {usuario.id.slice(0, 8)}...</span>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="p-4">
-        <button className="w-full bg-yellow-500 text-black py-3 rounded-2xl font-bold">
-          + Adicionar Novo Usuário
-        </button>
-      </div>
+      {filtrarUsuarios().length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-gray-400">Nenhum usuário encontrado</p>
+        </div>
+      )}
     </div>
   );
 }

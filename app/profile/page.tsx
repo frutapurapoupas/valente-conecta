@@ -3,10 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/app/context/AppContext";
-import { User, Mail, Phone, Wallet, Copy, LogOut, ArrowLeft, CheckCircle, Edit2, Save, X, Calendar } from "lucide-react";
+import { User, Mail, Phone, Wallet, Copy, LogOut, ArrowLeft, CheckCircle, Edit2, Save, X, Calendar, Crown } from "lucide-react";
 import toast from "react-hot-toast";
 
-// Adicionado para desabilitar renderização estática
 export const dynamic = 'force-dynamic';
 
 export default function ProfilePage() {
@@ -115,15 +114,9 @@ export default function ProfilePage() {
   };
 
   const handleLogout = () => {
-    // Limpar dados de sessão
     logout();
-    
-    // Limpar dados específicos do usuário (opcional)
     localStorage.removeItem("valente_user");
-    
     toast.success("👋 Logout realizado com sucesso!");
-    
-    // Redirecionar para login
     router.push("/login");
   };
 
@@ -154,9 +147,21 @@ export default function ProfilePage() {
             <span>MEU PERFIL</span>
           </div>
           {!editando ? (
-            <button onClick={() => setEditando(true)} className="relative group">
-              <Edit2 className="w-6 h-6 text-yellow-400" />
-            </button>
+            <div className="flex gap-2">
+              {/* BOTÃO ADMIN MASTER - SOMENTE PARA ADMIN */}
+              {isAdmin && (
+                <button 
+                  onClick={() => router.push("/admin")} 
+                  className="relative group bg-yellow-500/20 hover:bg-yellow-500/30 p-2 rounded-xl transition-all"
+                  title="Admin Master"
+                >
+                  <Crown className="w-5 h-5 text-yellow-400" />
+                </button>
+              )}
+              <button onClick={() => setEditando(true)} className="relative group">
+                <Edit2 className="w-6 h-6 text-yellow-400" />
+              </button>
+            </div>
           ) : (
             <div className="flex gap-2">
               <button onClick={salvarAlteracoes} className="p-1">
@@ -296,7 +301,6 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Botão Sair - DESTAQUE */}
         <button
           onClick={handleLogout}
           className="w-full py-4 bg-red-500/30 border-2 border-red-500 text-red-400 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-red-500/50 hover:text-white transition-all duration-300"
@@ -305,14 +309,13 @@ export default function ProfilePage() {
           SAIR DA CONTA
         </button>
 
-        {/* Dica para admin */}
         {isAdmin && (
           <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-3 text-center">
             <p className="text-yellow-400 text-sm">
               👑 Você está logado como Administrador Master
             </p>
             <p className="text-yellow-400/70 text-xs mt-1">
-              Para testar como usuário comum, clique em "SAIR DA CONTA" e faça login com uma conta normal
+              Clique no ícone 👑 no topo da tela para acessar o painel administrativo
             </p>
           </div>
         )}
