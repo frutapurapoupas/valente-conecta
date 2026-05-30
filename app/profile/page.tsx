@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/app/context/AppContext";
-import { User, Mail, Phone, Wallet, Copy, LogOut, ArrowLeft, CheckCircle, Edit2, Save, X, Calendar, Crown, Gift } from "lucide-react";
+import { User, Mail, Phone, Wallet, Copy, LogOut, ArrowLeft, CheckCircle, Edit2, Save, X, Calendar, Crown, Gift, History } from "lucide-react";
 import toast from "react-hot-toast";
 
 export const dynamic = 'force-dynamic';
@@ -148,7 +148,6 @@ export default function ProfilePage() {
           </div>
           {!editando ? (
             <div className="flex gap-2">
-              {/* BOTÃO ADMIN MASTER - SOMENTE PARA ADMIN */}
               {isAdmin && (
                 <button 
                   onClick={() => router.push("/admin")} 
@@ -270,11 +269,23 @@ export default function ProfilePage() {
           </div>
           <div className="p-5 text-center">
             <p className="text-3xl font-bold text-green-400">R$ {dadosExibicao.wallet.toFixed(2)}</p>
-            <button className="mt-3 bg-green-500 text-black px-6 py-2 rounded-xl font-semibold text-sm hover:bg-green-400 transition">
+            <button 
+              onClick={() => router.push("/recarga")}
+              className="mt-3 bg-green-500 text-black px-6 py-2 rounded-xl font-semibold text-sm hover:bg-green-400 transition"
+            >
               Adicionar Saldo
             </button>
           </div>
         </div>
+
+        {/* BOTÃO EXTRATO - NOVO */}
+        <button
+          onClick={() => router.push("/extrato")}
+          className="w-full py-4 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-3 hover:from-blue-700 hover:to-cyan-700 transition-all duration-300"
+        >
+          <History className="w-5 h-5" />
+          📊 Meu Extrato e Transações
+        </button>
 
         <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl overflow-hidden">
           <div className="bg-gradient-to-r from-purple-600/30 to-pink-600/30 px-5 py-3 border-b border-white/10">
@@ -301,7 +312,6 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* BOTÃO DE INDICAÇÕES - NOVO */}
         <button
           onClick={() => router.push("/indicacoes")}
           className="w-full py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-3 hover:from-purple-700 hover:to-indigo-700 transition-all duration-300"
