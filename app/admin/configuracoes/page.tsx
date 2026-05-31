@@ -1,10 +1,11 @@
 "use client";
 
-export const dynamic = 'force-dynamic';  // ← ÚNICA LINHA ADICIONADA
+export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/app/context/AppContext";
+import { ArrowLeft, Save, CheckCircle, XCircle, Eye, EyeOff, Settings } from "lucide-react";
 import toast from "react-hot-toast";
 
 // Configuração padrão dos cards da Home
@@ -124,52 +125,87 @@ export default function AdminConfiguracoesPage() {
     toast.success("Todos os cards do bloco desativados!");
   };
 
+  const totalCardsAtivos = config.blocos.reduce((acc, bloco) => 
+    acc + bloco.cards.filter(card => card.ativo).length, 0);
+  const totalCards = config.blocos.reduce((acc, bloco) => acc + bloco.cards.length, 0);
+
   return (
     <div className="min-h-screen bg-gray-900 pb-20">
-      <header className="bg-gradient-to-r from-green-400 to-green-700 p-4 flex items-center justify-between sticky top-0 z-40">
+      <header className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4 flex items-center justify-between sticky top-0 z-40">
         <div className="flex items-center gap-3">
-          <button onClick={() => router.push("/admin")}><i className="fas fa-arrow-left text-white text-xl"></i></button>
+          <button onClick={() => router.push("/admin")} className="text-white">
+            <ArrowLeft className="w-6 h-6" />
+          </button>
+          <Settings className="w-6 h-6 text-white" />
           <h1 className="text-white font-bold text-xl">⚙️ Configuração da Home</h1>
         </div>
-        <button onClick={salvarConfiguracao} className="bg-yellow-500 text-black px-4 py-2 rounded-xl font-bold">
-          💾 Salvar Tudo
+        <button 
+          onClick={salvarConfiguracao} 
+          className="bg-yellow-500 text-black px-4 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-yellow-600 transition"
+        >
+          <Save className="w-4 h-4" />
+          Salvar Tudo
         </button>
       </header>
 
-      <div className="p-4">
+      <div className="p-4 max-w-6xl mx-auto">
+        {/* Cards de estatísticas */}
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl p-4 text-white text-center">
+            <p className="text-2xl font-bold">{totalCards}</p>
+            <p className="text-sm opacity-90">Total de Cards</p>
+          </div>
+          <div className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl p-4 text-white text-center">
+            <p className="text-2xl font-bold">{totalCardsAtivos}</p>
+            <p className="text-sm opacity-90">Ativos</p>
+          </div>
+          <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-2xl p-4 text-white text-center">
+            <p className="text-2xl font-bold">{totalCards - totalCardsAtivos}</p>
+            <p className="text-sm opacity-90">Em Construção</p>
+          </div>
+        </div>
+
         <div className="bg-yellow-500/20 border border-yellow-500 rounded-2xl p-4 mb-6">
-          <p className="text-yellow-400 text-sm">
-            <i className="fas fa-info-circle mr-2"></i>
+          <p className="text-yellow-400 text-sm flex items-center gap-2">
+            <span className="text-lg">ℹ️</span>
             Controle quais categorias aparecem na Home principal. Cards desativados ficarão "Em Construção" para usuários.
           </p>
         </div>
 
         {config.blocos.map(bloco => (
           <div key={bloco.id} className="bg-gray-800 rounded-2xl p-4 mb-6">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
               <h2 className="text-white font-bold text-lg">{bloco.titulo}</h2>
               <div className="flex gap-2">
-                <button onClick={() => ativarTodos(bloco.id)} className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs">
-                  Ativar Todos
+                <button 
+                  onClick={() => ativarTodos(bloco.id)} 
+                  className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs hover:bg-green-500/30 transition flex items-center gap-1"
+                >
+                  <Eye className="w-3 h-3" /> Ativar Todos
                 </button>
-                <button onClick={() => desativarTodos(bloco.id)} className="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-xs">
-                  Desativar Todos
+                <button 
+                  onClick={() => desativarTodos(bloco.id)} 
+                  className="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-xs hover:bg-red-500/30 transition flex items-center gap-1"
+                >
+                  <EyeOff className="w-3 h-3" /> Desativar Todos
                 </button>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {bloco.cards.map(card => (
-                <div key={card.id} className={`flex items-center justify-between p-3 rounded-xl border ${
+                <div key={card.id} className={`flex items-center justify-between p-3 rounded-xl border transition ${
                   card.ativo ? "bg-green-500/10 border-green-500" : "bg-gray-700/50 border-gray-600"
                 }`}>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <span className="text-2xl">{card.icone}</span>
-                    <span className="text-white text-sm">{card.nome}</span>
+                    <span className="text-white text-sm font-medium">{card.nome}</span>
                   </div>
                   <button
                     onClick={() => toggleCard(bloco.id, card.id)}
-                    className={`px-3 py-1 rounded-full text-xs font-bold ${
-                      card.ativo ? "bg-green-500 text-white" : "bg-gray-600 text-gray-300"
+                    className={`px-3 py-1 rounded-full text-xs font-bold transition ${
+                      card.ativo 
+                        ? "bg-green-500 text-white hover:bg-green-600" 
+                        : "bg-gray-600 text-gray-300 hover:bg-gray-500"
                     }`}
                   >
                     {card.ativo ? "✅ Ativo" : "🚧 Em Construção"}
@@ -179,6 +215,14 @@ export default function AdminConfiguracoesPage() {
             </div>
           </div>
         ))}
+
+        {/* Resumo */}
+        <div className="bg-gray-800 rounded-2xl p-4 text-center">
+          <p className="text-gray-400 text-sm">
+            As alterações são salvas localmente no seu navegador.
+            Para aplicar em produção, faça deploy após salvar.
+          </p>
+        </div>
       </div>
     </div>
   );
