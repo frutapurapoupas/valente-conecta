@@ -1,0 +1,122 @@
+=
+?? RADIOGRAFIA CIRÚRGICA: TOPO DA HOME PRINCIPAL
+=
+Data: 30/05/2026 21:17:30
+
+=
+?? 1. ARQUIVO PRINCIPAL
+=
+? ? Arquivo encontrado: app/page.tsx
+   Tamanho: 41.89 KB
+=
+?? 2. ELEMENTOS DO TOPO DA HOME
+=
+?? ELEMENTOS IDENTIFICADOS:
+
+? ? Container do topo - Cores: green-400 ? green-700
+   ? Classe: bg-gradient-to-r from-green-400 to-green-700
+   ? Local: div principal após o homeRef
+? ? Título do App: 'App Valente Conecta'
+? ? Saudação: 'Olá, {user?.nome || user?.name || 
+? ? Botão de perfil (ícone de usuário)
+? ? Componente BuscaInteligente (barra de busca)
+? ? Container do saldo (fundo branco/20)
+   ? Classe: bg-white/20 rounded-2xl p-3
+? ? Texto 'Saldo disponível'
+? ? Saldo em MC (Moeda Conecta)
+? ? Botão 'Ver extrato'
+? ? Botão 'Receber' (abrirModalReceber)
+? ? Botão 'Pagar' (abrirModalPagar)
+=
+?? 3. COMPONENTE BuscaInteligente
+=
+? ? components/BuscaInteligente.tsx encontrado
+   Tamanho: 17.92 KB
+? ? Barra de busca - Fundo branco
+? ? Ícone de busca (Search)
+? ? Botão de microfone
+? ? Botão de geolocalização
+=
+?? 4. COMPONENTES RELACIONADOS
+=
+? ? components/BuscaInteligente.tsx
+? ? app/components/SolicitacaoModal.tsx
+?? ?? components/NotificacoesAdminCard.tsx - não encontrado (pode não existir)
+=
+?? 5. ARQUIVOS DE ESTILO
+=
+? ? app/globals.css
+   ? Contém estilos da moeda e animações
+   ? styles/globals.css - não encontrado
+   ? app/page.module.css - não encontrado
+=
+?? 6. MAPEAMENTO DE CORES E GRADIENTES
+=
+?? CORES E GRADIENTES NO TOPO:
+
+? ? Header principal: bg-gradient-to-r from-green-400 to-green-700
+? ? Container saldo: bg-white/20
+? ? Botão Receber: bg-white text-green-600
+? ? Botão Pagar: bg-white/30 text-white
+? ? Texto saldo: text-white text-xl font-bold
+? ? Texto ajuda: text-white/80 text-xs
+=
+?? 7. ESTADOS E FUNÇÕES
+=
+?? ESTADOS DO TOPO:
+? ? searchTerm
+? ? saldoUsuario
+? ? carregandoSaldo
+? ? showModalPagamento
+? ? modalTipo
+? ? valorTransacao
+
+?? FUNÇÕES DO TOPO:
+? ? abrirModalReceber
+? ? abrirModalPagar
+? ? gerarQRCode
+? ? verExtrato
+? ? handleSearch
+? ? handleVoiceSearch
+=
+?? 8. RESUMO: ONDE FAZER OS AJUSTES
+=
+
+?? ARQUIVO PRINCIPAL PARA AJUSTES DO TOPO:
+   ? app/page.tsx
+   ? Linhas aproximadas: 471-530 (seção do topo)
+
+?? COMPONENTES AUXILIARES:
+   ? Busca: components/BuscaInteligente.tsx
+   ? Modal de pagamento: app/page.tsx (modal interno)
+
+?? ESTILOS:
+   ? CSS-in-JS: <style jsx> no final do app/page.tsx
+   ? Tailwind classes: inline no JSX
+=
+?? 9. TRECHO EXATO DO CÓDIGO (app/page.tsx)
+=
+?? Não foi possível extrair o trecho exato
+=
+?? 10. CONCLUSÃO
+=
+
+?? PARA FAZER AJUSTES NO TOPO DA HOME:
+
+  1?? ARQUIVO PRINCIPAL: app/page.tsx
+     • Linhas ~471-530 (seção do topo)
+     • Cores do header: from-green-400 to-green-700
+     • Texto do título: 'App Valente Conecta'
+     • Container do saldo: bg-white/20
+
+  2?? COMPONENTE DE BUSCA: components/BuscaInteligente.tsx
+     • Estilo da barra de busca
+     • Ícones (Search, Mic, Navigation)
+
+  3?? ESTILOS GLOBAIS: app/globals.css (animacoes)
+     • .moeda-sombreada
+     • .pulse, @keyframes
+
+=
+?? Relatório salvo em: radiografia_topo_home_20260530_211728.txt
+=

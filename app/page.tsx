@@ -7,10 +7,12 @@ import { useRouter } from "next/navigation";
 import { useApp } from "@/app/context/AppContext";
 import toast from "react-hot-toast";
 import SolicitacaoModal from "@/app/components/SolicitacaoModal";
-import { Smartphone, Download, X, Bell, Shield, Wallet, QrCode, ArrowUpRight, ArrowDownLeft, Copy, Check } from "lucide-react";
+import { Smartphone, Download, X, Bell, Shield, Wallet, QrCode, ArrowUpRight, ArrowDownLeft, Copy, Check, Camera, Search } from "lucide-react";
 import { gerarSessaoTemp, isSessaoTempValida, isUserLoggedIn } from "@/lib/auth";
 import BuscaInteligente from "@/components/BuscaInteligente";
 import { walletService, QRCodeTransferencia } from "@/services/walletService";
+// ✅ Biblioteca moderna para leitura de QR Code
+import { QrScanner } from "@yudiel/react-qr-scanner";
 
 function HomePageContent() {
   const router = useRouter();
@@ -31,6 +33,9 @@ function HomePageContent() {
   const [qrCodeGerado, setQrCodeGerado] = useState<QRCodeTransferencia | null>(null);
   const [qrCodeLido, setQrCodeLido] = useState("");
   const [copiado, setCopiado] = useState(false);
+  const [showGerarQR, setShowGerarQR] = useState(false);
+  const [showLerQR, setShowLerQR] = useState(false);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
   
   const [notificacoesUsuario, setNotificacoesUsuario] = useState([]);
   const [notificacoesAdmin, setNotificacoesAdmin] = useState<Array<{
@@ -206,6 +211,10 @@ function HomePageContent() {
     setValorTransacao("");
     setDescricaoTransacao("");
     setQrCodeGerado(null);
+    setQrCodeLido("");
+    setShowGerarQR(false);
+    setShowLerQR(false);
+    setIsCameraOpen(false);
     setShowModalPagamento(true);
   };
 
@@ -219,6 +228,7 @@ function HomePageContent() {
     setValorTransacao("");
     setDescricaoTransacao("");
     setQrCodeLido("");
+    setIsCameraOpen(false);
     setShowModalPagamento(true);
   };
 
@@ -247,11 +257,32 @@ function HomePageContent() {
         setQrCodeLido("");
         setValorTransacao("");
         setDescricaoTransacao("");
+        setIsCameraOpen(false);
         const saldo = await walletService.getSaldo();
         setSaldoUsuario(saldo.disponivel);
       } else {
         toast.error(result.message);
       }
+    }
+  };
+
+  const processarRecebimentoQR = async () => {
+    if (!qrCodeLido.trim()) {
+      toast.error("Digite ou cole o código do QR Code");
+      return;
+    }
+    const result = await walletService.processarQRCodeTransferencia(qrCodeLido);
+    if (result.success) {
+      toast.success(result.message);
+      setShowModalPagamento(false);
+      setQrCodeLido("");
+      setValorTransacao("");
+      setDescricaoTransacao("");
+      setIsCameraOpen(false);
+      const saldo = await walletService.getSaldo();
+      setSaldoUsuario(saldo.disponivel);
+    } else {
+      toast.error(result.message);
     }
   };
 
@@ -266,6 +297,14 @@ function HomePageContent() {
 
   const verExtrato = () => {
     router.push("/extrato");
+  };
+
+  const handleSearchClick = () => {
+    if (searchTerm.trim()) {
+      router.push(`/busca?q=${encodeURIComponent(searchTerm)}`);
+    } else {
+      toast.error("Digite algo para buscar");
+    }
   };
 
   const gridItens = [
@@ -386,6 +425,7 @@ function HomePageContent() {
             </div>
           </div>
           
+          {/* APENAS O CAMPO DE BUSCA (sem botão) */}
           <BuscaInteligente 
             onSearch={handleSearch}
             onVoiceSearch={handleVoiceSearch}
@@ -394,37 +434,53 @@ function HomePageContent() {
             setSearchTerm={setSearchTerm}
           />
 
-          <div className="bg-white/20 rounded-2xl p-3">
-            <p className="text-white/80 text-xs">Saldo disponível</p>
+          {/* LINHA DE BOTÕES: ESQUERDA (Ver extrato) e DIREITA (Buscar) */}
+          <div className="flex justify-between items-center gap-3 mt-3">
+            <button 
+              onClick={verExtrato}
+              className="bg-white/20 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-white/30 transition flex items-center gap-2"
+            >
+              <Wallet className="w-4 h-4" />
+              Ver extrato
+            </button>
+            <button 
+              onClick={handleSearchClick}
+              className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-6 py-2 rounded-xl text-sm font-bold hover:from-yellow-600 hover:to-orange-600 transition flex items-center gap-2 shadow-md"
+            >
+              <Search className="w-4 h-4" />
+              Buscar
+            </button>
+          </div>
+
+          {/* CONTAINER DE SALDO - COM SIMBOLO C$ ANTES DO VALOR */}
+          <div className="bg-white/20 rounded-2xl p-4 mt-3">
             <div className="flex items-center justify-between">
-              <p className="text-white text-xl font-bold mt-0.5">
-                {carregandoSaldo ? (
-                  <span className="animate-pulse">...</span>
-                ) : (
-                  `${saldoUsuario.toFixed(2)} MC`
-                )}
-              </p>
-              <button 
-                onClick={verExtrato}
-                className="text-white/70 text-xs hover:text-white transition flex items-center gap-1"
-              >
-                <Wallet className="w-3 h-3" /> Ver extrato
-              </button>
+              <div>
+                <p className="text-white/80 text-base mb-1">Saldo disponível</p>
+                <p className="text-white text-3xl font-bold">
+                  {carregandoSaldo ? (
+                    <span className="animate-pulse">...</span>
+                  ) : (
+                    `C$ ${saldoUsuario.toFixed(2)}`
+                  )}
+                </p>
+                <p className="text-white/50 text-sm mt-0.5">Moeda Conecta (C$)</p>
+              </div>
             </div>
-            <p className="text-white/50 text-[10px] mt-0.5">Moeda Conecta (MC)</p>
-            <div className="flex gap-2 mt-2">
+            
+            <div className="flex gap-3 mt-3">
               <button 
                 onClick={abrirModalReceber} 
-                className="flex-1 bg-white text-green-600 py-1 rounded-xl font-semibold text-xs hover:bg-gray-100 transition flex items-center justify-center gap-1"
+                className="flex-1 bg-white text-green-600 py-2 rounded-xl font-semibold text-sm hover:bg-gray-100 transition flex items-center justify-center gap-2"
               >
-                <ArrowDownLeft className="w-3 h-3" />
+                <ArrowDownLeft className="w-4 h-4" />
                 Receber
               </button>
               <button 
                 onClick={abrirModalPagar} 
-                className="flex-1 bg-white/30 text-white py-1 rounded-xl font-semibold text-xs hover:bg-white/40 transition flex items-center justify-center gap-1"
+                className="flex-1 bg-white/30 text-white py-2 rounded-xl font-semibold text-sm hover:bg-white/40 transition flex items-center justify-center gap-2"
               >
-                <ArrowUpRight className="w-3 h-3" />
+                <ArrowUpRight className="w-4 h-4" />
                 Pagar
               </button>
             </div>
@@ -443,7 +499,7 @@ function HomePageContent() {
               <p className="text-black/70 text-sm">Compartilhe o app e ganhe bônus por indicação!</p>
             </div>
             <div className="moeda-sombreada w-16 h-16 rounded-full flex items-center justify-center shadow-xl">
-              <span className="text-xl font-bold text-white drop-shadow-md">MC</span>
+              <span className="text-xl font-bold text-white drop-shadow-md">C$</span>
             </div>
           </div>
         </div>
@@ -522,7 +578,7 @@ function HomePageContent() {
 
       <SolicitacaoModal isOpen={modalSolicitacao.open} onClose={() => setModalSolicitacao({ open: false, servico: "", categoria: "" })} servico={modalSolicitacao.servico} categoria={modalSolicitacao.categoria} userNome={user?.nome || user?.name} userEmail={user?.email} userTelefone={user?.telefone} />
 
-      {/* MODAL DE PAGAMENTO/RECEBIMENTO - VERSÃO COMPLETA */}
+      {/* MODAL DE PAGAMENTO/RECEBIMENTO - COM LEITOR DE CÂMERA (QrScanner) */}
       {showModalPagamento && (
         <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
           <div className="bg-gray-800 rounded-2xl max-w-md w-full p-6 max-h-[90vh] overflow-auto">
@@ -538,6 +594,9 @@ function HomePageContent() {
                 setShowModalPagamento(false);
                 setQrCodeGerado(null);
                 setQrCodeLido("");
+                setShowGerarQR(false);
+                setShowLerQR(false);
+                setIsCameraOpen(false);
               }} className="text-gray-400">
                 <X className="w-6 h-6" />
               </button>
@@ -547,11 +606,30 @@ function HomePageContent() {
               {modalTipo === "receber" ? (
                 // MODO RECEBER
                 <>
-                  {!qrCodeGerado ? (
+                  {!showGerarQR && !showLerQR && !qrCodeGerado && qrCodeLido === "" ? (
+                    <div className="grid grid-cols-2 gap-4">
+                      <button
+                        onClick={() => setShowGerarQR(true)}
+                        className="bg-gray-700 hover:bg-gray-600 p-6 rounded-xl text-center transition"
+                      >
+                        <QrCode className="w-12 h-12 text-green-400 mx-auto mb-2" />
+                        <p className="text-white font-medium">Gerar QR Code</p>
+                        <p className="text-gray-400 text-xs mt-1">Receber pagamento</p>
+                      </button>
+                      <button
+                        onClick={() => setShowLerQR(true)}
+                        className="bg-gray-700 hover:bg-gray-600 p-6 rounded-xl text-center transition"
+                      >
+                        <Camera className="w-12 h-12 text-blue-400 mx-auto mb-2" />
+                        <p className="text-white font-medium">Ler QR Code</p>
+                        <p className="text-gray-400 text-xs mt-1">Pagar alguém</p>
+                      </button>
+                    </div>
+                  ) : showGerarQR && !qrCodeGerado ? (
                     <>
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-2">
-                          Valor a receber (MC)
+                          Valor a receber (C$)
                         </label>
                         <input
                           type="number"
@@ -582,8 +660,47 @@ function HomePageContent() {
                         <QrCode className="w-5 h-5" />
                         Gerar QR Code
                       </button>
+                      <button
+                        onClick={() => {
+                          setShowGerarQR(false);
+                          setValorTransacao("");
+                          setDescricaoTransacao("");
+                        }}
+                        className="text-gray-400 hover:text-white text-sm"
+                      >
+                        ← Voltar
+                      </button>
                     </>
-                  ) : (
+                  ) : showLerQR && qrCodeLido === "" ? (
+                    <>
+                      <div className="bg-gray-700 rounded-xl p-4 text-center">
+                        <Camera className="w-16 h-16 text-blue-400 mx-auto mb-3" />
+                        <p className="text-white text-sm">Cole o código QR recebido abaixo:</p>
+                      </div>
+                      <textarea
+                        value={qrCodeLido}
+                        onChange={(e) => setQrCodeLido(e.target.value)}
+                        placeholder="Cole aqui o código gerado pela pessoa que vai te pagar..."
+                        rows={3}
+                        className="w-full px-4 py-3 bg-gray-700 text-white rounded-xl text-sm font-mono"
+                      />
+                      <button
+                        onClick={processarRecebimentoQR}
+                        className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold"
+                      >
+                        Confirmar Recebimento
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowLerQR(false);
+                          setQrCodeLido("");
+                        }}
+                        className="text-gray-400 hover:text-white text-sm text-center w-full"
+                      >
+                        ← Voltar
+                      </button>
+                    </>
+                  ) : qrCodeGerado ? (
                     <div className="text-center space-y-4">
                       <div className="bg-white p-4 rounded-xl inline-block mx-auto">
                         <div className="w-48 h-48 bg-black flex items-center justify-center rounded-xl">
@@ -591,7 +708,7 @@ function HomePageContent() {
                         </div>
                       </div>
                       <p className="text-gray-300 text-sm">
-                        QR Code para receber <strong>{qrCodeGerado.valor} MC</strong>
+                        QR Code para receber <strong>{qrCodeGerado.valor} C$</strong>
                       </p>
                       <p className="text-gray-400 text-xs">{qrCodeGerado.descricao}</p>
                       <div className="bg-gray-700 rounded-xl p-3">
@@ -612,40 +729,102 @@ function HomePageContent() {
                         </div>
                       </div>
                       <button
-                        onClick={() => setQrCodeGerado(null)}
+                        onClick={() => {
+                          setQrCodeGerado(null);
+                          setShowGerarQR(false);
+                          setValorTransacao("");
+                          setDescricaoTransacao("");
+                        }}
                         className="text-gray-400 hover:text-white text-sm"
                       >
                         ← Voltar
                       </button>
                     </div>
-                  )}
+                  ) : null}
                 </>
               ) : (
-                // MODO PAGAR
+                // MODO PAGAR - COM LEITOR DE CÂMERA (QrScanner)
                 <>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Cole o código QR recebido
-                    </label>
-                    <textarea
-                      value={qrCodeLido}
-                      onChange={(e) => setQrCodeLido(e.target.value)}
-                      placeholder="Cole aqui o código gerado pela pessoa que você quer pagar..."
-                      rows={3}
-                      className="w-full px-4 py-3 bg-gray-700 text-white rounded-xl text-sm font-mono"
-                    />
-                  </div>
-                  <div className="bg-gray-700/50 rounded-xl p-3">
-                    <p className="text-xs text-gray-400 text-center">
-                      💡 Peça para a pessoa gerar um QR Code no app dela e cole o código acima
-                    </p>
-                  </div>
-                  <button
-                    onClick={gerarQRCode}
-                    className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-2"
-                  >
-                    Confirmar Pagamento
-                  </button>
+                  {isCameraOpen ? (
+                    <div className="space-y-4">
+                      <div className="bg-black rounded-xl overflow-hidden">
+                        <QrScanner
+                          onDecode={async (result) => {
+                            setQrCodeLido(result);
+                            setIsCameraOpen(false);
+                            toast.success("QR Code lido com sucesso!");
+                            
+                            const transferResult = await walletService.processarQRCodeTransferencia(result);
+                            if (transferResult.success) {
+                              toast.success(transferResult.message);
+                              setShowModalPagamento(false);
+                              setQrCodeLido("");
+                              setValorTransacao("");
+                              setDescricaoTransacao("");
+                              const saldo = await walletService.getSaldo();
+                              setSaldoUsuario(saldo.disponivel);
+                            } else {
+                              toast.error(transferResult.message);
+                            }
+                          }}
+                          onError={(error) => {
+                            console.error("Erro na leitura do QR Code:", error);
+                            toast.error("Erro ao ler QR Code. Tente novamente ou cole o código manualmente.");
+                          }}
+                          constraints={{ facingMode: "environment" }}
+                          className="w-full h-80"
+                        />
+                      </div>
+                      <p className="text-center text-gray-400 text-xs">
+                        Aponte a câmera para o QR Code
+                      </p>
+                      <button
+                        onClick={() => setIsCameraOpen(false)}
+                        className="w-full py-2 bg-gray-700 text-white rounded-xl font-medium"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => setIsCameraOpen(true)}
+                        className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-2"
+                      >
+                        <Camera className="w-5 h-5" />
+                        Escanear QR Code
+                      </button>
+                      
+                      <div className="relative my-4">
+                        <div className="absolute inset-0 flex items-center">
+                          <div className="w-full border-t border-gray-600"></div>
+                        </div>
+                        <div className="relative flex justify-center text-xs">
+                          <span className="bg-gray-800 px-2 text-gray-400">ou cole o código manualmente</span>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          Código QR
+                        </label>
+                        <textarea
+                          value={qrCodeLido}
+                          onChange={(e) => setQrCodeLido(e.target.value)}
+                          placeholder="Cole aqui o código gerado pela pessoa que você quer pagar..."
+                          rows={3}
+                          className="w-full px-4 py-3 bg-gray-700 text-white rounded-xl text-sm font-mono"
+                        />
+                      </div>
+                      
+                      <button
+                        onClick={gerarQRCode}
+                        className="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold flex items-center justify-center gap-2"
+                      >
+                        Confirmar Pagamento
+                      </button>
+                    </>
+                  )}
                 </>
               )}
             </div>

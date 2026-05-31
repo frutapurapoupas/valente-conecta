@@ -1,8 +1,9 @@
 // ============================================================================
-// ARQUIVO 4: services/walletService.ts (ATUALIZADO COM CÂMBIO)
+// ARQUIVO 4: services/walletService.ts (ATUALIZADO COM CÂMBIO - CORRIGIDO)
 // Funcionalidade: Gestão completa de carteira digital, transações, PIX e Moeda Conecta
 // Inclui: Saldo, extrato, recarga PIX, débitos automáticos, transferências entre usuários
 // 🆕 ATUALIZAÇÃO: Suporte a câmbio por cidade (1 MC = X Reais)
+// 🔧 CORREÇÃO: Removida verificação de saldo ao GERAR QR Code (apenas ao PAGAR)
 // ============================================================================
 
 import { supabase } from '@/lib/supabase';
@@ -267,7 +268,7 @@ class WalletService {
   }
 
   // ==========================================================================
-  // TRANSFERÊNCIA ENTRE USUÁRIOS (MOEDA CONECTA)
+  // TRANSFERÊNCIA ENTRE USUÁRIOS (MOEDA CONECTA) - CORRIGIDO
   // ==========================================================================
 
   async gerarQRCodeTransferencia(valor: number, descricao?: string): Promise<QRCodeTransferencia | null> {
@@ -281,11 +282,8 @@ class WalletService {
       return null;
     }
 
-    const saldo = await this.getSaldo();
-    if (valor > saldo.disponivel) {
-      toast.error('Saldo insuficiente para transferência');
-      return null;
-    }
+    // ✅ REMOVIDA a verificação de saldo - qualquer um pode gerar QR Code para RECEBER
+    // O saldo só é verificado quando alguém PAGA (no processarQRCodeTransferencia)
 
     const codigo = btoa(`${this.usuarioId}|${Date.now()}|${Math.random().toString(36).substring(7)}|${valor}`);
     
@@ -331,9 +329,10 @@ class WalletService {
       return { success: false, message: 'Você não pode transferir para si mesmo' };
     }
 
+    // ✅ VERIFICAÇÃO DE SALDO APENAS AQUI (quem está PAGANDO)
     const saldo = await this.getSaldo();
     if (qrData.valor && qrData.valor > saldo.disponivel) {
-      return { success: false, message: 'Saldo insuficiente' };
+      return { success: false, message: 'Saldo insuficiente para pagamento' };
     }
 
     const valor = qrData.valor || 0;

@@ -1,9 +1,3 @@
-// ============================================================================
-// ARQUIVO 4: components/BuscaInteligente.tsx
-// Funcionalidade: Componente de busca inteligente com autocompletar,
-// geolocalização, fallback para busca externa e notificação de pendência
-// ============================================================================
-
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -20,13 +14,6 @@ interface BuscaInteligenteProps {
   onFallback: (termo: string) => void;
   searchTerm: string;
   setSearchTerm: (termo: string) => void;
-}
-
-interface Sugestao {
-  id: string;
-  texto: string;
-  tipo: "produto" | "servico" | "categoria" | "historico";
-  destaque?: boolean;
 }
 
 interface ResultadoBusca {
@@ -47,26 +34,16 @@ export default function BuscaInteligente({
   searchTerm,
   setSearchTerm
 }: BuscaInteligenteProps) {
-  const [sugestoes, setSugestoes] = useState<Sugestao[]>([]);
   const [resultados, setResultados] = useState<ResultadoBusca[]>([]);
-  const [mostrarSugestoes, setMostrarSugestoes] = useState(false);
   const [buscando, setBuscando] = useState(false);
   const [usandoGeolocalizacao, setUsandoGeolocalizacao] = useState(false);
   const [localizacao, setLocalizacao] = useState<{ lat: number; lng: number; cidade: string } | null>(null);
-  const [historicoBuscas, setHistoricoBuscas] = useState<string[]>([]);
   const [buscaPendente, setBuscaPendente] = useState<{ termo: string; notificado: boolean } | null>(null);
   
   const inputRef = useRef<HTMLInputElement>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Carregar histórico de buscas do localStorage
+  // Verificar se há busca pendente
   useEffect(() => {
-    const historico = localStorage.getItem("historico_buscas");
-    if (historico) {
-      setHistoricoBuscas(JSON.parse(historico).slice(0, 5));
-    }
-    
-    // Verificar se há busca pendente
     const pendente = localStorage.getItem("busca_pendente");
     if (pendente) {
       try {
@@ -98,13 +75,6 @@ export default function BuscaInteligente({
     }
   }, []);
 
-  // Salvar busca no histórico
-  const salvarNoHistorico = (termo: string) => {
-    const novoHistorico = [termo, ...historicoBuscas.filter(h => h !== termo)].slice(0, 10);
-    setHistoricoBuscas(novoHistorico);
-    localStorage.setItem("historico_buscas", JSON.stringify(novoHistorico));
-  };
-
   // Marcar pendente como notificado
   const marcarPendenteNotificado = () => {
     if (buscaPendente) {
@@ -113,36 +83,6 @@ export default function BuscaInteligente({
       localStorage.setItem("busca_pendente", JSON.stringify(novoPendente));
     }
   };
-
-  // Buscar sugestões (autocompletar)
-  const buscarSugestoes = useCallback(async (termo: string) => {
-    if (!termo.trim() || termo.length < 2) {
-      setSugestoes([]);
-      return;
-    }
-
-    // Simular sugestões baseadas no termo
-    // Em produção, isso viria de uma API ou Supabase
-    const sugestoesSimuladas: Sugestao[] = [
-      { id: "1", texto: `${termo} - Melhor preço`, tipo: "produto", destaque: true },
-      { id: "2", texto: `${termo} próximo a você`, tipo: "servico" },
-      { id: "3", texto: `${termo} em oferta`, tipo: "produto" },
-      { id: "4", texto: `${termo} com avaliação 5 estrelas`, tipo: "servico" },
-    ];
-    
-    setSugestoes(sugestoesSimuladas);
-  }, []);
-
-  // Debounce para autocompletar
-  useEffect(() => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => {
-      buscarSugestoes(searchTerm);
-    }, 300);
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-  }, [searchTerm, buscarSugestoes]);
 
   // Obter geolocalização do usuário
   const obterGeolocalizacao = () => {
@@ -157,12 +97,11 @@ export default function BuscaInteligente({
         setLocalizacao({
           lat: position.coords.latitude,
           lng: position.coords.longitude,
-          cidade: "Valente, BA" // Em produção, usar reverse geocoding
+          cidade: "Valente, BA"
         });
         toast.success(`📍 Localização ativada: ${localizacao?.cidade || "Valente, BA"}`);
         setUsandoGeolocalizacao(false);
         
-        // Salvar no localStorage
         localStorage.setItem("user_location", JSON.stringify(localizacao));
       },
       (error) => {
@@ -178,20 +117,15 @@ export default function BuscaInteligente({
     setBuscando(true);
     
     try {
-      // Simular busca local
       await new Promise(resolve => setTimeout(resolve, 800));
       
-      // Verificar se encontrou resultados
       const resultadosEncontrados = Math.random() > 0.5;
       
       if (!resultadosEncontrados && localizacao) {
-        // Não encontrou localmente -> buscar na internet
         toast.loading("Buscando na internet...", { duration: 1000 });
         
-        // Simular busca na internet
         await new Promise(resolve => setTimeout(resolve, 1500));
         
-        // Mostrar opção para o usuário
         toast((t) => (
           <div className="max-w-sm p-3">
             <p className="font-bold text-sm">🔍 Produto não encontrado localmente</p>
@@ -202,7 +136,6 @@ export default function BuscaInteligente({
               <button
                 onClick={() => {
                   toast.dismiss(t.id);
-                  // Mostrar resultados da internet
                   setResultados([
                     { id: "web1", nome: `${termo} - Mercado Livre`, tipo: "produto", preco: 49.90, loja: "Mercado Livre" },
                     { id: "web2", nome: `${termo} - Shopee`, tipo: "produto", preco: 39.90, loja: "Shopee" }
@@ -225,7 +158,6 @@ export default function BuscaInteligente({
           </div>
         ), { duration: 10000 });
       } else if (resultadosEncontrados) {
-        // Simular resultados encontrados
         setResultados([
           { id: "1", nome: termo, tipo: "produto", preco: 29.90, loja: "Mercearia do João", distancia: 0.5, avaliacao: 4.5 },
           { id: "2", nome: termo, tipo: "servico", preco: 49.90, loja: "Serviços Valente", distancia: 1.2, avaliacao: 4.8 }
@@ -241,7 +173,7 @@ export default function BuscaInteligente({
     }
   };
 
-  // Registrar busca pendente (não encontrada)
+  // Registrar busca pendente
   const registrarBuscaPendente = (termo: string) => {
     const buscaPendenteData = {
       termo,
@@ -253,10 +185,8 @@ export default function BuscaInteligente({
       }
     };
     
-    // Salvar no localStorage
     localStorage.setItem("busca_pendente", JSON.stringify(buscaPendenteData));
     
-    // Adicionar à lista de buscas pendentes do admin
     const buscasPendentesAdmin = localStorage.getItem("buscas_pendentes");
     const lista = buscasPendentesAdmin ? JSON.parse(buscasPendentesAdmin) : [];
     lista.push({
@@ -279,146 +209,65 @@ export default function BuscaInteligente({
   const executarBusca = async () => {
     if (!searchTerm.trim()) return;
     
-    salvarNoHistorico(searchTerm);
-    setMostrarSugestoes(false);
-    
-    if (localizacao) {
-      // Buscar por proximidade
-      await buscarPorProximidade(searchTerm);
-    } else {
-      // Busca padrão
-      setBuscando(true);
-      try {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        const encontrou = Math.random() > 0.3;
-        
-        if (!encontrou) {
-          registrarBuscaPendente(searchTerm);
-        }
-        
-        onSearch(searchTerm);
-      } finally {
-        setBuscando(false);
+    setBuscando(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const encontrou = Math.random() > 0.3;
+      
+      if (!encontrou && !localizacao) {
+        registrarBuscaPendente(searchTerm);
       }
+      
+      onSearch(searchTerm);
+    } finally {
+      setBuscando(false);
     }
-  };
-
-  // Selecionar sugestão
-  const selecionarSugestao = (sugestao: Sugestao) => {
-    setSearchTerm(sugestao.texto);
-    setMostrarSugestoes(false);
-    setTimeout(() => executarBusca(), 100);
   };
 
   return (
     <div className="relative">
-      {/* Barra de busca principal */}
-      <div className="flex items-center gap-2">
-        <div className="flex-1 relative">
-          <div className="flex items-center bg-white rounded-2xl px-3 py-2 shadow-lg">
-            <Search className="w-4 h-4 text-gray-400 mr-2" />
-            <input
-              ref={inputRef}
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && executarBusca()}
-              onFocus={() => setMostrarSugestoes(true)}
-              onBlur={() => setTimeout(() => setMostrarSugestoes(false), 200)}
-              placeholder="Buscar produtos ou serviços perto de você..."
-              className="flex-1 outline-none text-gray-700 bg-transparent text-sm"
-            />
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm("")}
-                className="text-gray-400 hover:text-gray-600 mr-1"
-              >
-                <X className="w-4 h-4" />
-              </button>
+      {/* Barra de busca principal - APENAS O CAMPO, SEM AUTOCOMPLETAR */}
+      <div className="w-full">
+        <div className="flex items-center bg-white rounded-2xl px-3 py-2 shadow-lg">
+          <Search className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
+          <input
+            ref={inputRef}
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && executarBusca()}
+            placeholder="Buscar produtos ou serviços perto de você..."
+            className="flex-1 outline-none text-gray-700 bg-transparent text-sm min-w-0"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="text-gray-400 hover:text-gray-600 mr-1 flex-shrink-0"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+          <button
+            onClick={onVoiceSearch}
+            className="text-gray-400 mr-1 hover:text-green-500 transition flex-shrink-0"
+            title="Busca por voz"
+          >
+            <Mic className="w-4 h-4" />
+          </button>
+          <button
+            onClick={obterGeolocalizacao}
+            className={`text-gray-400 mr-1 transition flex-shrink-0 ${
+              localizacao ? "text-green-500" : "hover:text-green-500"
+            }`}
+            title={localizacao ? `Local: ${localizacao.cidade}` : "Ativar localização"}
+          >
+            {usandoGeolocalizacao ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Navigation className="w-4 h-4" />
             )}
-            <button
-              onClick={onVoiceSearch}
-              className="text-gray-400 mr-1 hover:text-green-500 transition"
-              title="Busca por voz"
-            >
-              <Mic className="w-4 h-4" />
-            </button>
-            <button
-              onClick={obterGeolocalizacao}
-              className={`text-gray-400 mr-1 transition ${
-                localizacao ? "text-green-500" : "hover:text-green-500"
-              }`}
-              title={localizacao ? `Local: ${localizacao.cidade}` : "Ativar localização"}
-            >
-              {usandoGeolocalizacao ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Navigation className="w-4 h-4" />
-              )}
-            </button>
-          </div>
-          
-          {/* Sugestões de autocompletar */}
-          {mostrarSugestoes && (sugestoes.length > 0 || historicoBuscas.length > 0) && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden">
-              {/* Histórico recente */}
-              {historicoBuscas.length > 0 && (
-                <div className="p-2 border-b border-gray-100">
-                  <p className="text-xs text-gray-400 px-3 py-1 flex items-center gap-1">
-                    <Clock className="w-3 h-3" /> Buscas recentes
-                  </p>
-                  {historicoBuscas.slice(0, 3).map((item, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        setSearchTerm(item);
-                        setTimeout(() => executarBusca(), 100);
-                      }}
-                      className="w-full text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg flex items-center gap-2"
-                    >
-                      <Clock className="w-3 h-3 text-gray-400" />
-                      {item}
-                    </button>
-                  ))}
-                </div>
-              )}
-              
-              {/* Sugestões */}
-              {sugestoes.map((sugestao) => (
-                <button
-                  key={sugestao.id}
-                  onClick={() => selecionarSugestao(sugestao)}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 rounded-lg flex items-center gap-2 ${
-                    sugestao.destaque ? "bg-yellow-50" : ""
-                  }`}
-                >
-                  {sugestao.tipo === "produto" ? (
-                    <Package className="w-3 h-3 text-blue-500" />
-                  ) : (
-                    <Briefcase className="w-3 h-3 text-purple-500" />
-                  )}
-                  <span className="flex-1">{sugestao.texto}</span>
-                  {sugestao.destaque && (
-                    <Star className="w-3 h-3 text-yellow-500" />
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
+          </button>
         </div>
-        
-        <button
-          onClick={executarBusca}
-          disabled={buscando}
-          className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:from-green-600 hover:to-green-700 transition disabled:opacity-50 flex items-center gap-2"
-        >
-          {buscando ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Search className="w-4 h-4" />
-          )}
-          Buscar
-        </button>
       </div>
       
       {/* Indicador de localização ativa */}
@@ -437,7 +286,7 @@ export default function BuscaInteligente({
         </div>
       )}
       
-      {/* Resultados da busca (para fallback de internet) */}
+      {/* Resultados da busca */}
       {resultados.length > 0 && (
         <div className="mt-4 bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
           <div className="p-3 bg-gray-50 border-b border-gray-200">

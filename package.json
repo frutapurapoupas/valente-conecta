@@ -12,6 +12,7 @@
     "@bull-board/api": "^7.1.5",
     "@bull-board/express": "^7.1.5",
     "@supabase/supabase-js": "^2.106.2",
+    "@yudiel/react-qr-scanner": "^2.6.0",
     "bull": "^4.16.5",
     "clsx": "^2.1.1",
     "framer-motion": "^11.11.1",

@@ -1,0 +1,116 @@
+=
+?? RADIOGRAFIA: VERIFICAÇÃO DE SALDO NO WALLET SERVICE
+=
+Data: 30/05/2026 17:44:19
+
+=
+?? 1. LOCALIZANDO ARQUIVO
+=
+? Arquivo encontrado: services/walletService.ts
+=
+?? 2. LOCALIZANDO FUNÇÃO gerarQRCodeTransferencia
+=
+? Função 'gerarQRCodeTransferencia' encontrada
+
+?? CÓDIGO DA FUNÇÃO (linhas 273 até 304):
+---------------------------------------------------------------------
+273|   async gerarQRCodeTransferencia(valor: number, descricao?: string): Promise<QRCodeTransferencia | null> {
+274|     if (!this.usuarioId) {
+275|       toast.error('Usuário não identificado');
+276|       return null;
+277|     }
+278| 
+279|     if (valor <= 0) {
+280|       toast.error('Valor deve ser maior que zero');
+281|       return null;
+282|     }
+283| 
+284|     const saldo = await this.getSaldo();
+285|     if (valor > saldo.disponivel) {
+286|       toast.error('Saldo insuficiente para transferência');
+287|       return null;
+288|     }
+289| 
+290|     const codigo = btoa(`${this.usuarioId}|${Date.now()}|${Math.random().toString(36).substring(7)}|${valor}`);
+291|     
+292|     const qrData: QRCodeTransferencia = {
+293|       codigo,
+294|       valor,
+295|       descricao: descricao || 'Transferência Moeda Conecta',
+296|       expiracao: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+297|       gerado_por: this.usuarioId,
+298|       gerado_por_nome: this.usuarioNome || 'Usuário'
+299|     };
+300| 
+301|     localStorage.setItem(`qr_transferencia_${codigo.substring(0, 20)}`, JSON.stringify(qrData));
+302|     
+303|     return qrData;
+304|   }
+---------------------------------------------------------------------
+=
+?? 3. LOCALIZANDO VERIFICAÇÃO DE SALDO
+=
+? Nenhuma verificação de saldo encontrada na função
+=
+?? 4. ANALISANDO A VERIFICAÇÃO PROBLEMÁTICA
+=
+? ? VERIFICAÇÃO DE SALDO ENCONTRADA DENTRO DA FUNÇÃO!
+
+?? LOCAL EXATO:
+   284|     const saldo = await this.getSaldo();
+   285|     if (valor > saldo.disponivel) {
+
+?? CORREÇÃO NECESSÁRIA:
+   REMOVER as linhas:
+     const saldo = await this.getSaldo();
+     if (valor > saldo.disponivel) {
+       toast.error('Saldo insuficiente para transferência');
+       return null;
+     }
+=
+?? 5. CÓDIGO CORRIGIDO DA FUNÇÃO
+=
+async gerarQRCodeTransferencia(valor: number, descricao?: string): Promise<QRCodeTransferencia | null> {
+  if (!this.usuarioId) {
+    toast.error('Usuário não identificado');
+    return null;
+  }
+
+  if (valor <= 0) {
+    toast.error('Valor deve ser maior que zero');
+    return null;
+  }
+
+  // ? REMOVIDA a verificação de saldo - qualquer um pode gerar QR Code para RECEBER
+
+  const codigo = btoa(`${this.usuarioId}|${Date.now()}|${Math.random().toString(36).substring(7)}|${valor}`);
+  
+  const qrData: QRCodeTransferencia = {
+    codigo,
+    valor,
+    descricao: descricao || 'Transferência Moeda Conecta',
+    expiracao: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+    gerado_por: this.usuarioId,
+    gerado_por_nome: this.usuarioNome || 'Usuário'
+  };
+
+  localStorage.setItem(`qr_transferencia_${codigo.substring(0, 20)}`, JSON.stringify(qrData));
+  
+  return qrData;
+}
+=
+?? 6. CONCLUSÃO
+=
+
+?? RESULTADO DA ANÁLISE:
+
+? ? PROBLEMA CONFIRMADO: A função 'gerarQRCodeTransferencia' ESTÁ verificando saldo
+
+Isso causa o erro 'Saldo insuficiente para transferência' mesmo quando o usuário
+está tentando RECEBER (gerar QR Code).
+
+? SOLUÇÃO: Remover as linhas de verificação de saldo da função.
+
+=
+?? Relatório salvo em: radiografia_wallet_saldo_20260530_174416.txt
+=
