@@ -378,7 +378,7 @@ export default function AdminMasterPage() {
           <h1 className="text-white font-bold text-lg hidden sm:block">Admin Master</h1>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-white text-sm hidden sm:block">{user?.name || "Admin"}</span>
+          <span className="text-white text-sm hidden sm:block">{user?.nome || "Admin"}</span>
           <div className="w-8 h-8 bg-white/30 rounded-full flex items-center justify-center">
             <i className="fas fa-user text-white"></i>
           </div>
@@ -407,7 +407,7 @@ export default function AdminMasterPage() {
                 <Crown className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-white font-bold text-sm truncate">{user?.name || "Admin"}</p>
+                <p className="text-white font-bold text-sm truncate">{user?.nome || "Admin"}</p>
                 <p className="text-gray-400 text-xs">Administrador Master</p>
               </div>
             </div>

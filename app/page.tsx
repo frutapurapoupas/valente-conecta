@@ -11,8 +11,7 @@ import { Smartphone, Download, X, Bell, Shield, Wallet, QrCode, ArrowUpRight, Ar
 import { gerarSessaoTemp, isSessaoTempValida, isUserLoggedIn } from "@/lib/auth";
 import BuscaInteligente from "@/components/BuscaInteligente";
 import { walletService, QRCodeTransferencia } from "@/services/walletService";
-// ✅ Biblioteca moderna para leitura de QR Code
-import { QrScanner } from "@yudiel/react-qr-scanner";
+import { Scanner } from "@yudiel/react-qr-scanner";
 
 function HomePageContent() {
   const router = useRouter();
@@ -23,13 +22,11 @@ function HomePageContent() {
   const [saldoUsuario, setSaldoUsuario] = useState(0);
   const [carregandoSaldo, setCarregandoSaldo] = useState(true);
   
-  // Modais de pagamento
   const [showModalPagamento, setShowModalPagamento] = useState(false);
   const [modalTipo, setModalTipo] = useState<"receber" | "pagar">("receber");
   const [valorTransacao, setValorTransacao] = useState("");
   const [descricaoTransacao, setDescricaoTransacao] = useState("");
   
-  // QR Code
   const [qrCodeGerado, setQrCodeGerado] = useState<QRCodeTransferencia | null>(null);
   const [qrCodeLido, setQrCodeLido] = useState("");
   const [copiado, setCopiado] = useState(false);
@@ -58,11 +55,10 @@ function HomePageContent() {
   const categorias3Ref = useRef<HTMLDivElement>(null);
   const categorias4Ref = useRef<HTMLDivElement>(null);
 
-  // Carregar saldo do usuário
   useEffect(() => {
     const carregarSaldo = async () => {
       if (user?.id) {
-        walletService.setUsuarioId(user.id, user.nome || user.name);
+        walletService.setUsuarioId(user.id, user.nome || "Usuário");
         const saldo = await walletService.getSaldo();
         setSaldoUsuario(saldo.disponivel);
       } else {
@@ -74,7 +70,6 @@ function HomePageContent() {
     carregarSaldo();
   }, [user]);
 
-  // Carregar notificações do Admin Master do localStorage
   useEffect(() => {
     const carregarNotificacoesAdmin = () => {
       try {
@@ -200,7 +195,6 @@ function HomePageContent() {
     localStorage.setItem("install_banner_dismissed", "true");
   };
 
-  // FUNÇÕES DA CARTEIRA
   const abrirModalReceber = () => {
     if (!user) {
       toast.error("Faça login para acessar sua carteira");
@@ -418,14 +412,13 @@ function HomePageContent() {
           <div className="flex justify-between items-center mb-3">
             <h1 className="text-white text-lg font-bold">App Valente Conecta</h1>
             <div className="flex items-center gap-2">
-              <span className="text-white text-sm font-medium">Olá, {user?.nome || user?.name || "Visitante"}</span>
+              <span className="text-white text-sm font-medium">Olá, {user?.nome || "Visitante"}</span>
               <button onClick={() => router.push("/profile")} className="w-8 h-8 bg-white/30 rounded-full flex items-center justify-center hover:bg-white/40 transition">
                 <i className="fas fa-user text-white text-sm"></i>
               </button>
             </div>
           </div>
           
-          {/* APENAS O CAMPO DE BUSCA (sem botão) */}
           <BuscaInteligente 
             onSearch={handleSearch}
             onVoiceSearch={handleVoiceSearch}
@@ -434,7 +427,6 @@ function HomePageContent() {
             setSearchTerm={setSearchTerm}
           />
 
-          {/* LINHA DE BOTÕES: ESQUERDA (Ver extrato) e DIREITA (Buscar) */}
           <div className="flex justify-between items-center gap-3 mt-3">
             <button 
               onClick={verExtrato}
@@ -452,7 +444,6 @@ function HomePageContent() {
             </button>
           </div>
 
-          {/* CONTAINER DE SALDO - COM SIMBOLO C$ ANTES DO VALOR */}
           <div className="bg-white/20 rounded-2xl p-4 mt-3">
             <div className="flex items-center justify-between">
               <div>
@@ -491,7 +482,6 @@ function HomePageContent() {
           {gridItens.map((item, idx) => (<button key={idx} onClick={() => router.push(item.href)} className="flex-1 rounded-xl py-3 flex flex-col items-center gap-1 transition-transform hover:scale-105 shadow-lg" style={{ backgroundColor: item.cor }}><span className="text-2xl">{item.icone}</span><span className="text-white font-bold text-xs">{item.titulo}</span></button>))}
         </div>
 
-        {/* CARD INDIQUE E GANHE */}
         <div className="px-5 mb-6">
           <div onClick={showQR} className="bg-gradient-to-r from-yellow-400 to-amber-500 rounded-2xl p-4 flex items-center justify-between cursor-pointer shadow-lg hover:shadow-xl transition transform hover:scale-[1.02]">
             <div>
@@ -504,7 +494,6 @@ function HomePageContent() {
           </div>
         </div>
 
-        {/* NOTAS DO ADMIN MASTER */}
         <div className="px-5 mb-6">
           <div className="bg-gradient-to-r from-gray-800 to-gray-900 rounded-2xl shadow-xl border border-yellow-500/30 overflow-hidden">
             <div className="flex items-center gap-2 p-3 border-b border-gray-700 bg-gray-800">
@@ -576,9 +565,8 @@ function HomePageContent() {
       <div ref={categorias3Ref} className="bg-gray-900 py-6"><div className="px-4 space-y-3">{categoriasBloco3.map((cat, idx) => (<div key={`b3-${idx}`} onClick={() => abrirSolicitacao(cat.nome, cat.nome)} className="bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 rounded-2xl p-4 flex items-center gap-4 cursor-pointer transition-all duration-300 border border-gray-700"><div className="text-5xl">{cat.icone}</div><div className="flex-1"><h3 className="font-bold text-lg text-white">{cat.nome}</h3></div><i className="fas fa-chevron-right text-gray-500 text-xl"></i></div>))}</div></div>
       <div ref={categorias4Ref} className="bg-gray-900 py-6 pb-28"><div className="px-4 space-y-3">{categoriasBloco4.map((cat, idx) => (<div key={`b4-${idx}`} onClick={() => abrirSolicitacao(cat.nome, cat.nome)} className="bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 rounded-2xl p-4 flex items-center gap-4 cursor-pointer transition-all duration-300 border border-gray-700"><div className="text-5xl">{cat.icone}</div><div className="flex-1"><h3 className="font-bold text-lg text-white">{cat.nome}</h3></div><i className="fas fa-chevron-right text-gray-500 text-xl"></i></div>))}</div></div>
 
-      <SolicitacaoModal isOpen={modalSolicitacao.open} onClose={() => setModalSolicitacao({ open: false, servico: "", categoria: "" })} servico={modalSolicitacao.servico} categoria={modalSolicitacao.categoria} userNome={user?.nome || user?.name} userEmail={user?.email} userTelefone={user?.telefone} />
+      <SolicitacaoModal isOpen={modalSolicitacao.open} onClose={() => setModalSolicitacao({ open: false, servico: "", categoria: "" })} servico={modalSolicitacao.servico} categoria={modalSolicitacao.categoria} userNome={user?.nome || "Visitante"} userEmail={user?.email} userTelefone={user?.telefone || ""} />
 
-      {/* MODAL DE PAGAMENTO/RECEBIMENTO - COM LEITOR DE CÂMERA (QrScanner) */}
       {showModalPagamento && (
         <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
           <div className="bg-gray-800 rounded-2xl max-w-md w-full p-6 max-h-[90vh] overflow-auto">
@@ -604,7 +592,6 @@ function HomePageContent() {
             
             <div className="space-y-4">
               {modalTipo === "receber" ? (
-                // MODO RECEBER
                 <>
                   {!showGerarQR && !showLerQR && !qrCodeGerado && qrCodeLido === "" ? (
                     <div className="grid grid-cols-2 gap-4">
@@ -743,28 +730,30 @@ function HomePageContent() {
                   ) : null}
                 </>
               ) : (
-                // MODO PAGAR - COM LEITOR DE CÂMERA (QrScanner)
                 <>
                   {isCameraOpen ? (
                     <div className="space-y-4">
                       <div className="bg-black rounded-xl overflow-hidden">
-                        <QrScanner
-                          onDecode={async (result) => {
-                            setQrCodeLido(result);
-                            setIsCameraOpen(false);
-                            toast.success("QR Code lido com sucesso!");
-                            
-                            const transferResult = await walletService.processarQRCodeTransferencia(result);
-                            if (transferResult.success) {
-                              toast.success(transferResult.message);
-                              setShowModalPagamento(false);
-                              setQrCodeLido("");
-                              setValorTransacao("");
-                              setDescricaoTransacao("");
-                              const saldo = await walletService.getSaldo();
-                              setSaldoUsuario(saldo.disponivel);
-                            } else {
-                              toast.error(transferResult.message);
+                        <Scanner
+                          onScan={async (result) => {
+                            if (result && result[0]?.rawValue) {
+                              const scannedText = result[0].rawValue;
+                              setQrCodeLido(scannedText);
+                              setIsCameraOpen(false);
+                              toast.success("QR Code lido com sucesso!");
+                              
+                              const transferResult = await walletService.processarQRCodeTransferencia(scannedText);
+                              if (transferResult.success) {
+                                toast.success(transferResult.message);
+                                setShowModalPagamento(false);
+                                setQrCodeLido("");
+                                setValorTransacao("");
+                                setDescricaoTransacao("");
+                                const saldo = await walletService.getSaldo();
+                                setSaldoUsuario(saldo.disponivel);
+                              } else {
+                                toast.error(transferResult.message);
+                              }
                             }
                           }}
                           onError={(error) => {
@@ -772,7 +761,7 @@ function HomePageContent() {
                             toast.error("Erro ao ler QR Code. Tente novamente ou cole o código manualmente.");
                           }}
                           constraints={{ facingMode: "environment" }}
-                          className="w-full h-80"
+                          classNames={{ container: "w-full h-80" }}
                         />
                       </div>
                       <p className="text-center text-gray-400 text-xs">

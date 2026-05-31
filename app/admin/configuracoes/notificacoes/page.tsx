@@ -21,7 +21,7 @@ import {
   Bell, ArrowLeft, Save, CheckCircle, XCircle, 
   MessageCircle, Smartphone, Globe, Users, Plus, 
   Edit2, Trash2, Settings, Database, Send, Eye,
-  Flask, AlertCircle, Info, Mail, Phone, MapPin,
+  AlertCircle, Info, Mail, Phone, MapPin,
   TrendingUp, Calendar, Clock, Filter, Download
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -99,7 +99,7 @@ export default function AdminConfiguracoesNotificacoesPage() {
   // Ícones disponíveis para grupos
   const iconesDisponiveis = [
     'Globe', 'Award', 'Dumbbell', 'Bike', 'Store', 'Briefcase', 
-    'Users', 'Star', 'Heart', 'Crown', 'Rocket', 'Flask'
+    'Users', 'Star', 'Heart', 'Crown', 'Rocket'
   ];
 
   useEffect(() => {
@@ -377,7 +377,7 @@ export default function AdminConfiguracoesNotificacoesPage() {
             <p className="text-sm opacity-90">Grupos</p>
           </div>
           <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-2xl p-4 text-white text-center">
-            <Flask className="w-6 h-6 mx-auto mb-2" />
+            <div className="w-6 h-6 mx-auto mb-2 text-white text-2xl">{configs.modo_teste ? '🧪' : '🔒'}</div>
             <p className="text-2xl font-bold">{configs.modo_teste ? 'ON' : 'OFF'}</p>
             <p className="text-sm opacity-90">Modo Teste</p>
           </div>
@@ -603,8 +603,7 @@ export default function AdminConfiguracoesNotificacoesPage() {
                         {grupo.icone === 'Bike' && <Bike className="w-5 h-5" />}
                         {grupo.icone === 'Store' && <Store className="w-5 h-5" />}
                         {grupo.icone === 'Users' && <Users className="w-5 h-5" />}
-                        {grupo.icone === 'Flask' && <Flask className="w-5 h-5" />}
-                        {!['Globe','Award','Dumbbell','Bike','Store','Users','Flask'].includes(grupo.icone) && <Users className="w-5 h-5" />}
+                        {!['Globe','Award','Dumbbell','Bike','Store','Users'].includes(grupo.icone) && <Users className="w-5 h-5" />}
                       </div>
                       <div>
                         <h3 className="font-bold text-gray-800">{grupo.nome}</h3>
@@ -884,4 +883,3 @@ function Award(props: any) { return <svg {...props} viewBox="0 0 24 24" fill="no
 function Dumbbell(props: any) { return <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 8h.01M6 16h.01M18 8h.01M18 16h.01M8 8l8 8M16 8l-8 8"/></svg>; }
 function Bike(props: any) { return <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-3 11V8l-4 2"/><path d="M12 8l4 2"/></svg>; }
 function Store(props: any) { return <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9h18v9H3zM6 9v9M12 9v9M18 9v9M9 3h6l2 6H7z"/></svg>; }
-function Flask(props: any) { return <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 2v7.527a2 2 0 01-.211.896L6 15"/><path d="M18 15l-3.789-4.577A2 2 0 0114 9.527V2"/><path d="M6 2h12"/><path d="M5 22h14"/></svg>; }
