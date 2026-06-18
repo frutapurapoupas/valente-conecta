@@ -1,0 +1,29 @@
+﻿FUNCIONALIDADES CONSOLIDADAS DA PÁGINA DE RECEITAS:
+==================================================
+1. Listagem de receitas em cards
+2. Exibição de preço de venda, custo unitário, lucro e margem
+3. Seção de preços por perfil (Cliente Geral, Parceiro, Assinante)
+4. Campo "Quantidade para Produzir"
+5. Botão "Produzir" que abre modal
+6. Modal com cálculo de ingredientes necessários
+7. Verificação de estoque atual
+8. Criação de lista de compras
+9. Sistema de múltiplas listas de compras
+10. Edição de receitas existentes
+11. Persistência no localStorage
+12. Integração com página de compras
+
+NÃO ALTERAR:
+- Estrutura dos cards de receitas
+- Cálculo de custos e margens
+- Lógica de produção
+- Sistema de listas de compras
+- APIs existentes
+
+PODE ALTERAR:
+- Estilos visuais (cores, espaçamentos)
+- Posicionamento de botões
+- Textos e labels
+- Layout responsivo
+- Animações
+- Mensagens de alerta

@@ -1,0 +1,494 @@
+﻿'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import { createBrowserClient } from '@supabase/ssr';
+import { toast, Toaster } from 'react-hot-toast';
+import { 
+  Plus, Search, CheckCircle, Trash2, Edit, 
+  Truck, Clock, Package, DollarSign 
+} from 'lucide-react';
+
+interface Compra {
+  id: string;
+  nome_produto: string;
+  quantidade: number;
+  unidade: string;
+  preco_unitario: number;
+  preco_total: number;
+  fornecedor_id: string;
+  fornecedor_nome?: string;
+  status: 'pendente' | 'aprovado' | 'entregue' | 'cancelado';
+  data_pedido: string;
+  data_entrega_prevista?: string;
+  observacoes?: string;
+  created_at: string;
+}
+
+interface Fornecedor {
+  id: string;
+  nome: string;
+  telefone: string;
+  email: string;
+}
+
+export default function ComprasPage() {
+  const [compras, setCompras] = useState<Compra[]>([]);
+  const [fornecedores, setFornecedores] = useState<Fornecedor[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('todos');
+  const [fornecedorFilter, setFornecedorFilter] = useState<string>('todos');
+  const [showModal, setShowModal] = useState(false);
+  const [editingCompra, setEditingCompra] = useState<Compra | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    nome_produto: '',
+    quantidade: 1,
+    unidade: 'un',
+    preco_unitario: 0,
+    fornecedor_id: '',
+    data_entrega_prevista: '',
+    observacoes: ''
+  });
+
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  const carregarCompras = useCallback(async () => {
+    setLoading(true);
+    try {
+      let query = supabase
+        .from('compras')
+        .select('*, fornecedor:fornecedor_id(id, nome)')
+        .order('created_at', { ascending: false });
+
+      if (statusFilter !== 'todos') query = query.eq('status', statusFilter);
+      if (fornecedorFilter !== 'todos') query = query.eq('fornecedor_id', fornecedorFilter);
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      const comprasFormatadas = data?.map(item => ({
+        ...item,
+        fornecedor_nome: item.fornecedor?.nome,
+        preco_total: item.quantidade * item.preco_unitario
+      })) || [];
+
+      setCompras(comprasFormatadas);
+    } catch (error) {
+      console.error('Erro:', error);
+      toast.error('Erro ao carregar compras');
+    } finally {
+      setLoading(false);
+    }
+  }, [statusFilter, fornecedorFilter, supabase]);
+
+  const carregarFornecedores = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('fornecedores')
+        .select('id, nome, telefone, email')
+        .eq('ativo', true)
+        .order('nome');
+      if (error) throw error;
+      setFornecedores(data || []);
+    } catch (error) {
+      console.error('Erro:', error);
+    }
+  }, [supabase]);
+
+  useEffect(() => {
+    carregarCompras();
+    carregarFornecedores();
+  }, [carregarCompras, carregarFornecedores]);
+
+  const salvarCompra = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.nome_produto || formData.quantidade <= 0 || !formData.fornecedor_id) {
+      toast.error('Preencha todos os campos obrigatórios');
+      return;
+    }
+
+    try {
+      const compraData = {
+        nome_produto: formData.nome_produto,
+        quantidade: formData.quantidade,
+        unidade: formData.unidade,
+        preco_unitario: formData.preco_unitario,
+        preco_total: formData.quantidade * formData.preco_unitario,
+        fornecedor_id: formData.fornecedor_id,
+        data_entrega_prevista: formData.data_entrega_prevista || null,
+        observacoes: formData.observacoes || null,
+        status: 'pendente',
+        updated_at: new Date().toISOString()
+      };
+
+      if (editingCompra) {
+        const { error } = await supabase
+          .from('compras')
+          .update(compraData)
+          .eq('id', editingCompra.id);
+        if (error) throw error;
+        toast.success('Compra atualizada!');
+      } else {
+        const { error } = await supabase
+          .from('compras')
+          .insert([{ ...compraData, created_at: new Date().toISOString() }]);
+        if (error) throw error;
+        toast.success('Compra criada!');
+      }
+
+      setShowModal(false);
+      setEditingCompra(null);
+      setFormData({
+        nome_produto: '',
+        quantidade: 1,
+        unidade: 'un',
+        preco_unitario: 0,
+        fornecedor_id: '',
+        data_entrega_prevista: '',
+        observacoes: ''
+      });
+      carregarCompras();
+    } catch (error) {
+      console.error('Erro:', error);
+      toast.error('Erro ao salvar compra');
+    }
+  };
+
+  const atualizarStatus = async (id: string, novoStatus: Compra['status']) => {
+    try {
+      const { error } = await supabase
+        .from('compras')
+        .update({ status: novoStatus, updated_at: new Date().toISOString() })
+        .eq('id', id);
+      if (error) throw error;
+      toast.success('Status atualizado!');
+      carregarCompras();
+    } catch (error) {
+      console.error('Erro:', error);
+      toast.error('Erro ao atualizar status');
+    }
+  };
+
+  const deletarCompra = async () => {
+    if (!deletingId) return;
+    try {
+      const { error } = await supabase.from('compras').delete().eq('id', deletingId);
+      if (error) throw error;
+      toast.success('Compra excluída!');
+      carregarCompras();
+    } catch (error) {
+      console.error('Erro:', error);
+      toast.error('Erro ao deletar compra');
+    } finally {
+      setShowDeleteModal(false);
+      setDeletingId(null);
+    }
+  };
+
+  const comprasFiltradas = compras.filter(compra => 
+    compra.nome_produto.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    compra.fornecedor_nome?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const estatisticas = {
+    total: compras.length,
+    pendentes: compras.filter(c => c.status === 'pendente').length,
+    aprovados: compras.filter(c => c.status === 'aprovado').length,
+    entregues: compras.filter(c => c.status === 'entregue').length,
+    valorTotal: compras.reduce((sum, c) => sum + c.preco_total, 0)
+  };
+
+  const getStatusColor = (status: Compra['status']) => {
+    const cores = {
+      pendente: 'bg-yellow-100 text-yellow-800',
+      aprovado: 'bg-blue-100 text-blue-800',
+      entregue: 'bg-green-100 text-green-800',
+      cancelado: 'bg-red-100 text-red-800'
+    };
+    return cores[status];
+  };
+
+  const getStatusTexto = (status: Compra['status']) => {
+    const textos = {
+      pendente: 'Pendente',
+      aprovado: 'Aprovado',
+      entregue: 'Entregue',
+      cancelado: 'Cancelado'
+    };
+    return textos[status];
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Toaster position="top-right" />
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8 flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
+              <Package className="w-8 h-8 text-blue-600" />
+              Gestão de Compras
+            </h1>
+            <p className="text-gray-600 mt-2">Controle de pedidos e compras da cozinha</p>
+          </div>
+          <button
+            onClick={() => {
+              setEditingCompra(null);
+              setFormData({
+                nome_produto: '',
+                quantidade: 1,
+                unidade: 'un',
+                preco_unitario: 0,
+                fornecedor_id: '',
+                data_entrega_prevista: '',
+                observacoes: ''
+              });
+              setShowModal(true);
+            }}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Nova Compra
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="text-sm text-gray-500">Total</div>
+            <div className="text-2xl font-bold">{estatisticas.total}</div>
+          </div>
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="text-sm text-gray-500">Pendentes</div>
+            <div className="text-2xl font-bold text-yellow-600">{estatisticas.pendentes}</div>
+          </div>
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="text-sm text-gray-500">Aprovados</div>
+            <div className="text-2xl font-bold text-blue-600">{estatisticas.aprovados}</div>
+          </div>
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="text-sm text-gray-500">Entregues</div>
+            <div className="text-2xl font-bold text-green-600">{estatisticas.entregues}</div>
+          </div>
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="text-sm text-gray-500">Valor Total</div>
+            <div className="text-2xl font-bold text-purple-600">
+              R$ {estatisticas.valorTotal.toFixed(2)}
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow mb-6 p-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Buscar..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 py-2 w-full border rounded-lg text-gray-900 text-gray-900"
+              />
+            </div>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-4 py-2 border rounded-lg text-gray-900 text-gray-900"
+            >
+              <option value="todos">Todos os status</option>
+              <option value="pendente">Pendente</option>
+              <option value="aprovado">Aprovado</option>
+              <option value="entregue">Entregue</option>
+            </select>
+            <select
+              value={fornecedorFilter}
+              onChange={(e) => setFornecedorFilter(e.target.value)}
+              className="px-4 py-2 border rounded-lg text-gray-900 text-gray-900"
+            >
+              <option value="todos">Todos fornecedores</option>
+              {fornecedores.map(f => (
+                <option key={f.id} value={f.id}>{f.nome}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          {loading ? (
+            <div className="flex justify-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+          ) : comprasFiltradas.length === 0 ? (
+            <div className="text-center py-12">
+              <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500">Nenhuma compra encontrada</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Produto</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Qtd</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Preço</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Total</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Fornecedor</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Ações</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {comprasFiltradas.map((compra) => (
+                    <tr key={compra.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap font-medium">{compra.nome_produto}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{compra.quantidade} {compra.unidade}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">R$ {compra.preco_unitario.toFixed(2)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap font-medium">R$ {compra.preco_total.toFixed(2)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{compra.fornecedor_nome || '-'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(compra.status)}`}>
+                          {getStatusTexto(compra.status)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex gap-2">
+                          {compra.status === 'pendente' && (
+                            <button onClick={() => atualizarStatus(compra.id, 'aprovado')} className="text-blue-600">
+                              <CheckCircle className="w-4 h-4" />
+                            </button>
+                          )}
+                          {compra.status === 'aprovado' && (
+                            <button onClick={() => atualizarStatus(compra.id, 'entregue')} className="text-green-600">
+                              <Truck className="w-4 h-4" />
+                            </button>
+                          )}
+                          <button onClick={() => {
+                            setEditingCompra(compra);
+                            setFormData({
+                              nome_produto: compra.nome_produto,
+                              quantidade: compra.quantidade,
+                              unidade: compra.unidade,
+                              preco_unitario: compra.preco_unitario,
+                              fornecedor_id: compra.fornecedor_id,
+                              data_entrega_prevista: compra.data_entrega_prevista?.split('T')[0] || '',
+                              observacoes: compra.observacoes || ''
+                            });
+                            setShowModal(true);
+                          }} className="text-gray-600">
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => {
+                            setDeletingId(compra.id);
+                            setShowDeleteModal(true);
+                          }} className="text-red-600">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
+            <h2 className="text-2xl font-bold mb-4">{editingCompra ? 'Editar' : 'Nova'} Compra</h2>
+            <form onSubmit={salvarCompra}>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Produto *</label>
+                  <input type="text" required placeholder="Digite o nome do produto" class="w-full px-3 py-2 border rounded-lg text-sm text-gray-900" /> setFormData({ ...formData, nome_produto: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-lg text-gray-900 text-gray-900" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Quantidade *</label>
+                    <input type="number" required min="0.01" step="0.01" value={formData.quantidade}
+                      onChange={(e) => setFormData({ ...formData, quantidade: parseFloat(e.target.value) })}
+                      className="w-full px-3 py-2 border rounded-lg text-gray-900 text-gray-900" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Unidade</label>
+                    <select value={formData.unidade}
+                      onChange={(e) => setFormData({ ...formData, unidade: e.target.value })}
+                      className="w-full px-3 py-2 border rounded-lg text-gray-900 text-gray-900">
+                      <option value="un">Unidade</option>
+                      <option value="kg">Quilograma</option>
+                      <option value="g">Grama</option>
+                      <option value="l">Litro</option>
+                      <option value="ml">Mililitro</option>
+                      <option value="cx">Caixa</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Preço Unitário *</label>
+                    <input type="number" required min="0" step="0.01" value={formData.preco_unitario}
+                      onChange={(e) => setFormData({ ...formData, preco_unitario: parseFloat(e.target.value) })}
+                      className="w-full px-3 py-2 border rounded-lg text-gray-900 text-gray-900" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Total</label>
+                    <input type="text" readOnly value={`R$ ${(formData.quantidade * formData.preco_unitario).toFixed(2)}`}
+                      className="w-full px-3 py-2 border rounded-lg bg-gray-50 text-gray-900 text-gray-900" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Fornecedor *</label>
+                  <select required value={formData.fornecedor_id}
+                    onChange={(e) => setFormData({ ...formData, fornecedor_id: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-lg text-gray-900 text-gray-900">
+                    <option value="" className="text-gray-500">Selecione um fornecedor</option>
+                    {fornecedores.map(f => (
+                      <option key={f.id} value={f.id}>{f.nome}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Data Prevista</label>
+                  <input type="date" value={formData.data_entrega_prevista}
+                    onChange={(e) => setFormData({ ...formData, data_entrega_prevista: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-lg text-gray-900 text-gray-900" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Observações</label>
+                  <textarea rows={3} value={formData.observacoes}
+                    onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-lg text-gray-900 text-gray-900" />
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 mt-6">
+                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border rounded-lg text-gray-900 text-gray-900">Cancelar</button>
+                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg">Salvar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-bold mb-4">Confirmar Exclusão</h3>
+            <p className="mb-6">Tem certeza que deseja excluir esta compra?</p>
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setShowDeleteModal(false)} className="px-4 py-2 border rounded-lg text-gray-900 text-gray-900">Cancelar</button>
+              <button onClick={deletarCompra} className="px-4 py-2 bg-red-600 text-white rounded-lg">Excluir</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+

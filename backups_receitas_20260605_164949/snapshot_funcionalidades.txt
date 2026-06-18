@@ -1,0 +1,11 @@
+﻿SNAPSHOT DAS FUNCIONALIDADES - 05/06/2026 16:49:53
+========================================================================
+
+STATES ATUAIS:
+   •   const [loading, setLoading] = useState(true);    •   const [receitas, setReceitas] = useState<any[]>([]);
+
+FUNÇÕES PRINCIPAIS:
+
+
+COMPONENTES:
+

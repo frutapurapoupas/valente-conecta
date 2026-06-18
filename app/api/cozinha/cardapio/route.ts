@@ -1,0 +1,77 @@
+﻿import { NextRequest, NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
+
+const dataPath = path.join(process.cwd(), 'data', 'cardapio.json');
+
+// Garantir que o arquivo existe
+function ensureFile() {
+  if (!fs.existsSync(dataPath)) {
+    fs.writeFileSync(dataPath, JSON.stringify([], null, 2));
+  }
+}
+
+// Ler dados
+function readData() {
+  ensureFile();
+  const data = fs.readFileSync(dataPath, 'utf-8');
+  return JSON.parse(data);
+}
+
+// Salvar dados
+function writeData(data: any) {
+  fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
+}
+
+export async function GET() {
+  try {
+    const items = readData();
+    return NextResponse.json({ success: true, data: items });
+  } catch (error) {
+    return NextResponse.json({ success: false, error: 'Erro ao carregar cardápio' }, { status: 500 });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const items = readData();
+    const newItem = { id: Date.now().toString(), ...body };
+    items.push(newItem);
+    writeData(items);
+    return NextResponse.json({ success: true, data: newItem });
+  } catch (error) {
+    return NextResponse.json({ success: false, error: 'Erro ao adicionar item' }, { status: 500 });
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    const body = await request.json();
+    const items = readData();
+    const index = items.findIndex((i: any) => i.id === id);
+    if (index !== -1) {
+      items[index] = { ...items[index], ...body };
+      writeData(items);
+      return NextResponse.json({ success: true, data: items[index] });
+    }
+    return NextResponse.json({ success: false, error: 'Item não encontrado' }, { status: 404 });
+  } catch (error) {
+    return NextResponse.json({ success: false, error: 'Erro ao atualizar' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    const items = readData();
+    const filtered = items.filter((i: any) => i.id !== id);
+    writeData(filtered);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json({ success: false, error: 'Erro ao deletar' }, { status: 500 });
+  }
+}

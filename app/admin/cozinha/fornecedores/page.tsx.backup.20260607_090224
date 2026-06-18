@@ -1,0 +1,271 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+
+interface Supplier {
+  id: string;
+  name: string;
+  document?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  contact?: string;
+}
+
+export default function FornecedoresPage() {
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    document: '',
+    phone: '',
+    email: '',
+    address: '',
+    contact: ''
+  });
+
+  useEffect(() => {
+    loadSuppliers();
+  }, [searchTerm]);
+
+  const loadSuppliers = async () => {
+    try {
+      const url = searchTerm 
+        ? `/api/admin/suppliers?search=${encodeURIComponent(searchTerm)}`
+        : '/api/admin/suppliers';
+      const response = await fetch(url);
+      const data = await response.json();
+      setSuppliers(data);
+    } catch (error) {
+      console.error('Erro ao carregar fornecedores:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const url = editingSupplier 
+        ? `/api/admin/suppliers?id=${editingSupplier.id}`
+        : '/api/admin/suppliers';
+      const method = editingSupplier ? 'PUT' : 'POST';
+      
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      
+      if (response.ok) {
+        await loadSuppliers();
+        setShowModal(false);
+        resetForm();
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Erro ao salvar');
+      }
+    } catch (error) {
+      console.error('Erro ao salvar fornecedor:', error);
+      alert('Erro ao salvar fornecedor');
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm('Tem certeza que deseja remover este fornecedor?')) {
+      try {
+        const response = await fetch(`/api/admin/suppliers?id=${id}`, { method: 'DELETE' });
+        if (response.ok) {
+          await loadSuppliers();
+        } else {
+          alert('Erro ao remover fornecedor');
+        }
+      } catch (error) {
+        console.error('Erro ao remover fornecedor:', error);
+        alert('Erro ao remover fornecedor');
+      }
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      document: '',
+      phone: '',
+      email: '',
+      address: '',
+      contact: ''
+    });
+    setEditingSupplier(null);
+  };
+
+  const editSupplier = (supplier: Supplier) => {
+    setEditingSupplier(supplier);
+    setFormData({
+      name: supplier.name,
+      document: supplier.document || '',
+      phone: supplier.phone || '',
+      email: supplier.email || '',
+      address: supplier.address || '',
+      contact: supplier.contact || ''
+    });
+    setShowModal(true);
+  };
+
+  if (loading) return <div className="text-center text-gray-900 dark:text-gray-100">Carregando fornecedores...</div>;
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Fornecedores</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Gerencie todos os fornecedores</p>
+        </div>
+        <button
+          onClick={() => {
+            resetForm();
+            setShowModal(true);
+          }}
+          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+        >
+          + Novo Fornecedor
+        </button>
+      </div>
+
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder="Buscar fornecedor por nome, CNPJ ou email..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-green-500"
+        />
+      </div>
+
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead className="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Nome</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300">CNPJ/CPF</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Telefone</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Email</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300">Ações</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+            {suppliers.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                  Nenhum fornecedor encontrado
+                </td>
+              </tr>
+            ) : (
+              suppliers.map((supplier) => (
+                <tr key={supplier.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{supplier.name}</td>
+                  <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{supplier.document || '-'}</td>
+                  <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{supplier.phone || '-'}</td>
+                  <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{supplier.email || '-'}</td>
+                  <td className="px-6 py-4 text-right">
+                    <button
+                      onClick={() => editSupplier(supplier)}
+                      className="text-blue-600 dark:text-blue-400 hover:text-blue-800 mr-3"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => handleDelete(supplier.id)}
+                      className="text-red-600 dark:text-red-400 hover:text-red-800"
+                    >
+                      Remover
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Modal - manter o mesmo código do modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
+              {editingSupplier ? 'Editar Fornecedor' : 'Novo Fornecedor'}
+            </h2>
+            <form onSubmit={handleSubmit}>
+              <div className="space-y-4">
+                <input
+                  type="text"
+                  placeholder="Nome *"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="CNPJ/CPF"
+                  value={formData.document}
+                  onChange={(e) => setFormData({ ...formData, document: e.target.value })}
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+                <input
+                  type="tel"
+                  placeholder="Telefone"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+                <input
+                  type="text"
+                  placeholder="Endereço"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+                <input
+                  type="text"
+                  placeholder="Contato"
+                  value={formData.contact}
+                  onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowModal(false);
+                    resetForm();
+                  }}
+                  className="px-4 py-2 border rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  Salvar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

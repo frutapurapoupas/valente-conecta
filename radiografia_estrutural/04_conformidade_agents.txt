@@ -1,0 +1,8 @@
+﻿Módulo Academia: ✅
+Módulo Admin Master: ✅
+Módulo Cozinha: ✅
+Módulo Empregos: ❌
+Módulo Imóveis: ❌
+Módulo Moto Táxi: ✅
+Módulo Profissionais: ❌
+PDV/Serviços: ✅
