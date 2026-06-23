@@ -1,56 +1,96 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
-import { LocalAdapter } from '@/lib/storage/localAdapter';
+import fs from 'fs';
+import path from 'path';
 
-const storage = new LocalAdapter();
+const dataPath = path.join(process.cwd(), 'data', 'receitas.json');
 
-export async function GET() {
-  try {
-    const recipes = await storage.getRecipes();
-    return NextResponse.json({ success: true, data: recipes });
-  } catch (error) {
-    console.error('GET Recipes Error:', error);
-    return NextResponse.json({ success: false, error: 'Erro ao carregar receitas' }, { status: 500 });
-  }
+function readData() {
+    try {
+        const data = fs.readFileSync(dataPath, 'utf-8');
+        return JSON.parse(data);
+    } catch {
+        return [];
+    }
 }
 
+function writeData(data: any) {
+    fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
+}
+
+// GET - Buscar receitas (com ou sem ID)
+export async function GET(request: NextRequest) {
+    try {
+        const { searchParams } = new URL(request.url);
+        const id = searchParams.get('id');
+        
+        const receitas = readData();
+        
+        // Se tiver ID, filtrar e retornar UMA receita
+        if (id) {
+            const receita = receitas.find((r: any) => r.id === id);
+            if (receita) {
+                return NextResponse.json({ success: true, data: receita });
+            } else {
+                return NextResponse.json({ success: false, error: 'Receita não encontrada' }, { status: 404 });
+            }
+        }
+        
+        // Se não tiver ID, retornar todas
+        return NextResponse.json({ success: true, data: receitas });
+    } catch (error: any) {
+        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    }
+}
+
+// POST - Criar nova receita
 export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const newRecipe = await storage.createRecipe(body);
-    return NextResponse.json({ success: true, data: newRecipe });
-  } catch (error) {
-    console.error('POST Recipe Error:', error);
-    return NextResponse.json({ success: false, error: 'Erro ao criar receita' }, { status: 500 });
-  }
+    try {
+        const body = await request.json();
+        const receitas = readData();
+        const newReceita = {
+            id: Date.now().toString(),
+            ...body,
+            createdAt: new Date().toISOString()
+        };
+        receitas.push(newReceita);
+        writeData(receitas);
+        return NextResponse.json({ success: true, data: newReceita });
+    } catch (error: any) {
+        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    }
 }
 
+// PUT - Atualizar receita
 export async function PUT(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-    if (!id) {
-      return NextResponse.json({ success: false, error: 'ID não fornecido' }, { status: 400 });
+    try {
+        const { searchParams } = new URL(request.url);
+        const id = searchParams.get('id');
+        const body = await request.json();
+        const receitas = readData();
+        const index = receitas.findIndex((r: any) => r.id === id);
+        
+        if (index === -1) {
+            return NextResponse.json({ success: false, error: 'Receita não encontrada' }, { status: 404 });
+        }
+        
+        receitas[index] = { ...receitas[index], ...body, updatedAt: new Date().toISOString() };
+        writeData(receitas);
+        return NextResponse.json({ success: true, data: receitas[index] });
+    } catch (error: any) {
+        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
-    const body = await request.json();
-    const updated = await storage.updateRecipe(id, body);
-    return NextResponse.json({ success: true, data: updated });
-  } catch (error) {
-    console.error('PUT Recipe Error:', error);
-    return NextResponse.json({ success: false, error: 'Erro ao atualizar receita' }, { status: 500 });
-  }
 }
 
+// DELETE - Remover receita
 export async function DELETE(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-    if (!id) {
-      return NextResponse.json({ success: false, error: 'ID não fornecido' }, { status: 400 });
+    try {
+        const { searchParams } = new URL(request.url);
+        const id = searchParams.get('id');
+        const receitas = readData();
+        const filtered = receitas.filter((r: any) => r.id !== id);
+        writeData(filtered);
+        return NextResponse.json({ success: true });
+    } catch (error: any) {
+        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
-    await storage.deleteRecipe(id);
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('DELETE Recipe Error:', error);
-    return NextResponse.json({ success: false, error: 'Erro ao deletar receita' }, { status: 500 });
-  }
 }

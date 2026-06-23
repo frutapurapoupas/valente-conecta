@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/app/context/AppContext";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase";
 import toast from "react-hot-toast";
 import { Store, Briefcase, MapPin, Phone, Building, ArrowLeft, CheckCircle } from "lucide-react";
 

@@ -8,16 +8,41 @@ export class LocalAdapter implements IStorageAdapter {
   
   constructor() {
     this.dataPath = path.join(process.cwd(), 'data');
+    this.ensureDataDirectory();
   }
   
-  async getIngredients(): Promise<Ingredient[]> {
-    const filePath = path.join(this.dataPath, 'ingredientes.json');
+  private ensureDataDirectory(): void {
+    if (!fs.existsSync(this.dataPath)) {
+      fs.mkdirSync(this.dataPath, { recursive: true });
+    }
+    
+    const files = ['ingredientes.json', 'receitas.json', 'media.json'];
+    for (const file of files) {
+      const filePath = path.join(this.dataPath, file);
+      if (!fs.existsSync(filePath)) {
+        fs.writeFileSync(filePath, JSON.stringify([], null, 2));
+      }
+    }
+  }
+  
+  private readJSON<T>(filename: string): T[] {
+    const filePath = path.join(this.dataPath, filename);
     try {
       const data = fs.readFileSync(filePath, 'utf-8');
       return JSON.parse(data);
     } catch {
       return [];
     }
+  }
+  
+  private writeJSON<T>(filename: string, data: T[]): void {
+    const filePath = path.join(this.dataPath, filename);
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+  }
+  
+  // INGREDIENTES
+  async getIngredients(): Promise<Ingredient[]> {
+    return this.readJSON<Ingredient>('ingredientes.json');
   }
   
   async getIngredient(id: string): Promise<Ingredient | null> {
@@ -33,8 +58,7 @@ export class LocalAdapter implements IStorageAdapter {
       createdAt: new Date().toISOString(),
     };
     ingredients.push(newIngredient);
-    const filePath = path.join(this.dataPath, 'ingredientes.json');
-    fs.writeFileSync(filePath, JSON.stringify(ingredients, null, 2));
+    this.writeJSON('ingredientes.json', ingredients);
     return newIngredient;
   }
   
@@ -43,26 +67,19 @@ export class LocalAdapter implements IStorageAdapter {
     const index = ingredients.findIndex(i => i.id === id);
     if (index === -1) throw new Error('Ingrediente não encontrado');
     ingredients[index] = { ...ingredients[index], ...ing, updatedAt: new Date().toISOString() };
-    const filePath = path.join(this.dataPath, 'ingredientes.json');
-    fs.writeFileSync(filePath, JSON.stringify(ingredients, null, 2));
+    this.writeJSON('ingredientes.json', ingredients);
     return ingredients[index];
   }
   
   async deleteIngredient(id: string): Promise<void> {
     const ingredients = await this.getIngredients();
     const filtered = ingredients.filter(i => i.id !== id);
-    const filePath = path.join(this.dataPath, 'ingredientes.json');
-    fs.writeFileSync(filePath, JSON.stringify(filtered, null, 2));
+    this.writeJSON('ingredientes.json', filtered);
   }
   
+  // RECEITAS
   async getRecipes(): Promise<Recipe[]> {
-    const filePath = path.join(this.dataPath, 'receitas.json');
-    try {
-      const data = fs.readFileSync(filePath, 'utf-8');
-      return JSON.parse(data);
-    } catch {
-      return [];
-    }
+    return this.readJSON<Recipe>('receitas.json');
   }
   
   async getRecipe(id: string): Promise<Recipe | null> {
@@ -76,10 +93,10 @@ export class LocalAdapter implements IStorageAdapter {
       ...recipe,
       id: Date.now().toString(),
       createdAt: new Date().toISOString(),
+      ingredients: recipe.ingredients || []
     };
     recipes.push(newRecipe);
-    const filePath = path.join(this.dataPath, 'receitas.json');
-    fs.writeFileSync(filePath, JSON.stringify(recipes, null, 2));
+    this.writeJSON('receitas.json', recipes);
     return newRecipe;
   }
   
@@ -88,18 +105,17 @@ export class LocalAdapter implements IStorageAdapter {
     const index = recipes.findIndex(r => r.id === id);
     if (index === -1) throw new Error('Receita não encontrada');
     recipes[index] = { ...recipes[index], ...recipe, updatedAt: new Date().toISOString() };
-    const filePath = path.join(this.dataPath, 'receitas.json');
-    fs.writeFileSync(filePath, JSON.stringify(recipes, null, 2));
+    this.writeJSON('receitas.json', recipes);
     return recipes[index];
   }
   
   async deleteRecipe(id: string): Promise<void> {
     const recipes = await this.getRecipes();
     const filtered = recipes.filter(r => r.id !== id);
-    const filePath = path.join(this.dataPath, 'receitas.json');
-    fs.writeFileSync(filePath, JSON.stringify(filtered, null, 2));
+    this.writeJSON('receitas.json', filtered);
   }
   
+  // MÍDIA (implementações básicas)
   async uploadImage(file: File, entityType: string, entityId?: string): Promise<string> {
     return '/uploads/temp/placeholder.jpg';
   }

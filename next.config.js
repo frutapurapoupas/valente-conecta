@@ -3,16 +3,14 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   output: 'standalone',
-  eslint: { ignoreDuringBuilds: true },
-  typescript: { ignoreBuildErrors: true },
   images: { 
     domains: ['api.qrserver.com', 'valente-conecta.clic.com.br'],
     unoptimized: true 
   },
-  staticPageGenerationTimeout: 180,
+  staticPageGenerationTimeout: 60,
   
   generateBuildId: async () => {
-    return `build-${Date.now()}`
+    return 'valente-conecta-v2'
   },
   
   async headers() {

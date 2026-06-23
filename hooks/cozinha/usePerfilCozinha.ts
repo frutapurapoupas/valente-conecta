@@ -1,0 +1,102 @@
+// hooks/cozinha/usePerfilCozinha.ts
+// 🪝 LÓGICA - Seleção de Perfil da Cozinha
+
+"use client";
+
+import { useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { PERFIS, DESCONTO_ASSINANTE, DESCONTO_REVENDEDOR, MINIMO_PORCOES_ASSINANTE } from '@/constants/cozinhaConstants';
+
+export type TipoPerfil = 'publico' | 'assinante' | 'revendedor';
+
+interface PerfilConfig {
+  id: TipoPerfil;
+  label: string;
+  descricao: string;
+  icone: string;
+  cor: string;
+  desconto: number;
+  minPorcoes?: number;
+}
+
+export const usePerfilCozinha = () => {
+  const router = useRouter();
+  const [perfilSelecionado, setPerfilSelecionado] = useState<TipoPerfil | null>(null);
+  const [modalAssinaturaAberto, setModalAssinaturaAberto] = useState(false);
+  const [modalRevendedorAberto, setModalRevendedorAberto] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const perfis: PerfilConfig[] = [
+    {
+      id: 'publico',
+      label: PERFIS.PUBLICO.label,
+      descricao: PERFIS.PUBLICO.descricao,
+      icone: PERFIS.PUBLICO.icone,
+      cor: PERFIS.PUBLICO.cor,
+      desconto: PERFIS.PUBLICO.desconto
+    },
+    {
+      id: 'assinante',
+      label: PERFIS.ASSINANTE.label,
+      descricao: PERFIS.ASSINANTE.descricao,
+      icone: PERFIS.ASSINANTE.icone,
+      cor: PERFIS.ASSINANTE.cor,
+      desconto: PERFIS.ASSINANTE.desconto,
+      minPorcoes: PERFIS.ASSINANTE.minPorcoes
+    },
+    {
+      id: 'revendedor',
+      label: PERFIS.REVENDEDOR.label,
+      descricao: PERFIS.REVENDEDOR.descricao,
+      icone: PERFIS.REVENDEDOR.icone,
+      cor: PERFIS.REVENDEDOR.cor,
+      desconto: PERFIS.REVENDEDOR.desconto
+    }
+  ];
+
+  const selecionarPerfil = useCallback((perfilId: TipoPerfil) => {
+    setPerfilSelecionado(perfilId);
+    
+    if (perfilId === 'assinante') {
+      setModalAssinaturaAberto(true);
+    } else if (perfilId === 'revendedor') {
+      setModalRevendedorAberto(true);
+    } else {
+      // Público geral - vai direto para o catálogo
+      router.push('/cozinha/catalogo?perfil=publico');
+    }
+  }, [router]);
+
+  const confirmarAssinatura = useCallback(() => {
+    setModalAssinaturaAberto(false);
+    router.push('/cozinha/catalogo?perfil=assinante');
+  }, [router]);
+
+  const cancelarAssinatura = useCallback(() => {
+    setModalAssinaturaAberto(false);
+    setPerfilSelecionado(null);
+  }, []);
+
+  const confirmarRevendedor = useCallback(() => {
+    setModalRevendedorAberto(false);
+    router.push('/cozinha/catalogo?perfil=revendedor');
+  }, [router]);
+
+  const cancelarRevendedor = useCallback(() => {
+    setModalRevendedorAberto(false);
+    setPerfilSelecionado(null);
+  }, []);
+
+  return {
+    perfis,
+    perfilSelecionado,
+    modalAssinaturaAberto,
+    modalRevendedorAberto,
+    loading,
+    selecionarPerfil,
+    confirmarAssinatura,
+    cancelarAssinatura,
+    confirmarRevendedor,
+    cancelarRevendedor
+  };
+};

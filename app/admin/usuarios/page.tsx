@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/app/context/AppContext";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase";
 import { 
   Users, Search, RefreshCw, Shield, User, Wallet, 
   Calendar, Hash, Plus, X, Check, Edit2, Trash2,

@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/app/context/AppContext';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@/lib/supabase';
 import { ArrowLeft, QrCode, Copy, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 

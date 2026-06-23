@@ -1,0 +1,536 @@
+// components/admin/adminMenuFull.ts
+// 📊 VERSÃO COMPLETA - TODOS OS ÍCONES IMPORTADOS
+
+import {
+  // ===== ÍCONES PRINCIPAIS =====
+  LayoutDashboard,
+  Users,
+  CreditCard,
+  Bot,
+  DollarSign,
+  Settings,
+  User,
+  Wallet,
+  ChefHat,
+  Package,
+  Utensils,
+  ShoppingList,
+  Factory,
+  Eye,
+  Dumbbell,
+  Cake,
+  Pizza,
+  Truck,
+  Wrench,
+  Store,
+  Home,
+  Smartphone,
+  Car,
+  School,
+  Hospital,
+  Scissors,
+  PartyPopper,
+  Dog,
+  
+  // ===== GRÁFICOS E MÉTRICAS =====
+  BarChart3,
+  Brain,
+  FileText,
+  Shield,
+  
+  // ===== ACADEMIAS =====
+  Building2,
+  UserCog,
+  Music,
+  Activity,
+  
+  // ===== ALIMENTAÇÃO =====
+  Coffee,
+  Sandwich,
+  Beef,
+  IceCream,
+  Bread,
+  Apple,        // ✅ Hortifruti
+  
+  // ===== UTILIDADES =====
+  Droplet,
+  Key,
+  Wifi,
+  
+  // ===== SERVIÇOS =====
+  Hammer,
+  Monitor,
+  Snowflake,
+  Zap,
+  Scale,
+  Heart,
+  
+  // ===== MERCADOS =====
+  ShoppingBag,
+  Warehouse,
+  ShoppingBasket,
+  
+  // ===== IMÓVEL =====
+  Building,
+  Hotel,
+  Bed,
+  Door,
+  
+  // ===== AGRO =====
+  Tractor,
+  Sprout,
+  Droplets,
+  Stethoscope,
+  Flask,
+  Leaf,
+  
+  // ===== CONSTRUÇÃO =====
+  Paintbrush,
+  Saw,
+  Construction,
+  Drill,
+  Ruler,
+  
+  // ===== TECNOLOGIA =====
+  Camera,
+  
+  // ===== AUTOMOTIVO =====
+  Wash,         // ✅ Lava jato
+  Tire,         // ✅ Borracharia
+  Battery,      // ✅ Auto elétrica
+  Bike,         // ✅ Motos, Moto táxi
+  
+  // ===== EDUCAÇÃO =====
+  Book,
+  Pencil,
+  Languages,
+  Music2,       // ✅ Som automotivo, Música
+  
+  // ===== SAÚDE =====
+  Pill,         // ✅ Farmácias
+  Tooth,        // ✅ Dentistas
+  
+  // ===== MODA =====
+  Baby,         // ✅ Moda infantil
+  Shoe,         // ✅ Calçados
+  Bag,          // ✅ Bolsas
+  Shirt,        // ✅ Moda íntima
+  Church,       // ✅ Moda evangélica
+  Gem,          // ✅ Acessórios
+  
+  // ===== BELEZA =====
+  Hand,         // ✅ Manicure
+  Face,         // ✅ Estética facial
+  Body,         // ✅ Estética corporal
+  Flower,       // ✅ Perfumaria
+  
+  // ===== EVENTOS =====
+  Palette,      // ✅ Decoração
+  Video,        // ✅ Filmagem
+  Mail,         // ✅ Convites
+  
+  type LucideIcon
+} from "lucide-react";
+
+// ============================================================
+// TIPOS
+// ============================================================
+
+export interface MenuItem {
+  name: string;
+  path: string;
+  icon: LucideIcon;
+  status?: 'active' | 'construction';
+}
+
+export interface MenuGroup {
+  name: string;
+  icon: LucideIcon;
+  collapsible?: boolean;
+  items: MenuItem[];
+  description?: string;
+}
+
+// ============================================================
+// MENU COMPLETO
+// ============================================================
+
+export const adminMenuFull: MenuGroup[] = [
+  // ==================== DASHBOARD ====================
+  {
+    name: "📊 Dashboard",
+    icon: LayoutDashboard,
+    collapsible: false,
+    items: [
+      { name: "Dashboard", path: "/admin-master", icon: LayoutDashboard, status: 'active' },
+      { name: "Dashboard Gráficos", path: "/admin-master/dashboard-graficos", icon: BarChart3, status: 'construction' },
+      { name: "Métricas IA", path: "/admin-master/metricas-ia", icon: Brain, status: 'construction' },
+      { name: "Relatórios", path: "/admin-master/relatorios", icon: FileText, status: 'construction' },
+      { name: "Monitor de Qualidade", path: "/admin-master/monitor", icon: Shield, status: 'active' },
+    ]
+  },
+
+  // ==================== USUÁRIOS & PLANOS ====================
+  {
+    name: "👥 Usuários & Planos",
+    icon: Users,
+    collapsible: false,
+    items: [
+      { name: "Usuários", path: "/admin-master/usuarios", icon: Users, status: 'active' },
+      { name: "Planos", path: "/admin-master/planos", icon: CreditCard, status: 'active' },
+      { name: "IA & Automação", path: "/admin-master/ia", icon: Bot, status: 'active' },
+    ]
+  },
+
+  // ==================== FINANCEIRO ====================
+  {
+    name: "💰 Financeiro",
+    icon: DollarSign,
+    collapsible: false,
+    items: [
+      { name: "Financeiro", path: "/admin-master/financeiro", icon: DollarSign, status: 'construction' },
+      { name: "Financeiro Pessoal", path: "/admin-master/financeiro-pessoal", icon: Wallet, status: 'active' },
+      { name: "Configurações", path: "/admin-master/config", icon: Settings, status: 'active' },
+    ]
+  },
+
+  // ==================== PESSOAL ====================
+  {
+    name: "🏦 PESSOAL",
+    icon: User,
+    collapsible: true,
+    items: [
+      { name: "PESSOAL", path: "/admin-master/pessoal", icon: User, status: 'active' },
+      { name: "Financeiro Pessoal", path: "/admin-master/financeiro-pessoal", icon: Wallet, status: 'active' },
+      { name: "Cozinha chef Neide", path: "/admin-master/cozinha-chef", icon: ChefHat, status: 'active' },
+      { name: "Estoque", path: "/admin-master/estoque", icon: Package, status: 'active' },
+      { name: "Prato & Produto", path: "/admin-master/pratos-produtos", icon: Utensils, status: 'active' },
+      { name: "Lista de compra", path: "/admin-master/lista-compras", icon: ShoppingList, status: 'active' },
+      { name: "Produção", path: "/admin-master/producao", icon: Factory, status: 'active' },
+      { name: "Preview Cardápio", path: "/admin-master/preview-cardapio", icon: Eye, status: 'construction' },
+    ]
+  },
+
+  // ==================== ACADEMIAS ====================
+  {
+    name: "🏋️ ACADEMIAS & ESPORTES",
+    icon: Dumbbell,
+    collapsible: true,
+    items: [
+      { name: "Academias Empresa", path: "/admin-master/academias-empresa", icon: Building2, status: 'construction' },
+      { name: "Academia Aluno", path: "/admin-master/academia-aluno", icon: Users, status: 'active' },
+      { name: "Personal trainer", path: "/admin-master/personal-trainer", icon: UserCog, status: 'construction' },
+      { name: "Dança", path: "/admin-master/danca", icon: Music, status: 'construction' },
+      { name: "Crossfit", path: "/admin-master/crossfit", icon: Dumbbell, status: 'construction' },
+      { name: "Funcional", path: "/admin-master/funcional", icon: Activity, status: 'construction' },
+    ]
+  },
+
+  // ==================== MARMITA & BOLOS ====================
+  {
+    name: "🍲 MARMITA & BOLOS",
+    icon: Cake,
+    collapsible: true,
+    items: [
+      { name: "Marmitaria", path: "/admin-master/marmitaria", icon: Utensils, status: 'construction' },
+      { name: "Delicatessen", path: "/admin-master/delicatessen", icon: Coffee, status: 'construction' },
+      { name: "Confeitarias", path: "/admin-master/confeitarias", icon: Cake, status: 'construction' },
+      { name: "Salgados", path: "/admin-master/salgados", icon: Pizza, status: 'construction' },
+      { name: "Doces", path: "/admin-master/doces", icon: Cake, status: 'construction' },
+      { name: "Bolos", path: "/admin-master/bolos", icon: Cake, status: 'construction' },
+    ]
+  },
+
+  // ==================== ALIMENTAÇÃO ====================
+  {
+    name: "🍲 ALIMENTAÇÃO",
+    icon: Utensils,
+    collapsible: true,
+    items: [
+      { name: "Restaurantes", path: "/admin-master/restaurantes", icon: Utensils, status: 'construction' },
+      { name: "Lanchonetes", path: "/admin-master/lanchonetes", icon: Sandwich, status: 'construction' },
+      { name: "Pizzarias", path: "/admin-master/pizzarias", icon: Pizza, status: 'construction' },
+      { name: "Hamburguerias", path: "/admin-master/hamburguerias", icon: Beef, status: 'construction' },
+      { name: "Açaí", path: "/admin-master/acai", icon: IceCream, status: 'construction' },
+      { name: "Padarias", path: "/admin-master/padarias", icon: Bread, status: 'construction' },
+      { name: "Delivery", path: "/admin-master/delivery", icon: Truck, status: 'construction' },
+      { name: "Churrascarias", path: "/admin-master/churrascarias", icon: Beef, status: 'construction' },
+      { name: "Cafeterias", path: "/admin-master/cafeterias", icon: Coffee, status: 'construction' },
+    ]
+  },
+
+  // ==================== TRANSPORTE ====================
+  {
+    name: "🚚 TRANSPORTE & DELIVERY",
+    icon: Truck,
+    collapsible: true,
+    items: [
+      { name: "Moto táxi", path: "/admin-master/moto-taxi", icon: Bike, status: 'active' },
+      { name: "Entregadores", path: "/admin-master/entregadores", icon: Users, status: 'construction' },
+      { name: "Frete", path: "/admin-master/frete", icon: Truck, status: 'construction' },
+      { name: "Mudanças", path: "/admin-master/mudancas", icon: Package, status: 'construction' },
+      { name: "Guincho", path: "/admin-master/guincho", icon: Wrench, status: 'construction' },
+      { name: "Transporte escolar", path: "/admin-master/transporte-escolar", icon: Building2, status: 'construction' },
+    ]
+  },
+
+  // ==================== UTILIDADES ====================
+  {
+    name: "🛒 UTILIDADES",
+    icon: ShoppingBag,
+    collapsible: true,
+    items: [
+      { name: "Água e gás", path: "/admin-master/agua-gas", icon: Droplet, status: 'construction' },
+      { name: "Chaveiros", path: "/admin-master/chaveiros", icon: Key, status: 'construction' },
+      { name: "Internet", path: "/admin-master/internet", icon: Wifi, status: 'construction' },
+    ]
+  },
+
+  // ==================== SERVIÇOS ====================
+  {
+    name: "🛠️ SERVIÇOS",
+    icon: Wrench,
+    collapsible: true,
+    items: [
+      { name: "Serralheiro", path: "/admin-master/serralheiro", icon: Wrench, status: 'construction' },
+      { name: "Montador", path: "/admin-master/montador", icon: Hammer, status: 'construction' },
+      { name: "Técnico informática", path: "/admin-master/tecnico-informatica", icon: Monitor, status: 'construction' },
+      { name: "Técnico celular", path: "/admin-master/tecnico-celular", icon: Smartphone, status: 'construction' },
+      { name: "Refrigeração", path: "/admin-master/refrigeracao", icon: Snowflake, status: 'construction' },
+      { name: "Instalações", path: "/admin-master/instalacoes", icon: Zap, status: 'construction' },
+      { name: "Advogado", path: "/admin-master/advogado", icon: Scale, status: 'construction' },
+      { name: "Terapeuta", path: "/admin-master/terapeuta", icon: Heart, status: 'construction' },
+    ]
+  },
+
+  // ==================== MERCADOS ====================
+  {
+    name: "🛒 MERCADOS",
+    icon: Store,
+    collapsible: true,
+    items: [
+      { name: "Mercados", path: "/admin-master/mercados", icon: Store, status: 'construction' },
+      { name: "Mercadinhos", path: "/admin-master/mercadinhos", icon: ShoppingBag, status: 'construction' },
+      { name: "Atacadistas", path: "/admin-master/atacadistas", icon: Warehouse, status: 'construction' },
+      { name: "Hortifruti", path: "/admin-master/hortifruti", icon: Apple, status: 'construction' },  // ✅ Apple
+      { name: "Açougues", path: "/admin-master/acougues", icon: Beef, status: 'construction' },
+      { name: "Distribuidoras", path: "/admin-master/distribuidoras", icon: Package, status: 'construction' },
+      { name: "Conveniência", path: "/admin-master/conveniencia", icon: ShoppingBasket, status: 'construction' },
+    ]
+  },
+
+  // ==================== IMÓVEL ====================
+  {
+    name: "🏠 IMÓVEL / HOSPEDAGEM",
+    icon: Home,
+    collapsible: true,
+    items: [
+      { name: "Venda de imóvel", path: "/admin-master/venda-imovel", icon: Home, status: 'construction' },
+      { name: "Aluguel de imóvel", path: "/admin-master/aluguel-imovel", icon: Building, status: 'construction' },
+      { name: "Hotel", path: "/admin-master/hotel", icon: Hotel, status: 'construction' },
+      { name: "Pousada", path: "/admin-master/pousada", icon: Bed, status: 'construction' },
+      { name: "Dormitório", path: "/admin-master/dormitorio", icon: Door, status: 'construction' },
+    ]
+  },
+
+  // ==================== AGRO ====================
+  {
+    name: "🐄 AGRO & CAMPO",
+    icon: Tractor,
+    collapsible: true,
+    items: [
+      { name: "Agropecuária", path: "/admin-master/agropecuaria", icon: Tractor, status: 'construction' },
+      { name: "Ração animal", path: "/admin-master/racao-animal", icon: Dog, status: 'construction' },
+      { name: "Produtos agrícolas", path: "/admin-master/produtos-agricolas", icon: Sprout, status: 'construction' },
+      { name: "Ferramentas rurais", path: "/admin-master/ferramentas-rurais", icon: Hammer, status: 'construction' },
+      { name: "Irrigação", path: "/admin-master/irrigacao", icon: Droplets, status: 'construction' },
+      { name: "Veterinário", path: "/admin-master/veterinario", icon: Stethoscope, status: 'construction' },
+      { name: "Insumos agro", path: "/admin-master/insumos-agro", icon: Flask, status: 'construction' },
+      { name: "Produtos para sisal", path: "/admin-master/produtos-sisal", icon: Leaf, status: 'construction' },
+    ]
+  },
+
+  // ==================== CONSTRUÇÃO ====================
+  {
+    name: "🛠️ CONSTRUÇÃO",
+    icon: Construction,
+    collapsible: true,
+    items: [
+      { name: "Eletricista", path: "/admin-master/eletricista", icon: Zap, status: 'construction' },
+      { name: "Encanador", path: "/admin-master/encanador", icon: Droplet, status: 'construction' },
+      { name: "Pedreiro", path: "/admin-master/pedreiro", icon: Hammer, status: 'construction' },
+      { name: "Pintor", path: "/admin-master/pintor", icon: Paintbrush, status: 'construction' },
+      { name: "Marceneiro", path: "/admin-master/marceneiro", icon: Saw, status: 'construction' },
+    ]
+  },
+
+  // ==================== ALUGUEL DE MÁQUINAS ====================
+  {
+    name: "🔧 ALUGUEL DE MÁQUINAS",
+    icon: Construction,
+    collapsible: true,
+    description: "Muito forte no interior",
+    items: [
+      { name: "Aluguel de trator", path: "/admin-master/aluguel-trator", icon: Tractor, status: 'construction' },
+      { name: "Aluguel de Betoneira", path: "/admin-master/aluguel-betoneira", icon: Construction, status: 'construction' },
+      { name: "Aluguel de Rompedor", path: "/admin-master/aluguel-rompedor", icon: Drill, status: 'construction' },
+      { name: "Aluguel de Andaime", path: "/admin-master/aluguel-andaime", icon: Ruler, status: 'construction' },
+    ]
+  },
+
+  // ==================== TECNOLOGIA ====================
+  {
+    name: "📱 TECNOLOGIA",
+    icon: Smartphone,
+    collapsible: true,
+    items: [
+      { name: "Assistência celular", path: "/admin-master/assistencia-celular", icon: Smartphone, status: 'construction' },
+      { name: "Loja de celular", path: "/admin-master/loja-celular", icon: Store, status: 'construction' },
+      { name: "Informática", path: "/admin-master/informatica", icon: Monitor, status: 'construction' },
+      { name: "Internet", path: "/admin-master/internet", icon: Wifi, status: 'construction' },
+      { name: "Câmeras", path: "/admin-master/cameras", icon: Camera, status: 'construction' },
+      { name: "Segurança eletrônica", path: "/admin-master/seguranca-eletronica", icon: Shield, status: 'construction' },
+    ]
+  },
+
+  // ==================== AUTOMOTIVO ====================
+  {
+    name: "🚗 AUTOMOTIVO",
+    icon: Car,
+    collapsible: true,
+    items: [
+      { name: "Oficina", path: "/admin-master/oficina", icon: Wrench, status: 'construction' },
+      { name: "Auto peças", path: "/admin-master/auto-pecas", icon: Car, status: 'construction' },
+      { name: "Lava jato", path: "/admin-master/lava-jato", icon: Wash, status: 'construction' },
+      { name: "Borracharia", path: "/admin-master/borracharia", icon: Tire, status: 'construction' },
+      { name: "Auto elétrica", path: "/admin-master/auto-eletrica", icon: Battery, status: 'construction' },
+      { name: "Som automotivo", path: "/admin-master/som-automotivo", icon: Music2, status: 'construction' },
+      { name: "Motos", path: "/admin-master/motos", icon: Bike, status: 'construction' },
+    ]
+  },
+
+  // ==================== EDUCAÇÃO ====================
+  {
+    name: "🎓 EDUCAÇÃO",
+    icon: School,
+    collapsible: true,
+    items: [
+      { name: "Escolas", path: "/admin-master/escolas", icon: School, status: 'construction' },
+      { name: "Cursos", path: "/admin-master/cursos", icon: Book, status: 'construction' },
+      { name: "Reforço escolar", path: "/admin-master/reforco-escolar", icon: Pencil, status: 'construction' },
+      { name: "Idiomas", path: "/admin-master/idiomas", icon: Languages, status: 'construction' },
+      { name: "Informática", path: "/admin-master/informatica", icon: Monitor, status: 'construction' },
+      { name: "Música", path: "/admin-master/musica", icon: Music2, status: 'construction' },
+    ]
+  },
+
+  // ==================== SAÚDE ====================
+  {
+    name: "🏥 SAÚDE",
+    icon: Hospital,
+    collapsible: true,
+    items: [
+      { name: "Farmácias", path: "/admin-master/farmacias", icon: Pill, status: 'construction' },
+      { name: "Clínicas", path: "/admin-master/clinicas", icon: Hospital, status: 'construction' },
+      { name: "Dentistas", path: "/admin-master/dentistas", icon: Tooth, status: 'construction' },
+      { name: "Psicólogos", path: "/admin-master/psicologos", icon: Brain, status: 'construction' },
+      { name: "Nutricionistas", path: "/admin-master/nutricionistas", icon: Apple, status: 'construction' },
+      { name: "Laboratórios", path: "/admin-master/laboratorios", icon: Flask, status: 'construction' },
+      { name: "Fisioterapia", path: "/admin-master/fisioterapia", icon: Activity, status: 'construction' },
+      { name: "Óticas", path: "/admin-master/oticas", icon: Eye, status: 'construction' },
+    ]
+  },
+
+  // ==================== MODA MASCULINA ====================
+  {
+    name: "👔 MODA MASCULINA",
+    icon: Shirt,
+    collapsible: true,
+    description: "Muito forte no interior",
+    items: [
+      { name: "Moda infantil", path: "/admin-master/moda-masculina-infantil", icon: Baby, status: 'construction' },
+      { name: "Calçados", path: "/admin-master/moda-masculina-calcados", icon: Shoe, status: 'construction' },
+      { name: "Bolsas", path: "/admin-master/moda-masculina-bolsas", icon: Bag, status: 'construction' },
+      { name: "Moda íntima", path: "/admin-master/moda-masculina-intima", icon: Shirt, status: 'construction' },
+      { name: "Moda evangélica", path: "/admin-master/moda-evangelica", icon: Church, status: 'construction' },
+    ]
+  },
+
+  // ==================== MODA FEMININA ====================
+  {
+    name: "👗 MODA FEMININA",
+    icon: Gem,
+    collapsible: true,
+    items: [
+      { name: "Moda infantil", path: "/admin-master/moda-feminina-infantil", icon: Baby, status: 'construction' },
+      { name: "Calçados", path: "/admin-master/moda-feminina-calcados", icon: Shoe, status: 'construction' },
+      { name: "Bolsas", path: "/admin-master/moda-feminina-bolsas", icon: Bag, status: 'construction' },
+      { name: "Moda íntima", path: "/admin-master/moda-feminina-intima", icon: Shirt, status: 'construction' },
+      { name: "Moda fitness", path: "/admin-master/moda-fitness", icon: Dumbbell, status: 'construction' },
+      { name: "Acessórios", path: "/admin-master/acessorios", icon: Gem, status: 'construction' },
+    ]
+  },
+
+  // ==================== BELEZA ====================
+  {
+    name: "💄 BELEZA & ESTÉTICA",
+    icon: Scissors,
+    collapsible: true,
+    items: [
+      { name: "Salão de beleza", path: "/admin-master/salao-beleza", icon: Scissors, status: 'construction' },
+      { name: "Barbearia", path: "/admin-master/barbearia", icon: Scissors, status: 'construction' },
+      { name: "Manicure", path: "/admin-master/manicure", icon: Hand, status: 'construction' },
+      { name: "Maquiagem", path: "/admin-master/maquiagem", icon: Paintbrush, status: 'construction' },
+      { name: "Estética facial", path: "/admin-master/estetica-facial", icon: Face, status: 'construction' },
+      { name: "Estética corporal", path: "/admin-master/estetica-corporal", icon: Body, status: 'construction' },
+      { name: "Produtos cosméticos", path: "/admin-master/produtos-cosmeticos", icon: Package, status: 'construction' },
+      { name: "Perfumaria", path: "/admin-master/perfumaria", icon: Flower, status: 'construction' },
+    ]
+  },
+
+  // ==================== EVENTOS ====================
+  {
+    name: "🎉 EVENTOS & ENTRETENIMENTO",
+    icon: PartyPopper,
+    collapsible: true,
+    items: [
+      { name: "Eventos", path: "/admin-master/eventos", icon: PartyPopper, status: 'construction' },
+      { name: "Decoração", path: "/admin-master/decoracao", icon: Palette, status: 'construction' },
+      { name: "Buffet", path: "/admin-master/buffet", icon: Utensils, status: 'construction' },
+      { name: "Fotografia", path: "/admin-master/fotografia", icon: Camera, status: 'construction' },
+      { name: "Filmagem", path: "/admin-master/filmagem", icon: Video, status: 'construction' },
+      { name: "Convites", path: "/admin-master/convites", icon: Mail, status: 'construction' },
+      { name: "Espaços de festa", path: "/admin-master/espacos-festa", icon: Building, status: 'construction' },
+    ]
+  },
+
+  // ==================== PET ====================
+  {
+    name: "🐶 PET SHOP & ANIMAIS",
+    icon: Dog,
+    collapsible: true,
+    items: [
+      { name: "Pet shop", path: "/admin-master/pet-shop", icon: Dog, status: 'construction' },
+      { name: "Banho e tosa", path: "/admin-master/banho-tosa", icon: Scissors, status: 'construction' },
+      { name: "Veterinário", path: "/admin-master/veterinario", icon: Stethoscope, status: 'construction' },
+      { name: "Ração", path: "/admin-master/racao", icon: Dog, status: 'construction' },
+      { name: "Medicamentos animais", path: "/admin-master/medicamentos-animais", icon: Pill, status: 'construction' },
+    ]
+  },
+
+  // ==================== FINANCEIRO PESSOAL ====================
+  {
+    name: "🏦 FINANCEIRO PESSOAL",
+    icon: Wallet,
+    collapsible: true,
+    items: [
+      { name: "Correspondente bancário", path: "/admin-master/correspondente-bancario", icon: Building, status: 'construction' },
+      { name: "Empréstimos", path: "/admin-master/emprestimos", icon: Wallet, status: 'construction' },
+      { name: "Seguros", path: "/admin-master/seguros", icon: Shield, status: 'construction' },
+      { name: "Contabilidade", path: "/admin-master/contabilidade", icon: FileText, status: 'construction' },
+      { name: "Consultoria financeira", path: "/admin-master/consultoria-financeira", icon: Brain, status: 'construction' },
+    ]
+  },
+];
+
+export default adminMenuFull;

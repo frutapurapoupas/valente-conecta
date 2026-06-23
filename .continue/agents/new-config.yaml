@@ -1,0 +1,14 @@
+models:
+  - name: Gemini 1.5 Flash
+    provider: google
+    model: gemini-1.5-flash
+    apiKey: "AQAb8RN6JqEX_s1sLar2yXE932eCDI7dPmuwvytoFjN0M6my_10A"
+  - name: Gemini 1.5 Pro
+    provider: google
+    model: gemini-1.5-pro
+    apiKey: "AQAb8RN6JqEX_s1sLar2yXE932eCDI7dPmuwvytoFjN0M6my_10A"
+tabAutocompleteModel:
+  name: Gemini 1.5 Flash
+  provider: google
+  model: gemini-1.5-flash
+  apiKey: "AQAb8RN6JqEX_s1sLar2yXE932eCDI7dPmuwvytoFjN0M6my_10A"

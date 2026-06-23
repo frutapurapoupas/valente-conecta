@@ -1,0 +1,478 @@
+﻿[
+    {
+        "dia_semana":  "Segunda",
+        "periodo":  "Almoço",
+        "preco_custo":  8.01,
+        "preco":  20.02,
+        "ativo":  true,
+        "categoria":  "Prato Principal",
+        "descricao":  "Picadinho de carne bovina com arroz branco, cenoura e abóbora - 500g",
+        "ingredientes":  [
+                             {
+                                 "ingrediente_nome":  "Carne bovina",
+                                 "custo_total":  6.4,
+                                 "unidade":  "g",
+                                 "quantidade":  200
+                             },
+                             {
+                                 "ingrediente_nome":  "Arroz branco",
+                                 "custo_total":  0.98,
+                                 "unidade":  "g",
+                                 "quantidade":  150
+                             },
+                             {
+                                 "ingrediente_nome":  "Cenoura",
+                                 "custo_total":  0.32,
+                                 "unidade":  "g",
+                                 "quantidade":  70
+                             },
+                             {
+                                 "ingrediente_nome":  "Abóbora",
+                                 "custo_total":  0.25,
+                                 "unidade":  "g",
+                                 "quantidade":  70
+                             },
+                             {
+                                 "ingrediente_nome":  "Alho",
+                                 "custo_total":  0.02,
+                                 "unidade":  "g",
+                                 "quantidade":  2
+                             },
+                             {
+                                 "ingrediente_nome":  "Cebola",
+                                 "custo_total":  0.01,
+                                 "unidade":  "g",
+                                 "quantidade":  2
+                             },
+                             {
+                                 "ingrediente_nome":  "Coentro",
+                                 "custo_total":  0.02,
+                                 "unidade":  "g",
+                                 "quantidade":  1
+                             },
+                             {
+                                 "ingrediente_nome":  "Cebolinha",
+                                 "custo_total":  0.01,
+                                 "unidade":  "g",
+                                 "quantidade":  1
+                             },
+                             {
+                                 "ingrediente_nome":  "Sal",
+                                 "custo_total":  0.01,
+                                 "unidade":  "g",
+                                 "quantidade":  5
+                             }
+                         ],
+        "imagem_url":  "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400\u0026h=300\u0026fit=crop",
+        "nome":  "Picadinho de Carne com Arroz e Legumes"
+    },
+    {
+        "dia_semana":  "Terça",
+        "periodo":  "Almoço",
+        "preco_custo":  5.32,
+        "preco":  13.3,
+        "ativo":  true,
+        "categoria":  "Prato Principal",
+        "descricao":  "Frango em cubos com arroz branco e purê de batata - 500g",
+        "ingredientes":  [
+                             {
+                                 "ingrediente_nome":  "Peito de frango",
+                                 "custo_total":  3.6,
+                                 "unidade":  "g",
+                                 "quantidade":  200
+                             },
+                             {
+                                 "ingrediente_nome":  "Arroz branco",
+                                 "custo_total":  0.91,
+                                 "unidade":  "g",
+                                 "quantidade":  140
+                             },
+                             {
+                                 "ingrediente_nome":  "Batata",
+                                 "custo_total":  0.7,
+                                 "unidade":  "g",
+                                 "quantidade":  140
+                             },
+                             {
+                                 "ingrediente_nome":  "Alho",
+                                 "custo_total":  0.05,
+                                 "unidade":  "g",
+                                 "quantidade":  4
+                             },
+                             {
+                                 "ingrediente_nome":  "Cebola",
+                                 "custo_total":  0.02,
+                                 "unidade":  "g",
+                                 "quantidade":  4
+                             },
+                             {
+                                 "ingrediente_nome":  "Coentro",
+                                 "custo_total":  0.03,
+                                 "unidade":  "g",
+                                 "quantidade":  2
+                             },
+                             {
+                                 "ingrediente_nome":  "Sal",
+                                 "custo_total":  0.01,
+                                 "unidade":  "g",
+                                 "quantidade":  6
+                             }
+                         ],
+        "imagem_url":  "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400\u0026h=300\u0026fit=crop",
+        "nome":  "Frango em Cubos com Arroz e Purê"
+    },
+    {
+        "dia_semana":  "Quarta",
+        "periodo":  "Almoço",
+        "preco_custo":  7.22,
+        "preco":  18.04,
+        "ativo":  true,
+        "categoria":  "Prato Principal",
+        "descricao":  "Carne moída com arroz branco, batata, cenoura e chuchu - 500g",
+        "ingredientes":  [
+                             {
+                                 "ingrediente_nome":  "Carne moída",
+                                 "custo_total":  5.6,
+                                 "unidade":  "g",
+                                 "quantidade":  200
+                             },
+                             {
+                                 "ingrediente_nome":  "Arroz branco",
+                                 "custo_total":  0.91,
+                                 "unidade":  "g",
+                                 "quantidade":  140
+                             },
+                             {
+                                 "ingrediente_nome":  "Batata",
+                                 "custo_total":  0.25,
+                                 "unidade":  "g",
+                                 "quantidade":  50
+                             },
+                             {
+                                 "ingrediente_nome":  "Cenoura",
+                                 "custo_total":  0.22,
+                                 "unidade":  "g",
+                                 "quantidade":  50
+                             },
+                             {
+                                 "ingrediente_nome":  "Chuchu",
+                                 "custo_total":  0.12,
+                                 "unidade":  "g",
+                                 "quantidade":  40
+                             },
+                             {
+                                 "ingrediente_nome":  "Alho",
+                                 "custo_total":  0.05,
+                                 "unidade":  "g",
+                                 "quantidade":  4
+                             },
+                             {
+                                 "ingrediente_nome":  "Cebola",
+                                 "custo_total":  0.02,
+                                 "unidade":  "g",
+                                 "quantidade":  4
+                             },
+                             {
+                                 "ingrediente_nome":  "Coentro",
+                                 "custo_total":  0.03,
+                                 "unidade":  "g",
+                                 "quantidade":  2
+                             },
+                             {
+                                 "ingrediente_nome":  "Sal",
+                                 "custo_total":  0.01,
+                                 "unidade":  "g",
+                                 "quantidade":  6
+                             }
+                         ],
+        "imagem_url":  "https://images.unsplash.com/photo-1603133872878-6842b706a9f4?w=400\u0026h=300\u0026fit=crop",
+        "nome":  "Carne Moída com Arroz e Legumes"
+    },
+    {
+        "dia_semana":  "Quinta",
+        "periodo":  "Almoço",
+        "preco_custo":  5.6,
+        "preco":  14.01,
+        "ativo":  true,
+        "categoria":  "Prato Principal",
+        "descricao":  "Strogonoff de frango cremoso com arroz branco - 500g",
+        "ingredientes":  [
+                             {
+                                 "ingrediente_nome":  "Peito de frango",
+                                 "custo_total":  3.6,
+                                 "unidade":  "g",
+                                 "quantidade":  200
+                             },
+                             {
+                                 "ingrediente_nome":  "Creme de leite",
+                                 "custo_total":  0.4,
+                                 "unidade":  "g",
+                                 "quantidade":  50
+                             },
+                             {
+                                 "ingrediente_nome":  "Ketchup",
+                                 "custo_total":  0.3,
+                                 "unidade":  "g",
+                                 "quantidade":  50
+                             },
+                             {
+                                 "ingrediente_nome":  "Arroz branco",
+                                 "custo_total":  1.2,
+                                 "unidade":  "g",
+                                 "quantidade":  185
+                             },
+                             {
+                                 "ingrediente_nome":  "Alho",
+                                 "custo_total":  0.05,
+                                 "unidade":  "g",
+                                 "quantidade":  4
+                             },
+                             {
+                                 "ingrediente_nome":  "Cebola",
+                                 "custo_total":  0.02,
+                                 "unidade":  "g",
+                                 "quantidade":  4
+                             },
+                             {
+                                 "ingrediente_nome":  "Salsa",
+                                 "custo_total":  0.02,
+                                 "unidade":  "g",
+                                 "quantidade":  2
+                             },
+                             {
+                                 "ingrediente_nome":  "Sal",
+                                 "custo_total":  0.01,
+                                 "unidade":  "g",
+                                 "quantidade":  5
+                             }
+                         ],
+        "imagem_url":  "https://images.unsplash.com/photo-1604908177453-18b2be4aa2a4?w=400\u0026h=300\u0026fit=crop",
+        "nome":  "Strogonoff de Frango com Arroz"
+    },
+    {
+        "dia_semana":  "Sexta",
+        "periodo":  "Almoço",
+        "preco_custo":  8.13,
+        "preco":  20.32,
+        "ativo":  true,
+        "categoria":  "Prato Principal",
+        "descricao":  "Carne de panela macia com arroz branco e purê de batata - 500g",
+        "ingredientes":  [
+                             {
+                                 "ingrediente_nome":  "Carne bovina",
+                                 "custo_total":  6.4,
+                                 "unidade":  "g",
+                                 "quantidade":  200
+                             },
+                             {
+                                 "ingrediente_nome":  "Arroz branco",
+                                 "custo_total":  0.91,
+                                 "unidade":  "g",
+                                 "quantidade":  140
+                             },
+                             {
+                                 "ingrediente_nome":  "Batata",
+                                 "custo_total":  0.7,
+                                 "unidade":  "g",
+                                 "quantidade":  140
+                             },
+                             {
+                                 "ingrediente_nome":  "Alho",
+                                 "custo_total":  0.05,
+                                 "unidade":  "g",
+                                 "quantidade":  4
+                             },
+                             {
+                                 "ingrediente_nome":  "Cebola",
+                                 "custo_total":  0.02,
+                                 "unidade":  "g",
+                                 "quantidade":  4
+                             },
+                             {
+                                 "ingrediente_nome":  "Coentro",
+                                 "custo_total":  0.02,
+                                 "unidade":  "g",
+                                 "quantidade":  1
+                             },
+                             {
+                                 "ingrediente_nome":  "Salsa",
+                                 "custo_total":  0.02,
+                                 "unidade":  "g",
+                                 "quantidade":  2
+                             },
+                             {
+                                 "ingrediente_nome":  "Sal",
+                                 "custo_total":  0.01,
+                                 "unidade":  "g",
+                                 "quantidade":  6
+                             }
+                         ],
+        "imagem_url":  "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400\u0026h=300\u0026fit=crop",
+        "nome":  "Carne de Panela com Arroz e Purê"
+    },
+    {
+        "dia_semana":  "Segunda",
+        "periodo":  "Jantar",
+        "preco_custo":  6.15,
+        "preco":  15.36,
+        "ativo":  true,
+        "categoria":  "Prato Principal",
+        "descricao":  "Frango em cubos suculento com arroz branco - 500g",
+        "ingredientes":  [
+                             {
+                                 "ingrediente_nome":  "Peito de frango",
+                                 "custo_total":  4.5,
+                                 "unidade":  "g",
+                                 "quantidade":  250
+                             },
+                             {
+                                 "ingrediente_nome":  "Arroz branco",
+                                 "custo_total":  1.5,
+                                 "unidade":  "g",
+                                 "quantidade":  230
+                             },
+                             {
+                                 "ingrediente_nome":  "Alho",
+                                 "custo_total":  0.07,
+                                 "unidade":  "g",
+                                 "quantidade":  6
+                             },
+                             {
+                                 "ingrediente_nome":  "Cebola",
+                                 "custo_total":  0.03,
+                                 "unidade":  "g",
+                                 "quantidade":  6
+                             },
+                             {
+                                 "ingrediente_nome":  "Coentro",
+                                 "custo_total":  0.02,
+                                 "unidade":  "g",
+                                 "quantidade":  1
+                             },
+                             {
+                                 "ingrediente_nome":  "Cebolinha",
+                                 "custo_total":  0.02,
+                                 "unidade":  "g",
+                                 "quantidade":  2
+                             },
+                             {
+                                 "ingrediente_nome":  "Sal",
+                                 "custo_total":  0.01,
+                                 "unidade":  "g",
+                                 "quantidade":  5
+                             }
+                         ],
+        "imagem_url":  "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400\u0026h=300\u0026fit=crop",
+        "nome":  "Frango em Cubos com Arroz"
+    },
+    {
+        "dia_semana":  "Terça",
+        "periodo":  "Jantar",
+        "preco_custo":  5.16,
+        "preco":  12.89,
+        "ativo":  true,
+        "categoria":  "Prato Principal",
+        "descricao":  "Escondidinho cremoso de frango com purê de batata gratinado - 500g",
+        "ingredientes":  [
+                             {
+                                 "ingrediente_nome":  "Peito de frango",
+                                 "custo_total":  3.6,
+                                 "unidade":  "g",
+                                 "quantidade":  200
+                             },
+                             {
+                                 "ingrediente_nome":  "Batata",
+                                 "custo_total":  1.4,
+                                 "unidade":  "g",
+                                 "quantidade":  280
+                             },
+                             {
+                                 "ingrediente_nome":  "Alho",
+                                 "custo_total":  0.07,
+                                 "unidade":  "g",
+                                 "quantidade":  6
+                             },
+                             {
+                                 "ingrediente_nome":  "Cebola",
+                                 "custo_total":  0.03,
+                                 "unidade":  "g",
+                                 "quantidade":  6
+                             },
+                             {
+                                 "ingrediente_nome":  "Coentro",
+                                 "custo_total":  0.04,
+                                 "unidade":  "g",
+                                 "quantidade":  3
+                             },
+                             {
+                                 "ingrediente_nome":  "Sal",
+                                 "custo_total":  0.01,
+                                 "unidade":  "g",
+                                 "quantidade":  5
+                             }
+                         ],
+        "imagem_url":  "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400\u0026h=300\u0026fit=crop",
+        "nome":  "Escondidinho de Frango"
+    },
+    {
+        "dia_semana":  "Quarta",
+        "periodo":  "Jantar",
+        "preco_custo":  5.3,
+        "preco":  13.25,
+        "ativo":  true,
+        "categoria":  "Prato Principal",
+        "descricao":  "Fricassê cremoso de frango com creme de milho e arroz - 500g",
+        "ingredientes":  [
+                             {
+                                 "ingrediente_nome":  "Peito de frango",
+                                 "custo_total":  3.6,
+                                 "unidade":  "g",
+                                 "quantidade":  200
+                             },
+                             {
+                                 "ingrediente_nome":  "Creme de milho",
+                                 "custo_total":  0.75,
+                                 "unidade":  "g",
+                                 "quantidade":  150
+                             },
+                             {
+                                 "ingrediente_nome":  "Arroz branco",
+                                 "custo_total":  0.84,
+                                 "unidade":  "g",
+                                 "quantidade":  130
+                             },
+                             {
+                                 "ingrediente_nome":  "Alho",
+                                 "custo_total":  0.05,
+                                 "unidade":  "g",
+                                 "quantidade":  4
+                             },
+                             {
+                                 "ingrediente_nome":  "Cebola",
+                                 "custo_total":  0.02,
+                                 "unidade":  "g",
+                                 "quantidade":  4
+                             },
+                             {
+                                 "ingrediente_nome":  "Coentro",
+                                 "custo_total":  0.02,
+                                 "unidade":  "g",
+                                 "quantidade":  1
+                             },
+                             {
+                                 "ingrediente_nome":  "Salsa",
+                                 "custo_total":  0.01,
+                                 "unidade":  "g",
+                                 "quantidade":  1
+                             },
+                             {
+                                 "ingrediente_nome":  "Sal",
+                                 "custo_total":  0.01,
+                                 "unidade":  "g",
+                                 "quantidade":  5
+                             }
+                         ],
+        "imagem_url":  "https://images.unsplash.com/photo-1603133872878-6842b706a9f4?w=400\u0026h=300\u0026fit=crop",
+        "nome":  "Fricassê de Frango"
+    }
+]

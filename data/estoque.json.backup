@@ -1,0 +1,352 @@
+﻿[
+    {
+        "id":  "1",
+        "created_at":  "2026-06-21T18:27:05.894Z",
+        "preco_unitario":  5.9,
+        "quantidade":  30,
+        "categoria":  "Frutas",
+        "quantidade_minima":  5,
+        "nome":  "Abacaxi",
+        "unidade":  "kg"
+    },
+    {
+        "id":  "2",
+        "created_at":  "2026-06-21T18:27:05.894Z",
+        "preco_unitario":  4.5,
+        "quantidade":  20,
+        "categoria":  "Legumes",
+        "quantidade_minima":  5,
+        "nome":  "Abóbora",
+        "unidade":  "kg"
+    },
+    {
+        "id":  "3",
+        "created_at":  "2026-06-21T18:27:05.894Z",
+        "preco_unitario":  3.9,
+        "quantidade":  100,
+        "categoria":  "Doces",
+        "quantidade_minima":  20,
+        "nome":  "Açúcar",
+        "unidade":  "kg"
+    },
+    {
+        "id":  "4",
+        "created_at":  "2026-06-21T18:27:05.894Z",
+        "preco_unitario":  4.5,
+        "quantidade":  50,
+        "categoria":  "Legumes",
+        "quantidade_minima":  10,
+        "nome":  "Aipim",
+        "unidade":  "kg"
+    },
+    {
+        "id":  "5",
+        "created_at":  "2026-06-21T18:27:05.894Z",
+        "preco_unitario":  15.9,
+        "quantidade":  10,
+        "categoria":  "Temperos",
+        "quantidade_minima":  2,
+        "nome":  "Alho",
+        "unidade":  "kg"
+    },
+    {
+        "id":  "6",
+        "created_at":  "2026-06-21T18:27:05.894Z",
+        "preco_unitario":  5.9,
+        "quantidade":  100,
+        "categoria":  "Grãos",
+        "quantidade_minima":  20,
+        "nome":  "Arroz branco",
+        "unidade":  "kg"
+    },
+    {
+        "id":  "7",
+        "created_at":  "2026-06-21T18:27:05.894Z",
+        "preco_unitario":  4.9,
+        "quantidade":  30,
+        "categoria":  "Frutas",
+        "quantidade_minima":  10,
+        "nome":  "Banana",
+        "unidade":  "kg"
+    },
+    {
+        "id":  "8",
+        "created_at":  "2026-06-21T18:27:05.894Z",
+        "preco_unitario":  3.5,
+        "quantidade":  30,
+        "categoria":  "Legumes",
+        "quantidade_minima":  10,
+        "nome":  "Batata",
+        "unidade":  "kg"
+    },
+    {
+        "id":  "9",
+        "created_at":  "2026-06-21T18:27:05.894Z",
+        "preco_unitario":  0.5,
+        "quantidade":  1000,
+        "categoria":  "Temperos",
+        "quantidade_minima":  200,
+        "nome":  "Baunilha",
+        "unidade":  "ml"
+    },
+    {
+        "id":  "10",
+        "created_at":  "2026-06-21T18:27:05.894Z",
+        "preco_unitario":  32.9,
+        "quantidade":  50,
+        "categoria":  "Carnes",
+        "quantidade_minima":  10,
+        "nome":  "Carne bovina em cubos",
+        "unidade":  "kg"
+    },
+    {
+        "id":  "11",
+        "created_at":  "2026-06-21T18:27:05.894Z",
+        "preco_unitario":  28.9,
+        "quantidade":  40,
+        "categoria":  "Carnes",
+        "quantidade_minima":  10,
+        "nome":  "Carne moída",
+        "unidade":  "kg"
+    },
+    {
+        "id":  "12",
+        "created_at":  "2026-06-21T18:27:05.894Z",
+        "preco_unitario":  4.9,
+        "quantidade":  20,
+        "categoria":  "Legumes",
+        "quantidade_minima":  5,
+        "nome":  "Cebola",
+        "unidade":  "kg"
+    },
+    {
+        "id":  "13",
+        "created_at":  "2026-06-21T18:27:05.894Z",
+        "preco_unitario":  22.9,
+        "quantidade":  5,
+        "categoria":  "Temperos",
+        "quantidade_minima":  1,
+        "nome":  "Cebolinha",
+        "unidade":  "kg"
+    },
+    {
+        "id":  "14",
+        "created_at":  "2026-06-21T18:27:05.894Z",
+        "preco_unitario":  3.9,
+        "quantidade":  30,
+        "categoria":  "Legumes",
+        "quantidade_minima":  10,
+        "nome":  "Cenoura",
+        "unidade":  "kg"
+    },
+    {
+        "id":  "15",
+        "created_at":  "2026-06-21T18:27:05.894Z",
+        "preco_unitario":  18.9,
+        "quantidade":  30,
+        "categoria":  "Doces",
+        "quantidade_minima":  5,
+        "nome":  "Chocolate em pó",
+        "unidade":  "kg"
+    },
+    {
+        "id":  "16",
+        "created_at":  "2026-06-21T18:27:05.894Z",
+        "preco_unitario":  22.9,
+        "quantidade":  30,
+        "categoria":  "Doces",
+        "quantidade_minima":  5,
+        "nome":  "Chocolate granulado",
+        "unidade":  "kg"
+    },
+    {
+        "id":  "17",
+        "created_at":  "2026-06-21T18:27:05.895Z",
+        "preco_unitario":  3.9,
+        "quantidade":  20,
+        "categoria":  "Legumes",
+        "quantidade_minima":  5,
+        "nome":  "Chuchu",
+        "unidade":  "kg"
+    },
+    {
+        "id":  "18",
+        "created_at":  "2026-06-21T18:27:05.895Z",
+        "preco_unitario":  14.9,
+        "quantidade":  30,
+        "categoria":  "Doces",
+        "quantidade_minima":  5,
+        "nome":  "Coco ralado",
+        "unidade":  "kg"
+    },
+    {
+        "id":  "19",
+        "created_at":  "2026-06-21T18:27:05.895Z",
+        "preco_unitario":  25.9,
+        "quantidade":  5,
+        "categoria":  "Temperos",
+        "quantidade_minima":  1,
+        "nome":  "Coentro",
+        "unidade":  "kg"
+    },
+    {
+        "id":  "20",
+        "created_at":  "2026-06-21T18:27:05.895Z",
+        "preco_unitario":  12.9,
+        "quantidade":  20,
+        "categoria":  "Laticínios",
+        "quantidade_minima":  5,
+        "nome":  "Creme de leite",
+        "unidade":  "kg"
+    },
+    {
+        "id":  "21",
+        "created_at":  "2026-06-21T18:27:05.895Z",
+        "preco_unitario":  8.9,
+        "quantidade":  20,
+        "categoria":  "Outros",
+        "quantidade_minima":  5,
+        "nome":  "Extrato de tomate",
+        "unidade":  "kg"
+    },
+    {
+        "id":  "22",
+        "created_at":  "2026-06-21T18:27:05.895Z",
+        "preco_unitario":  7.9,
+        "quantidade":  15,
+        "categoria":  "Grãos",
+        "quantidade_minima":  3,
+        "nome":  "Farinha de rosca",
+        "unidade":  "kg"
+    },
+    {
+        "id":  "23",
+        "created_at":  "2026-06-21T18:27:05.895Z",
+        "preco_unitario":  4.9,
+        "quantidade":  100,
+        "categoria":  "Grãos",
+        "quantidade_minima":  20,
+        "nome":  "Farinha de trigo",
+        "unidade":  "kg"
+    },
+    {
+        "id":  "24",
+        "created_at":  "2026-06-21T18:27:05.895Z",
+        "preco_unitario":  22.9,
+        "quantidade":  30,
+        "categoria":  "Carnes",
+        "quantidade_minima":  8,
+        "nome":  "Frango desfiado",
+        "unidade":  "kg"
+    },
+    {
+        "id":  "25",
+        "created_at":  "2026-06-21T18:27:05.895Z",
+        "preco_unitario":  18.9,
+        "quantidade":  50,
+        "categoria":  "Carnes",
+        "quantidade_minima":  10,
+        "nome":  "Frango em cubos",
+        "unidade":  "kg"
+    },
+    {
+        "id":  "26",
+        "created_at":  "2026-06-21T18:27:05.895Z",
+        "preco_unitario":  5.9,
+        "quantidade":  100,
+        "categoria":  "Laticínios",
+        "quantidade_minima":  20,
+        "nome":  "Leite",
+        "unidade":  "L"
+    },
+    {
+        "id":  "27",
+        "created_at":  "2026-06-21T18:27:05.895Z",
+        "preco_unitario":  8.9,
+        "quantidade":  50,
+        "categoria":  "Laticínios",
+        "quantidade_minima":  10,
+        "nome":  "Leite condensado",
+        "unidade":  "kg"
+    },
+    {
+        "id":  "28",
+        "created_at":  "2026-06-21T18:27:05.895Z",
+        "preco_unitario":  0.03,
+        "quantidade":  10000,
+        "categoria":  "Outros",
+        "quantidade_minima":  2000,
+        "nome":  "Leite de coco",
+        "unidade":  "ml"
+    },
+    {
+        "id":  "29",
+        "created_at":  "2026-06-21T18:27:05.895Z",
+        "preco_unitario":  3.9,
+        "quantidade":  20,
+        "categoria":  "Frutas",
+        "quantidade_minima":  5,
+        "nome":  "Limão",
+        "unidade":  "kg"
+    },
+    {
+        "id":  "30",
+        "created_at":  "2026-06-21T18:27:05.895Z",
+        "preco_unitario":  12.9,
+        "quantidade":  30,
+        "categoria":  "Laticínios",
+        "quantidade_minima":  5,
+        "nome":  "Margarina",
+        "unidade":  "kg"
+    },
+    {
+        "id":  "31",
+        "created_at":  "2026-06-21T18:27:05.895Z",
+        "preco_unitario":  7.9,
+        "quantidade":  50,
+        "categoria":  "Óleos",
+        "quantidade_minima":  10,
+        "nome":  "Óleo de soja",
+        "unidade":  "L"
+    },
+    {
+        "id":  "32",
+        "created_at":  "2026-06-21T18:27:05.895Z",
+        "preco_unitario":  0.8,
+        "quantidade":  500,
+        "categoria":  "Ovos",
+        "quantidade_minima":  100,
+        "nome":  "Ovo",
+        "unidade":  "un"
+    },
+    {
+        "id":  "33",
+        "created_at":  "2026-06-21T18:27:05.895Z",
+        "preco_unitario":  32.9,
+        "quantidade":  20,
+        "categoria":  "Laticínios",
+        "quantidade_minima":  5,
+        "nome":  "Queijo mussarela",
+        "unidade":  "kg"
+    },
+    {
+        "id":  "34",
+        "created_at":  "2026-06-21T18:27:05.895Z",
+        "preco_unitario":  18.9,
+        "quantidade":  20,
+        "categoria":  "Laticínios",
+        "quantidade_minima":  5,
+        "nome":  "Requeijão",
+        "unidade":  "kg"
+    },
+    {
+        "id":  "35",
+        "created_at":  "2026-06-21T18:27:05.895Z",
+        "preco_unitario":  2.5,
+        "quantidade":  20,
+        "categoria":  "Temperos",
+        "quantidade_minima":  5,
+        "nome":  "Sal",
+        "unidade":  "kg"
+    }
+]

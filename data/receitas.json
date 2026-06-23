@@ -1,0 +1,1243 @@
+[
+  {
+    "id": "1",
+    "nome": "Ovo",
+    "categoria": "Ovos",
+    "quantidade": 60,
+    "unidade": "un",
+    "quantidade_minima": 20,
+    "preco_unitario": 0.8,
+    "peso_unitario": 50,
+    "created_at": "2026-06-21T00:00:00.000Z",
+    "updated_at": "2026-06-21T00:00:00.000Z"
+  },
+  {
+    "id": "2",
+    "nome": "Óleo de soja",
+    "categoria": "Óleos",
+    "quantidade": 10,
+    "unidade": "L",
+    "quantidade_minima": 3,
+    "preco_unitario": 7.9,
+    "recipiente": "1L",
+    "created_at": "2026-06-21T00:00:00.000Z",
+    "updated_at": "2026-06-21T00:00:00.000Z"
+  },
+  {
+    "id": "3",
+    "nome": "Leite",
+    "categoria": "Laticínios",
+    "quantidade": 20,
+    "unidade": "L",
+    "quantidade_minima": 5,
+    "preco_unitario": 5.9,
+    "recipiente": "1L",
+    "created_at": "2026-06-21T00:00:00.000Z",
+    "updated_at": "2026-06-21T00:00:00.000Z"
+  },
+  {
+    "id": "4",
+    "nome": "Farinha de trigo",
+    "categoria": "Grãos",
+    "quantidade": 30,
+    "unidade": "kg",
+    "quantidade_minima": 10,
+    "preco_unitario": 4.9,
+    "created_at": "2026-06-21T00:00:00.000Z",
+    "updated_at": "2026-06-21T00:00:00.000Z"
+  },
+  {
+    "id": "5",
+    "nome": "Carne bovina em cubos",
+    "categoria": "Carnes",
+    "quantidade": 20,
+    "unidade": "kg",
+    "quantidade_minima": 5,
+    "preco_unitario": 32.9,
+    "created_at": "2026-06-21T00:00:00.000Z",
+    "updated_at": "2026-06-21T00:00:00.000Z"
+  },
+  {
+    "id": "6",
+    "nome": "Açúcar",
+    "categoria": "Doces",
+    "quantidade": 25,
+    "unidade": "kg",
+    "quantidade_minima": 8,
+    "preco_unitario": 3.9,
+    "created_at": "2026-06-21T00:00:00.000Z",
+    "updated_at": "2026-06-21T00:00:00.000Z"
+  },
+  {
+    "id": "7",
+    "nome": "Chocolate em pó",
+    "categoria": "Doces",
+    "quantidade": 5,
+    "unidade": "kg",
+    "quantidade_minima": 2,
+    "preco_unitario": 18.9,
+    "created_at": "2026-06-21T00:00:00.000Z",
+    "updated_at": "2026-06-21T00:00:00.000Z"
+  },
+  {
+    "id": "8",
+    "nome": "Banana",
+    "categoria": "Frutas",
+    "quantidade": 10,
+    "unidade": "kg",
+    "quantidade_minima": 3,
+    "preco_unitario": 4.9,
+    "created_at": "2026-06-21T00:00:00.000Z",
+    "updated_at": "2026-06-21T00:00:00.000Z"
+  },
+  {
+    "name": "Picadinho de carne + arroz",
+    "description": "Picadinho de carne bovina com arroz",
+    "price": 20.9,
+    "category": "prato",
+    "preparationTime": 30,
+    "servings": 1,
+    "isAvailable": true,
+    "ingredients": [
+      {
+        "ingredientId": "1782062848459",
+        "ingredientName": "Carne bovina em cubos",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062849135",
+        "ingredientName": "Arroz branco",
+        "quantity": 150,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062849954",
+        "ingredientName": "Cebola",
+        "quantity": 10,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851104",
+        "ingredientName": "Alho",
+        "quantity": 5,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851586",
+        "ingredientName": "Sal",
+        "quantity": 5,
+        "unit": "g"
+      }
+    ],
+    "images": [],
+    "id": "1782062897242",
+    "createdAt": "2026-06-21T17:28:17.242Z",
+    "updatedAt": "2026-06-22T01:37:26.244Z"
+  },
+  {
+    "name": "Bolo de Banana",
+    "description": "Bolo caseiro de banana macio - 700g",
+    "price": 32.9,
+    "category": "bolo",
+    "preparationTime": 45,
+    "servings": 8,
+    "isAvailable": true,
+    "ingredients": [
+      {
+        "ingredientId": "1782062850595",
+        "ingredientName": "Banana",
+        "quantity": 250,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062849299",
+        "ingredientName": "Farinha de trigo",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062852888",
+        "ingredientName": "Açúcar",
+        "quantity": 150,
+        "unit": "g"
+      }
+    ],
+    "images": [],
+    "id": "1782062897507",
+    "createdAt": "2026-06-21T17:28:17.507Z"
+  },
+  {
+    "name": "Pudim de Leite",
+    "description": "Pudim de leite condensado cremoso - 700g",
+    "price": 28.9,
+    "category": "sobremesa",
+    "preparationTime": 60,
+    "servings": 8,
+    "isAvailable": true,
+    "ingredients": [
+      {
+        "ingredientId": "1782062852236",
+        "ingredientName": "Leite condensado",
+        "quantity": 395,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851902",
+        "ingredientName": "Leite",
+        "quantity": 300,
+        "unit": "ml"
+      },
+      {
+        "ingredientId": "1782062853533",
+        "ingredientName": "Ovo",
+        "quantity": 4,
+        "unit": "unidade"
+      }
+    ],
+    "images": [],
+    "id": "1782062897775",
+    "createdAt": "2026-06-21T17:28:17.775Z"
+  },
+  {
+    "name": "Frango em cubos + arroz + purê",
+    "description": "Frango em cubos com arroz e purê de batata",
+    "price": 23.9,
+    "category": "prato",
+    "preparationTime": 30,
+    "servings": 1,
+    "isAvailable": true,
+    "ingredients": [
+      {
+        "ingredientId": "1782062848631",
+        "ingredientName": "Frango em cubos",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062849135",
+        "ingredientName": "Arroz branco",
+        "quantity": 140,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062849627",
+        "ingredientName": "Batata",
+        "quantity": 140,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851104",
+        "ingredientName": "Alho",
+        "quantity": 4,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062849954",
+        "ingredientName": "Cebola",
+        "quantity": 4,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851259",
+        "ingredientName": "Coentro",
+        "quantity": 2,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851586",
+        "ingredientName": "Sal",
+        "quantity": 6,
+        "unit": "g"
+      }
+    ],
+    "images": [],
+    "id": "1782063020107",
+    "createdAt": "2026-06-21T17:30:20.107Z"
+  },
+  {
+    "name": "Carne moída + arroz + legumes",
+    "description": "Carne moída refogada com arroz e legumes",
+    "price": 20.9,
+    "category": "prato",
+    "preparationTime": 25,
+    "servings": 1,
+    "isAvailable": true,
+    "ingredients": [
+      {
+        "ingredientId": "1782062848969",
+        "ingredientName": "Carne moída",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062849135",
+        "ingredientName": "Arroz branco",
+        "quantity": 140,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062849627",
+        "ingredientName": "Batata",
+        "quantity": 50,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062849792",
+        "ingredientName": "Cenoura",
+        "quantity": 50,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062850270",
+        "ingredientName": "Chuchu",
+        "quantity": 40,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851104",
+        "ingredientName": "Alho",
+        "quantity": 4,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062849954",
+        "ingredientName": "Cebola",
+        "quantity": 4,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851259",
+        "ingredientName": "Coentro",
+        "quantity": 2,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851586",
+        "ingredientName": "Sal",
+        "quantity": 6,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782066071449",
+        "ingredientName": "Embalagem plástica 500g",
+        "quantity": 1,
+        "unit": "un"
+      }
+    ],
+    "images": [
+      "/uploads/recipes/1782068829471-0rnhtf.jpeg",
+      "/uploads/recipes/1782068829471-0rnhtf.jpeg"
+    ],
+    "id": "1782063020325",
+    "createdAt": "2026-06-21T17:30:20.325Z",
+    "updatedAt": "2026-06-21T20:33:08.027Z"
+  },
+  {
+    "name": "Strogonoff de frango + arroz",
+    "description": "Strogonoff cremoso de frango com arroz",
+    "price": 26.9,
+    "category": "prato",
+    "preparationTime": 30,
+    "servings": 1,
+    "isAvailable": true,
+    "ingredients": [
+      {
+        "ingredientId": "1782062848631",
+        "ingredientName": "Frango em cubos",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062852076",
+        "ingredientName": "Creme de leite",
+        "quantity": 50,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062853839",
+        "ingredientName": "Extrato de tomate",
+        "quantity": 50,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062849135",
+        "ingredientName": "Arroz branco",
+        "quantity": 185,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851104",
+        "ingredientName": "Alho",
+        "quantity": 4,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062849954",
+        "ingredientName": "Cebola",
+        "quantity": 4,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851586",
+        "ingredientName": "Sal",
+        "quantity": 5,
+        "unit": "g"
+      }
+    ],
+    "images": [],
+    "id": "1782063020538",
+    "createdAt": "2026-06-21T17:30:20.538Z"
+  },
+  {
+    "name": "Carne de panela + arroz + purê",
+    "description": "Carne de panela macia com arroz e purê",
+    "price": 27.9,
+    "category": "prato",
+    "preparationTime": 40,
+    "servings": 1,
+    "isAvailable": true,
+    "ingredients": [
+      {
+        "ingredientId": "1782062848459",
+        "ingredientName": "Carne bovina em cubos",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062849135",
+        "ingredientName": "Arroz branco",
+        "quantity": 140,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062849627",
+        "ingredientName": "Batata",
+        "quantity": 140,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851104",
+        "ingredientName": "Alho",
+        "quantity": 4,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062849954",
+        "ingredientName": "Cebola",
+        "quantity": 4,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851259",
+        "ingredientName": "Coentro",
+        "quantity": 1,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851586",
+        "ingredientName": "Sal",
+        "quantity": 6,
+        "unit": "g"
+      }
+    ],
+    "images": [],
+    "id": "1782063020755",
+    "createdAt": "2026-06-21T17:30:20.755Z"
+  },
+  {
+    "name": "Frango em cubos + arroz",
+    "description": "Frango em cubos com arroz branco",
+    "price": 21.9,
+    "category": "prato",
+    "preparationTime": 25,
+    "servings": 1,
+    "isAvailable": true,
+    "ingredients": [
+      {
+        "ingredientId": "1782062848631",
+        "ingredientName": "Frango em cubos",
+        "quantity": 250,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062849135",
+        "ingredientName": "Arroz branco",
+        "quantity": 230,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851104",
+        "ingredientName": "Alho",
+        "quantity": 6,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062849954",
+        "ingredientName": "Cebola",
+        "quantity": 6,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851259",
+        "ingredientName": "Coentro",
+        "quantity": 1,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851420",
+        "ingredientName": "Cebolinha",
+        "quantity": 2,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851586",
+        "ingredientName": "Sal",
+        "quantity": 5,
+        "unit": "g"
+      }
+    ],
+    "images": [],
+    "id": "1782063020975",
+    "createdAt": "2026-06-21T17:30:20.975Z"
+  },
+  {
+    "name": "Escondidinho de frango (purê batata)",
+    "description": "Escondidinho cremoso de frango com purê de batata",
+    "price": 24.9,
+    "category": "prato",
+    "preparationTime": 35,
+    "servings": 1,
+    "isAvailable": true,
+    "ingredients": [
+      {
+        "ingredientId": "1782062848795",
+        "ingredientName": "Frango desfiado",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062849627",
+        "ingredientName": "Batata",
+        "quantity": 280,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851104",
+        "ingredientName": "Alho",
+        "quantity": 6,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062849954",
+        "ingredientName": "Cebola",
+        "quantity": 6,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851259",
+        "ingredientName": "Coentro",
+        "quantity": 3,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851586",
+        "ingredientName": "Sal",
+        "quantity": 5,
+        "unit": "g"
+      }
+    ],
+    "images": [],
+    "id": "1782063021199",
+    "createdAt": "2026-06-21T17:30:21.199Z"
+  },
+  {
+    "name": "Fricassê de Frango",
+    "description": "Fricassê cremoso de frango com creme de milho",
+    "price": 25.9,
+    "category": "prato",
+    "preparationTime": 30,
+    "servings": 1,
+    "isAvailable": true,
+    "ingredients": [
+      {
+        "ingredientId": "1782062848631",
+        "ingredientName": "Frango em cubos",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062852076",
+        "ingredientName": "Creme de leite",
+        "quantity": 150,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062849135",
+        "ingredientName": "Arroz branco",
+        "quantity": 130,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851104",
+        "ingredientName": "Alho",
+        "quantity": 4,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062849954",
+        "ingredientName": "Cebola",
+        "quantity": 4,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851259",
+        "ingredientName": "Coentro",
+        "quantity": 1,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851586",
+        "ingredientName": "Sal",
+        "quantity": 5,
+        "unit": "g"
+      }
+    ],
+    "images": [],
+    "id": "1782063021418",
+    "createdAt": "2026-06-21T17:30:21.418Z"
+  },
+  {
+    "name": "Pudim de Leite",
+    "description": "Pudim de leite condensado cremoso - 700g",
+    "price": 28.9,
+    "category": "sobremesa",
+    "preparationTime": 60,
+    "servings": 8,
+    "isAvailable": true,
+    "ingredients": [
+      {
+        "ingredientId": "1782062852236",
+        "ingredientName": "Leite condensado",
+        "quantity": 395,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851902",
+        "ingredientName": "Leite",
+        "quantity": 300,
+        "unit": "ml"
+      },
+      {
+        "ingredientId": "1782062853533",
+        "ingredientName": "Ovo",
+        "quantity": 4,
+        "unit": "unidade"
+      }
+    ],
+    "images": [],
+    "id": "1782063021642",
+    "createdAt": "2026-06-21T17:30:21.642Z"
+  },
+  {
+    "name": "Cocada de Forno",
+    "description": "Cocada assada cremosa com coco ralado - 500g",
+    "price": 27.9,
+    "category": "sobremesa",
+    "preparationTime": 40,
+    "servings": 6,
+    "isAvailable": true,
+    "ingredients": [
+      {
+        "ingredientId": "1782062853383",
+        "ingredientName": "Coco ralado",
+        "quantity": 250,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062852236",
+        "ingredientName": "Leite condensado",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062852888",
+        "ingredientName": "Açúcar",
+        "quantity": 100,
+        "unit": "g"
+      }
+    ],
+    "images": [],
+    "id": "1782063022039",
+    "createdAt": "2026-06-21T17:30:22.039Z"
+  },
+  {
+    "name": "Torta de Abacaxi",
+    "description": "Torta doce de abacaxi com creme - 700g",
+    "price": 32.9,
+    "category": "sobremesa",
+    "preparationTime": 50,
+    "servings": 8,
+    "isAvailable": true,
+    "ingredients": [
+      {
+        "ingredientId": "1782062850938",
+        "ingredientName": "Abacaxi",
+        "quantity": 300,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062849299",
+        "ingredientName": "Farinha de trigo",
+        "quantity": 180,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062852076",
+        "ingredientName": "Creme de leite",
+        "quantity": 100,
+        "unit": "g"
+      }
+    ],
+    "images": [],
+    "id": "1782063022249",
+    "createdAt": "2026-06-21T17:30:22.249Z"
+  },
+  {
+    "name": "Torta de Frango",
+    "description": "Torta salgada de frango com requeijão - 700g",
+    "price": 31.9,
+    "category": "lanche",
+    "preparationTime": 45,
+    "servings": 6,
+    "isAvailable": true,
+    "ingredients": [
+      {
+        "ingredientId": "1782062848795",
+        "ingredientName": "Frango desfiado",
+        "quantity": 250,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062849299",
+        "ingredientName": "Farinha de trigo",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062852411",
+        "ingredientName": "Requeijão",
+        "quantity": 80,
+        "unit": "g"
+      }
+    ],
+    "images": [],
+    "id": "1782063022474",
+    "createdAt": "2026-06-21T17:30:22.474Z"
+  },
+  {
+    "name": "Empada de Frango",
+    "description": "Empada de frango desfiado com massa crocante - 700g",
+    "price": 29.9,
+    "category": "lanche",
+    "preparationTime": 45,
+    "servings": 6,
+    "isAvailable": true,
+    "ingredients": [
+      {
+        "ingredientId": "1782062849299",
+        "ingredientName": "Farinha de trigo",
+        "quantity": 250,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062848795",
+        "ingredientName": "Frango desfiado",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062852571",
+        "ingredientName": "Margarina",
+        "quantity": 100,
+        "unit": "g"
+      }
+    ],
+    "images": [],
+    "id": "1782063022692",
+    "createdAt": "2026-06-21T17:30:22.692Z"
+  },
+  {
+    "name": "Bolo Tradicional Formigueiro",
+    "description": "Bolo fofinho com chocolate granulado - 700g",
+    "price": 35.9,
+    "category": "bolo",
+    "preparationTime": 50,
+    "servings": 8,
+    "isAvailable": true,
+    "ingredients": [
+      {
+        "ingredientId": "1782062849299",
+        "ingredientName": "Farinha de trigo",
+        "quantity": 250,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062852888",
+        "ingredientName": "Açúcar",
+        "quantity": 180,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062853068",
+        "ingredientName": "Chocolate granulado",
+        "quantity": 80,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851902",
+        "ingredientName": "Leite",
+        "quantity": 120,
+        "unit": "ml"
+      }
+    ],
+    "images": [],
+    "id": "1782063022924",
+    "createdAt": "2026-06-21T17:30:22.924Z"
+  },
+  {
+    "name": "Bolo de Banana",
+    "description": "Bolo caseiro de banana macio - 700g",
+    "price": 32.9,
+    "category": "bolo",
+    "preparationTime": 45,
+    "servings": 8,
+    "isAvailable": true,
+    "ingredients": [
+      {
+        "ingredientId": "1782062850595",
+        "ingredientName": "Banana",
+        "quantity": 250,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062849299",
+        "ingredientName": "Farinha de trigo",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062852888",
+        "ingredientName": "Açúcar",
+        "quantity": 150,
+        "unit": "g"
+      }
+    ],
+    "images": [],
+    "id": "1782063023145",
+    "createdAt": "2026-06-21T17:30:23.145Z"
+  },
+  {
+    "name": "Bolo de Cenoura",
+    "description": "Bolo de cenoura com cobertura de chocolate - 700g",
+    "price": 34.9,
+    "category": "bolo",
+    "preparationTime": 50,
+    "servings": 8,
+    "isAvailable": true,
+    "ingredients": [
+      {
+        "ingredientId": "1782062849792",
+        "ingredientName": "Cenoura",
+        "quantity": 250,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062849299",
+        "ingredientName": "Farinha de trigo",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062853068",
+        "ingredientName": "Chocolate granulado",
+        "quantity": 80,
+        "unit": "g"
+      }
+    ],
+    "images": [],
+    "id": "1782063023373",
+    "createdAt": "2026-06-21T17:30:23.373Z"
+  },
+  {
+    "name": "Bolo de Chocolate",
+    "description": "Bolo de chocolate fofinho - 700g",
+    "price": 34.9,
+    "category": "bolo",
+    "preparationTime": 45,
+    "servings": 8,
+    "isAvailable": true,
+    "ingredients": [
+      {
+        "ingredientId": "1782062849299",
+        "ingredientName": "Farinha de trigo",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062853231",
+        "ingredientName": "Chocolate em pó",
+        "quantity": 100,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851902",
+        "ingredientName": "Leite",
+        "quantity": 150,
+        "unit": "ml"
+      }
+    ],
+    "images": [],
+    "id": "1782063023596",
+    "createdAt": "2026-06-21T17:30:23.596Z"
+  },
+  {
+    "name": "Bolo Limão Piscina",
+    "description": "Bolo de limão com cobertura cremosa - 700g",
+    "price": 33.9,
+    "category": "bolo",
+    "preparationTime": 45,
+    "servings": 8,
+    "isAvailable": true,
+    "ingredients": [
+      {
+        "ingredientId": "1782062849299",
+        "ingredientName": "Farinha de trigo",
+        "quantity": 220,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062850770",
+        "ingredientName": "Limão",
+        "quantity": 80,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062852236",
+        "ingredientName": "Leite condensado",
+        "quantity": 150,
+        "unit": "g"
+      }
+    ],
+    "images": [],
+    "id": "1782063023823",
+    "createdAt": "2026-06-21T17:30:23.823Z"
+  },
+  {
+    "name": "Bolo de Baunilha",
+    "description": "Bolo delicado com aroma de baunilha - 700g",
+    "price": 31.9,
+    "category": "bolo",
+    "preparationTime": 40,
+    "servings": 8,
+    "isAvailable": true,
+    "ingredients": [
+      {
+        "ingredientId": "1782062849299",
+        "ingredientName": "Farinha de trigo",
+        "quantity": 220,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851736",
+        "ingredientName": "Baunilha",
+        "quantity": 10,
+        "unit": "ml"
+      },
+      {
+        "ingredientId": "1782062851902",
+        "ingredientName": "Leite",
+        "quantity": 150,
+        "unit": "ml"
+      }
+    ],
+    "images": [],
+    "id": "1782063024043",
+    "createdAt": "2026-06-21T17:30:24.043Z"
+  },
+  {
+    "name": "Bolo de Aipim",
+    "description": "Bolo cremoso de aipim com coco - 1kg",
+    "price": 36.9,
+    "category": "bolo",
+    "preparationTime": 55,
+    "servings": 10,
+    "isAvailable": true,
+    "ingredients": [
+      {
+        "ingredientId": "1782062850435",
+        "ingredientName": "Aipim",
+        "quantity": 350,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062853999",
+        "ingredientName": "Leite de coco",
+        "quantity": 120,
+        "unit": "ml"
+      },
+      {
+        "ingredientId": "1782062852888",
+        "ingredientName": "Açúcar",
+        "quantity": 180,
+        "unit": "g"
+      }
+    ],
+    "images": [],
+    "id": "1782063024275",
+    "createdAt": "2026-06-21T17:30:24.275Z"
+  },
+  {
+    "name": "Bolo Formigueiro - MINI",
+    "description": "Bolo formigueiro tamanho mini - 150g",
+    "price": 12.9,
+    "category": "bolo",
+    "preparationTime": 30,
+    "servings": 2,
+    "isAvailable": true,
+    "ingredients": [
+      {
+        "ingredientId": "1782062849299",
+        "ingredientName": "Farinha de trigo",
+        "quantity": 62.5,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062852888",
+        "ingredientName": "Açúcar",
+        "quantity": 45,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062853068",
+        "ingredientName": "Chocolate granulado",
+        "quantity": 20,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851902",
+        "ingredientName": "Leite",
+        "quantity": 30,
+        "unit": "ml"
+      }
+    ],
+    "images": [],
+    "id": "1782063024489",
+    "createdAt": "2026-06-21T17:30:24.489Z"
+  },
+  {
+    "name": "Bolo de Banana - MINI",
+    "description": "Bolo de banana tamanho mini - 150g",
+    "price": 11.9,
+    "category": "bolo",
+    "preparationTime": 30,
+    "servings": 2,
+    "isAvailable": true,
+    "ingredients": [
+      {
+        "ingredientId": "1782062850595",
+        "ingredientName": "Banana",
+        "quantity": 62.5,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062849299",
+        "ingredientName": "Farinha de trigo",
+        "quantity": 50,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062852888",
+        "ingredientName": "Açúcar",
+        "quantity": 37.5,
+        "unit": "g"
+      }
+    ],
+    "images": [],
+    "id": "1782063024714",
+    "createdAt": "2026-06-21T17:30:24.714Z"
+  },
+  {
+    "name": "Bolo de Cenoura - MINI",
+    "description": "Bolo de cenoura tamanho mini - 150g",
+    "price": 12.9,
+    "category": "bolo",
+    "preparationTime": 30,
+    "servings": 2,
+    "isAvailable": true,
+    "ingredients": [
+      {
+        "ingredientId": "1782062849792",
+        "ingredientName": "Cenoura",
+        "quantity": 62.5,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062849299",
+        "ingredientName": "Farinha de trigo",
+        "quantity": 50,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062853068",
+        "ingredientName": "Chocolate granulado",
+        "quantity": 20,
+        "unit": "g"
+      }
+    ],
+    "images": [],
+    "id": "1782063024929",
+    "createdAt": "2026-06-21T17:30:24.929Z"
+  },
+  {
+    "name": "Bolo Chocolate - MINI",
+    "description": "Bolo de chocolate tamanho mini - 150g",
+    "price": 12.9,
+    "category": "bolo",
+    "preparationTime": 30,
+    "servings": 2,
+    "isAvailable": true,
+    "ingredients": [
+      {
+        "ingredientId": "1782062849299",
+        "ingredientName": "Farinha de trigo",
+        "quantity": 50,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062853231",
+        "ingredientName": "Chocolate em pó",
+        "quantity": 25,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851902",
+        "ingredientName": "Leite",
+        "quantity": 37.5,
+        "unit": "ml"
+      }
+    ],
+    "images": [],
+    "id": "1782063025143",
+    "createdAt": "2026-06-21T17:30:25.143Z"
+  },
+  {
+    "name": "Bolo Limão Piscina - MINI",
+    "description": "Bolo de limão tamanho mini - 150g",
+    "price": 11.9,
+    "category": "bolo",
+    "preparationTime": 30,
+    "servings": 2,
+    "isAvailable": true,
+    "ingredients": [
+      {
+        "ingredientId": "1782062849299",
+        "ingredientName": "Farinha de trigo",
+        "quantity": 55,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062850770",
+        "ingredientName": "Limão",
+        "quantity": 20,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062852236",
+        "ingredientName": "Leite condensado",
+        "quantity": 37.5,
+        "unit": "g"
+      }
+    ],
+    "images": [],
+    "id": "1782063025359",
+    "createdAt": "2026-06-21T17:30:25.359Z"
+  },
+  {
+    "name": "Bolo Baunilha - MINI",
+    "description": "Bolo de baunilha tamanho mini - 150g",
+    "price": 11.9,
+    "category": "bolo",
+    "preparationTime": 30,
+    "servings": 2,
+    "isAvailable": true,
+    "ingredients": [
+      {
+        "ingredientId": "1782062849299",
+        "ingredientName": "Farinha de trigo",
+        "quantity": 55,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062851736",
+        "ingredientName": "Baunilha",
+        "quantity": 2.5,
+        "unit": "ml"
+      },
+      {
+        "ingredientId": "1782062851902",
+        "ingredientName": "Leite",
+        "quantity": 37.5,
+        "unit": "ml"
+      }
+    ],
+    "images": [],
+    "id": "1782063025576",
+    "createdAt": "2026-06-21T17:30:25.576Z"
+  },
+  {
+    "name": "Bolo Aipim - MINI",
+    "description": "Bolo de aipim tamanho mini - 150g",
+    "price": 13.9,
+    "category": "bolo",
+    "preparationTime": 35,
+    "servings": 2,
+    "isAvailable": true,
+    "ingredients": [
+      {
+        "ingredientId": "1782062850435",
+        "ingredientName": "Aipim",
+        "quantity": 87.5,
+        "unit": "g"
+      },
+      {
+        "ingredientId": "1782062853999",
+        "ingredientName": "Leite de coco",
+        "quantity": 30,
+        "unit": "ml"
+      },
+      {
+        "ingredientId": "1782062852888",
+        "ingredientName": "Açúcar",
+        "quantity": 45,
+        "unit": "g"
+      }
+    ],
+    "images": [],
+    "id": "1782063025791",
+    "createdAt": "2026-06-21T17:30:25.791Z"
+  },
+  {
+    "id": "1782074460464",
+    "name": "Nova Receita",
+    "description": "",
+    "price": 0,
+    "category": "prato",
+    "preparationTime": 30,
+    "servings": 1,
+    "isAvailable": true,
+    "ingredients": [],
+    "images": [],
+    "createdAt": "2026-06-21T20:41:00.464Z"
+  }
+]

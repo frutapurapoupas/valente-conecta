@@ -1,0 +1,1112 @@
+[
+  {
+    "id": "1782080715611",
+    "nome": "Embalagem plástica",
+    "categoria": "Embalagens",
+    "preco": 1,
+    "unidade": "un",
+    "quantidade": 50,
+    "created_at": "2026-06-21T22:25:15.611Z",
+    "updated_at": "2026-06-21T22:25:15.611Z"
+  },
+  {
+    "id": "1782080715674",
+    "nome": "Farinha",
+    "categoria": "Secos/Mercearia",
+    "preco": 5,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:15.674Z",
+    "updated_at": "2026-06-21T22:25:15.674Z"
+  },
+  {
+    "id": "1782080715731",
+    "nome": "Açúcar",
+    "categoria": "Secos/Mercearia",
+    "preco": 4.5,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:15.731Z",
+    "updated_at": "2026-06-21T22:25:15.731Z"
+  },
+  {
+    "id": "1782080715795",
+    "nome": "Leite",
+    "categoria": "Laticínios",
+    "preco": 5.5,
+    "unidade": "L",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:15.795Z",
+    "updated_at": "2026-06-21T22:25:15.795Z"
+  },
+  {
+    "id": "1782080715885",
+    "nome": "Chocolate em pó",
+    "categoria": "Secos/Mercearia",
+    "preco": 7.5,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:15.885Z",
+    "updated_at": "2026-06-21T22:25:15.885Z"
+  },
+  {
+    "id": "1782080715951",
+    "nome": "Chocolate granulado",
+    "categoria": "Secos/Mercearia",
+    "preco": 5,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:15.951Z",
+    "updated_at": "2026-06-21T22:25:15.951Z"
+  },
+  {
+    "id": "1782080716017",
+    "nome": "Leite condensado",
+    "categoria": "Laticínios",
+    "preco": 7,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:16.017Z",
+    "updated_at": "2026-06-21T22:25:16.017Z"
+  },
+  {
+    "id": "1782080716098",
+    "nome": "Leite de coco",
+    "categoria": "Laticínios",
+    "preco": 4,
+    "unidade": "ml",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:16.098Z",
+    "updated_at": "2026-06-21T22:25:16.098Z"
+  },
+  {
+    "id": "1782080716251",
+    "nome": "Creme de leite",
+    "categoria": "Laticínios",
+    "preco": 3.5,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:16.251Z",
+    "updated_at": "2026-06-21T22:25:16.251Z"
+  },
+  {
+    "id": "1782080716321",
+    "nome": "Baunilha",
+    "categoria": "Laticínios",
+    "preco": 5,
+    "unidade": "ml",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:16.321Z",
+    "updated_at": "2026-06-21T22:25:16.321Z"
+  },
+  {
+    "id": "1782080716394",
+    "nome": "Margarina",
+    "categoria": "Outros",
+    "preco": 6,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:16.394Z",
+    "updated_at": "2026-06-21T22:25:16.394Z"
+  },
+  {
+    "id": "1782080716453",
+    "nome": "Requeijão",
+    "categoria": "Laticínios",
+    "preco": 7,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:16.453Z",
+    "updated_at": "2026-06-21T22:25:16.453Z"
+  },
+  {
+    "id": "1782080716498",
+    "nome": "Ovos",
+    "categoria": "Proteínas",
+    "preco": 11,
+    "unidade": "dz",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:16.498Z",
+    "updated_at": "2026-06-21T22:25:16.498Z"
+  },
+  {
+    "id": "1782080716567",
+    "nome": "Peito de frango",
+    "categoria": "Carnes",
+    "preco": 20,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:16.567Z",
+    "updated_at": "2026-06-21T22:25:16.567Z"
+  },
+  {
+    "id": "1782080716636",
+    "nome": "Carne bovina",
+    "categoria": "Carnes",
+    "preco": 35,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:16.636Z",
+    "updated_at": "2026-06-21T22:25:16.636Z"
+  },
+  {
+    "id": "1782080716696",
+    "nome": "Carne moída",
+    "categoria": "Carnes",
+    "preco": 20.9,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:16.696Z",
+    "updated_at": "2026-06-21T22:25:16.696Z"
+  },
+  {
+    "id": "1782080716750",
+    "nome": "Arroz branco",
+    "categoria": "Secos/Mercearia",
+    "preco": 6,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:16.750Z",
+    "updated_at": "2026-06-21T22:25:16.750Z"
+  },
+  {
+    "id": "1782080716806",
+    "nome": "Batata",
+    "categoria": "Frutas/Verduras",
+    "preco": 6,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:16.806Z",
+    "updated_at": "2026-06-21T22:25:16.806Z"
+  },
+  {
+    "id": "1782080716879",
+    "nome": "batata do reino",
+    "categoria": "Frutas/Verduras",
+    "preco": 6,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:16.879Z",
+    "updated_at": "2026-06-21T22:25:16.879Z"
+  },
+  {
+    "id": "1782080716933",
+    "nome": "Cenoura",
+    "categoria": "Frutas/Verduras",
+    "preco": 5,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:16.933Z",
+    "updated_at": "2026-06-21T22:25:16.933Z"
+  },
+  {
+    "id": "1782080716988",
+    "nome": "Abóbora",
+    "categoria": "Frutas/Verduras",
+    "preco": 4,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:16.988Z",
+    "updated_at": "2026-06-21T22:25:16.988Z"
+  },
+  {
+    "id": "1782080717046",
+    "nome": "Chuchu",
+    "categoria": "Frutas/Verduras",
+    "preco": 2,
+    "unidade": "un",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:17.046Z",
+    "updated_at": "2026-06-21T22:25:17.046Z"
+  },
+  {
+    "id": "1782080717104",
+    "nome": "Banana",
+    "categoria": "Frutas/Verduras",
+    "preco": 5,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:17.104Z",
+    "updated_at": "2026-06-21T22:25:17.104Z"
+  },
+  {
+    "id": "1782080717182",
+    "nome": "Abacaxi",
+    "categoria": "Frutas/Verduras",
+    "preco": 6,
+    "unidade": "un",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:17.182Z",
+    "updated_at": "2026-06-21T22:25:17.182Z"
+  },
+  {
+    "id": "1782080717232",
+    "nome": "Limão",
+    "categoria": "Frutas/Verduras",
+    "preco": 4,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:17.232Z",
+    "updated_at": "2026-06-21T22:25:17.232Z"
+  },
+  {
+    "id": "1782080717303",
+    "nome": "Aimpim",
+    "categoria": "Frutas/Verduras",
+    "preco": 5,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:17.303Z",
+    "updated_at": "2026-06-21T22:25:17.303Z"
+  },
+  {
+    "id": "1782080717364",
+    "nome": "Creme de milho",
+    "categoria": "Outros",
+    "preco": 4.5,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:17.364Z",
+    "updated_at": "2026-06-21T22:25:17.364Z"
+  },
+  {
+    "id": "1782080717441",
+    "nome": "ketchup",
+    "categoria": "Outros",
+    "preco": 4,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:17.441Z",
+    "updated_at": "2026-06-21T22:25:17.441Z"
+  },
+  {
+    "id": "1782080717486",
+    "nome": "Alho",
+    "categoria": "Temperos",
+    "preco": 4,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:17.486Z",
+    "updated_at": "2026-06-21T22:25:17.486Z"
+  },
+  {
+    "id": "1782080717547",
+    "nome": "Cebola",
+    "categoria": "Temperos",
+    "preco": 5,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:17.547Z",
+    "updated_at": "2026-06-21T22:25:17.547Z"
+  },
+  {
+    "id": "1782080717604",
+    "nome": "Coentro",
+    "categoria": "Temperos",
+    "preco": 3,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:17.604Z",
+    "updated_at": "2026-06-21T22:25:17.604Z"
+  },
+  {
+    "id": "1782080717678",
+    "nome": "Cebolinha",
+    "categoria": "Temperos",
+    "preco": 3,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:17.678Z",
+    "updated_at": "2026-06-21T22:25:17.678Z"
+  },
+  {
+    "id": "1782080717750",
+    "nome": "Salsa",
+    "categoria": "Temperos",
+    "preco": 3,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:17.750Z",
+    "updated_at": "2026-06-21T22:25:17.750Z"
+  },
+  {
+    "id": "1782080717844",
+    "nome": "Sal",
+    "categoria": "Temperos",
+    "preco": 3,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:17.844Z",
+    "updated_at": "2026-06-21T22:25:17.844Z"
+  },
+  {
+    "id": "1782080717926",
+    "nome": "Chocolate cobertura",
+    "categoria": "Outros",
+    "preco": 15,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:17.926Z",
+    "updated_at": "2026-06-21T22:25:17.926Z"
+  },
+  {
+    "id": "1782080717988",
+    "nome": "Coco ralado",
+    "categoria": "Outros",
+    "preco": 6.5,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:17.988Z",
+    "updated_at": "2026-06-21T22:25:17.988Z"
+  },
+  {
+    "id": "1782080718049",
+    "nome": "Frango desfiado",
+    "categoria": "Carnes",
+    "preco": 18,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:25:18.049Z",
+    "updated_at": "2026-06-21T22:25:18.049Z"
+  },
+  {
+    "id": "1782080938796",
+    "nome": "Embalagem plástica",
+    "categoria": "Embalagens",
+    "preco": 0.5,
+    "unidade": "un",
+    "quantidade": 50,
+    "created_at": "2026-06-21T22:28:58.796Z",
+    "updated_at": "2026-06-21T22:28:58.796Z"
+  },
+  {
+    "id": "1782080938920",
+    "nome": "Farinha",
+    "categoria": "Secos/Mercearia",
+    "preco": 5.5,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:28:58.920Z",
+    "updated_at": "2026-06-21T22:28:58.920Z"
+  },
+  {
+    "id": "1782080938984",
+    "nome": "Açúcar",
+    "categoria": "Secos/Mercearia",
+    "preco": 4.8,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:28:58.984Z",
+    "updated_at": "2026-06-21T22:28:58.984Z"
+  },
+  {
+    "id": "1782080939036",
+    "nome": "Leite",
+    "categoria": "Laticínios",
+    "preco": 6.2,
+    "unidade": "L",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:28:59.036Z",
+    "updated_at": "2026-06-21T22:28:59.036Z"
+  },
+  {
+    "id": "1782080939099",
+    "nome": "Chocolate em pó",
+    "categoria": "Secos/Mercearia",
+    "preco": 8.5,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:28:59.099Z",
+    "updated_at": "2026-06-21T22:28:59.099Z"
+  },
+  {
+    "id": "1782080939151",
+    "nome": "Chocolate granulado",
+    "categoria": "Secos/Mercearia",
+    "preco": 5,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:28:59.151Z",
+    "updated_at": "2026-06-21T22:28:59.151Z"
+  },
+  {
+    "id": "1782080939200",
+    "nome": "Leite condensado",
+    "categoria": "Laticínios",
+    "preco": 7.9,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:28:59.200Z",
+    "updated_at": "2026-06-21T22:28:59.200Z"
+  },
+  {
+    "id": "1782080939253",
+    "nome": "Leite de coco",
+    "categoria": "Laticínios",
+    "preco": 4,
+    "unidade": "ml",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:28:59.253Z",
+    "updated_at": "2026-06-21T22:28:59.253Z"
+  },
+  {
+    "id": "1782080939304",
+    "nome": "Creme de leite",
+    "categoria": "Laticínios",
+    "preco": 3.5,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:28:59.304Z",
+    "updated_at": "2026-06-21T22:28:59.304Z"
+  },
+  {
+    "id": "1782080939358",
+    "nome": "Baunilha",
+    "categoria": "Laticínios",
+    "preco": 5,
+    "unidade": "ml",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:28:59.358Z",
+    "updated_at": "2026-06-21T22:28:59.358Z"
+  },
+  {
+    "id": "1782080939407",
+    "nome": "Margarina",
+    "categoria": "Outros",
+    "preco": 6.5,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:28:59.407Z",
+    "updated_at": "2026-06-21T22:28:59.407Z"
+  },
+  {
+    "id": "1782080939461",
+    "nome": "Requeijão",
+    "categoria": "Laticínios",
+    "preco": 7,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:28:59.461Z",
+    "updated_at": "2026-06-21T22:28:59.461Z"
+  },
+  {
+    "id": "1782080939506",
+    "nome": "Ovos",
+    "categoria": "Proteínas",
+    "preco": 12,
+    "unidade": "dz",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:28:59.506Z",
+    "updated_at": "2026-06-21T22:28:59.506Z"
+  },
+  {
+    "id": "1782080939557",
+    "nome": "Peito de frango",
+    "categoria": "Carnes",
+    "preco": 22,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:28:59.557Z",
+    "updated_at": "2026-06-21T22:28:59.557Z"
+  },
+  {
+    "id": "1782080939602",
+    "nome": "Carne bovina",
+    "categoria": "Carnes",
+    "preco": 38,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:28:59.602Z",
+    "updated_at": "2026-06-21T22:28:59.602Z"
+  },
+  {
+    "id": "1782080939655",
+    "nome": "Carne moída",
+    "categoria": "Carnes",
+    "preco": 21,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:28:59.655Z",
+    "updated_at": "2026-06-21T22:28:59.655Z"
+  },
+  {
+    "id": "1782080939713",
+    "nome": "Arroz branco",
+    "categoria": "Secos/Mercearia",
+    "preco": 6.5,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:28:59.713Z",
+    "updated_at": "2026-06-21T22:28:59.713Z"
+  },
+  {
+    "id": "1782080939773",
+    "nome": "Batata",
+    "categoria": "Frutas/Verduras",
+    "preco": 6,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:28:59.773Z",
+    "updated_at": "2026-06-21T22:28:59.773Z"
+  },
+  {
+    "id": "1782080939828",
+    "nome": "Batata do reino",
+    "categoria": "Frutas/Verduras",
+    "preco": 6,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:28:59.828Z",
+    "updated_at": "2026-06-21T22:28:59.828Z"
+  },
+  {
+    "id": "1782080939881",
+    "nome": "Cenoura",
+    "categoria": "Frutas/Verduras",
+    "preco": 5,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:28:59.881Z",
+    "updated_at": "2026-06-21T22:28:59.881Z"
+  },
+  {
+    "id": "1782080939936",
+    "nome": "Abóbora",
+    "categoria": "Frutas/Verduras",
+    "preco": 4,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:28:59.936Z",
+    "updated_at": "2026-06-21T22:28:59.936Z"
+  },
+  {
+    "id": "1782080939994",
+    "nome": "Chuchu",
+    "categoria": "Frutas/Verduras",
+    "preco": 2,
+    "unidade": "un",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:28:59.994Z",
+    "updated_at": "2026-06-21T22:28:59.994Z"
+  },
+  {
+    "id": "1782080940059",
+    "nome": "Banana",
+    "categoria": "Frutas/Verduras",
+    "preco": 5,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:00.059Z",
+    "updated_at": "2026-06-21T22:29:00.059Z"
+  },
+  {
+    "id": "1782080940103",
+    "nome": "Abacaxi",
+    "categoria": "Frutas/Verduras",
+    "preco": 6,
+    "unidade": "un",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:00.103Z",
+    "updated_at": "2026-06-21T22:29:00.103Z"
+  },
+  {
+    "id": "1782080940166",
+    "nome": "Limão",
+    "categoria": "Frutas/Verduras",
+    "preco": 4,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:00.166Z",
+    "updated_at": "2026-06-21T22:29:00.166Z"
+  },
+  {
+    "id": "1782080940212",
+    "nome": "Aimpim",
+    "categoria": "Frutas/Verduras",
+    "preco": 5,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:00.212Z",
+    "updated_at": "2026-06-21T22:29:00.212Z"
+  },
+  {
+    "id": "1782080940273",
+    "nome": "Creme de milho",
+    "categoria": "Outros",
+    "preco": 4.5,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:00.273Z",
+    "updated_at": "2026-06-21T22:29:00.273Z"
+  },
+  {
+    "id": "1782080940326",
+    "nome": "Ketchup",
+    "categoria": "Outros",
+    "preco": 4,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:00.326Z",
+    "updated_at": "2026-06-21T22:29:00.326Z"
+  },
+  {
+    "id": "1782080940382",
+    "nome": "Alho",
+    "categoria": "Temperos",
+    "preco": 4,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:00.382Z",
+    "updated_at": "2026-06-21T22:29:00.382Z"
+  },
+  {
+    "id": "1782080940433",
+    "nome": "Cebola",
+    "categoria": "Temperos",
+    "preco": 5,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:00.433Z",
+    "updated_at": "2026-06-21T22:29:00.433Z"
+  },
+  {
+    "id": "1782080940491",
+    "nome": "Coentro",
+    "categoria": "Temperos",
+    "preco": 2,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:00.491Z",
+    "updated_at": "2026-06-21T22:29:00.491Z"
+  },
+  {
+    "id": "1782080940539",
+    "nome": "Cebolinha",
+    "categoria": "Temperos",
+    "preco": 2,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:00.539Z",
+    "updated_at": "2026-06-21T22:29:00.539Z"
+  },
+  {
+    "id": "1782080940588",
+    "nome": "Salsa",
+    "categoria": "Temperos",
+    "preco": 2,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:00.588Z",
+    "updated_at": "2026-06-21T22:29:00.588Z"
+  },
+  {
+    "id": "1782080940635",
+    "nome": "Sal",
+    "categoria": "Temperos",
+    "preco": 3,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:00.635Z",
+    "updated_at": "2026-06-21T22:29:00.635Z"
+  },
+  {
+    "id": "1782080940691",
+    "nome": "Chocolate cobertura",
+    "categoria": "Outros",
+    "preco": 8,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:00.691Z",
+    "updated_at": "2026-06-21T22:29:00.691Z"
+  },
+  {
+    "id": "1782080940743",
+    "nome": "Coco ralado",
+    "categoria": "Outros",
+    "preco": 5,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:00.743Z",
+    "updated_at": "2026-06-21T22:29:00.743Z"
+  },
+  {
+    "id": "1782080940811",
+    "nome": "Frango desfiado",
+    "categoria": "Carnes",
+    "preco": 25,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:00.811Z",
+    "updated_at": "2026-06-21T22:29:00.811Z"
+  },
+  {
+    "id": "1782080974287",
+    "nome": "Embalagem plástica",
+    "categoria": "Embalagens",
+    "preco": 0.5,
+    "unidade": "un",
+    "quantidade": 50,
+    "created_at": "2026-06-21T22:29:34.287Z",
+    "updated_at": "2026-06-21T22:29:34.287Z"
+  },
+  {
+    "id": "1782080974354",
+    "nome": "Farinha",
+    "categoria": "Secos/Mercearia",
+    "preco": 5.5,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:34.354Z",
+    "updated_at": "2026-06-21T22:29:34.354Z"
+  },
+  {
+    "id": "1782080974437",
+    "nome": "Açúcar",
+    "categoria": "Secos/Mercearia",
+    "preco": 4.8,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:34.437Z",
+    "updated_at": "2026-06-21T22:29:34.437Z"
+  },
+  {
+    "id": "1782080974494",
+    "nome": "Leite",
+    "categoria": "Laticínios",
+    "preco": 6.2,
+    "unidade": "L",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:34.494Z",
+    "updated_at": "2026-06-21T22:29:34.494Z"
+  },
+  {
+    "id": "1782080974562",
+    "nome": "Chocolate em pó",
+    "categoria": "Secos/Mercearia",
+    "preco": 8.5,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:34.562Z",
+    "updated_at": "2026-06-21T22:29:34.562Z"
+  },
+  {
+    "id": "1782080974616",
+    "nome": "Chocolate granulado",
+    "categoria": "Secos/Mercearia",
+    "preco": 5,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:34.616Z",
+    "updated_at": "2026-06-21T22:29:34.616Z"
+  },
+  {
+    "id": "1782080974683",
+    "nome": "Leite condensado",
+    "categoria": "Laticínios",
+    "preco": 7.9,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:34.683Z",
+    "updated_at": "2026-06-21T22:29:34.683Z"
+  },
+  {
+    "id": "1782080974734",
+    "nome": "Leite de coco",
+    "categoria": "Laticínios",
+    "preco": 4,
+    "unidade": "ml",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:34.734Z",
+    "updated_at": "2026-06-21T22:29:34.734Z"
+  },
+  {
+    "id": "1782080974801",
+    "nome": "Creme de leite",
+    "categoria": "Laticínios",
+    "preco": 3.5,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:34.801Z",
+    "updated_at": "2026-06-21T22:29:34.801Z"
+  },
+  {
+    "id": "1782080974850",
+    "nome": "Baunilha",
+    "categoria": "Laticínios",
+    "preco": 5,
+    "unidade": "ml",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:34.850Z",
+    "updated_at": "2026-06-21T22:29:34.850Z"
+  },
+  {
+    "id": "1782080974912",
+    "nome": "Margarina",
+    "categoria": "Outros",
+    "preco": 6.5,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:34.912Z",
+    "updated_at": "2026-06-21T22:29:34.912Z"
+  },
+  {
+    "id": "1782080974966",
+    "nome": "Requeijão",
+    "categoria": "Laticínios",
+    "preco": 7,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:34.966Z",
+    "updated_at": "2026-06-21T22:29:34.966Z"
+  },
+  {
+    "id": "1782080975040",
+    "nome": "Ovos",
+    "categoria": "Proteínas",
+    "preco": 12,
+    "unidade": "dz",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:35.040Z",
+    "updated_at": "2026-06-21T22:29:35.040Z"
+  },
+  {
+    "id": "1782080975086",
+    "nome": "Peito de frango",
+    "categoria": "Carnes",
+    "preco": 22,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:35.086Z",
+    "updated_at": "2026-06-21T22:29:35.086Z"
+  },
+  {
+    "id": "1782080975147",
+    "nome": "Carne bovina",
+    "categoria": "Carnes",
+    "preco": 38,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:35.147Z",
+    "updated_at": "2026-06-21T22:29:35.147Z"
+  },
+  {
+    "id": "1782080975199",
+    "nome": "Carne moída",
+    "categoria": "Carnes",
+    "preco": 21,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:35.199Z",
+    "updated_at": "2026-06-21T22:29:35.199Z"
+  },
+  {
+    "id": "1782080975255",
+    "nome": "Arroz branco",
+    "categoria": "Secos/Mercearia",
+    "preco": 6.5,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:35.255Z",
+    "updated_at": "2026-06-21T22:29:35.255Z"
+  },
+  {
+    "id": "1782080975310",
+    "nome": "Batata",
+    "categoria": "Frutas/Verduras",
+    "preco": 6,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:35.310Z",
+    "updated_at": "2026-06-21T22:29:35.310Z"
+  },
+  {
+    "id": "1782080975363",
+    "nome": "Batata do reino",
+    "categoria": "Frutas/Verduras",
+    "preco": 6,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:35.363Z",
+    "updated_at": "2026-06-21T22:29:35.363Z"
+  },
+  {
+    "id": "1782080975417",
+    "nome": "Cenoura",
+    "categoria": "Frutas/Verduras",
+    "preco": 5,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:35.417Z",
+    "updated_at": "2026-06-21T22:29:35.417Z"
+  },
+  {
+    "id": "1782080975463",
+    "nome": "Abóbora",
+    "categoria": "Frutas/Verduras",
+    "preco": 4,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:35.464Z",
+    "updated_at": "2026-06-21T22:29:35.464Z"
+  },
+  {
+    "id": "1782080975523",
+    "nome": "Chuchu",
+    "categoria": "Frutas/Verduras",
+    "preco": 2,
+    "unidade": "un",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:35.523Z",
+    "updated_at": "2026-06-21T22:29:35.523Z"
+  },
+  {
+    "id": "1782080975569",
+    "nome": "Banana",
+    "categoria": "Frutas/Verduras",
+    "preco": 5,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:35.569Z",
+    "updated_at": "2026-06-21T22:29:35.569Z"
+  },
+  {
+    "id": "1782080975627",
+    "nome": "Abacaxi",
+    "categoria": "Frutas/Verduras",
+    "preco": 6,
+    "unidade": "un",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:35.627Z",
+    "updated_at": "2026-06-21T22:29:35.627Z"
+  },
+  {
+    "id": "1782080975673",
+    "nome": "Limão",
+    "categoria": "Frutas/Verduras",
+    "preco": 4,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:35.673Z",
+    "updated_at": "2026-06-21T22:29:35.673Z"
+  },
+  {
+    "id": "1782080975738",
+    "nome": "Aimpim",
+    "categoria": "Frutas/Verduras",
+    "preco": 5,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:35.738Z",
+    "updated_at": "2026-06-21T22:29:35.738Z"
+  },
+  {
+    "id": "1782080975782",
+    "nome": "Creme de milho",
+    "categoria": "Outros",
+    "preco": 4.5,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:35.782Z",
+    "updated_at": "2026-06-21T22:29:35.782Z"
+  },
+  {
+    "id": "1782080975840",
+    "nome": "Ketchup",
+    "categoria": "Outros",
+    "preco": 4,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:35.840Z",
+    "updated_at": "2026-06-21T22:29:35.840Z"
+  },
+  {
+    "id": "1782080975901",
+    "nome": "Alho",
+    "categoria": "Temperos",
+    "preco": 4,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:35.902Z",
+    "updated_at": "2026-06-21T22:29:35.902Z"
+  },
+  {
+    "id": "1782080975961",
+    "nome": "Cebola",
+    "categoria": "Temperos",
+    "preco": 5,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:35.961Z",
+    "updated_at": "2026-06-21T22:29:35.961Z"
+  },
+  {
+    "id": "1782080976016",
+    "nome": "Coentro",
+    "categoria": "Temperos",
+    "preco": 2,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:36.016Z",
+    "updated_at": "2026-06-21T22:29:36.016Z"
+  },
+  {
+    "id": "1782080976090",
+    "nome": "Cebolinha",
+    "categoria": "Temperos",
+    "preco": 2,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:36.090Z",
+    "updated_at": "2026-06-21T22:29:36.090Z"
+  },
+  {
+    "id": "1782080976148",
+    "nome": "Salsa",
+    "categoria": "Temperos",
+    "preco": 2,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:36.148Z",
+    "updated_at": "2026-06-21T22:29:36.148Z"
+  },
+  {
+    "id": "1782080976206",
+    "nome": "Sal",
+    "categoria": "Temperos",
+    "preco": 3,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:36.206Z",
+    "updated_at": "2026-06-21T22:29:36.206Z"
+  },
+  {
+    "id": "1782080976262",
+    "nome": "Chocolate cobertura",
+    "categoria": "Outros",
+    "preco": 8,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:36.262Z",
+    "updated_at": "2026-06-21T22:29:36.262Z"
+  },
+  {
+    "id": "1782080976314",
+    "nome": "Coco ralado",
+    "categoria": "Outros",
+    "preco": 5,
+    "unidade": "g",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:36.314Z",
+    "updated_at": "2026-06-21T22:29:36.314Z"
+  },
+  {
+    "id": "1782080976370",
+    "nome": "Frango desfiado",
+    "categoria": "Carnes",
+    "preco": 25,
+    "unidade": "kg",
+    "quantidade": 0,
+    "created_at": "2026-06-21T22:29:36.370Z",
+    "updated_at": "2026-06-21T22:29:36.370Z"
+  }
+]

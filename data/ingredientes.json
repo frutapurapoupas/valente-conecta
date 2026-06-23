@@ -1,0 +1,713 @@
+[
+  {
+    "id": "1782062791921",
+    "name": "Carne bovina em cubos",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 32.9,
+    "stock": 50,
+    "minStock": 10,
+    "createdAt": "2026-06-21T17:26:31.921Z"
+  },
+  {
+    "id": "1782062792091",
+    "name": "Frango em cubos",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 18.9,
+    "stock": 50,
+    "minStock": 10,
+    "createdAt": "2026-06-21T17:26:32.091Z"
+  },
+  {
+    "id": "1782062792266",
+    "name": "Frango desfiado",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 22.9,
+    "stock": 30,
+    "minStock": 8,
+    "createdAt": "2026-06-21T17:26:32.266Z"
+  },
+  {
+    "id": "1782062792423",
+    "name": "Carne moída",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 28.9,
+    "stock": 40,
+    "minStock": 10,
+    "createdAt": "2026-06-21T17:26:32.423Z"
+  },
+  {
+    "id": "1782062792588",
+    "name": "Arroz branco",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 5.9,
+    "stock": 100,
+    "minStock": 20,
+    "createdAt": "2026-06-21T17:26:32.588Z"
+  },
+  {
+    "id": "1782062792758",
+    "name": "Farinha de trigo",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 4.9,
+    "stock": 100,
+    "minStock": 20,
+    "createdAt": "2026-06-21T17:26:32.758Z"
+  },
+  {
+    "id": "1782062792923",
+    "name": "Farinha de rosca",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 7.9,
+    "stock": 15,
+    "minStock": 3,
+    "createdAt": "2026-06-21T17:26:32.923Z"
+  },
+  {
+    "id": "1782062793086",
+    "name": "Batata",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 3.5,
+    "stock": 30,
+    "minStock": 10,
+    "createdAt": "2026-06-21T17:26:33.086Z"
+  },
+  {
+    "id": "1782062793242",
+    "name": "Cenoura",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 3.9,
+    "stock": 30,
+    "minStock": 10,
+    "createdAt": "2026-06-21T17:26:33.242Z"
+  },
+  {
+    "id": "1782062793402",
+    "name": "Cebola",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 4.9,
+    "stock": 20,
+    "minStock": 5,
+    "createdAt": "2026-06-21T17:26:33.402Z"
+  },
+  {
+    "id": "1782062793575",
+    "name": "Abóbora",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 4.5,
+    "stock": 20,
+    "minStock": 5,
+    "createdAt": "2026-06-21T17:26:33.575Z"
+  },
+  {
+    "id": "1782062793734",
+    "name": "Chuchu",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 3.9,
+    "stock": 20,
+    "minStock": 5,
+    "createdAt": "2026-06-21T17:26:33.734Z"
+  },
+  {
+    "id": "1782062793903",
+    "name": "Aipim",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 4.5,
+    "stock": 50,
+    "minStock": 10,
+    "createdAt": "2026-06-21T17:26:33.903Z"
+  },
+  {
+    "id": "1782062794073",
+    "name": "Banana",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 4.9,
+    "stock": 30,
+    "minStock": 10,
+    "createdAt": "2026-06-21T17:26:34.073Z"
+  },
+  {
+    "id": "1782062794230",
+    "name": "Limão",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 3.9,
+    "stock": 20,
+    "minStock": 5,
+    "createdAt": "2026-06-21T17:26:34.230Z"
+  },
+  {
+    "id": "1782062794391",
+    "name": "Abacaxi",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 5.9,
+    "stock": 30,
+    "minStock": 5,
+    "createdAt": "2026-06-21T17:26:34.391Z"
+  },
+  {
+    "id": "1782062794551",
+    "name": "Alho",
+    "category": "tempero",
+    "unit": "kg",
+    "currentPrice": 15.9,
+    "stock": 10,
+    "minStock": 2,
+    "createdAt": "2026-06-21T17:26:34.551Z"
+  },
+  {
+    "id": "1782062794721",
+    "name": "Coentro",
+    "category": "tempero",
+    "unit": "kg",
+    "currentPrice": 25.9,
+    "stock": 5,
+    "minStock": 1,
+    "createdAt": "2026-06-21T17:26:34.722Z"
+  },
+  {
+    "id": "1782062794887",
+    "name": "Cebolinha",
+    "category": "tempero",
+    "unit": "kg",
+    "currentPrice": 22.9,
+    "stock": 5,
+    "minStock": 1,
+    "createdAt": "2026-06-21T17:26:34.887Z"
+  },
+  {
+    "id": "1782062795059",
+    "name": "Sal",
+    "category": "tempero",
+    "unit": "kg",
+    "currentPrice": 2.5,
+    "stock": 20,
+    "minStock": 5,
+    "createdAt": "2026-06-21T17:26:35.059Z"
+  },
+  {
+    "id": "1782062795217",
+    "name": "Baunilha",
+    "category": "tempero",
+    "unit": "ml",
+    "currentPrice": 0.5,
+    "stock": 1000,
+    "minStock": 200,
+    "createdAt": "2026-06-21T17:26:35.217Z"
+  },
+  {
+    "id": "1782062795368",
+    "name": "Leite",
+    "category": "bebida",
+    "unit": "L",
+    "currentPrice": 5.9,
+    "stock": 100,
+    "minStock": 20,
+    "createdAt": "2026-06-21T17:26:35.368Z"
+  },
+  {
+    "id": "1782062795534",
+    "name": "Creme de leite",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 12.9,
+    "stock": 20,
+    "minStock": 5,
+    "createdAt": "2026-06-21T17:26:35.534Z"
+  },
+  {
+    "id": "1782062795698",
+    "name": "Leite condensado",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 8.9,
+    "stock": 50,
+    "minStock": 10,
+    "createdAt": "2026-06-21T17:26:35.698Z"
+  },
+  {
+    "id": "1782062795866",
+    "name": "Requeijão",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 18.9,
+    "stock": 20,
+    "minStock": 5,
+    "createdAt": "2026-06-21T17:26:35.866Z"
+  },
+  {
+    "id": "1782062796026",
+    "name": "Margarina",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 12.9,
+    "stock": 30,
+    "minStock": 5,
+    "createdAt": "2026-06-21T17:26:36.026Z"
+  },
+  {
+    "id": "1782062796184",
+    "name": "Queijo mussarela",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 32.9,
+    "stock": 20,
+    "minStock": 5,
+    "createdAt": "2026-06-21T17:26:36.184Z"
+  },
+  {
+    "id": "1782062796353",
+    "name": "Açúcar",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 3.9,
+    "stock": 100,
+    "minStock": 20,
+    "createdAt": "2026-06-21T17:26:36.353Z"
+  },
+  {
+    "id": "1782062796520",
+    "name": "Chocolate granulado",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 22.9,
+    "stock": 30,
+    "minStock": 5,
+    "createdAt": "2026-06-21T17:26:36.520Z"
+  },
+  {
+    "id": "1782062796686",
+    "name": "Chocolate em pó",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 18.9,
+    "stock": 30,
+    "minStock": 5,
+    "createdAt": "2026-06-21T17:26:36.686Z"
+  },
+  {
+    "id": "1782062796843",
+    "name": "Coco ralado",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 14.9,
+    "stock": 30,
+    "minStock": 5,
+    "createdAt": "2026-06-21T17:26:36.843Z"
+  },
+  {
+    "id": "1782062797019",
+    "name": "Ovo",
+    "category": "alimento",
+    "unit": "unidade",
+    "currentPrice": 0.8,
+    "stock": 500,
+    "minStock": 100,
+    "createdAt": "2026-06-21T17:26:37.019Z"
+  },
+  {
+    "id": "1782062797186",
+    "name": "Óleo de soja",
+    "category": "alimento",
+    "unit": "L",
+    "currentPrice": 7.9,
+    "stock": 50,
+    "minStock": 10,
+    "createdAt": "2026-06-21T17:26:37.186Z"
+  },
+  {
+    "id": "1782062797344",
+    "name": "Extrato de tomate",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 8.9,
+    "stock": 20,
+    "minStock": 5,
+    "createdAt": "2026-06-21T17:26:37.344Z"
+  },
+  {
+    "id": "1782062797508",
+    "name": "Leite de coco",
+    "category": "bebida",
+    "unit": "ml",
+    "currentPrice": 0.03,
+    "stock": 10000,
+    "minStock": 2000,
+    "createdAt": "2026-06-21T17:26:37.508Z"
+  },
+  {
+    "id": "1782062848459",
+    "name": "Carne bovina em cubos",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 32.9,
+    "stock": 50,
+    "minStock": 10,
+    "createdAt": "2026-06-21T17:27:28.459Z"
+  },
+  {
+    "id": "1782062848631",
+    "name": "Frango em cubos",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 18.9,
+    "stock": 50,
+    "minStock": 10,
+    "createdAt": "2026-06-21T17:27:28.631Z"
+  },
+  {
+    "id": "1782062848795",
+    "name": "Frango desfiado",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 22.9,
+    "stock": 30,
+    "minStock": 8,
+    "createdAt": "2026-06-21T17:27:28.795Z"
+  },
+  {
+    "id": "1782062848969",
+    "name": "Carne moída",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 28.9,
+    "stock": 40,
+    "minStock": 10,
+    "createdAt": "2026-06-21T17:27:28.969Z"
+  },
+  {
+    "id": "1782062849135",
+    "name": "Arroz branco",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 5.9,
+    "stock": 100,
+    "minStock": 20,
+    "createdAt": "2026-06-21T17:27:29.135Z"
+  },
+  {
+    "id": "1782062849299",
+    "name": "Farinha de trigo",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 4.9,
+    "stock": 100,
+    "minStock": 20,
+    "createdAt": "2026-06-21T17:27:29.299Z"
+  },
+  {
+    "id": "1782062849466",
+    "name": "Farinha de rosca",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 7.9,
+    "stock": 15,
+    "minStock": 3,
+    "createdAt": "2026-06-21T17:27:29.466Z"
+  },
+  {
+    "id": "1782062849627",
+    "name": "Batata",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 3.5,
+    "stock": 30,
+    "minStock": 10,
+    "createdAt": "2026-06-21T17:27:29.627Z"
+  },
+  {
+    "id": "1782062849792",
+    "name": "Cenoura",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 3.9,
+    "stock": 30,
+    "minStock": 10,
+    "createdAt": "2026-06-21T17:27:29.792Z"
+  },
+  {
+    "id": "1782062849954",
+    "name": "Cebola",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 4.9,
+    "stock": 20,
+    "minStock": 5,
+    "createdAt": "2026-06-21T17:27:29.954Z"
+  },
+  {
+    "id": "1782062850109",
+    "name": "Abóbora",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 4.5,
+    "stock": 20,
+    "minStock": 5,
+    "createdAt": "2026-06-21T17:27:30.109Z"
+  },
+  {
+    "id": "1782062850270",
+    "name": "Chuchu",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 3.9,
+    "stock": 20,
+    "minStock": 5,
+    "createdAt": "2026-06-21T17:27:30.270Z"
+  },
+  {
+    "id": "1782062850435",
+    "name": "Aipim",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 4.5,
+    "stock": 50,
+    "minStock": 10,
+    "createdAt": "2026-06-21T17:27:30.435Z"
+  },
+  {
+    "id": "1782062850595",
+    "name": "Banana",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 4.9,
+    "stock": 30,
+    "minStock": 10,
+    "createdAt": "2026-06-21T17:27:30.595Z"
+  },
+  {
+    "id": "1782062850770",
+    "name": "Limão",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 3.9,
+    "stock": 20,
+    "minStock": 5,
+    "createdAt": "2026-06-21T17:27:30.770Z"
+  },
+  {
+    "id": "1782062850938",
+    "name": "Abacaxi",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 5.9,
+    "stock": 30,
+    "minStock": 5,
+    "createdAt": "2026-06-21T17:27:30.938Z"
+  },
+  {
+    "id": "1782062851104",
+    "name": "Alho",
+    "category": "tempero",
+    "unit": "kg",
+    "currentPrice": 15.9,
+    "stock": 10,
+    "minStock": 2,
+    "createdAt": "2026-06-21T17:27:31.104Z"
+  },
+  {
+    "id": "1782062851259",
+    "name": "Coentro",
+    "category": "tempero",
+    "unit": "kg",
+    "currentPrice": 25.9,
+    "stock": 5,
+    "minStock": 1,
+    "createdAt": "2026-06-21T17:27:31.259Z"
+  },
+  {
+    "id": "1782062851420",
+    "name": "Cebolinha",
+    "category": "tempero",
+    "unit": "kg",
+    "currentPrice": 22.9,
+    "stock": 5,
+    "minStock": 1,
+    "createdAt": "2026-06-21T17:27:31.420Z"
+  },
+  {
+    "id": "1782062851586",
+    "name": "Sal",
+    "category": "tempero",
+    "unit": "kg",
+    "currentPrice": 2.5,
+    "stock": 20,
+    "minStock": 5,
+    "createdAt": "2026-06-21T17:27:31.586Z"
+  },
+  {
+    "id": "1782062851736",
+    "name": "Baunilha",
+    "category": "tempero",
+    "unit": "ml",
+    "currentPrice": 0.5,
+    "stock": 1000,
+    "minStock": 200,
+    "createdAt": "2026-06-21T17:27:31.736Z"
+  },
+  {
+    "id": "1782062851902",
+    "name": "Leite",
+    "category": "bebida",
+    "unit": "L",
+    "currentPrice": 5.9,
+    "stock": 100,
+    "minStock": 20,
+    "createdAt": "2026-06-21T17:27:31.902Z"
+  },
+  {
+    "id": "1782062852076",
+    "name": "Creme de leite",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 12.9,
+    "stock": 20,
+    "minStock": 5,
+    "createdAt": "2026-06-21T17:27:32.076Z"
+  },
+  {
+    "id": "1782062852236",
+    "name": "Leite condensado",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 8.9,
+    "stock": 50,
+    "minStock": 10,
+    "createdAt": "2026-06-21T17:27:32.236Z"
+  },
+  {
+    "id": "1782062852411",
+    "name": "Requeijão",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 18.9,
+    "stock": 20,
+    "minStock": 5,
+    "createdAt": "2026-06-21T17:27:32.411Z"
+  },
+  {
+    "id": "1782062852571",
+    "name": "Margarina",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 12.9,
+    "stock": 30,
+    "minStock": 5,
+    "createdAt": "2026-06-21T17:27:32.571Z"
+  },
+  {
+    "id": "1782062852735",
+    "name": "Queijo mussarela",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 32.9,
+    "stock": 20,
+    "minStock": 5,
+    "createdAt": "2026-06-21T17:27:32.735Z"
+  },
+  {
+    "id": "1782062852888",
+    "name": "Açúcar",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 3.9,
+    "stock": 100,
+    "minStock": 20,
+    "createdAt": "2026-06-21T17:27:32.888Z"
+  },
+  {
+    "id": "1782062853068",
+    "name": "Chocolate granulado",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 22.9,
+    "stock": 30,
+    "minStock": 5,
+    "createdAt": "2026-06-21T17:27:33.068Z"
+  },
+  {
+    "id": "1782062853231",
+    "name": "Chocolate em pó",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 18.9,
+    "stock": 30,
+    "minStock": 5,
+    "createdAt": "2026-06-21T17:27:33.231Z"
+  },
+  {
+    "id": "1782062853383",
+    "name": "Coco ralado",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 14.9,
+    "stock": 30,
+    "minStock": 5,
+    "createdAt": "2026-06-21T17:27:33.383Z"
+  },
+  {
+    "id": "1782062853533",
+    "name": "Ovo",
+    "category": "alimento",
+    "unit": "unidade",
+    "currentPrice": 0.8,
+    "stock": 500,
+    "minStock": 100,
+    "createdAt": "2026-06-21T17:27:33.533Z"
+  },
+  {
+    "id": "1782062853687",
+    "name": "Óleo de soja",
+    "category": "alimento",
+    "unit": "L",
+    "currentPrice": 7.9,
+    "stock": 50,
+    "minStock": 10,
+    "createdAt": "2026-06-21T17:27:33.687Z"
+  },
+  {
+    "id": "1782062853839",
+    "name": "Extrato de tomate",
+    "category": "alimento",
+    "unit": "kg",
+    "currentPrice": 8.9,
+    "stock": 20,
+    "minStock": 5,
+    "createdAt": "2026-06-21T17:27:33.839Z"
+  },
+  {
+    "id": "1782062853999",
+    "name": "Leite de coco",
+    "category": "bebida",
+    "unit": "ml",
+    "currentPrice": 0.03,
+    "stock": 10000,
+    "minStock": 2000,
+    "createdAt": "2026-06-21T17:27:33.999Z"
+  },
+  {
+    "id": "1782066071449",
+    "name": "Embalagem plástica 500g",
+    "category": "alimento",
+    "unit": "unidade",
+    "currentPrice": 1,
+    "stock": 1000,
+    "minStock": 100,
+    "createdAt": "2026-06-21T18:21:11.449Z",
+    "updatedAt": "2026-06-21T18:40:14.421Z"
+  }
+]

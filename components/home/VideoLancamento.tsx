@@ -1,59 +1,60 @@
-﻿// Arquivo: components/home/VideoLancamento.tsx
-// Status: AGUARDANDO CÓDIGO
-// Este arquivo será preenchido na próxima etapa
-'use client';
+﻿// components/home/VideoLancamento.tsx
+// 🎨 UI PURA - Vídeo de Lançamento
 
-// ============================================
-// COMPONENTE - VÍDEO LANÇAMENTO
-// ============================================
+"use client";
 
-import { Play, X } from 'lucide-react';
 import { useState } from 'react';
-import { homeConstants } from '@/constants/homeConstants';
+import { Play, X } from 'lucide-react';
 
-export default function VideoLancamento() {
-  const [showVideo, setShowVideo] = useState(false);
-  const { cores, titulos } = homeConstants;
+interface VideoLancamentoProps {
+  videoId?: string;
+  titulo?: string;
+}
+
+export default function VideoLancamento({ 
+  videoId = 'dQw4w9WgXcQ',
+  titulo = '🚀 Conheça o Valente Conecta' 
+}: VideoLancamentoProps) {
+  const [modalAberto, setModalAberto] = useState(false);
 
   return (
     <>
-      <div className="mb-8">
-        <button
-          onClick={() => setShowVideo(true)}
-          className={`w-full bg-gradient-to-r ${cores.videoBg} rounded-2xl p-6 text-center hover:from-gray-800 hover:to-gray-700 transition-colors`}
+      <section className="mt-6 bg-white/10 backdrop-blur-sm rounded-2xl p-4 cursor-pointer hover:bg-white/20 transition">
+        <div 
+          className="flex items-center justify-between"
+          onClick={() => setModalAberto(true)}
         >
-          <div className="flex items-center justify-center gap-3">
-            <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-              <Play className="w-8 h-8 text-white" />
-            </div>
-            <div className="text-left">
-              <p className="text-white font-bold">{titulos.video}</p>
-              <p className="text-gray-300 text-sm">{titulos.videoDesc}</p>
-            </div>
+          <div>
+            <h3 className="text-white font-semibold">{titulo}</h3>
+            <p className="text-white/70 text-sm">Clique para assistir ao vídeo de apresentação</p>
           </div>
-        </button>
-      </div>
+          <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+            <Play className="w-6 h-6 text-white" />
+          </div>
+        </div>
+      </section>
 
       {/* Modal do Vídeo */}
-      {showVideo && (
-        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4">
-          <div className="relative max-w-3xl w-full">
-            <button
-              onClick={() => setShowVideo(false)}
-              className="absolute -top-10 right-0 text-white hover:text-gray-300"
-            >
-              <X className="w-6 h-6" />
-            </button>
-            <div className="bg-black rounded-xl overflow-hidden aspect-video">
+      {modalAberto && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 rounded-2xl max-w-3xl w-full overflow-hidden">
+            <div className="flex justify-between items-center p-4 border-b border-gray-700">
+              <span className="text-white font-semibold">{titulo}</span>
+              <button
+                onClick={() => setModalAberto(false)}
+                className="text-gray-400 hover:text-white transition"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="aspect-video bg-black">
               <iframe
-                width="100%"
-                height="100%"
-                src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"
-                title="Vídeo Valente Conecta"
-                frameBorder="0"
+                src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
+                title={titulo}
+                className="w-full h-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
-              ></iframe>
+              />
             </div>
           </div>
         </div>

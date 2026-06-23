@@ -1,10 +1,7 @@
-Ôªøimport { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase'
+import { NextResponse } from 'next/server';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -72,7 +69,7 @@ export async function PUT(request: Request) {
   const body = await request.json();
   
   if (!id) {
-    return NextResponse.json({ success: false, error: 'ID n√£o informado' }, { status: 400 });
+    return NextResponse.json({ success: false, error: 'ID n„o informado' }, { status: 400 });
   }
   
   try {
@@ -105,7 +102,7 @@ export async function DELETE(request: Request) {
   const id = searchParams.get('id');
   
   if (!id) {
-    return NextResponse.json({ success: false, error: 'ID n√£o informado' }, { status: 400 });
+    return NextResponse.json({ success: false, error: 'ID n„o informado' }, { status: 400 });
   }
   
   try {
@@ -122,3 +119,4 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: false, error: 'Erro ao remover fornecedor' }, { status: 500 });
   }
 }
+

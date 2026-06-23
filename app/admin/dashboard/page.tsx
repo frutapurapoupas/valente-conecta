@@ -1,7 +1,7 @@
+import { supabase } from '@/lib/supabase'
 "use client";
 import { useEffect, useState } from "react";
 import { useApp } from "@/app/context/AppContext";
-import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
 
@@ -43,3 +43,4 @@ export default function AdminDashboard() {
     </div>
   );
 }
+

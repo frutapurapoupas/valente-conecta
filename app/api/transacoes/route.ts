@@ -1,6 +1,6 @@
 // app/api/transacoes/route.ts
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@/lib/supabase';
 
 // GET - Listar transações do usuário
 export async function GET(request: Request) {
