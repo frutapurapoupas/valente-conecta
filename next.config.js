@@ -1,8 +1,7 @@
 ﻿/** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
+  reactStrictMode: false,
   swcMinify: true,
-  output: 'standalone',
   images: { 
     domains: ['api.qrserver.com', 'valente-conecta.clic.com.br'],
     unoptimized: true 
