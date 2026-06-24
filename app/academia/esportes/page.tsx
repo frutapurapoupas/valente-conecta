@@ -1,6 +1,6 @@
 ﻿"use client";
 
-export const dynamic = 'force-dynamic';  // ← ÚNICA LINHA ADICIONADA
+export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -9,6 +9,11 @@ import {
   ArrowLeft, Save, Edit, Bell, Trash2, Search,
   Activity, CheckCircle, AlertCircle, WifiOff
 } from 'lucide-react';
+
+// Interface estendida para suportar a propriedade 'vibrate' que não existe no tipo base do TS
+interface NotificationOptionsCustom extends NotificationOptions {
+  vibrate?: number[];
+}
 
 interface AtividadeEsportiva {
   id: string;
@@ -58,7 +63,6 @@ export default function EsportesPage() {
   const [mensagemStatus, setMensagemStatus] = useState<{ texto: string; tipo: 'sucesso' | 'erro' | 'info' | null }>({ texto: '', tipo: null });
   const [gpsPermissao, setGpsPermissao] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>('unknown');
   
-  // Formulário da nova atividade
   const [novaAtividade, setNovaAtividade] = useState({
     tipo: '',
     nome: '',
@@ -72,21 +76,18 @@ export default function EsportesPage() {
     alertaAtivo: true
   });
 
-  // Carregar atividades salvas
   useEffect(() => {
     const salvas = localStorage.getItem('academia_esportes');
     if (salvas) {
       setAtividades(JSON.parse(salvas));
     }
-    // Verificar permissão de geolocalização
     if ('permissions' in navigator) {
-      navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+      navigator.permissions.query({ name: 'geolocation' as PermissionName }).then((result) => {
         setGpsPermissao(result.state as any);
       });
     }
   }, []);
 
-  // Limpar mensagem após 3 segundos
   useEffect(() => {
     if (mensagemStatus.texto) {
       const timer = setTimeout(() => setMensagemStatus({ texto: '', tipo: null }), 4000);
@@ -94,120 +95,80 @@ export default function EsportesPage() {
     }
   }, [mensagemStatus]);
 
+  useEffect(() => {
+    const verificarAlertas = () => {
+      const agora = new Date();
+      const diaAtual = DIAS_SEMANA[agora.getDay()];
+      const horaAtual = agora.getHours().toString().padStart(2, '0') + ':' + agora.getMinutes().toString().padStart(2, '0');
+      
+      atividades.forEach(atividade => {
+        if (atividade.alertaAtivo && atividade.diaSemana === diaAtual && atividade.horario === horaAtual) {
+          if ('Notification' in window && Notification.permission === 'granted') {
+            // CORREÇÃO: Criar um objeto options explicitamente tipado
+            const options: NotificationOptionsCustom = {
+              body: `Hoje é dia de ${atividade.tipo} às ${atividade.horario} em ${atividade.local}`,
+              icon: '/icon.png',
+              vibrate: [200, 100, 200]
+            };
+            new Notification('⚽ Hora do Esporte!', options);
+          }
+        }
+      });
+    };
+    
+    const interval = setInterval(verificarAlertas, 60000);
+    return () => clearInterval(interval);
+  }, [atividades]);
+
   const esportesFiltrados = ESPORTES_PREDEFINIDOS.filter(e =>
     e.nome.toLowerCase().includes(buscaEsporte.toLowerCase())
   );
 
-  // Verificar permissão de geolocalização antes de capturar
-  const verificarPermissaoGeolocalizacao = (): Promise<boolean> => {
-    return new Promise((resolve) => {
-      if (!navigator.geolocation) {
-        setMensagemStatus({ texto: '❌ Seu navegador não suporta geolocalização', tipo: 'erro' });
-        resolve(false);
-        return;
-      }
-      
-      // Teste rápido para verificar permissão
-      navigator.permissions.query({ name: 'geolocation' }).then((result) => {
-        if (result.state === 'denied') {
-          setMensagemStatus({ 
-            texto: '❌ Permissão de localização negada. Clique no cadeado na barra de endereço e permita o acesso.', 
-            tipo: 'erro' 
-          });
-          resolve(false);
-        } else {
-          resolve(true);
-        }
-      }).catch(() => resolve(true));
-    });
-  };
-
   // Capturar localização
-  const capturarLocalizacao = async () => {
-    // Verificar permissão primeiro
-    const temPermissao = await verificarPermissaoGeolocalizacao();
-    if (!temPermissao) return;
-    
+  const capturarLocalizacao = () => {
+    if (!navigator.geolocation) {
+      setMensagemStatus({ texto: 'Geolocalização não suportada', tipo: 'erro' });
+      return;
+    }
+
     setCapturandoLocal(true);
-    setMensagemStatus({ texto: '📍 Solicitando localização... Aguarde', tipo: 'info' });
-    
-    const options = {
-      enableHighAccuracy: true,
-      timeout: 15000,
-      maximumAge: 0
-    };
-    
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
+      (pos) => {
         setNovaAtividade(prev => ({
           ...prev,
-          localizador: { lat: latitude, lng: longitude },
+          localizador: { lat: pos.coords.latitude, lng: pos.coords.longitude },
           localizadorCapturado: true
         }));
         setCapturandoLocal(false);
-        setMensagemStatus({ 
-          texto: `✅ Localização capturada! Lat: ${latitude.toFixed(4)}, Lng: ${longitude.toFixed(4)}`, 
-          tipo: 'sucesso' 
-        });
-        
-        // Preencher o campo local automaticamente se estiver vazio
-        if (!novaAtividade.local) {
-          setNovaAtividade(prev => ({ ...prev, local: `Local na coordenada ${latitude.toFixed(4)}, ${longitude.toFixed(4)}` }));
-        }
+        setMensagemStatus({ texto: '📍 Localização capturada com sucesso!', tipo: 'sucesso' });
       },
-      (error) => {
+      (err) => {
         setCapturandoLocal(false);
-        let mensagemErro = '';
-        switch(error.code) {
-          case error.PERMISSION_DENIED:
-            mensagemErro = '❌ Permissão de localização negada. Por favor, permita o acesso no navegador.';
-            break;
-          case error.POSITION_UNAVAILABLE:
-            mensagemErro = '❌ Localização indisponível. Verifique se o GPS do seu dispositivo está ativo.';
-            break;
-          case error.TIMEOUT:
-            mensagemErro = '❌ Tempo excedido. Tente novamente em um local com melhor sinal.';
-            break;
-          default:
-            mensagemErro = `❌ Erro ao capturar localização: ${error.message}`;
+        let mensagem = 'Erro ao capturar localização';
+        if (err.code === 1) {
+          mensagem = 'Permissão de localização negada. Ative no navegador.';
+          setGpsPermissao('denied');
+        } else if (err.code === 2) {
+          mensagem = 'Sinal de GPS indisponível. Tente novamente.';
+        } else if (err.code === 3) {
+          mensagem = 'Tempo de busca excedido. Tente novamente.';
         }
-        setMensagemStatus({ texto: mensagemErro, tipo: 'erro' });
+        setMensagemStatus({ texto: mensagem, tipo: 'erro' });
       },
-      options
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
     );
   };
 
-  const selecionarEsporte = (esporte: typeof ESPORTES_PREDEFINIDOS[0]) => {
-    setNovaAtividade({
-      ...novaAtividade,
-      tipo: esporte.nome,
-      nome: esporte.nome
-    });
-    setBuscaEsporte(esporte.nome);
-    setMostrarDropdown(false);
-  };
-
+  // Adicionar atividade
   const adicionarAtividade = () => {
-    if (!novaAtividade.tipo) {
-      setMensagemStatus({ texto: '⚠️ Selecione um esporte', tipo: 'erro' });
-      return;
-    }
-    if (!novaAtividade.local) {
-      setMensagemStatus({ texto: '⚠️ Informe o local onde você pratica', tipo: 'erro' });
-      return;
-    }
-    if (!novaAtividade.diaSemana) {
-      setMensagemStatus({ texto: '⚠️ Selecione o dia da semana', tipo: 'erro' });
-      return;
-    }
-    if (!novaAtividade.horario) {
-      setMensagemStatus({ texto: '⚠️ Informe o horário', tipo: 'erro' });
+    if (!novaAtividade.tipo || !novaAtividade.local || !novaAtividade.diaSemana || !novaAtividade.horario) {
+      setMensagemStatus({ texto: 'Preencha todos os campos obrigatórios', tipo: 'erro' });
       return;
     }
 
-    const atividade: AtividadeEsportiva = {
-      id: editandoId || Date.now().toString(),
+    const nova: AtividadeEsportiva = {
+      id: Date.now().toString(),
+      ...novaAtividade,
       tipo: novaAtividade.tipo,
       nome: novaAtividade.nome || novaAtividade.tipo,
       local: novaAtividade.local,
@@ -215,33 +176,58 @@ export default function EsportesPage() {
       localizadorCapturado: novaAtividade.localizadorCapturado,
       diaSemana: novaAtividade.diaSemana,
       horario: novaAtividade.horario,
-      duracao: `${novaAtividade.duracao} min`,
+      duracao: novaAtividade.duracao,
       tempoPermanencia: novaAtividade.tempoPermanencia,
       alertaAtivo: novaAtividade.alertaAtivo
     };
 
     let novasAtividades;
     if (editandoId) {
-      novasAtividades = atividades.map(a => a.id === editandoId ? atividade : a);
+      novasAtividades = atividades.map(a => a.id === editandoId ? nova : a);
+      setMensagemStatus({ texto: '✅ Atividade atualizada com sucesso!', tipo: 'sucesso' });
     } else {
-      novasAtividades = [...atividades, atividade];
+      novasAtividades = [...atividades, nova];
+      setMensagemStatus({ texto: '✅ Atividade adicionada com sucesso!', tipo: 'sucesso' });
     }
 
     setAtividades(novasAtividades);
     localStorage.setItem('academia_esportes', JSON.stringify(novasAtividades));
-    
-    resetFormulario();
-    setMostrarFormulario(false);
-    setEditandoId(null);
-    
-    setMensagemStatus({ texto: editandoId ? '✅ Atividade atualizada!' : '✅ Atividade adicionada!', tipo: 'sucesso' });
-    
-    if (atividade.alertaAtivo && 'Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
+    resetarFormulario();
+  };
+
+  // Editar atividade
+  const editarAtividade = (id: string) => {
+    const atividade = atividades.find(a => a.id === id);
+    if (!atividade) return;
+
+    setNovaAtividade({
+      tipo: atividade.tipo,
+      nome: atividade.nome,
+      local: atividade.local,
+      localizador: atividade.localizador,
+      localizadorCapturado: atividade.localizadorCapturado,
+      diaSemana: atividade.diaSemana,
+      horario: atividade.horario,
+      duracao: atividade.duracao,
+      tempoPermanencia: atividade.tempoPermanencia,
+      alertaAtivo: atividade.alertaAtivo
+    });
+    setEditandoId(id);
+    setMostrarFormulario(true);
+  };
+
+  // Remover atividade
+  const removerAtividade = (id: string) => {
+    if (window.confirm('Tem certeza que deseja remover esta atividade?')) {
+      const novas = atividades.filter(a => a.id !== id);
+      setAtividades(novas);
+      localStorage.setItem('academia_esportes', JSON.stringify(novas));
+      setMensagemStatus({ texto: '🗑️ Atividade removida', tipo: 'info' });
     }
   };
 
-  const resetFormulario = () => {
+  // Resetar formulário
+  const resetarFormulario = () => {
     setNovaAtividade({
       tipo: '',
       nome: '',
@@ -254,389 +240,342 @@ export default function EsportesPage() {
       tempoPermanencia: 60,
       alertaAtivo: true
     });
+    setEditandoId(null);
+    setMostrarFormulario(false);
     setBuscaEsporte('');
+    setMostrarDropdown(false);
   };
 
-  const editarAtividade = (atividade: AtividadeEsportiva) => {
-    setEditandoId(atividade.id);
-    setNovaAtividade({
-      tipo: atividade.tipo,
-      nome: atividade.nome,
-      local: atividade.local,
-      localizador: atividade.localizador,
-      localizadorCapturado: atividade.localizadorCapturado,
-      diaSemana: atividade.diaSemana,
-      horario: atividade.horario,
-      duracao: atividade.duracao.replace(' min', ''),
-      tempoPermanencia: atividade.tempoPermanencia || 60,
-      alertaAtivo: atividade.alertaAtivo
+  // Alternar alerta
+  const alternarAlerta = (id: string) => {
+    const atividadesAtualizadas = atividades.map(a => {
+      if (a.id === id) {
+        const nova = { ...a, alertaAtivo: !a.alertaAtivo };
+        return nova;
+      }
+      return a;
     });
-    setBuscaEsporte(atividade.tipo);
-    setMostrarFormulario(true);
+    setAtividades(atividadesAtualizadas);
+    localStorage.setItem('academia_esportes', JSON.stringify(atividadesAtualizadas));
   };
 
-  const excluirAtividade = (id: string) => {
-    if (confirm('❌ Tem certeza que deseja excluir esta atividade?')) {
-      const novas = atividades.filter(a => a.id !== id);
-      setAtividades(novas);
-      localStorage.setItem('academia_esportes', JSON.stringify(novas));
-      setMensagemStatus({ texto: '🗑️ Atividade removida!', tipo: 'sucesso' });
+  // Solicitar permissão de notificação
+  const solicitarPermissaoNotificacao = async () => {
+    if ('Notification' in window) {
+      const permissao = await Notification.requestPermission();
+      if (permissao === 'granted') {
+        setMensagemStatus({ texto: '🔔 Notificações ativadas!', tipo: 'sucesso' });
+      } else {
+        setMensagemStatus({ texto: '❌ Notificações bloqueadas', tipo: 'erro' });
+      }
     }
   };
 
-  const toggleAlerta = (id: string) => {
-    const novas = atividades.map(a =>
-      a.id === id ? { ...a, alertaAtivo: !a.alertaAtivo } : a
-    );
-    setAtividades(novas);
-    localStorage.setItem('academia_esportes', JSON.stringify(novas));
-    setMensagemStatus({ 
-      texto: novas.find(a => a.id === id)?.alertaAtivo ? '🔔 Alertas ativados!' : '🔕 Alertas desativados', 
-      tipo: 'sucesso' 
-    });
-  };
-
-  useEffect(() => {
-    const verificarAlertas = () => {
-      const agora = new Date();
-      const diaAtual = DIAS_SEMANA[agora.getDay()];
-      const horaAtual = agora.getHours().toString().padStart(2, '0') + ':' + agora.getMinutes().toString().padStart(2, '0');
-      
-      atividades.forEach(atividade => {
-        if (atividade.alertaAtivo && atividade.diaSemana === diaAtual && atividade.horario === horaAtual) {
-          if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification('⚽ Hora do Esporte!', {
-              body: `Hoje é dia de ${atividade.tipo} às ${atividade.horario} em ${atividade.local}`,
-              icon: '/icon.png',
-              vibrate: [200, 100, 200]
-            });
-          }
-        }
-      });
-    };
-    
-    const interval = setInterval(verificarAlertas, 60000);
-    return () => clearInterval(interval);
-  }, [atividades]);
-
-  const totalAtividades = atividades.length;
-  const alertasAtivos = atividades.filter(a => a.alertaAtivo).length;
-  const esportesUnicos = [...new Set(atividades.map(a => a.tipo))].length;
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 text-white pb-28">
-      <header className="sticky top-0 z-50 bg-white/10 backdrop-blur-2xl border border-white/20 shadow-2xl">
-        <div className="h-16 max-w-2xl mx-auto flex items-center justify-between px-4">
-          <button onClick={() => router.push("/academia")} className="relative group">
-            <ArrowLeft className="w-6 h-6 text-yellow-400 cursor-pointer hover:text-yellow-300 transition-colors" />
+      {/* Header */}
+      <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-4">
+        <div className="flex items-center gap-3 max-w-md mx-auto">
+          <button onClick={() => router.back()} className="p-2 hover:bg-white/20 rounded-lg transition">
+            <ArrowLeft className="w-6 h-6" />
           </button>
-          <div className="font-black uppercase italic text-white text-sm tracking-widest">
-            <span>MEUS ESPORTES</span>
+          <div className="flex-1">
+            <h1 className="text-xl font-bold flex items-center gap-2">
+              <Trophy className="w-6 h-6" />
+              Esportes & Atividades
+            </h1>
+            <p className="text-sm text-white/80">Organize suas atividades físicas</p>
           </div>
-          <div className="w-6" />
+          <button
+            onClick={solicitarPermissaoNotificacao}
+            className="p-2 hover:bg-white/20 rounded-lg transition"
+            title="Ativar notificações"
+          >
+            <Bell className="w-6 h-6" />
+          </button>
         </div>
-      </header>
+      </div>
 
-      <main className="max-w-2xl mx-auto px-4 pt-6 space-y-6">
-        {/* Aviso de permissão de GPS */}
-        {gpsPermissao === 'denied' && (
-          <div className="bg-red-500/20 border border-red-500 rounded-2xl p-4 flex items-start gap-3">
-            <WifiOff className="w-5 h-5 text-red-400 mt-0.5" />
-            <div>
-              <p className="text-red-400 font-bold text-sm">Permissão de localização negada</p>
-              <p className="text-red-300 text-xs mt-1">Para usar a captura de localização, permita o acesso no navegador:</p>
-              <p className="text-red-300 text-xs">🔒 Clique no cadeado na barra de endereço → Permitir localização → Recarregue a página</p>
-            </div>
-          </div>
-        )}
-
-        {mensagemStatus.texto && (
-          <div className={`rounded-2xl p-3 text-center ${
-            mensagemStatus.tipo === 'sucesso' ? 'bg-green-500/20 border border-green-500 text-green-400' :
-            mensagemStatus.tipo === 'erro' ? 'bg-red-500/20 border border-red-500 text-red-400' :
-            'bg-blue-500/20 border border-blue-500 text-blue-400'
-          }`}>
-            {mensagemStatus.texto}
-          </div>
-        )}
-
-        <div className="text-center mb-4">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-orange-500 to-red-500 rounded-full mb-4">
-            <Trophy className="w-10 h-10 text-white" />
-          </div>
-          <h1 className="text-2xl font-black text-white mb-2">Atividades Esportivas</h1>
-          <p className="text-zinc-400 text-sm">Cadastre onde você pratica e receba alertas</p>
+      {/* Mensagem de Status */}
+      {mensagemStatus.texto && (
+        <div className={`mx-4 mt-4 p-3 rounded-lg flex items-center gap-2 ${
+          mensagemStatus.tipo === 'sucesso' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
+          mensagemStatus.tipo === 'erro' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
+          'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+        }`}>
+          {mensagemStatus.tipo === 'sucesso' && <CheckCircle className="w-5 h-5" />}
+          {mensagemStatus.tipo === 'erro' && <AlertCircle className="w-5 h-5" />}
+          {mensagemStatus.tipo === 'info' && <Bell className="w-5 h-5" />}
+          <span className="flex-1 text-sm">{mensagemStatus.texto}</span>
+          <button onClick={() => setMensagemStatus({ texto: '', tipo: null })}>
+            <X className="w-4 h-4 opacity-50 hover:opacity-100" />
+          </button>
         </div>
+      )}
 
-        <div className="grid grid-cols-3 gap-3">
-          <div className="bg-white/10 rounded-2xl p-3 text-center backdrop-blur-xl border border-white/20">
-            <Trophy className="w-6 h-6 text-yellow-400 mx-auto mb-1" />
-            <p className="text-2xl font-black text-white">{totalAtividades}</p>
-            <p className="text-xs text-zinc-400">Atividades</p>
-          </div>
-          <div className="bg-white/10 rounded-2xl p-3 text-center backdrop-blur-xl border border-white/20">
-            <Bell className="w-6 h-6 text-green-400 mx-auto mb-1" />
-            <p className="text-2xl font-black text-white">{alertasAtivos}</p>
-            <p className="text-xs text-zinc-400">Alertas ativos</p>
-          </div>
-          <div className="bg-white/10 rounded-2xl p-3 text-center backdrop-blur-xl border border-white/20">
-            <Activity className="w-6 h-6 text-blue-400 mx-auto mb-1" />
-            <p className="text-2xl font-black text-white">{esportesUnicos}</p>
-            <p className="text-xs text-zinc-400">Esportes</p>
-          </div>
-        </div>
+      <div className="max-w-md mx-auto p-4 space-y-4">
+        {/* Botão Adicionar */}
+        <button
+          onClick={() => {
+            resetarFormulario();
+            setMostrarFormulario(true);
+          }}
+          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 p-4 rounded-xl flex items-center justify-center gap-2 hover:shadow-lg transition shadow-purple-500/25"
+        >
+          <Plus className="w-5 h-5" />
+          Nova Atividade
+        </button>
 
+        {/* Formulário */}
         {mostrarFormulario && (
-          <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="font-bold text-white text-lg">
-                {editandoId ? '✏️ Editar Atividade' : '➕ Nova Atividade'}
-              </h3>
-              <button onClick={() => { setMostrarFormulario(false); resetFormulario(); }} className="text-zinc-400 hover:text-white">
+          <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/10 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold">{editandoId ? '✏️ Editar' : '➕ Nova'} Atividade</h3>
+              <button onClick={resetarFormulario} className="p-1 hover:bg-white/10 rounded">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
+            {/* Tipo de Esporte com Busca */}
             <div className="relative">
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide">🏆 Escolha o esporte</label>
-              <div className="relative mt-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                <input
-                  type="text"
-                  value={buscaEsporte}
-                  onChange={(e) => {
-                    setBuscaEsporte(e.target.value);
-                    setNovaAtividade({ ...novaAtividade, tipo: e.target.value });
-                    setMostrarDropdown(true);
-                  }}
-                  onFocus={() => setMostrarDropdown(true)}
-                  placeholder="Digite ou selecione um esporte..."
-                  className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 text-white placeholder:text-zinc-500"
-                />
-              </div>
-              {mostrarDropdown && esportesFiltrados.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-zinc-800 border border-zinc-700 rounded-xl max-h-48 overflow-y-auto">
-                  {esportesFiltrados.map((esporte, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => selecionarEsporte(esporte)}
-                      className={`w-full px-4 py-3 text-left hover:bg-zinc-700 transition-colors flex items-center gap-2 ${novaAtividade.tipo === esporte.nome ? 'bg-orange-500/20' : ''}`}
-                    >
-                      <span className="text-xl">{esporte.icone}</span>
-                      <span className="text-white">{esporte.nome}</span>
-                    </button>
-                  ))}
+              <label className="text-sm text-white/70 block mb-1">Tipo de Esporte *</label>
+              <div className="flex gap-2">
+                <div className="flex-1 relative">
+                  <input
+                    type="text"
+                    value={buscaEsporte || novaAtividade.tipo}
+                    onChange={(e) => {
+                      setBuscaEsporte(e.target.value);
+                      setMostrarDropdown(true);
+                      if (!e.target.value) {
+                        setNovaAtividade(prev => ({ ...prev, tipo: '', nome: '' }));
+                      }
+                    }}
+                    onFocus={() => setMostrarDropdown(true)}
+                    placeholder="Buscar esporte..."
+                    className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                  {mostrarDropdown && esportesFiltrados.length > 0 && (
+                    <div className="absolute z-10 mt-1 w-full bg-slate-800 border border-white/10 rounded-lg max-h-48 overflow-y-auto">
+                      {esportesFiltrados.map((e) => (
+                        <button
+                          key={e.nome}
+                          onClick={() => {
+                            setNovaAtividade(prev => ({ ...prev, tipo: e.nome, nome: e.nome }));
+                            setBuscaEsporte(e.nome);
+                            setMostrarDropdown(false);
+                          }}
+                          className="w-full text-left px-3 py-2 hover:bg-white/10 text-sm flex items-center gap-2"
+                        >
+                          <span>{e.icone}</span>
+                          <span>{e.nome}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide">✏️ Nome personalizado (opcional)</label>
-              <input
-                type="text"
-                value={novaAtividade.nome}
-                onChange={(e) => setNovaAtividade({ ...novaAtividade, nome: e.target.value })}
-                placeholder="Ex: Futebol com os amigos, Corrida do parque..."
-                className="mt-1 w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide">📍 Local onde você pratica</label>
-              <input
-                type="text"
-                value={novaAtividade.local}
-                onChange={(e) => setNovaAtividade({ ...novaAtividade, local: e.target.value })}
-                placeholder="Ex: Campo do São José, Parque da Cidade..."
-                className="mt-1 w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide">📍 Localizador GPS</label>
-              <div className="flex gap-2 mt-1">
-                <input
-                  type="text"
-                  value={novaAtividade.localizador.lat !== 0 ? `${novaAtividade.localizador.lat.toFixed(6)}, ${novaAtividade.localizador.lng.toFixed(6)}` : ''}
-                  readOnly
-                  className="flex-1 px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-zinc-400 text-sm"
-                  placeholder="Clique em '📍 Capturar Local' para obter sua localização"
-                />
                 <button
                   onClick={capturarLocalizacao}
                   disabled={capturandoLocal}
-                  className="px-4 py-3 bg-gradient-to-r from-orange-600 to-red-600 rounded-xl flex items-center gap-2 transition-all disabled:opacity-50 hover:opacity-90"
+                  className={`px-3 py-2 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 transition text-sm whitespace-nowrap ${
+                    capturandoLocal ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                 >
-                  <Navigation className="w-5 h-5" />
-                  {capturandoLocal ? 'Capturando...' : novaAtividade.localizadorCapturado ? '📍 Atualizar' : '📍 Capturar Local'}
+                  {capturandoLocal ? '⏳' : '📍'}
                 </button>
               </div>
               {novaAtividade.localizadorCapturado && (
                 <p className="text-xs text-green-400 mt-1 flex items-center gap-1">
-                  <CheckCircle className="w-3 h-3" /> Localização capturada!
-                </p>
-              )}
-              {gpsPermissao === 'denied' && (
-                <p className="text-xs text-red-400 mt-1 flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3" /> Permissão negada. Habilite no navegador.
+                  <CheckCircle className="w-3 h-3" /> Localização capturada
                 </p>
               )}
             </div>
 
+            {/* Nome da Atividade */}
+            <div>
+              <label className="text-sm text-white/70 block mb-1">Nome da Atividade</label>
+              <input
+                type="text"
+                value={novaAtividade.nome}
+                onChange={(e) => setNovaAtividade(prev => ({ ...prev, nome: e.target.value }))}
+                placeholder="Ex: Jogo da Galera"
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+
+            {/* Local */}
+            <div>
+              <label className="text-sm text-white/70 block mb-1">Local *</label>
+              <input
+                type="text"
+                value={novaAtividade.local}
+                onChange={(e) => setNovaAtividade(prev => ({ ...prev, local: e.target.value }))}
+                placeholder="Ex: Praça do Mocó, Academia X"
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+
+            {/* Dia da Semana */}
+            <div>
+              <label className="text-sm text-white/70 block mb-1">Dia da Semana *</label>
+              <select
+                value={novaAtividade.diaSemana}
+                onChange={(e) => setNovaAtividade(prev => ({ ...prev, diaSemana: e.target.value }))}
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+                <option value="">Selecione...</option>
+                {DIAS_SEMANA.map((dia) => (
+                  <option key={dia} value={dia}>{dia}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Horário e Duração */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide">📅 Dia da semana</label>
-                <select
-                  value={novaAtividade.diaSemana}
-                  onChange={(e) => setNovaAtividade({ ...novaAtividade, diaSemana: e.target.value })}
-                  className="mt-1 w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
-                >
-                  <option value="">Selecione</option>
-                  {DIAS_SEMANA.map((dia) => (
-                    <option key={dia} value={dia} className="bg-zinc-800">{dia}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide">⏰ Horário</label>
+                <label className="text-sm text-white/70 block mb-1">Horário *</label>
                 <input
                   type="time"
                   value={novaAtividade.horario}
-                  onChange={(e) => setNovaAtividade({ ...novaAtividade, horario: e.target.value })}
-                  className="mt-1 w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
+                  onChange={(e) => setNovaAtividade(prev => ({ ...prev, horario: e.target.value }))}
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide">⏱️ Tempo que ficará praticando (minutos)</label>
-              <div className="flex items-center gap-3 mt-1">
+              <div>
+                <label className="text-sm text-white/70 block mb-1">Duração (min)</label>
                 <input
-                  type="range"
-                  min="15"
-                  max="240"
-                  step="15"
-                  value={novaAtividade.tempoPermanencia}
-                  onChange={(e) => setNovaAtividade({ ...novaAtividade, tempoPermanencia: parseInt(e.target.value), duracao: e.target.value })}
-                  className="flex-1 h-2 bg-white/20 rounded-lg appearance-none cursor-pointer"
+                  type="number"
+                  value={novaAtividade.duracao}
+                  onChange={(e) => setNovaAtividade(prev => ({ ...prev, duracao: e.target.value }))}
+                  min="5"
+                  max="480"
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
-                <span className="w-16 text-center px-3 py-2 bg-white/10 rounded-xl text-white font-bold">
-                  {novaAtividade.tempoPermanencia} min
-                </span>
               </div>
-              <p className="text-xs text-zinc-500 mt-1">💡 Tempo estimado que você ficará no local</p>
             </div>
 
-            <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
-              <div className="flex items-center gap-3">
-                <Bell className="w-5 h-5 text-yellow-400" />
-                <div>
-                  <p className="text-white font-bold text-sm">Receber alerta</p>
-                  <p className="text-xs text-zinc-500">Notificação no horário escolhido</p>
-                </div>
-              </div>
+            {/* Tempo de Permanência */}
+            <div>
+              <label className="text-sm text-white/70 block mb-1">Tempo de permanência (min)</label>
+              <input
+                type="number"
+                value={novaAtividade.tempoPermanencia}
+                onChange={(e) => setNovaAtividade(prev => ({ ...prev, tempoPermanencia: parseInt(e.target.value) || 60 }))}
+                min="5"
+                max="480"
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+
+            {/* Alerta Ativo */}
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={novaAtividade.alertaAtivo}
+                onChange={(e) => setNovaAtividade(prev => ({ ...prev, alertaAtivo: e.target.checked }))}
+                className="w-4 h-4 accent-purple-500"
+              />
+              <label className="text-sm text-white/70">Ativar alerta para este evento</label>
+            </div>
+
+            {/* Botões Formulário */}
+            <div className="flex gap-2 pt-2">
               <button
-                onClick={() => setNovaAtividade({ ...novaAtividade, alertaAtivo: !novaAtividade.alertaAtivo })}
-                className={`w-12 h-6 rounded-full transition-all ${novaAtividade.alertaAtivo ? 'bg-green-500' : 'bg-zinc-600'}`}
+                onClick={adicionarAtividade}
+                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 py-2 rounded-lg hover:shadow-lg transition flex items-center justify-center gap-2"
               >
-                <div className={`w-5 h-5 bg-white rounded-full transition-all ${novaAtividade.alertaAtivo ? 'translate-x-6' : 'translate-x-0.5'}`} />
+                <Save className="w-4 h-4" />
+                {editandoId ? 'Atualizar' : 'Salvar'}
+              </button>
+              <button
+                onClick={resetarFormulario}
+                className="px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition"
+              >
+                Cancelar
               </button>
             </div>
-
-            <button
-              onClick={adicionarAtividade}
-              className="w-full py-4 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-2xl font-black text-lg flex items-center justify-center gap-2 hover:opacity-90 transition"
-            >
-              <Save className="w-5 h-5" />
-              {editandoId ? 'Salvar Alterações' : 'Adicionar Atividade'}
-            </button>
           </div>
         )}
 
-        <div className="space-y-4">
+        {/* Lista de Atividades */}
+        <div className="space-y-3">
           {atividades.length === 0 ? (
-            <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-12 text-center">
-              <Trophy className="w-16 h-16 text-zinc-500 mx-auto mb-4" />
-              <p className="text-zinc-400 font-medium">Nenhuma atividade cadastrada</p>
-              <p className="text-zinc-500 text-sm mt-2">Adicione sua primeira atividade esportiva</p>
+            <div className="text-center py-12 text-white/50">
+              <Activity className="w-12 h-12 mx-auto mb-2 opacity-30" />
+              <p>Nenhuma atividade cadastrada</p>
+              <p className="text-sm">Adicione suas atividades físicas</p>
             </div>
           ) : (
-            atividades.map((atividade) => {
-              const esporteInfo = ESPORTES_PREDEFINIDOS.find(e => e.nome === atividade.tipo) || ESPORTES_PREDEFINIDOS[0];
-              return (
-                <div key={atividade.id} className={`bg-gradient-to-r ${esporteInfo.cor} rounded-2xl p-5 backdrop-blur-xl border border-white/20 shadow-lg hover:shadow-xl transition-all`}>
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-3">
-                      <div className="text-5xl">{esporteInfo.icone}</div>
-                      <div>
-                        <h3 className="font-bold text-white text-xl">{atividade.nome}</h3>
-                        <p className="text-white/80 text-sm">{atividade.tipo}</p>
+            atividades.map((atividade) => (
+              <div
+                key={atividade.id}
+                className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/10 hover:border-white/20 transition"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">{atividade.tipo.split(' ')[0]}</span>
+                      <h3 className="font-semibold">{atividade.nome || atividade.tipo}</h3>
+                    </div>
+                    <div className="mt-1 space-y-1 text-sm text-white/70">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4" />
+                        <span>{atividade.local}</span>
+                        {atividade.localizadorCapturado && (
+                          <span className="text-xs text-green-400">📍 GPS</span>
+                        )}
                       </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <button onClick={() => editarAtividade(atividade)} className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition">
-                        <Edit className="w-4 h-4 text-white" />
-                      </button>
-                      <button onClick={() => excluirAtividade(atividade.id)} className="p-2 bg-red-500/30 rounded-xl hover:bg-red-500/50 transition">
-                        <Trash2 className="w-4 h-4 text-white" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3 mt-4">
-                    <div className="flex items-center gap-2 bg-white/10 rounded-xl p-2">
-                      <MapPin className="w-4 h-4 text-blue-300" />
-                      <div>
-                        <p className="text-[10px] text-white/60">Local</p>
-                        <p className="text-sm text-white font-medium">{atividade.local}</p>
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        <span>{atividade.diaSemana} às {atividade.horario}</span>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2 bg-white/10 rounded-xl p-2">
-                      <Clock className="w-4 h-4 text-purple-300" />
-                      <div>
-                        <p className="text-[10px] text-white/60">Horário</p>
-                        <p className="text-sm text-white font-medium">{atividade.diaSemana} às {atividade.horario}</p>
+                      <div className="flex items-center gap-2 text-xs">
+                        <span>⏱️ {atividade.duracao}min</span>
+                        <span>•</span>
+                        <span>⏳ {atividade.tempoPermanencia}min</span>
                       </div>
                     </div>
                   </div>
-
-                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/20">
-                    <div className="flex items-center gap-2">
-                      <Activity className="w-4 h-4 text-green-300" />
-                      <p className="text-sm text-white/80">Duração: {atividade.duracao}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {atividade.localizadorCapturado && (
-                        <div className="flex items-center gap-1 text-xs text-yellow-300">
-                          <Navigation className="w-3 h-3" />
-                          <span>GPS</span>
-                        </div>
-                      )}
-                      <button
-                        onClick={() => toggleAlerta(atividade.id)}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-bold transition-all ${atividade.alertaAtivo ? 'bg-green-500/30 text-green-300' : 'bg-zinc-500/30 text-zinc-400'}`}
-                      >
-                        {atividade.alertaAtivo ? <Bell className="w-3 h-3" /> : <Bell className="w-3 h-3" />}
-                        {atividade.alertaAtivo ? 'Alerta ativo' : 'Alerta inativo'}
-                      </button>
-                    </div>
+                  <div className="flex flex-col gap-1">
+                    <button
+                      onClick={() => alternarAlerta(atividade.id)}
+                      className={`p-1.5 rounded-lg transition ${
+                        atividade.alertaAtivo ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'
+                      }`}
+                      title={atividade.alertaAtivo ? 'Alerta ativo' : 'Alerta inativo'}
+                    >
+                      <Bell className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => editarAtividade(atividade.id)}
+                      className="p-1.5 bg-blue-500/20 rounded-lg hover:bg-blue-500/30 transition"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => removerAtividade(atividade.id)}
+                      className="p-1.5 bg-red-500/20 rounded-lg hover:bg-red-500/30 transition"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
-              );
-            })
+              </div>
+            ))
           )}
         </div>
 
-        <div className="pt-4 pb-8">
-          <button
-            onClick={() => { resetFormulario(); setMostrarFormulario(true); setEditandoId(null); }}
-            className="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 hover:opacity-90 transition shadow-lg"
-          >
-            <Plus className="w-5 h-5" />
-            ➕ INCLUA AQUI SUA ATIVIDADE ESPORTIVA
-          </button>
+        {/* Status GPS */}
+        <div className="flex items-center justify-center gap-2 text-xs text-white/40 mt-4">
+          {gpsPermissao === 'granted' ? (
+            <><CheckCircle className="w-3 h-3 text-green-400" /> GPS ativo</>
+          ) : gpsPermissao === 'denied' ? (
+            <><AlertCircle className="w-3 h-3 text-red-400" /> GPS bloqueado</>
+          ) : (
+            <><WifiOff className="w-3 h-3" /> GPS disponível</>
+          )}
         </div>
-      </main>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 ﻿"use client";
 
-export const dynamic = 'force-dynamic';  // ← ÚNICA LINHA ADICIONADA
+export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -36,12 +36,20 @@ interface PlanoTreino {
   alertas: string[];
 }
 
+interface Recomendacao {
+  id: number;
+  titulo: string;
+  mensagem: string;
+  prioridade: string;
+  tipo: string;
+}
+
 export default function DashboardIAPage() {
   const router = useRouter();
   const [perfil, setPerfil] = useState<PerfilUsuario | null>(null);
   const [planoHoje, setPlanoHoje] = useState<PlanoTreino | null>(null);
   const [scoreRecuperacao, setScoreRecuperacao] = useState<{ valor: number; classificacao: string; recomendacao: string } | null>(null);
-  const [recomendacoes, setRecomendacoes] = useState<any[]>([]);
+  const [recomendacoes, setRecomendacoes] = useState<Recomendacao[]>([]);
   const [loading, setLoading] = useState(true);
   const [metricasHoje, setMetricasHoje] = useState<any>(null);
   const [ultimosTreinos, setUltimosTreinos] = useState<any[]>([]);
@@ -58,19 +66,19 @@ export default function DashboardIAPage() {
     const perfilInicial = localStorage.getItem('academia_perfil_inicial');
     const registrosTreinos = localStorage.getItem('academia_registros_treinos');
     
-    let dadosPerfil = null;
+    let dadosPerfil: PerfilUsuario | null = null; // Tipagem explícita
     
     if (perfilSalvo) {
       dadosPerfil = JSON.parse(perfilSalvo);
     } else if (perfilInicial) {
       const data = JSON.parse(perfilInicial);
       dadosPerfil = {
-        nome: data.nome,
-        peso_atual: parseFloat(data.peso),
-        peso_meta: parseFloat(data.pesoMeta),
-        altura: parseFloat(data.altura),
-        idade: parseInt(data.idade),
-        sexo: data.sexo,
+        nome: data.nome || '',
+        peso_atual: parseFloat(data.peso) || 0,
+        peso_meta: parseFloat(data.pesoMeta) || 0,
+        altura: parseFloat(data.altura) || 0,
+        idade: parseInt(data.idade) || 0,
+        sexo: data.sexo || '',
         objetivo: data.objetivos?.includes('Emagrecimento') ? 'emagrecer' :
                    data.objetivos?.includes('Ganho de massa muscular') ? 'hipertrofia' :
                    data.objetivos?.includes('Condicionamento físico') ? 'condicionamento' : 'saude',
@@ -102,33 +110,42 @@ export default function DashboardIAPage() {
         tempo_ativo_minutos: ultimosTreinos.length > 0 ? 45 : 20
       });
       
-      const novasRecomendacoes = [];
+      // CORREÇÃO: Usar a interface Recomendacao
+      const novasRecomendacoes: Recomendacao[] = [];
       
       if (dadosPerfil.objetivo === 'emagrecer') {
         novasRecomendacoes.push({
-          id: 1, titulo: "🎯 Foco no Emagrecimento", 
+          id: 1, 
+          titulo: "🎯 Foco no Emagrecimento", 
           mensagem: `Priorize exercícios aeróbicos e mantenha déficit calórico moderado.`,
-          prioridade: "alta", tipo: "treino"
+          prioridade: "alta", 
+          tipo: "treino"
         });
       } else if (dadosPerfil.objetivo === 'hipertrofia') {
         novasRecomendacoes.push({
-          id: 1, titulo: "💪 Foco na Hipertrofia", 
+          id: 1, 
+          titulo: "💪 Foco na Hipertrofia", 
           mensagem: `Priorize treinos com pesos e ingestão adequada de proteínas.`,
-          prioridade: "alta", tipo: "treino"
+          prioridade: "alta", 
+          tipo: "treino"
         });
       } else if (dadosPerfil.objetivo === 'condicionamento') {
         novasRecomendacoes.push({
-          id: 1, titulo: "🏃 Foco no Condicionamento", 
+          id: 1, 
+          titulo: "🏃 Foco no Condicionamento", 
           mensagem: `Trabalhe resistência cardiovascular e força funcional.`,
-          prioridade: "alta", tipo: "treino"
+          prioridade: "alta", 
+          tipo: "treino"
         });
       }
       
       if (dadosPerfil.freq_semanal < 3) {
         novasRecomendacoes.push({
-          id: 2, titulo: "📈 Aumente sua frequência", 
+          id: 2, 
+          titulo: "📈 Aumente sua frequência", 
           mensagem: `Você treina apenas ${dadosPerfil.freq_semanal}x por semana. Tente aumentar para 4-5x para melhores resultados.`,
-          prioridade: "media", tipo: "treino"
+          prioridade: "media", 
+          tipo: "treino"
         });
       }
       
@@ -311,7 +328,19 @@ export default function DashboardIAPage() {
         </div>
 
         {/* Recomendações */}
-        {recomendacoes.length > 0 && (<div className="bg-zinc-900 rounded-2xl p-5"><h3 className="font-bold mb-3 flex items-center gap-2"><Bell className="w-5 h-5 text-yellow-400" />Recomendações IA</h3><div className="space-y-2">{recomendacoes.map(r => (<div key={r.id} className="border border-yellow-500/30 bg-yellow-500/10 rounded-xl p-3"><p className="font-bold text-sm text-yellow-400">{r.titulo}</p><p className="text-xs text-zinc-300 mt-1">{r.mensagem}</p></div>))}</div></div>)}
+        {recomendacoes.length > 0 && (
+          <div className="bg-zinc-900 rounded-2xl p-5">
+            <h3 className="font-bold mb-3 flex items-center gap-2"><Bell className="w-5 h-5 text-yellow-400" />Recomendações IA</h3>
+            <div className="space-y-2">
+              {recomendacoes.map(r => (
+                <div key={r.id} className="border border-yellow-500/30 bg-yellow-500/10 rounded-xl p-3">
+                  <p className="font-bold text-sm text-yellow-400">{r.titulo}</p>
+                  <p className="text-xs text-zinc-300 mt-1">{r.mensagem}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
