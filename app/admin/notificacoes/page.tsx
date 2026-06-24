@@ -8,7 +8,7 @@ import { useApp } from "@/app/context/AppContext";
 import { 
   Bell, Plus, Trash2, Edit2, Save, X, 
   Send, ArrowLeft, Calendar, MessageCircle, Smartphone, Globe, Database, CheckCircle,
-  Users, User, Target, Award, Briefcase, Dumbbell, Bike, Store, Flask
+  Users, User, Target, Award, Briefcase, Dumbbell, Bike, Store, TestTube
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -459,7 +459,7 @@ export default function AdminNotificacoesPage() {
       case 'Bike': return <Bike className="w-4 h-4" />;
       case 'Store': return <Store className="w-4 h-4" />;
       case 'Briefcase': return <Briefcase className="w-4 h-4" />;
-      case 'Flask': return <Flask className="w-4 h-4" />;
+      case 'TestTube': return <TestTube className="w-4 h-4" />;
       default: return <Users className="w-4 h-4" />;
     }
   };
@@ -491,7 +491,7 @@ export default function AdminNotificacoesPage() {
         <div className="flex items-center gap-2">
           {modoTeste && (
             <span className="bg-yellow-500 text-black px-2 py-1 rounded-full text-xs flex items-center gap-1">
-              <Flask className="w-3 h-3" /> MODO TESTE
+              <TestTube className="w-3 h-3" /> MODO TESTE
             </span>
           )}
           <button 
@@ -766,7 +766,7 @@ export default function AdminNotificacoesPage() {
               {modoTeste && (
                 <div className="bg-yellow-50 rounded-xl p-3 border border-yellow-200">
                   <p className="text-xs text-yellow-700 flex items-center gap-2">
-                    <Flask className="w-4 h-4" />
+                    <TestTube className="w-4 h-4" />
                     <strong>Modo Teste ativado!</strong> As notificações serão enviadas apenas para o grupo de teste.
                   </p>
                 </div>

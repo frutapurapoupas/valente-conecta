@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { syncService } from '@/services/syncService';
-import { supabase } from '@/app/context/AppContext';
+import { supabase } from '@/lib/supabase';
 
 export function useSync() {
   // Inicializar com valores padrão para SSR

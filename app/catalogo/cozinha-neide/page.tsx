@@ -1,7 +1,17 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { getPratosPublicados } from "@/services/cozinhaService"; // Seu serviço original
+
+async function getPratosPublicados(): Promise<any[]> {
+  try {
+    const res = await fetch('/api/cozinha/cardapio');
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data?.pratos || data?.items || data || [];
+  } catch {
+    return [];
+  }
+}
 
 type Item = {
   id: string | number;

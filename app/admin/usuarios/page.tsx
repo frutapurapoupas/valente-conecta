@@ -9,7 +9,7 @@ import { supabase } from "@/lib/supabase";
 import { 
   Users, Search, RefreshCw, Shield, User, Wallet, 
   Calendar, Hash, Plus, X, Check, Edit2, Trash2,
-  MessageCircle, Smartphone, Globe, Award, Dumbbell, Bike, Store, Briefcase, Flask
+  MessageCircle, Smartphone, Globe, Award, Dumbbell, Bike, Store, Briefcase, TestTube
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -167,7 +167,7 @@ export default function AdminUsuariosPage() {
       case 'Bike': return <Bike className="w-4 h-4" />;
       case 'Store': return <Store className="w-4 h-4" />;
       case 'Briefcase': return <Briefcase className="w-4 h-4" />;
-      case 'Flask': return <Flask className="w-4 h-4" />;
+      case 'TestTube': return <TestTube className="w-4 h-4" />;
       default: return <Users className="w-4 h-4" />;
     }
   };

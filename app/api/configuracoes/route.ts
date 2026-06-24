@@ -14,7 +14,58 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { configuracoesService } from '@/services/configuracoesService';
+
+// Serviço inline de configurações (substitui import inexistente)
+const configuracoesService = {
+  async getGrupos() {
+    try {
+      const { data } = await supabase.from('grupos_notificacao').select('*').eq('ativo', true);
+      return data || [];
+    } catch { return []; }
+  },
+  async getLogsPorNotificacao(notificacaoId: string) {
+    try {
+      const { data } = await supabase.from('logs_notificacao').select('*').eq('notificacao_id', notificacaoId);
+      return data || [];
+    } catch { return []; }
+  },
+  async getLogsPorUsuario(usuarioId: string) {
+    try {
+      const { data } = await supabase.from('logs_notificacao').select('*').eq('usuario_id', usuarioId);
+      return data || [];
+    } catch { return []; }
+  },
+  async getConfiguracao(chave: string) {
+    try {
+      const { data } = await supabase.from('configuracoes').select('valor').eq('chave', chave).single();
+      return data?.valor ?? null;
+    } catch { return null; }
+  },
+  async setConfiguracao(chave: string, valor: any) {
+    try {
+      const { error } = await supabase.from('configuracoes').upsert({ chave, valor }, { onConflict: 'chave' });
+      return !error;
+    } catch { return false; }
+  },
+  async criarGrupo(grupo: any) {
+    try {
+      const { data } = await supabase.from('grupos_notificacao').insert(grupo).select().single();
+      return data;
+    } catch { return null; }
+  },
+  async atualizarGrupo(id: string, dados: any) {
+    try {
+      const { data } = await supabase.from('grupos_notificacao').update(dados).eq('id', id).select().single();
+      return data;
+    } catch { return null; }
+  },
+  async desativarGrupo(id: string) {
+    try {
+      await supabase.from('grupos_notificacao').update({ ativo: false }).eq('id', id);
+      return true;
+    } catch { return false; }
+  }
+};
 
 // Verificar se o usuário é Admin
 async function isAdmin(request: NextRequest): Promise<boolean> {
