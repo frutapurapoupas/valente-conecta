@@ -1,31 +1,101 @@
-﻿import ' 'seState ' from 'rea"t';
-import ' 'se"eman""apt're ' from '../hooks/'se"eman""apt're';
+﻿"use client";
 
-export "onst "eman"View = (' "ategory ': ' "ategory: string ') => '
-  "onst ' han"le"apt're, loa"ing ' = 'se"eman""apt're("ategory);
-  "onst [form"ata, setForm"ata] = 'seState(' name: '', whatsapp: '', "es"ription: '' ');
+import { useState } from 'react';
 
-  "onst han"leS'bmit = asyn" (e: Rea"t.FormEvent) => '
-    e.prevent"efa'lt();
-    "onst res'lt = await han"le"apt're(form"ata);
-    if (res'lt.s'""ess) '
-      alert("Soli"itação envia"a!");
-      setForm"ata(' name: '', whatsapp: '', "es"ription: '' ');
-    '
-  ';
+interface Props {
+  category: string;
+  title?: string;
+}
 
-  ret'rn (
-    <"iv "lassName=\"max-w-[4''px] mx-a'to bg-white p-6 ro'n"e"-3xl sha"ow-'xl bor"er bor"er-gray-'''\">
-      <h' "lassName=\"text-xl font-bol" mb-4 text-gray-'''\">Soli"itação: '"ategory'</h'>
-      <form onS'bmit='han"leS'bmit' "lassName=\"spa"e-y-4\">
-        <inp't "lassName=\"w-f'll p-3 bg-gray-5' ro'n"e"-xl bor"er\" pla"ehol"er=\"Se' Nome\" on"hange='(e) => setForm"ata('...form"ata, name: e.target.val'e')' />
-        <inp't "lassName=\"w-f'll p-3 bg-gray-5' ro'n"e"-xl bor"er\" pla"ehol"er=\"WhatsApp\" on"hange='(e) => setForm"ata('...form"ata, whatsapp: e.target.val'e')' />
-        <textarea "lassName=\"w-f'll p-3 bg-gray-5' ro'n"e"-xl bor"er h-'4\" pla"ehol"er=\""es"reva s'a "eman"a...\" on"hange='(e) => setForm"ata('...form"ata, "es"ription: e.target.val'e')' />
-        <b'tton "isable"='loa"ing' "lassName=\"w-f'll bg-gra"ient-to-r from-orange-6'' to-re"-6'' text-white font-bol" py-3 ro'n"e"-'xl\">
-          'loa"ing ? 'Envian"o...' : 'Enviar''
-        </b'tton>
+interface DemandFormData {
+  name: string;
+  whatsapp: string;
+  description: string;
+}
+
+export const DemandView = ({ category, title }: Props) => {
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState<DemandFormData>({
+    name: '',
+    whatsapp: '',
+    description: ''
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!formData.name.trim() || !formData.description.trim()) {
+      alert('Preencha nome e descrição.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch('/api/servicos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          categoria: category,
+          nome: formData.name,
+          whatsapp: formData.whatsapp,
+          descricao: formData.description,
+          origem: 'admin-master-financeiro'
+        })
+      });
+
+      const result = await response.json().catch(() => ({ success: false }));
+      if (response.ok && result?.success !== false) {
+        alert('Solicitação enviada com sucesso!');
+        setFormData({ name: '', whatsapp: '', description: '' });
+      } else {
+        alert('Não foi possível enviar sua solicitação agora.');
+      }
+    } catch {
+      alert('Erro de conexão ao enviar solicitação.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="max-w-[420px] mx-auto bg-white p-6 rounded-3xl shadow-2xl border border-gray-200">
+      <h2 className="text-xl font-bold mb-4 text-gray-900">
+        {title || `Solicitação: ${category}`}
+      </h2>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          className="w-full p-3 bg-gray-50 rounded-xl border border-gray-300"
+          placeholder="Seu nome"
+        />
+
+        <input
+          value={formData.whatsapp}
+          onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
+          className="w-full p-3 bg-gray-50 rounded-xl border border-gray-300"
+          placeholder="WhatsApp"
+        />
+
+        <textarea
+          value={formData.description}
+          onChange={(e) =>
+            setFormData({ ...formData, description: e.target.value })
+          }
+          className="w-full p-3 bg-gray-50 rounded-xl border border-gray-300 h-24"
+          placeholder="Escreva sua demanda..."
+        />
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold py-3 rounded-2xl disabled:opacity-60"
+        >
+          {loading ? 'Enviando...' : 'Enviar'}
+        </button>
       </form>
-    </"iv>
+    </div>
   );
-';
+};
 
