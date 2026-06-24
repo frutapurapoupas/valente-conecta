@@ -74,8 +74,8 @@ export default function PDVUnificadoPage() {
 
     // Mock de fiados
     setFiados([
-      { id: '1', cliente: 'Carlos Pereira', valor: 45.80, produtos: 'Arroz 5kg, Feijão 1kg', dataVencimento: '2026-05-10', status: 'aberto' },
-      { id: '2', cliente: 'Ana Costa', valor: 28.90, produtos: 'Óleo de Soja, Sabão em Pó', dataVencimento: '2026-05-08', status: 'vencido' }
+      { id: '1', cliente: 'Carlos Pereira', valor: 45.80, produtos: ['Arroz 5kg', 'Feijão 1kg'], dataVencimento: '2026-05-10', status: 'aberto' },
+      { id: '2', cliente: 'Ana Costa', valor: 28.90, produtos: ['Óleo de Soja', 'Sabão em Pó'], dataVencimento: '2026-05-08', status: 'vencido' }
     ])
   }, [])
 
@@ -445,7 +445,7 @@ export default function PDVUnificadoPage() {
                     <tr key={fiado.id} className="border-b border-gray-700">
                       <td className="py-3 px-4">{fiado.id}</td>
                       <td className="py-3 px-4 font-medium">{fiado.cliente}</td>
-                      <td className="py-3 px-4 text-sm text-gray-400">{fiado.produtos}</td>
+                      <td className="py-3 px-4 text-sm text-gray-400">{fiado.produtos.join(', ')}</td>
                       <td className="py-3 px-4 font-medium">R$ {fiado.valor.toFixed(2)}</td>
                       <td className="py-3 px-4">{fiado.dataVencimento}</td>
                       <td className="py-3 px-4">
