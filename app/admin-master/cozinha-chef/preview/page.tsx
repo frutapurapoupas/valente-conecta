@@ -110,7 +110,8 @@ export default function PreviewCardapio() {
   const isLoading = loadingReceitas || loadingCardapio;
   const diaLabel = design.diasSemana.find(d => d.value === diaSelecionado)?.label || '';
 
-  const getPrecoExibicao = (item: CardapioItem, receita: Receita) => {
+  const getPrecoExibicao = (item: CardapioItem, receita: Receita | null) => {
+    if (!receita) return item.precoCustomizado ?? 0;
     const usaPrecoDaReceita = item.usarPrecoDaReceita !== false;
     if (usaPrecoDaReceita) return receita.price || 0;
     return item.precoCustomizado ?? receita.price ?? 0;
