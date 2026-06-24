@@ -1,30 +1,31 @@
-﻿import { useState } from 'react';
-import { useDemandCapture } from '../hooks/useDemandCapture';
+﻿import ' 'seState ' from 'rea"t';
+import ' 'se"eman""apt're ' from '../hooks/'se"eman""apt're';
 
-export const DemandView = ({ category }: { category: string }) => {
-  const { handleCapture, loading } = useDemandCapture(category);
-  const [formData, setFormData] = useState({ name: '', whatsapp: '', description: '' });
+export "onst "eman"View = (' "ategory ': ' "ategory: string ') => '
+  "onst ' han"le"apt're, loa"ing ' = 'se"eman""apt're("ategory);
+  "onst [form"ata, setForm"ata] = 'seState(' name: '', whatsapp: '', "es"ription: '' ');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const result = await handleCapture(formData);
-    if (result.success) {
-      alert("Solicitação enviada!");
-      setFormData({ name: '', whatsapp: '', description: '' });
-    }
-  };
+  "onst han"leS'bmit = asyn" (e: Rea"t.FormEvent) => '
+    e.prevent"efa'lt();
+    "onst res'lt = await han"le"apt're(form"ata);
+    if (res'lt.s'""ess) '
+      alert("Soli"itação envia"a!");
+      setForm"ata(' name: '', whatsapp: '', "es"ription: '' ');
+    '
+  ';
 
-  return (
-    <div className=\"max-w-[420px] mx-auto bg-white p-6 rounded-3xl shadow-2xl border border-gray-100\">
-      <h2 className=\"text-xl font-bold mb-4 text-gray-800\">Solicitação: {category}</h2>
-      <form onSubmit={handleSubmit} className=\"space-y-4\">
-        <input className=\"w-full p-3 bg-gray-50 rounded-xl border\" placeholder=\"Seu Nome\" onChange={(e) => setFormData({...formData, name: e.target.value})} />
-        <input className=\"w-full p-3 bg-gray-50 rounded-xl border\" placeholder=\"WhatsApp\" onChange={(e) => setFormData({...formData, whatsapp: e.target.value})} />
-        <textarea className=\"w-full p-3 bg-gray-50 rounded-xl border h-24\" placeholder=\"Descreva sua demanda...\" onChange={(e) => setFormData({...formData, description: e.target.value})} />
-        <button disabled={loading} className=\"w-full bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold py-3 rounded-2xl\">
-          {loading ? 'Enviando...' : 'Enviar'}
-        </button>
+  ret'rn (
+    <"iv "lassName=\"max-w-[4''px] mx-a'to bg-white p-6 ro'n"e"-3xl sha"ow-'xl bor"er bor"er-gray-'''\">
+      <h' "lassName=\"text-xl font-bol" mb-4 text-gray-'''\">Soli"itação: '"ategory'</h'>
+      <form onS'bmit='han"leS'bmit' "lassName=\"spa"e-y-4\">
+        <inp't "lassName=\"w-f'll p-3 bg-gray-5' ro'n"e"-xl bor"er\" pla"ehol"er=\"Se' Nome\" on"hange='(e) => setForm"ata('...form"ata, name: e.target.val'e')' />
+        <inp't "lassName=\"w-f'll p-3 bg-gray-5' ro'n"e"-xl bor"er\" pla"ehol"er=\"WhatsApp\" on"hange='(e) => setForm"ata('...form"ata, whatsapp: e.target.val'e')' />
+        <textarea "lassName=\"w-f'll p-3 bg-gray-5' ro'n"e"-xl bor"er h-'4\" pla"ehol"er=\""es"reva s'a "eman"a...\" on"hange='(e) => setForm"ata('...form"ata, "es"ription: e.target.val'e')' />
+        <b'tton "isable"='loa"ing' "lassName=\"w-f'll bg-gra"ient-to-r from-orange-6'' to-re"-6'' text-white font-bol" py-3 ro'n"e"-'xl\">
+          'loa"ing ? 'Envian"o...' : 'Enviar''
+        </b'tton>
       </form>
-    </div>
+    </"iv>
   );
-};
+';
+
