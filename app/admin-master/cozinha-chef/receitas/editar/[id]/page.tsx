@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save, Trash2, Plus, Image as ImageIcon, Calculator, TrendingUp, TrendingDown } from 'lucide-react';
 import ModalFotoProduto from '@/components/cozinha/ModalFotoProduto';
+import { useComprasRequests } from '@/hooks/cozinha/useComprasRequests';
 
 // ============================================================
 // DESIGN
@@ -121,8 +122,10 @@ function calcularCustoReal(ingredientes: IngredienteReceita[], estoque: Ingredie
 // ============================================================
 export default function EditarReceitaPage({ params }: { params: { id: string } }) {
   const router = useRouter();
+  const { create: criarSolicitacaoCompra } = useComprasRequests();
   const [loading, setLoading] = useState(true);
   const [salvando, setSalvando] = useState(false);
+  const [enviandoCompra, setEnviandoCompra] = useState(false);
   const [receita, setReceita] = useState<Receita | null>(null);
   const [ingredientesDisponiveis, setIngredientesDisponiveis] = useState<IngredienteEstoque[]>([]);
   const [novoIngrediente, setNovoIngrediente] = useState({ id: '', quantidade: 100, unidade: 'g' });
@@ -133,6 +136,7 @@ export default function EditarReceitaPage({ params }: { params: { id: string } }
   const [margemLucroPorPorcao, setMargemLucroPorPorcao] = useState(0);
   const [quantidadeProduzir, setQuantidadeProduzir] = useState(1);
   const [ingredientesComPreco, setIngredientesComPreco] = useState<IngredienteReceita[]>([]);
+  const [ultimaSolicitacao, setUltimaSolicitacao] = useState<any | null>(null);
 
   // 🔥 VERIFICAR SE É "NOVO"
   const isNovo = params.id === 'novo';
@@ -164,7 +168,8 @@ export default function EditarReceitaPage({ params }: { params: { id: string } }
         const dataRec = await resRec.json();
         
         if (dataRec.success && dataRec.data) {
-          setReceita(dataRec.data);
+          const imagensUnicas = Array.from(new Set((dataRec.data.images || []).filter(Boolean)));
+          setReceita({ ...dataRec.data, images: imagensUnicas });
         } else {
           alert('Receita não encontrada');
           router.push('/admin-master/cozinha-chef/receitas');
@@ -226,6 +231,11 @@ export default function EditarReceitaPage({ params }: { params: { id: string } }
 
   async function salvarReceita() {
     if (!receita) return;
+
+    const receitaNormalizada = {
+      ...receita,
+      images: Array.from(new Set((receita.images || []).filter(Boolean)))
+    };
     
     // Se for novo, criar via POST
     if (isNovo) {
@@ -234,7 +244,7 @@ export default function EditarReceitaPage({ params }: { params: { id: string } }
         const response = await fetch('/api/cozinha/recipes', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(receita)
+          body: JSON.stringify(receitaNormalizada)
         });
         const data = await response.json();
         if (data.success) {
@@ -257,7 +267,7 @@ export default function EditarReceitaPage({ params }: { params: { id: string } }
       const response = await fetch(`/api/cozinha/recipes?id=${receita.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(receita)
+        body: JSON.stringify(receitaNormalizada)
       });
       const data = await response.json();
       if (data.success) {
@@ -310,7 +320,9 @@ export default function EditarReceitaPage({ params }: { params: { id: string } }
 
   function salvarFoto(url: string) {
     if (!receita) return;
-    const novasImagens = [...(receita.images || []), url];
+    const imagensAtuais = receita.images || [];
+    if (imagensAtuais.includes(url)) return;
+    const novasImagens = [...imagensAtuais, url];
     setReceita({ ...receita, images: novasImagens });
   }
 
@@ -318,6 +330,45 @@ export default function EditarReceitaPage({ params }: { params: { id: string } }
     if (!receita) return;
     const novasImagens = (receita.images || []).filter((_, i) => i !== index);
     setReceita({ ...receita, images: novasImagens });
+  }
+
+  async function enviarParaListaCompras() {
+    if (!receita) return;
+    if (!receita.ingredients || receita.ingredients.length === 0) {
+      alert('Adicione ingredientes antes de enviar para compras');
+      return;
+    }
+
+    setEnviandoCompra(true);
+    try {
+      const ingredientesCalculados = receita.ingredients.map((ing) => ({
+        ingredientId: ing.ingredientId,
+        ingredientName: ing.ingredientName,
+        quantidade: Number(ing.quantity || 0) * quantidadeProduzir,
+        unit: ing.unit,
+        price: ingredientesComPreco.find((i) => i.ingredientId === ing.ingredientId)?.price || 0
+      }));
+
+      const payload = {
+        receitaId: receita.id,
+        receitaNome: receita.name,
+        quantidadeProduzir,
+        ingredientes: ingredientesCalculados
+      };
+
+      const result = await criarSolicitacaoCompra(payload);
+      if (result?.success) {
+        setUltimaSolicitacao(result.data);
+        alert('✅ Solicitação enviada para aprovação na lista de compras');
+      } else {
+        alert('❌ Não foi possível enviar solicitação para compras');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('❌ Erro ao enviar solicitação para compras');
+    } finally {
+      setEnviandoCompra(false);
+    }
   }
 
   if (loading) {
@@ -745,6 +796,55 @@ export default function EditarReceitaPage({ params }: { params: { id: string } }
             </div>
           </div>
         </div>
+
+        {/* AÇÃO DE COMPRAS POSICIONADA AO LADO DOS CÁLCULOS */}
+        <div className={design.card}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className={design.cardTitle}>🛒 Envio para Lista de Compras</h2>
+              <p className="text-sm text-gray-500">
+                Usa a quantidade de produção definida acima para calcular ingredientes e enviar para aprovação.
+              </p>
+            </div>
+            <button
+              onClick={enviarParaListaCompras}
+              disabled={enviandoCompra || !receita.ingredients?.length}
+              className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition flex items-center gap-2 disabled:opacity-50"
+            >
+              <Calculator size={18} /> {enviandoCompra ? 'Enviando...' : 'Enviar para Compras'}
+            </button>
+          </div>
+        </div>
+
+        {/* CARD DE RASTREIO DA SOLICITAÇÃO */}
+        {ultimaSolicitacao && (
+          <div className={design.card}>
+            <h2 className={design.cardTitle}>🧾 Solicitação de Compra Enviada</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-gray-500">Prato</p>
+                <p className="font-semibold text-gray-900">{ultimaSolicitacao.receitaNome}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">Status</p>
+                <p className="font-semibold text-amber-700">Pendente de aprovação</p>
+              </div>
+              <div>
+                <p className="text-gray-500">Data/Hora</p>
+                <p className="font-semibold text-gray-900">
+                  {new Date(ultimaSolicitacao.createdAt).toLocaleString('pt-BR')}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-500">Ingredientes enviados</p>
+                <p className="font-semibold text-gray-900">{ultimaSolicitacao.ingredientes?.length || 0}</p>
+              </div>
+            </div>
+            <p className="mt-4 text-xs text-gray-500">
+              Após aprovação, os itens serão consolidados em lista única de compras com itens exclusivos.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* ✅ MODAL FOTO - CORRIGIDO */}

@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { X, Send, CheckCircle, Clock, Store, User, Phone } from "lucide-react";
 import toast from "react-hot-toast";
+import { SupplierStorage } from "@/services/supplierStorage";
 
 interface SolicitacaoModalProps {
   isOpen: boolean;
@@ -159,10 +160,10 @@ export default function SolicitacaoModal({
       dataCadastro: new Date().toISOString()
     };
 
-    const fornecedores = localStorage.getItem("fornecedores_servicos");
-    const lista = fornecedores ? JSON.parse(fornecedores) : [];
-    lista.push(novoFornecedor);
-    localStorage.setItem("fornecedores_servicos", JSON.stringify(lista));
+    SupplierStorage.add({
+      ...novoFornecedor,
+      servicos: novoFornecedor.servicos,
+    });
 
     setEnviando(false);
     toast.success("✅ Cadastro enviado! Entraremos em contato.");

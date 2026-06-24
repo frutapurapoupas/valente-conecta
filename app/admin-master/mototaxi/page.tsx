@@ -1,183 +1,313 @@
-'use client';
+﻿"use client";
 
-import { Bike, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from "react";
+import { BarChart3, Bell, CheckCircle2, CreditCard, Megaphone, Plus, Save, UserCheck, XCircle } from "lucide-react";
 
-interface Corrida {
+interface Driver {
   id: string;
-  passageiroNome: string;
-  passageiroTelefone: string;
-  origem: string;
-  destino: string;
-  valor: number;
-  status: 'pendente' | 'aceita' | 'a_caminho' | 'finalizada' | 'cancelada';
-  motoristaId?: string;
-  motoristaNome?: string;
-  motoristaTelefone?: string;
-  latOrigem: number;
-  lngOrigem: number;
+  nome: string;
+  telefone: string;
+  veiculo: string;
+  placa: string;
+  plano: "gratis" | "basico" | "premium";
+  online: boolean;
+  cnhValida: boolean;
+  documentoVeiculoOk: boolean;
+  licenciamentoVencimento: string;
 }
 
-export default function AdminMotoTaxi() {
-  const [corridas, setCorridas] = useState<Corrida[]>([]);
-  const [filtro, setFiltro] = useState<'todas' | 'pendente' | 'em_andamento' | 'finalizada'>('todas');
+interface Ride {
+  id: string;
+  passengerName: string;
+  driverName: string;
+  price: number;
+  status: string;
+  paymentStatus: string;
+  createdAt: string;
+}
 
-  const carregarCorridas = () => {
-    const dados = JSON.parse(localStorage.getItem('mototaxi_corridas') || '[]');
-    setCorridas(dados);
-  };
+interface Metrics {
+  totalDrivers: number;
+  activeDrivers: number;
+  compliantDrivers: number;
+  ridesToday: number;
+  inProgress: number;
+  completedToday: number;
+  pendingPayment: number;
+  revenueToday: number;
+  avgTicket: number;
+  cancellationRate: number;
+  docAlerts: number;
+}
 
-  useEffect(() => {
-    carregarCorridas();
-    const interval = setInterval(carregarCorridas, 5000);
-    return () => clearInterval(interval);
-  }, []);
+interface AdsItem {
+  id: string;
+  titulo: string;
+  mensagem: string;
+  ctaLabel: string;
+  ctaLink: string;
+  ativo?: boolean;
+}
 
-  const excluirCorrida = (id: string) => {
-    const novas = corridas.filter((c) => c.id !== id);
-    localStorage.setItem('mototaxi_corridas', JSON.stringify(novas));
-    setCorridas(novas);
-  };
+interface AdsConfig {
+  enabled: boolean;
+  showToFreePassengersOnly: boolean;
+  cooldownMinutes: number;
+  popupTitle: string;
+  popupMessage?: string;
+  items: AdsItem[];
+}
 
-  const limparHistorico = () => {
-    if (confirm('Deseja realmente limpar todo o histórico de corridas?')) {
-      localStorage.setItem('mototaxi_corridas', '[]');
-      setCorridas([]);
+export default function AdminMasterMotoTaxiPage() {
+  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [rides, setRides] = useState<Ride[]>([]);
+  const [metrics, setMetrics] = useState<Metrics | null>(null);
+  const [adsConfig, setAdsConfig] = useState<AdsConfig | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [savingAds, setSavingAds] = useState(false);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const [driversRes, ridesRes, metricsRes, adsRes] = await Promise.all([
+        fetch("/api/mototaxi?recurso=drivers", { cache: "no-store" }),
+        fetch("/api/mototaxi?recurso=rides", { cache: "no-store" }),
+        fetch("/api/mototaxi?recurso=metrics", { cache: "no-store" }),
+        fetch("/api/mototaxi?recurso=ads", { cache: "no-store" })
+      ]);
+
+      const driversData = await driversRes.json();
+      const ridesData = await ridesRes.json();
+      const metricsData = await metricsRes.json();
+      const adsData = await adsRes.json();
+
+      setDrivers(Array.isArray(driversData?.data) ? driversData.data : []);
+      setRides(Array.isArray(ridesData?.data) ? ridesData.data : []);
+      setMetrics(metricsData?.data || null);
+      setAdsConfig(adsData?.data || null);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const filtrarLista = () => {
-    if (filtro === 'todas') return corridas;
-    if (filtro === 'pendente') return corridas.filter((c) => c.status === 'pendente');
-    if (filtro === 'em_andamento') return corridas.filter((c) => ['aceita', 'a_caminho'].includes(c.status));
-    return corridas.filter((c) => ['finalizada', 'cancelada'].includes(c.status));
+  useEffect(() => {
+    load();
+  }, []);
+
+  const expiringDrivers = useMemo(() => {
+    const threshold = Date.now() + 1000 * 60 * 60 * 24 * 30;
+    return drivers.filter((driver) => {
+      const lic = new Date(driver.licenciamentoVencimento).getTime();
+      return !driver.cnhValida || !driver.documentoVeiculoOk || lic < threshold;
+    });
+  }, [drivers]);
+
+  const updateDriver = async (id: string, patch: Partial<Driver>) => {
+    await fetch("/api/mototaxi", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ recurso: "driver", id, patch })
+    });
+    load();
   };
 
+  const updateRideStatus = async (rideId: string, status: string) => {
+    await fetch("/api/mototaxi", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ recurso: "ride_status", rideId, status })
+    });
+    load();
+  };
+
+  const saveAds = async () => {
+    if (!adsConfig) return;
+    setSavingAds(true);
+    try {
+      await fetch("/api/mototaxi", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ recurso: "ads", config: adsConfig })
+      });
+      await load();
+      alert("Configuracoes de publicidade salvas.");
+    } finally {
+      setSavingAds(false);
+    }
+  };
+
+  const addAd = () => {
+    if (!adsConfig) return;
+    setAdsConfig({
+      ...adsConfig,
+      items: [
+        ...adsConfig.items,
+        {
+          id: `ad_${Date.now()}`,
+          titulo: "Novo anuncio",
+          mensagem: "Mensagem do popup",
+          ctaLabel: "Saiba mais",
+          ctaLink: "/planos",
+          ativo: true
+        }
+      ]
+    });
+  };
+
+  const updateAd = (id: string, patch: Partial<AdsItem>) => {
+    if (!adsConfig) return;
+    setAdsConfig({
+      ...adsConfig,
+      items: adsConfig.items.map((item) => (item.id === id ? { ...item, ...patch } : item))
+    });
+  };
+
+  if (loading) {
+    return <div className="p-6">Carregando Moto Taxi...</div>;
+  }
+
   return (
-    <div className="p-6 max-w-4xl mx-auto bg-gray-50 min-h-screen">
-      <div className="flex items-center justify-between border-b pb-4 mb-6">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-600 text-white rounded-lg">
-            <Bike className="w-8 h-8" />
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-800">Moto Taxi - Admin Master</h1>
+        <p className="text-gray-500 text-sm">Métricas, compliance documental, corridas e publicidade para passageiros sem plano pago.</p>
+      </div>
+
+      {metrics && (
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          <CardMetric icon={<UserCheck size={16} />} label="Motoristas ativos" value={metrics.activeDrivers} />
+          <CardMetric icon={<BarChart3 size={16} />} label="Corridas hoje" value={metrics.ridesToday} />
+          <CardMetric icon={<CreditCard size={16} />} label="Pag. pendentes" value={metrics.pendingPayment} />
+          <CardMetric icon={<CheckCircle2 size={16} />} label="Concluidas hoje" value={metrics.completedToday} />
+          <CardMetric icon={<Bell size={16} />} label="Alertas docs" value={metrics.docAlerts} />
+          <CardMetric icon={<Megaphone size={16} />} label="Receita hoje" value={`R$ ${Number(metrics.revenueToday || 0).toFixed(2)}`} />
+        </div>
+      )}
+
+      <section className="bg-white rounded-xl border border-gray-200 p-4">
+        <h2 className="font-semibold text-gray-800 mb-3">Compliance e plano dos motoristas</h2>
+        <div className="space-y-2">
+          {drivers.map((driver) => {
+            const docOk = driver.cnhValida && driver.documentoVeiculoOk;
+            return (
+              <div key={driver.id} className="border rounded-lg p-3 flex flex-col md:flex-row md:items-center gap-3 md:justify-between">
+                <div>
+                  <p className="font-semibold text-sm text-gray-800">{driver.nome}</p>
+                  <p className="text-xs text-gray-600">{driver.veiculo} · {driver.placa}</p>
+                  <p className={`text-xs ${docOk ? "text-green-600" : "text-red-600"}`}>
+                    {docOk ? "Documentacao OK" : "Pendencia documental"} · Licenciamento: {driver.licenciamentoVencimento}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <select
+                    value={driver.plano}
+                    onChange={(e) => updateDriver(driver.id, { plano: e.target.value as Driver["plano"] })}
+                    className="border rounded px-2 py-1 text-sm"
+                  >
+                    <option value="gratis">Gratis</option>
+                    <option value="basico">Basico</option>
+                    <option value="premium">Premium</option>
+                  </select>
+                  <button onClick={() => updateDriver(driver.id, { online: !driver.online })} className="text-xs px-3 py-1 rounded bg-slate-800 text-white">
+                    {driver.online ? "Ficar offline" : "Ficar online"}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="bg-white rounded-xl border border-gray-200 p-4">
+        <h2 className="font-semibold text-gray-800 mb-3">Corridas recentes</h2>
+        <div className="space-y-2">
+          {rides.slice(0, 12).map((ride) => (
+            <div key={ride.id} className="border rounded-lg p-3 flex flex-col md:flex-row md:items-center gap-3 md:justify-between">
+              <div>
+                <p className="text-sm font-semibold text-gray-800">{ride.passengerName} com {ride.driverName}</p>
+                <p className="text-xs text-gray-600">R$ {Number(ride.price || 0).toFixed(2)} · {ride.paymentStatus} · {ride.status}</p>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => updateRideStatus(ride.id, "em_andamento")} className="text-xs px-3 py-1 rounded bg-blue-600 text-white">Iniciar</button>
+                <button onClick={() => updateRideStatus(ride.id, "concluida")} className="text-xs px-3 py-1 rounded bg-green-600 text-white">Concluir</button>
+                <button onClick={() => updateRideStatus(ride.id, "cancelada")} className="text-xs px-3 py-1 rounded bg-red-600 text-white">Cancelar</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="bg-white rounded-xl border border-gray-200 p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-semibold text-gray-800">Publicidade para passageiros sem plano</h2>
+          <button onClick={addAd} className="text-xs px-3 py-1 rounded bg-slate-800 text-white flex items-center gap-1"><Plus size={13} /> Novo</button>
+        </div>
+
+        {adsConfig && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+              <label className="text-xs text-gray-600">Titulo do popup
+                <input value={adsConfig.popupTitle} onChange={(e) => setAdsConfig({ ...adsConfig, popupTitle: e.target.value })} className="w-full mt-1 border rounded px-2 py-1.5" />
+              </label>
+              <label className="text-xs text-gray-600">Mensagem do popup
+                <input value={adsConfig.popupMessage || ""} onChange={(e) => setAdsConfig({ ...adsConfig, popupMessage: e.target.value })} className="w-full mt-1 border rounded px-2 py-1.5" />
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={adsConfig.enabled} onChange={(e) => setAdsConfig({ ...adsConfig, enabled: e.target.checked })} /> Ativar popup
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={adsConfig.showToFreePassengersOnly} onChange={(e) => setAdsConfig({ ...adsConfig, showToFreePassengersOnly: e.target.checked })} /> Somente plano gratis
+              </label>
+            </div>
+
+            <div className="space-y-2">
+              {adsConfig.items.map((item) => (
+                <div key={item.id} className="border rounded-lg p-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <input value={item.titulo} onChange={(e) => updateAd(item.id, { titulo: e.target.value })} className="border rounded px-2 py-1.5 text-sm" placeholder="Titulo" />
+                    <input value={item.mensagem} onChange={(e) => updateAd(item.id, { mensagem: e.target.value })} className="border rounded px-2 py-1.5 text-sm" placeholder="Mensagem" />
+                    <input value={item.ctaLabel} onChange={(e) => updateAd(item.id, { ctaLabel: e.target.value })} className="border rounded px-2 py-1.5 text-sm" placeholder="Texto CTA" />
+                    <input value={item.ctaLink} onChange={(e) => updateAd(item.id, { ctaLink: e.target.value })} className="border rounded px-2 py-1.5 text-sm" placeholder="Link CTA" />
+                  </div>
+                  <label className="mt-2 flex items-center gap-2 text-xs">
+                    <input type="checkbox" checked={item.ativo !== false} onChange={(e) => updateAd(item.id, { ativo: e.target.checked })} /> Ativo
+                  </label>
+                </div>
+              ))}
+            </div>
+
+            <button onClick={saveAds} disabled={savingAds} className="mt-4 bg-green-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+              <Save size={14} /> {savingAds ? "Salvando..." : "Salvar publicidade"}
+            </button>
+          </>
+        )}
+      </section>
+
+      <section className="bg-white rounded-xl border border-gray-200 p-4">
+        <h2 className="font-semibold text-gray-800 mb-2">Alertas documentais</h2>
+        {expiringDrivers.length === 0 ? (
+          <p className="text-sm text-green-600">Nenhum alerta no momento.</p>
+        ) : (
+          <div className="space-y-2">
+            {expiringDrivers.map((driver) => (
+              <div key={driver.id} className="border border-red-200 bg-red-50 rounded-lg p-3 text-sm text-red-700 flex items-center justify-between">
+                <span>{driver.nome} · Licenciamento {driver.licenciamentoVencimento}</span>
+                <XCircle size={16} />
+              </div>
+            ))}
           </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">Admin Master - Mototáxi</h1>
-            <p className="text-sm text-gray-500">Controle e auditoria de corridas em Valente-BA</p>
-          </div>
-        </div>
-        <button
-          onClick={limparHistorico}
-          className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-4 py-2 rounded transition-all"
-        >
-          Limpar Tudo
-        </button>
-      </div>
+        )}
+      </section>
+    </div>
+  );
+}
 
-      {/* Métricas Rápidas */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-          <span className="text-xs text-gray-400 font-bold block">TOTAL</span>
-          <span className="text-2xl font-black text-gray-800">{corridas.length}</span>
-        </div>
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-          <span className="text-xs text-yellow-500 font-bold block">AGUARDANDO</span>
-          <span className="text-2xl font-black text-yellow-600">
-            {corridas.filter(c => c.status === 'pendente').length}
-          </span>
-        </div>
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-          <span className="text-xs text-blue-500 font-bold block">EM VIAGEM</span>
-          <span className="text-2xl font-black text-blue-600">
-            {corridas.filter(c => ['aceita', 'a_caminho'].includes(c.status)).length}
-          </span>
-        </div>
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-          <span className="text-xs text-green-500 font-bold block">CONCLUÍDAS</span>
-          <span className="text-2xl font-black text-green-600">
-            {corridas.filter(c => c.status === 'finalizada').length}
-          </span>
-        </div>
-      </div>
-
-      {/* Filtros */}
-      <div className="flex gap-2 mb-4">
-        {['todas', 'pendente', 'em_andamento', 'finalizada'].map((tipo) => (
-          <button
-            key={tipo}
-            onClick={() => setFiltro(tipo as any)}
-            className={`px-4 py-2 rounded-lg text-xs font-bold capitalize transition-all ${filtro === tipo ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 border'
-              }`}
-          >
-            {tipo.replace('_', ' ')}
-          </button>
-        ))}
-      </div>
-
-      {/* Lista de Monitoramento */}
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-gray-100 text-xs font-bold text-gray-500 border-b">
-              <th className="p-3">Cliente</th>
-              <th className="p-3">Trajeto</th>
-              <th className="p-3">Preço</th>
-              <th className="p-3">Motorista</th>
-              <th className="p-3">Status</th>
-              <th className="p-3 text-center">Ações</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y text-xs">
-            {filtrarLista().length === 0 ? (
-              <tr>
-                <td colSpan={6} className="text-center p-8 text-gray-400">Nenhuma corrida encontrada para o filtro atual.</td>
-              </tr>
-            ) : (
-              filtrarLista().map((corrida) => (
-                <tr key={corrida.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="p-3 font-semibold">
-                    {corrida.passageiroNome}
-                    <span className="block text-[10px] text-gray-400 font-normal">{corrida.passageiroTelefone}</span>
-                  </td>
-                  <td className="p-3">
-                    <span className="font-medium text-blue-600">De:</span> {corrida.origem}
-                    <span className="block font-medium text-green-600">Para: {corrida.destino}</span>
-                  </td>
-                  <td className="p-3 font-bold text-gray-700">R$ {corrida.valor.toFixed(2)}</td>
-                  <td className="p-3">
-                    {corrida.motoristaNome ? (
-                      <>
-                        <span className="font-semibold">{corrida.motoristaNome}</span>
-                        <span className="block text-[10px] text-gray-400">{corrida.motoristaTelefone}</span>
-                      </>
-                    ) : (
-                      <span className="text-gray-400 italic">Procurando...</span>
-                    )}
-                  </td>
-                  <td className="p-3">
-                    <span className={`px-2 py-0.5 rounded font-black text-[10px] ${corrida.status === 'pendente' ? 'bg-yellow-100 text-yellow-700' :
-                        corrida.status === 'aceita' ? 'bg-blue-100 text-blue-700' :
-                          corrida.status === 'a_caminho' ? 'bg-indigo-100 text-indigo-700' :
-                            corrida.status === 'finalizada' ? 'bg-green-100 text-green-700' :
-                              'bg-red-100 text-red-700'
-                      }`}>
-                      {corrida.status.toUpperCase()}
-                    </span>
-                  </td>
-                  <td className="p-3 text-center">
-                    <button
-                      onClick={() => excluirCorrida(corrida.id)}
-                      className="p-1 hover:bg-red-50 text-red-500 rounded transition-all"
-                      title="Excluir do sistema"
-                    >
-                      <Trash2 className="w-4 h-4 mx-auto" />
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+function CardMetric({ icon, label, value }: { icon: React.ReactNode; label: string; value: string | number }) {
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 p-3">
+      <div className="text-slate-500 mb-1">{icon}</div>
+      <p className="text-xl font-bold text-gray-800">{value}</p>
+      <p className="text-xs text-gray-500">{label}</p>
     </div>
   );
 }

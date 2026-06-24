@@ -52,6 +52,8 @@ import {
   Tv,
   Refrigerator,
   Paintbrush,
+  Calendar,
+  ExternalLink,
   type LucideIcon
 } from "lucide-react";
 
@@ -151,10 +153,12 @@ export const adminMenuFull: MenuGroup[] = [
       { name: "Receitas", path: "/admin-master/cozinha-chef/receitas", icon: ChefHat, status: 'active' },
       // ✅ 5º - ESTOQUE
       { name: "Estoque", path: "/admin-master/cozinha-chef/estoque", icon: Package, status: 'active' },
+      { name: "Movimentação Estoque", path: "/admin-master/cozinha-chef/estoque/movimentacao", icon: TrendingUp, status: 'active' },
       // ✅ 6º - PRODUÇÃO
       { name: "Produção", path: "/admin-master/cozinha-chef/producao", icon: Factory, status: 'active' },
       // ✅ 7º - LISTA DE COMPRAS
       { name: "Lista de Compras", path: "/admin-master/cozinha-chef/compras", icon: ShoppingCart, status: 'active' },
+      { name: "Pedidos", path: "/admin-master/cozinha-chef/pedidos", icon: ShoppingCart, status: 'active' },
       // ✅ 8º - PREVIEW
       { name: "Preview Cardápio", path: "/admin-master/cozinha-chef/preview", icon: Eye, status: 'active' },
     ]
@@ -212,7 +216,7 @@ export const adminMenuFull: MenuGroup[] = [
     icon: Truck,
     collapsible: true,
     items: [
-      { name: "Moto táxi", path: "/admin-master/moto-taxi", icon: Truck, status: 'construction' },
+      { name: "Moto táxi", path: "/admin-master/mototaxi", icon: Truck, status: 'active' },
       { name: "Entregadores", path: "/admin-master/entregadores", icon: Users, status: 'construction' },
     ]
   },
@@ -226,6 +230,30 @@ export const adminMenuFull: MenuGroup[] = [
       { name: "Água e gás", path: "/admin-master/utilidades/agua-gas", icon: Droplet, status: 'construction' },
       { name: "Chaveiros", path: "/admin-master/utilidades/chaveiros", icon: Key, status: 'construction' },
       { name: "Internet", path: "/admin-master/utilidades/internet", icon: Wifi, status: 'construction' },
+    ]
+  },
+
+  // ==================== ÁGUA E GÁS ====================
+  {
+    name: "💧 ÁGUA E GÁS",
+    icon: Droplet,
+    collapsible: true,
+    items: [
+      { name: "Gerenciar Fornecedores", path: "/admin-master/agua-gas", icon: Store },
+      { name: "Pedidos Recebidos",      path: "/admin-master/agua-gas?aba=pedidos", icon: ShoppingCart },
+      { name: "Página Pública",         path: "/agua-gas", icon: ExternalLink },
+    ]
+  },
+
+  // ==================== PROFISSIONAIS / SERVIÇOS ====================
+  {
+    name: "👷 PROFISSIONAIS / SERVIÇOS",
+    icon: Hammer,
+    collapsible: true,
+    items: [
+      { name: "Gerenciar Todos", path: "/admin-master/profissionais", icon: Users },
+      { name: "Pedidos / Agendamentos", path: "/admin-master/profissionais?aba=agendamentos", icon: Calendar },
+      { name: "Página Pública", path: "/profissionais", icon: ExternalLink },
     ]
   },
 

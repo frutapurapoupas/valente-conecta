@@ -1,0 +1,46 @@
+[
+  {
+    "id": "1782290505269-698208",
+    "clienteNome": "Arsenio",
+    "clienteContato": "",
+    "valor": 20.9,
+    "status": "pendente",
+    "paymentMethod": {
+      "type": "pix",
+      "valor": 20.9
+    },
+    "items": [
+      {
+        "produtoId": "1782068921246",
+        "nome": "Carne moída + arroz + legumes",
+        "quantidade": 1,
+        "preco": 20.9
+      }
+    ],
+    "observacao": "Perfil publico",
+    "createdAt": "2026-06-24T08:41:45.269Z",
+    "updatedAt": "2026-06-24T08:41:45.269Z"
+  },
+  {
+    "id": "1782290418511-924956",
+    "clienteNome": "Arsenio",
+    "clienteContato": "",
+    "valor": 20.9,
+    "status": "pendente",
+    "paymentMethod": {
+      "type": "debito",
+      "valor": 20.9
+    },
+    "items": [
+      {
+        "produtoId": "1782068921246",
+        "nome": "Carne moída + arroz + legumes",
+        "quantidade": 1,
+        "preco": 20.9
+      }
+    ],
+    "observacao": "Perfil publico",
+    "createdAt": "2026-06-24T08:40:18.511Z",
+    "updatedAt": "2026-06-24T08:40:18.511Z"
+  }
+]

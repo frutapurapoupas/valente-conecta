@@ -1,0 +1,689 @@
+[
+  {
+    "id": "1782288071996-504007",
+    "receitaId": "1782063020107",
+    "receitaNome": "Frango em cubos + arroz + purê",
+    "quantidadeProduzir": 10,
+    "ingredientes": [
+      {
+        "ingredientId": "1782062848631",
+        "ingredientName": "Frango em cubos",
+        "quantidade": 2000,
+        "unit": "g",
+        "price": 18.9
+      },
+      {
+        "ingredientId": "1782062849135",
+        "ingredientName": "Arroz branco",
+        "quantidade": 1400,
+        "unit": "g",
+        "price": 5.9
+      },
+      {
+        "ingredientId": "1782062849627",
+        "ingredientName": "Batata",
+        "quantidade": 1400,
+        "unit": "g",
+        "price": 3.5
+      },
+      {
+        "ingredientId": "1782062851104",
+        "ingredientName": "Alho",
+        "quantidade": 40,
+        "unit": "g",
+        "price": 15.9
+      },
+      {
+        "ingredientId": "1782062849954",
+        "ingredientName": "Cebola",
+        "quantidade": 40,
+        "unit": "g",
+        "price": 4.9
+      },
+      {
+        "ingredientId": "1782062851259",
+        "ingredientName": "Coentro",
+        "quantidade": 20,
+        "unit": "g",
+        "price": 25.9
+      },
+      {
+        "ingredientId": "1782062851586",
+        "ingredientName": "Sal",
+        "quantidade": 60,
+        "unit": "g",
+        "price": 2.5
+      },
+      {
+        "ingredientId": "1782066071449",
+        "ingredientName": "Embalagem plástica 500g",
+        "quantidade": 10,
+        "unit": "un",
+        "price": 1
+      }
+    ],
+    "status": "pendente",
+    "createdAt": "2026-06-24T08:01:11.996Z",
+    "approvedAt": null
+  },
+  {
+    "id": "1782287818667-750552",
+    "receitaId": "1782063020107",
+    "receitaNome": "Frango em cubos + arroz + purê",
+    "quantidadeProduzir": 20,
+    "ingredientes": [
+      {
+        "ingredientId": "1782062848631",
+        "ingredientName": "Frango em cubos",
+        "quantidade": 4000,
+        "unit": "g",
+        "price": 18.9
+      },
+      {
+        "ingredientId": "1782062849135",
+        "ingredientName": "Arroz branco",
+        "quantidade": 2800,
+        "unit": "g",
+        "price": 5.9
+      },
+      {
+        "ingredientId": "1782062849627",
+        "ingredientName": "Batata",
+        "quantidade": 2800,
+        "unit": "g",
+        "price": 3.5
+      },
+      {
+        "ingredientId": "1782062851104",
+        "ingredientName": "Alho",
+        "quantidade": 80,
+        "unit": "g",
+        "price": 15.9
+      },
+      {
+        "ingredientId": "1782062849954",
+        "ingredientName": "Cebola",
+        "quantidade": 80,
+        "unit": "g",
+        "price": 4.9
+      },
+      {
+        "ingredientId": "1782062851259",
+        "ingredientName": "Coentro",
+        "quantidade": 40,
+        "unit": "g",
+        "price": 25.9
+      },
+      {
+        "ingredientId": "1782062851586",
+        "ingredientName": "Sal",
+        "quantidade": 120,
+        "unit": "g",
+        "price": 2.5
+      },
+      {
+        "ingredientId": "1782066071449",
+        "ingredientName": "Embalagem plástica 500g",
+        "quantidade": 20,
+        "unit": "un",
+        "price": 1
+      }
+    ],
+    "status": "aprovado",
+    "createdAt": "2026-06-24T07:56:58.667Z",
+    "approvedAt": "2026-06-24T07:57:41.279Z"
+  },
+  {
+    "id": "1782287807004-539454",
+    "receitaId": "1782063020107",
+    "receitaNome": "Frango em cubos + arroz + purê",
+    "quantidadeProduzir": 10,
+    "ingredientes": [
+      {
+        "ingredientId": "1782062848631",
+        "ingredientName": "Frango em cubos",
+        "quantidade": 2000,
+        "unit": "g",
+        "price": 18.9
+      },
+      {
+        "ingredientId": "1782062849135",
+        "ingredientName": "Arroz branco",
+        "quantidade": 1400,
+        "unit": "g",
+        "price": 5.9
+      },
+      {
+        "ingredientId": "1782062849627",
+        "ingredientName": "Batata",
+        "quantidade": 1400,
+        "unit": "g",
+        "price": 3.5
+      },
+      {
+        "ingredientId": "1782062851104",
+        "ingredientName": "Alho",
+        "quantidade": 40,
+        "unit": "g",
+        "price": 15.9
+      },
+      {
+        "ingredientId": "1782062849954",
+        "ingredientName": "Cebola",
+        "quantidade": 40,
+        "unit": "g",
+        "price": 4.9
+      },
+      {
+        "ingredientId": "1782062851259",
+        "ingredientName": "Coentro",
+        "quantidade": 20,
+        "unit": "g",
+        "price": 25.9
+      },
+      {
+        "ingredientId": "1782062851586",
+        "ingredientName": "Sal",
+        "quantidade": 60,
+        "unit": "g",
+        "price": 2.5
+      },
+      {
+        "ingredientId": "1782066071449",
+        "ingredientName": "Embalagem plástica 500g",
+        "quantidade": 10,
+        "unit": "un",
+        "price": 1
+      }
+    ],
+    "status": "aprovado",
+    "createdAt": "2026-06-24T07:56:47.004Z",
+    "approvedAt": "2026-06-24T07:57:43.363Z"
+  },
+  {
+    "id": "1782287522296-413660",
+    "receitaId": "1782063020325",
+    "receitaNome": "Carne moída + arroz + legumes",
+    "quantidadeProduzir": 15,
+    "ingredientes": [
+      {
+        "ingredientId": "1782062848969",
+        "ingredientName": "Carne moída",
+        "quantidade": 3000,
+        "unit": "g",
+        "price": 28.9
+      },
+      {
+        "ingredientId": "1782062849135",
+        "ingredientName": "Arroz branco",
+        "quantidade": 2100,
+        "unit": "g",
+        "price": 5.9
+      },
+      {
+        "ingredientId": "1782062849627",
+        "ingredientName": "Batata",
+        "quantidade": 750,
+        "unit": "g",
+        "price": 3.5
+      },
+      {
+        "ingredientId": "1782062849792",
+        "ingredientName": "Cenoura",
+        "quantidade": 750,
+        "unit": "g",
+        "price": 3.9
+      },
+      {
+        "ingredientId": "1782062850270",
+        "ingredientName": "Chuchu",
+        "quantidade": 600,
+        "unit": "g",
+        "price": 3.9
+      },
+      {
+        "ingredientId": "1782062851104",
+        "ingredientName": "Alho",
+        "quantidade": 60,
+        "unit": "g",
+        "price": 15.9
+      },
+      {
+        "ingredientId": "1782062849954",
+        "ingredientName": "Cebola",
+        "quantidade": 60,
+        "unit": "g",
+        "price": 4.9
+      },
+      {
+        "ingredientId": "1782062851259",
+        "ingredientName": "Coentro",
+        "quantidade": 30,
+        "unit": "g",
+        "price": 25.9
+      },
+      {
+        "ingredientId": "1782062851586",
+        "ingredientName": "Sal",
+        "quantidade": 90,
+        "unit": "g",
+        "price": 2.5
+      },
+      {
+        "ingredientId": "1782066071449",
+        "ingredientName": "Embalagem plástica 500g",
+        "quantidade": 15,
+        "unit": "un",
+        "price": 1
+      }
+    ],
+    "status": "aprovado",
+    "createdAt": "2026-06-24T07:52:02.296Z",
+    "approvedAt": "2026-06-24T07:52:28.409Z"
+  },
+  {
+    "id": "1782287506788-942707",
+    "receitaId": "1782063020325",
+    "receitaNome": "Carne moída + arroz + legumes",
+    "quantidadeProduzir": 9,
+    "ingredientes": [
+      {
+        "ingredientId": "1782062848969",
+        "ingredientName": "Carne moída",
+        "quantidade": 1800,
+        "unit": "g",
+        "price": 28.9
+      },
+      {
+        "ingredientId": "1782062849135",
+        "ingredientName": "Arroz branco",
+        "quantidade": 1260,
+        "unit": "g",
+        "price": 5.9
+      },
+      {
+        "ingredientId": "1782062849627",
+        "ingredientName": "Batata",
+        "quantidade": 450,
+        "unit": "g",
+        "price": 3.5
+      },
+      {
+        "ingredientId": "1782062849792",
+        "ingredientName": "Cenoura",
+        "quantidade": 450,
+        "unit": "g",
+        "price": 3.9
+      },
+      {
+        "ingredientId": "1782062850270",
+        "ingredientName": "Chuchu",
+        "quantidade": 360,
+        "unit": "g",
+        "price": 3.9
+      },
+      {
+        "ingredientId": "1782062851104",
+        "ingredientName": "Alho",
+        "quantidade": 36,
+        "unit": "g",
+        "price": 15.9
+      },
+      {
+        "ingredientId": "1782062849954",
+        "ingredientName": "Cebola",
+        "quantidade": 36,
+        "unit": "g",
+        "price": 4.9
+      },
+      {
+        "ingredientId": "1782062851259",
+        "ingredientName": "Coentro",
+        "quantidade": 18,
+        "unit": "g",
+        "price": 25.9
+      },
+      {
+        "ingredientId": "1782062851586",
+        "ingredientName": "Sal",
+        "quantidade": 54,
+        "unit": "g",
+        "price": 2.5
+      },
+      {
+        "ingredientId": "1782066071449",
+        "ingredientName": "Embalagem plástica 500g",
+        "quantidade": 9,
+        "unit": "un",
+        "price": 1
+      }
+    ],
+    "status": "aprovado",
+    "createdAt": "2026-06-24T07:51:46.788Z",
+    "approvedAt": "2026-06-24T07:52:44.895Z"
+  },
+  {
+    "id": "1782287501950-530342",
+    "receitaId": "1782063020325",
+    "receitaNome": "Carne moída + arroz + legumes",
+    "quantidadeProduzir": 9,
+    "ingredientes": [
+      {
+        "ingredientId": "1782062848969",
+        "ingredientName": "Carne moída",
+        "quantidade": 1800,
+        "unit": "g",
+        "price": 28.9
+      },
+      {
+        "ingredientId": "1782062849135",
+        "ingredientName": "Arroz branco",
+        "quantidade": 1260,
+        "unit": "g",
+        "price": 5.9
+      },
+      {
+        "ingredientId": "1782062849627",
+        "ingredientName": "Batata",
+        "quantidade": 450,
+        "unit": "g",
+        "price": 3.5
+      },
+      {
+        "ingredientId": "1782062849792",
+        "ingredientName": "Cenoura",
+        "quantidade": 450,
+        "unit": "g",
+        "price": 3.9
+      },
+      {
+        "ingredientId": "1782062850270",
+        "ingredientName": "Chuchu",
+        "quantidade": 360,
+        "unit": "g",
+        "price": 3.9
+      },
+      {
+        "ingredientId": "1782062851104",
+        "ingredientName": "Alho",
+        "quantidade": 36,
+        "unit": "g",
+        "price": 15.9
+      },
+      {
+        "ingredientId": "1782062849954",
+        "ingredientName": "Cebola",
+        "quantidade": 36,
+        "unit": "g",
+        "price": 4.9
+      },
+      {
+        "ingredientId": "1782062851259",
+        "ingredientName": "Coentro",
+        "quantidade": 18,
+        "unit": "g",
+        "price": 25.9
+      },
+      {
+        "ingredientId": "1782062851586",
+        "ingredientName": "Sal",
+        "quantidade": 54,
+        "unit": "g",
+        "price": 2.5
+      },
+      {
+        "ingredientId": "1782066071449",
+        "ingredientName": "Embalagem plástica 500g",
+        "quantidade": 9,
+        "unit": "un",
+        "price": 1
+      }
+    ],
+    "status": "aprovado",
+    "createdAt": "2026-06-24T07:51:41.950Z",
+    "approvedAt": "2026-06-24T07:57:44.227Z"
+  },
+  {
+    "id": "1782287013781",
+    "receitaId": "1782063020325",
+    "receitaNome": "Carne moída + arroz + legumes",
+    "quantidadeProduzir": 15,
+    "ingredientes": [
+      {
+        "ingredientId": "1782062848969",
+        "ingredientName": "Carne moída",
+        "quantidade": 3000,
+        "unit": "g",
+        "price": 28.9
+      },
+      {
+        "ingredientId": "1782062849135",
+        "ingredientName": "Arroz branco",
+        "quantidade": 2100,
+        "unit": "g",
+        "price": 5.9
+      },
+      {
+        "ingredientId": "1782062849627",
+        "ingredientName": "Batata",
+        "quantidade": 750,
+        "unit": "g",
+        "price": 3.5
+      },
+      {
+        "ingredientId": "1782062849792",
+        "ingredientName": "Cenoura",
+        "quantidade": 750,
+        "unit": "g",
+        "price": 3.9
+      },
+      {
+        "ingredientId": "1782062850270",
+        "ingredientName": "Chuchu",
+        "quantidade": 600,
+        "unit": "g",
+        "price": 3.9
+      },
+      {
+        "ingredientId": "1782062851104",
+        "ingredientName": "Alho",
+        "quantidade": 60,
+        "unit": "g",
+        "price": 15.9
+      },
+      {
+        "ingredientId": "1782062849954",
+        "ingredientName": "Cebola",
+        "quantidade": 60,
+        "unit": "g",
+        "price": 4.9
+      },
+      {
+        "ingredientId": "1782062851259",
+        "ingredientName": "Coentro",
+        "quantidade": 30,
+        "unit": "g",
+        "price": 25.9
+      },
+      {
+        "ingredientId": "1782062851586",
+        "ingredientName": "Sal",
+        "quantidade": 90,
+        "unit": "g",
+        "price": 2.5
+      },
+      {
+        "ingredientId": "1782066071449",
+        "ingredientName": "Embalagem plástica 500g",
+        "quantidade": 15,
+        "unit": "un",
+        "price": 1
+      }
+    ],
+    "status": "aprovado",
+    "createdAt": "2026-06-24T07:43:33.781Z",
+    "approvedAt": "2026-06-24T07:44:38.777Z"
+  },
+  {
+    "id": "1782286986523",
+    "receitaId": "1782063020325",
+    "receitaNome": "Carne moída + arroz + legumes",
+    "quantidadeProduzir": 10,
+    "ingredientes": [
+      {
+        "ingredientId": "1782062848969",
+        "ingredientName": "Carne moída",
+        "quantidade": 2000,
+        "unit": "g",
+        "price": 28.9
+      },
+      {
+        "ingredientId": "1782062849135",
+        "ingredientName": "Arroz branco",
+        "quantidade": 1400,
+        "unit": "g",
+        "price": 5.9
+      },
+      {
+        "ingredientId": "1782062849627",
+        "ingredientName": "Batata",
+        "quantidade": 500,
+        "unit": "g",
+        "price": 3.5
+      },
+      {
+        "ingredientId": "1782062849792",
+        "ingredientName": "Cenoura",
+        "quantidade": 500,
+        "unit": "g",
+        "price": 3.9
+      },
+      {
+        "ingredientId": "1782062850270",
+        "ingredientName": "Chuchu",
+        "quantidade": 400,
+        "unit": "g",
+        "price": 3.9
+      },
+      {
+        "ingredientId": "1782062851104",
+        "ingredientName": "Alho",
+        "quantidade": 40,
+        "unit": "g",
+        "price": 15.9
+      },
+      {
+        "ingredientId": "1782062849954",
+        "ingredientName": "Cebola",
+        "quantidade": 40,
+        "unit": "g",
+        "price": 4.9
+      },
+      {
+        "ingredientId": "1782062851259",
+        "ingredientName": "Coentro",
+        "quantidade": 20,
+        "unit": "g",
+        "price": 25.9
+      },
+      {
+        "ingredientId": "1782062851586",
+        "ingredientName": "Sal",
+        "quantidade": 60,
+        "unit": "g",
+        "price": 2.5
+      },
+      {
+        "ingredientId": "1782066071449",
+        "ingredientName": "Embalagem plástica 500g",
+        "quantidade": 10,
+        "unit": "un",
+        "price": 1
+      }
+    ],
+    "status": "aprovado",
+    "createdAt": "2026-06-24T07:43:06.523Z",
+    "approvedAt": "2026-06-24T07:44:49.413Z"
+  },
+  {
+    "id": "1782286577595",
+    "receitaId": "1782063020325",
+    "receitaNome": "Carne moída + arroz + legumes",
+    "quantidadeProduzir": 10,
+    "ingredientes": [
+      {
+        "ingredientId": "1782062848969",
+        "ingredientName": "Carne moída",
+        "quantidade": 2000,
+        "unit": "g",
+        "price": 28.9
+      },
+      {
+        "ingredientId": "1782062849135",
+        "ingredientName": "Arroz branco",
+        "quantidade": 1400,
+        "unit": "g",
+        "price": 5.9
+      },
+      {
+        "ingredientId": "1782062849627",
+        "ingredientName": "Batata",
+        "quantidade": 500,
+        "unit": "g",
+        "price": 3.5
+      },
+      {
+        "ingredientId": "1782062849792",
+        "ingredientName": "Cenoura",
+        "quantidade": 500,
+        "unit": "g",
+        "price": 3.9
+      },
+      {
+        "ingredientId": "1782062850270",
+        "ingredientName": "Chuchu",
+        "quantidade": 400,
+        "unit": "g",
+        "price": 3.9
+      },
+      {
+        "ingredientId": "1782062851104",
+        "ingredientName": "Alho",
+        "quantidade": 40,
+        "unit": "g",
+        "price": 15.9
+      },
+      {
+        "ingredientId": "1782062849954",
+        "ingredientName": "Cebola",
+        "quantidade": 40,
+        "unit": "g",
+        "price": 4.9
+      },
+      {
+        "ingredientId": "1782062851259",
+        "ingredientName": "Coentro",
+        "quantidade": 20,
+        "unit": "g",
+        "price": 25.9
+      },
+      {
+        "ingredientId": "1782062851586",
+        "ingredientName": "Sal",
+        "quantidade": 60,
+        "unit": "g",
+        "price": 2.5
+      },
+      {
+        "ingredientId": "1782066071449",
+        "ingredientName": "Embalagem plástica 500g",
+        "quantidade": 10,
+        "unit": "un",
+        "price": 1
+      }
+    ],
+    "status": "aprovado",
+    "createdAt": "2026-06-24T07:36:17.595Z",
+    "approvedAt": "2026-06-24T07:37:00.537Z"
+  }
+]

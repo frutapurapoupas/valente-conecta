@@ -19,7 +19,8 @@ export default function RegisterPage() {
   
   const [formData, setFormData] = useState({
     nome: "",
-    whatsapp: ""
+    whatsapp: "",
+    cidadeBase: "VALENTE"
   });
 
   useEffect(() => {
@@ -46,17 +47,22 @@ export default function RegisterPage() {
       if (outcome === "accepted") {
         toast.success("✅ App instalado!");
         setShowInstallPopup(false);
+        localStorage.removeItem('onboarding_pos_cadastro');
+        localStorage.removeItem('convite_origem');
+        localStorage.removeItem('convite_timestamp');
         setTimeout(() => router.push("/"), 1500);
       }
       setDeferredPrompt(null);
     } else {
       toast.success("📱 Adicione à Tela Inicial");
+      localStorage.removeItem('onboarding_pos_cadastro');
       setTimeout(() => router.push("/"), 1500);
     }
   };
 
   const handleInstallLater = () => {
     setShowInstallPopup(false);
+    localStorage.removeItem('onboarding_pos_cadastro');
     router.push("/");
   };
 
@@ -70,6 +76,11 @@ export default function RegisterPage() {
     
     if (!formData.whatsapp.trim() || formData.whatsapp.length < 10) {
       toast.error("WhatsApp válido (com DDD)");
+      return;
+    }
+
+    if (!formData.cidadeBase.trim()) {
+      toast.error("Informe sua cidade-base");
       return;
     }
     
@@ -120,7 +131,7 @@ export default function RegisterPage() {
           trial_end_at: trialEndAt.toISOString(),
           codigo_indicacao: codigoIndicacao,
           convidado_por_id: convidadoPorId,
-          cidade: 'VALENTE',
+          cidade: formData.cidadeBase.trim().toUpperCase(),
           nivel: 'CLIENTE'
         })
         .select()
@@ -136,15 +147,54 @@ export default function RegisterPage() {
             usuario_id: convidadoPorId,
             indicado_id: newUser.id
           });
+
+        try {
+          const [configResp, indicadosResp, subsResp] = await Promise.all([
+            fetch('/api/referrals/config').then((res) => res.json()).catch(() => ({ success: false })),
+            supabase.from('usuarios').select('id').eq('convidado_por_id', convidadoPorId),
+            supabase.from('push_subscriptions').select('subscription').eq('usuario_id', convidadoPorId).eq('ativo', true)
+          ]);
+
+          const ruleUsuarios = configResp?.success
+            ? configResp.data?.rules?.find((rule: any) => rule.id === 'usuarios_gerais' && rule.ativo)
+            : null;
+
+          const totalIndicados = Array.isArray(indicadosResp.data) ? indicadosResp.data.length : 0;
+
+          if (ruleUsuarios && totalIndicados > 0 && totalIndicados % Number(ruleUsuarios.meta || 30) === 0) {
+            const subscriptions = Array.isArray(subsResp.data) ? subsResp.data : [];
+            await Promise.all(
+              subscriptions.map((item: any) =>
+                fetch('/api/push/send', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    subscription: item.subscription,
+                    title: 'Bônus liberado no Valente Conecta',
+                    body: `Seu lote de ${ruleUsuarios.meta} usuários foi validado. R$ ${Number(ruleUsuarios.bonus || 0).toFixed(2)} liberados. Informe sua chave PIX no Indique e Ganhe.`,
+                    url: '/qr-code'
+                  })
+                }).catch(() => null)
+              )
+            );
+          }
+        } catch (pushError) {
+          console.error('Erro ao notificar bônus por indicação:', pushError);
+        }
       }
       
       // Salvar no localStorage e cookies
       localStorage.setItem("valente_user", JSON.stringify(newUser));
+      localStorage.setItem('usuario_cidade_base', String(newUser.cidade || formData.cidadeBase).toUpperCase());
       document.cookie = `user_id=${newUser.id}; path=/; max-age=172800`;
       document.cookie = `user_logged_in=true; path=/; max-age=172800`;
       document.cookie = `user_role=${newUser.role}; path=/; max-age=172800`;
+      document.cookie = `cidade_base=${String(newUser.cidade || formData.cidadeBase).toUpperCase()}; path=/; max-age=172800`;
       
       login(newUser);
+
+      localStorage.setItem('onboarding_pos_cadastro', '1');
+      localStorage.setItem('onboarding_pos_cadastro_at', new Date().toISOString());
       
       toast.success(`✅ Acesso por 48h!${codigoConvite ? " + R$5!" : ""}`);
       setShowInstallPopup(true);
@@ -231,6 +281,21 @@ export default function RegisterPage() {
               />
             </div>
             <p className="text-gray-500 text-xs mt-1">✅ Número real para notificações</p>
+          </div>
+
+          <div>
+            <label className="text-gray-300 text-sm font-medium mb-1 block">Cidade-base</label>
+            <div className="flex items-center gap-2 bg-white/10 rounded-xl px-4 py-3 border border-white/20">
+              <i className="fas fa-city text-gray-400"></i>
+              <input
+                type="text"
+                placeholder="Ex: Valente"
+                value={formData.cidadeBase}
+                onChange={(e) => setFormData({ ...formData, cidadeBase: e.target.value.toUpperCase() })}
+                className="flex-1 bg-transparent outline-none text-white"
+              />
+            </div>
+            <p className="text-gray-500 text-xs mt-1">Atividades ficam vinculadas a uma cidade por vez</p>
           </div>
 
           <button

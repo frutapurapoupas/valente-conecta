@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { X, Upload, Image as ImageIcon } from 'lucide-react';
 
 interface ModalFotoProdutoProps {
@@ -32,6 +32,14 @@ export default function ModalFotoProduto({
   const [preview, setPreview] = useState(currentImage || '');
   const [uploading, setUploading] = useState(false);
 
+  useEffect(() => {
+    if (isOpen) {
+      setImagemUrl(currentImage || '');
+      setPreview(currentImage || '');
+      setArquivo(null);
+    }
+  }, [isOpen, currentImage]);
+
   // Determinar o ID do produto (qualquer que seja o nome da prop)
   const produtoIdFinal = id || produtoId || entityId || '';
 
@@ -50,6 +58,8 @@ export default function ModalFotoProduto({
   };
 
   const handleUpload = async () => {
+    if (uploading) return;
+
     if (!arquivo) {
       if (imagemUrl) {
         onSave(imagemUrl);

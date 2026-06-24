@@ -12,6 +12,7 @@ import {
   AlertCircle, Globe, Link, Users, Plus
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { SupplierStorage } from "@/services/supplierStorage";
 
 interface Solicitacao {
   id: string;
@@ -169,7 +170,7 @@ export default function AdminDemandasPage() {
 
     const novosFornecedores = [...fornecedores, novoFornecedor];
     setFornecedores(novosFornecedores);
-    localStorage.setItem("fornecedores_servicos", JSON.stringify(novosFornecedores));
+    SupplierStorage.saveAll(novosFornecedores);
 
     // Atualizar busca pendente
     const novasBuscas = buscasPendentes.map(b =>
@@ -257,7 +258,7 @@ export default function AdminDemandasPage() {
 
     const novosFornecedores = [...fornecedores, novoFornecedor];
     setFornecedores(novosFornecedores);
-    localStorage.setItem("fornecedores_servicos", JSON.stringify(novosFornecedores));
+    SupplierStorage.saveAll(novosFornecedores);
 
     const novasSolicitacoes = solicitacoes.map(s =>
       s.id === solicitacaoSelecionada.id 

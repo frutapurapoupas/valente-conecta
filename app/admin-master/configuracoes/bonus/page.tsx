@@ -1,33 +1,72 @@
 "use client";
 
-import { Award, Briefcase, Building, Calendar, Car, Dumbbell, Home, Package, Save, ShoppingBag, Users, Wrench } from "lucide-react";
-import { useState } from "react";
+import { Briefcase, Building, Save, Users, Wallet } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface BonusConfig {
   id: string;
   nome: string;
   bonus: number;
-  meta: string;
+  meta: number;
   ativo: boolean;
+  descricao?: string;
+}
+
+interface BonusContentConfig {
+  publicHeadline: string;
+  publicSubtitle: string;
+  explanationTitle: string;
+  explanationText: string;
+  shareTemplate: string;
 }
 
 export default function ConfiguracoesBonusPage() {
   const [bonus, setBonus] = useState<BonusConfig[]>([
-    { id: "amigos", nome: "Amigos", bonus: 2, meta: "10 amigos", ativo: true },
-    { id: "empresa", nome: "Empresas", bonus: 5, meta: "3 empresas", ativo: true },
-    { id: "profissionais", nome: "Profissionais", bonus: 3, meta: "5 profissionais", ativo: true },
-    { id: "academia", nome: "Academia", bonus: 10, meta: "2 indicações", ativo: true },
-    { id: "ambulantes", nome: "Ambulantes", bonus: 4, meta: "5 ambulantes", ativo: true },
-    { id: "aluguel", nome: "Aluguel", bonus: 8, meta: "3 imóveis", ativo: true },
-    { id: "veiculos", nome: "Veículos", bonus: 6, meta: "4 veículos", ativo: true },
-    { id: "eventos", nome: "Eventos", bonus: 12, meta: "2 eventos", ativo: true },
-    { id: "servicos", nome: "Serviços", bonus: 5, meta: "6 serviços", ativo: true },
-    { id: "produtos", nome: "Produtos", bonus: 3, meta: "10 produtos", ativo: true }
+    { id: "usuarios_gerais", nome: "Usuários Gerais", bonus: 10, meta: 30, ativo: true, descricao: "Bônus a cada lote de 30 usuários novos validados" },
+    { id: "empresas_lojas", nome: "Empresas / Lojas", bonus: 5, meta: 3, ativo: true, descricao: "Bônus a cada lote de 3 empresas ou lojas validadas" },
+    { id: "profissionais_liberais", nome: "Profissionais Liberais", bonus: 4, meta: 5, ativo: true, descricao: "Bônus a cada lote de 5 profissionais liberais validados" }
   ]);
+  const [pixMinimo, setPixMinimo] = useState(1);
+  const [content, setContent] = useState<BonusContentConfig>({
+    publicHeadline: "Ganhe dinheiro indicando!",
+    publicSubtitle: "Receba bônus por lotes de indicações validadas.",
+    explanationTitle: "Como funcionam as bonificações",
+    explanationText: "Cada bônus é liberado por lote validado: usuários gerais, empresas/lojas e profissionais liberais.",
+    shareTemplate: "Use meu código {codigo}. Bônus por lotes validados no Valente Conecta. Link: {link}"
+  });
 
-  const handleSave = () => {
-    localStorage.setItem("bonus_config", JSON.stringify(bonus));
-    alert("✅ Configurações de bônus salvas!");
+  useEffect(() => {
+    async function load() {
+      try {
+        const response = await fetch('/api/referrals/config');
+        const result = await response.json();
+        if (result?.success && result.data?.rules) {
+          setBonus(result.data.rules);
+          setPixMinimo(Number(result.data.pixMinimo || 1));
+          if (result.data.content) {
+            setContent(result.data.content);
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao carregar configuração de bônus', error);
+      }
+    }
+
+    load();
+  }, []);
+
+  const handleSave = async () => {
+    const response = await fetch('/api/referrals/config', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rules: bonus, pixMinimo, content })
+    });
+    const result = await response.json();
+    if (result?.success) {
+      alert("✅ Configurações de bônus salvas!");
+      return;
+    }
+    alert("❌ Não foi possível salvar as configurações.");
   };
 
   const handleToggle = (id: string) => {
@@ -36,6 +75,10 @@ export default function ConfiguracoesBonusPage() {
 
   const handleBonusChange = (id: string, valor: number) => {
     setBonus(bonus.map(b => b.id === id ? { ...b, bonus: valor } : b));
+  };
+
+  const handleMetaChange = (id: string, valor: number) => {
+    setBonus(bonus.map(b => b.id === id ? { ...b, meta: valor } : b));
   };
 
   const totalMensal = bonus.reduce((acc, b) => acc + (b.ativo ? b.bonus : 0), 0);
@@ -50,20 +93,92 @@ export default function ConfiguracoesBonusPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {bonus.map(b => {
           const icones: Record<string, any> = {
-            amigos: Users, empresa: Building, profissionais: Briefcase, academia: Dumbbell,
-            ambulantes: ShoppingBag, aluguel: Home, veiculos: Car, eventos: Calendar,
-            servicos: Wrench, produtos: Package
+            usuarios_gerais: Users,
+            empresas_lojas: Building,
+            profissionais_liberais: Briefcase,
           };
-          const Icon = icones[b.id] || Award;
+          const Icon = icones[b.id] || Users;
           return (
             <div key={b.id} className={`bg-white rounded-xl p-4 shadow-sm border ${b.ativo ? "border-gray-200" : "border-gray-200 bg-gray-50"}`}>
               <div className="flex items-center gap-3 mb-3"><Icon size={24} className="text-indigo-600" /><h3 className="font-bold text-lg">{b.nome}</h3></div>
-              <div className="flex items-center justify-between mb-2"><span className="text-sm text-gray-500">Bônus por indicação</span><input type="number" value={b.bonus} onChange={(e) => handleBonusChange(b.id, parseFloat(e.target.value))} className="w-24 p-1 border rounded text-right font-bold text-green-600" step="0.5" /><span className="text-sm">R$</span></div>
-              <p className="text-xs text-gray-400 mb-3">Meta: {b.meta}</p>
+              <div className="flex items-center justify-between mb-2"><span className="text-sm text-gray-500">Valor do lote</span><input type="number" value={b.bonus} onChange={(e) => handleBonusChange(b.id, parseFloat(e.target.value))} className="w-24 p-1 border rounded text-right font-bold text-green-600" step="0.5" /><span className="text-sm">R$</span></div>
+              <div className="flex items-center justify-between mb-2"><span className="text-sm text-gray-500">Quantidade por lote</span><input type="number" value={b.meta} onChange={(e) => handleMetaChange(b.id, parseInt(e.target.value) || 0)} className="w-24 p-1 border rounded text-right font-bold text-indigo-600" step="1" /></div>
+              <p className="text-xs text-gray-400 mb-3">{b.descricao}</p>
               <button onClick={() => handleToggle(b.id)} className={`w-full py-1 rounded-lg text-sm font-semibold ${b.ativo ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-500"}`}>{b.ativo ? "✅ Ativo" : "❌ Inativo"}</button>
             </div>
           );
         })}
+      </div>
+
+      <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+        <div className="flex items-center gap-2 mb-3">
+          <Wallet size={20} className="text-emerald-600" />
+          <h3 className="font-semibold text-lg">Solicitação de PIX</h3>
+        </div>
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm text-gray-500">Valor mínimo disponível para solicitar recebimento</p>
+            <p className="text-xs text-gray-400">Quando um lote fechar, o usuário recebe aviso e pode informar sua chave PIX.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500">R$</span>
+            <input type="number" value={pixMinimo} onChange={(e) => setPixMinimo(parseFloat(e.target.value) || 0)} className="w-28 p-2 border rounded text-right font-bold text-emerald-600" />
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 space-y-4">
+        <h3 className="font-semibold text-lg">📝 Conteúdo da página de indicação (QR)</h3>
+
+        <div>
+          <label className="text-sm text-gray-600">Título público</label>
+          <input
+            type="text"
+            value={content.publicHeadline}
+            onChange={(e) => setContent((prev) => ({ ...prev, publicHeadline: e.target.value }))}
+            className="w-full mt-1 p-2 border rounded"
+          />
+        </div>
+
+        <div>
+          <label className="text-sm text-gray-600">Subtítulo público</label>
+          <input
+            type="text"
+            value={content.publicSubtitle}
+            onChange={(e) => setContent((prev) => ({ ...prev, publicSubtitle: e.target.value }))}
+            className="w-full mt-1 p-2 border rounded"
+          />
+        </div>
+
+        <div>
+          <label className="text-sm text-gray-600">Título do pop-up explicativo</label>
+          <input
+            type="text"
+            value={content.explanationTitle}
+            onChange={(e) => setContent((prev) => ({ ...prev, explanationTitle: e.target.value }))}
+            className="w-full mt-1 p-2 border rounded"
+          />
+        </div>
+
+        <div>
+          <label className="text-sm text-gray-600">Texto do pop-up explicativo</label>
+          <textarea
+            value={content.explanationText}
+            onChange={(e) => setContent((prev) => ({ ...prev, explanationText: e.target.value }))}
+            className="w-full mt-1 p-2 border rounded min-h-[90px]"
+          />
+        </div>
+
+        <div>
+          <label className="text-sm text-gray-600">Template de compartilhamento</label>
+          <input
+            type="text"
+            value={content.shareTemplate}
+            onChange={(e) => setContent((prev) => ({ ...prev, shareTemplate: e.target.value }))}
+            className="w-full mt-1 p-2 border rounded"
+          />
+          <p className="text-xs text-gray-500 mt-1">Use {'{codigo}'} e {'{link}'} como variáveis.</p>
+        </div>
       </div>
 
       <div className="bg-indigo-50 rounded-xl p-4 border border-indigo-200">

@@ -4,15 +4,19 @@
 "use client";
 
 import { useState } from 'react';
-import { X, Check, AlertCircle, Loader2, QrCode, CreditCard, Landmark } from 'lucide-react';
+import { X, AlertCircle, QrCode, CreditCard, Landmark, Banknote, Check } from 'lucide-react';
 
 interface ModalPagamentoProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (dados: { metodo: string; valor: number; descricao: string }) => void;
+  onConfirm: (dados: { metodo: string; valor: number; descricao: string; clienteNome?: string; clienteContato?: string }) => void | Promise<void>;
   valor: number;
   descricao: string;
   titulo?: string;
+  clienteNome?: string;
+  clienteContato?: string;
+  onClienteNomeChange?: (value: string) => void;
+  onClienteContatoChange?: (value: string) => void;
 }
 
 export function ModalPagamento({ 
@@ -21,36 +25,32 @@ export function ModalPagamento({
   onConfirm, 
   valor, 
   descricao,
-  titulo = '💳 Pagamento'
+  titulo = '💳 Pagamento',
+  clienteNome = '',
+  clienteContato = '',
+  onClienteNomeChange,
+  onClienteContatoChange
 }: ModalPagamentoProps) {
-  const [etapa, setEtapa] = useState<'confirmacao' | 'processando' | 'sucesso' | 'erro'>('confirmacao');
-  const [metodo, setMetodo] = useState<'pix' | 'credito' | 'debito'>('pix');
+  const [etapa, setEtapa] = useState<'confirmacao' | 'processando' | 'erro'>('confirmacao');
+  const [metodo, setMetodo] = useState<'pix' | 'credito' | 'debito' | 'dinheiro'>('pix');
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleConfirm = async () => {
+    if (onClienteNomeChange && !clienteNome.trim()) {
+      setErrorMessage('Informe pelo menos o seu nome para confirmar o pedido.');
+      return;
+    }
+
     setEtapa('processando');
     setErrorMessage('');
     
     try {
-      // Simular processamento
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Simular sucesso (95% de chance)
-      if (Math.random() > 0.05) {
-        setEtapa('sucesso');
-        setTimeout(() => {
-          onConfirm({ metodo, valor, descricao });
-          setTimeout(() => {
-            onClose();
-            setEtapa('confirmacao');
-          }, 500);
-        }, 1500);
-      } else {
-        throw new Error('Erro na transação');
-      }
+      await onConfirm({ metodo, valor, descricao, clienteNome, clienteContato });
+      onClose();
+      setEtapa('confirmacao');
     } catch {
       setEtapa('erro');
-      setErrorMessage('Ocorreu um erro ao processar o pagamento. Tente novamente.');
+      setErrorMessage('Nao foi possivel registrar seu pedido. Tente novamente.');
     }
   };
 
@@ -77,6 +77,9 @@ export function ModalPagamento({
               <p className="text-gray-400 text-sm">Valor a pagar</p>
               <p className="text-3xl font-bold text-green-400">R$ {valor.toFixed(2)}</p>
               <p className="text-sm text-gray-500 mt-1">{descricao}</p>
+              <p className="text-xs text-amber-300 mt-3">
+                O pagamento nao eh confirmado neste passo. O pedido sera registrado como pendente ate a confirmacao real.
+              </p>
             </div>
 
             <div className="space-y-3 mb-6">
@@ -109,16 +112,52 @@ export function ModalPagamento({
               <button
                 onClick={() => setMetodo('debito')}
                 className={`w-full p-4 rounded-xl border flex items-center gap-4 transition ${
-                  metodo === 'debito' ? 'border-purple-500 bg-purple-500/10' : 'border-gray-700 hover:border-gray-500'
+                  metodo === 'debito' ? 'border-cyan-500 bg-cyan-500/10' : 'border-gray-700 hover:border-gray-500'
                 }`}
               >
-                <div className="w-10 h-10 bg-purple-500/20 rounded-full flex items-center justify-center">
-                  <Landmark size={20} className="text-purple-400" />
+                <div className="w-10 h-10 bg-cyan-500/20 rounded-full flex items-center justify-center">
+                  <Landmark size={20} className="text-cyan-400" />
                 </div>
                 <span className="flex-1 text-left font-medium">Débito em Conta</span>
-                {metodo === 'debito' && <Check size={20} className="text-purple-400" />}
+                {metodo === 'debito' && <Check size={20} className="text-cyan-400" />}
+              </button>
+
+              <button
+                onClick={() => setMetodo('dinheiro')}
+                className={`w-full p-4 rounded-xl border flex items-center gap-4 transition ${
+                  metodo === 'dinheiro' ? 'border-amber-500 bg-amber-500/10' : 'border-gray-700 hover:border-gray-500'
+                }`}
+              >
+                <div className="w-10 h-10 bg-amber-500/20 rounded-full flex items-center justify-center">
+                  <Banknote size={20} className="text-amber-400" />
+                </div>
+                <span className="flex-1 text-left font-medium">Dinheiro</span>
+                {metodo === 'dinheiro' && <Check size={20} className="text-amber-400" />}
               </button>
             </div>
+
+            {(onClienteNomeChange || onClienteContatoChange) && (
+              <div className="space-y-3 mb-6">
+                <input
+                  type="text"
+                  value={clienteNome}
+                  onChange={(e) => onClienteNomeChange?.(e.target.value)}
+                  placeholder="Seu nome"
+                  className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl text-white text-sm focus:outline-none focus:border-green-500"
+                />
+                <input
+                  type="text"
+                  value={clienteContato}
+                  onChange={(e) => onClienteContatoChange?.(e.target.value)}
+                  placeholder="WhatsApp (opcional)"
+                  className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl text-white text-sm focus:outline-none focus:border-green-500"
+                />
+              </div>
+            )}
+
+            {errorMessage && (
+              <p className="text-xs text-red-400 mb-3">{errorMessage}</p>
+            )}
 
             <div className="flex gap-3">
               <button 
@@ -131,7 +170,7 @@ export function ModalPagamento({
                 onClick={handleConfirm} 
                 className="flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 rounded-xl transition font-bold"
               >
-                Confirmar Pagamento
+                Finalizar Pedido
               </button>
             </div>
           </>
@@ -140,22 +179,8 @@ export function ModalPagamento({
         {etapa === 'processando' && (
           <div className="text-center py-12">
             <div className="w-20 h-20 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-400 text-lg">Processando pagamento...</p>
+            <p className="text-gray-400 text-lg">Registrando pedido...</p>
             <p className="text-sm text-gray-500 mt-2">Aguarde um momento</p>
-          </div>
-        )}
-
-        {etapa === 'sucesso' && (
-          <div className="text-center py-12">
-            <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Check size={48} className="text-green-400" />
-            </div>
-            <p className="text-xl font-bold text-green-400">✅ Pagamento Confirmado!</p>
-            <p className="text-gray-400 mt-2">Transação realizada com sucesso</p>
-            <div className="mt-4 p-3 bg-gray-700/30 rounded-lg">
-              <p className="text-sm text-gray-300">Valor: <span className="text-green-400 font-bold">R$ {valor.toFixed(2)}</span></p>
-              <p className="text-sm text-gray-300">Método: <span className="text-white">{metodo.toUpperCase()}</span></p>
-            </div>
           </div>
         )}
 

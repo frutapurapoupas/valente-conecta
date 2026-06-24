@@ -14,6 +14,16 @@ interface Receita {
   images?: string[];
 }
 
+interface CardapioItem {
+  id: string;
+  receitaId: string;
+  diaSemana: number;
+  periodo: string;
+  precoCustomizado?: number | null;
+  usarPrecoDaReceita?: boolean;
+  isAvailable: boolean;
+}
+
 export default function PreviewCardapio() {
   const [receitas, setReceitas] = useState<Receita[]>([]);
   const [loadingReceitas, setLoadingReceitas] = useState(true);
@@ -43,7 +53,9 @@ export default function PreviewCardapio() {
     }
   }
 
-  const cardapioDoDia = cardapio.filter(item => item.diaSemana === diaSelecionado && item.isAvailable);
+  const cardapioDoDia = (cardapio as CardapioItem[]).filter(
+    (item) => item.diaSemana === diaSelecionado && item.isAvailable
+  );
 
   const cardapioComReceitas = cardapioDoDia.map(item => {
     const receita = receitas.find(r => r.id === item.receitaId);
@@ -69,7 +81,8 @@ export default function PreviewCardapio() {
       receitaId: receita.id,
       diaSemana: diaSelecionado,
       periodo: periodo,
-      precoCustomizado: precoCustomizado ? parseFloat(precoCustomizado) : receita.price,
+      precoCustomizado: precoCustomizado ? parseFloat(precoCustomizado) : null,
+      usarPrecoDaReceita: !precoCustomizado,
       isAvailable: true
     };
 
@@ -96,6 +109,12 @@ export default function PreviewCardapio() {
 
   const isLoading = loadingReceitas || loadingCardapio;
   const diaLabel = design.diasSemana.find(d => d.value === diaSelecionado)?.label || '';
+
+  const getPrecoExibicao = (item: CardapioItem, receita: Receita) => {
+    const usaPrecoDaReceita = item.usarPrecoDaReceita !== false;
+    if (usaPrecoDaReceita) return receita.price || 0;
+    return item.precoCustomizado ?? receita.price ?? 0;
+  };
 
   if (isLoading) {
     return (
@@ -263,7 +282,7 @@ export default function PreviewCardapio() {
                       </div>
                       <div className={design.classes.cardFooter}>
                         <span className={design.classes.cardPreco}>
-                          {design.formatCurrency(item.precoCustomizado || item.receita?.price || 0)}
+                          {design.formatCurrency(getPrecoExibicao(item as CardapioItem, item.receita))}
                         </span>
                         <span className={design.classes.cardPeriodo}>
                           {item.periodo}

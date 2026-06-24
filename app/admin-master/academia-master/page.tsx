@@ -1,5 +1,6 @@
-import { redirect } from 'next/navigation'
+﻿"use client";
+import { DemandView } from './components/DemandView';
 
-export default function AdminMasterRoot() {
-  redirect('/admin-master/dashboard')
+export default function Page() {
+  return <DemandView category="ACADEMIA-MASTER" title="Solicitação: academia-master" />;
 }

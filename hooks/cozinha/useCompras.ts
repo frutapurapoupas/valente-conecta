@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { CompraItem } from '@/types/cozinha';
-import { compraService } from '@/services/compraService';
 
 export function useCompras() {
   const [items, setItems] = useState<CompraItem[]>([]);
@@ -13,37 +12,14 @@ export function useCompras() {
     setLoading(true);
     setError(null);
     try {
-      // Simulação - substituir por chamada real
-      const mockItems: CompraItem[] = [
-        {
-          id: '1',
-          nome: 'Farinha de Trigo',
-          unidade: 'kg',
-          quantidade: 10,
-          preco_estimado: 4.50,
-          comprado: false,
-          prioridade: 'alta'
-        },
-        {
-          id: '2',
-          nome: 'Açúcar',
-          unidade: 'kg',
-          quantidade: 5,
-          preco_estimado: 3.20,
-          comprado: false,
-          prioridade: 'media'
-        },
-        {
-          id: '3',
-          nome: 'Óleo de Soja',
-          unidade: 'L',
-          quantidade: 2,
-          preco_estimado: 8.90,
-          comprado: true,
-          prioridade: 'baixa'
-        }
-      ];
-      setItems(mockItems);
+      const response = await fetch('/api/cozinha/compras');
+      const result = await response.json();
+
+      if (result.success) {
+        setItems(result.data || []);
+      } else {
+        setError(result.error || 'Erro ao carregar compras');
+      }
     } catch (err) {
       setError('Erro ao carregar compras');
       console.error(err);
@@ -55,80 +31,84 @@ export function useCompras() {
   // ✅ NOVA FUNÇÃO: Alternar status comprado
   const toggleComprado = useCallback(async (id: string) => {
     try {
-      setItems(prev => 
-        prev.map(item => 
-          item.id === id 
-            ? { ...item, comprado: !item.comprado }
-            : item
-        )
-      );
-      
-      // Opcional: chamar API para persistir
-      // await compraService.marcarComoComprado(id);
-      
+      const alvo = items.find((item) => item.id === id);
+      if (!alvo) return false;
+
+      const response = await fetch(`/api/cozinha/compras?id=${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ comprado: !alvo.comprado })
+      });
+
+      const result = await response.json();
+      if (!result.success) return false;
+
+      await carregar();
+      window.dispatchEvent(new CustomEvent('cozinha_data_updated'));
       return true;
     } catch (error) {
       console.error('Erro ao alternar comprado:', error);
       return false;
     }
-  }, []);
+  }, [items, carregar]);
 
   // ✅ NOVA FUNÇÃO: Excluir item
   const excluir = useCallback(async (id: string) => {
     try {
-      setItems(prev => prev.filter(item => item.id !== id));
-      
-      // Opcional: chamar API para excluir
-      // await compraService.excluirItem(id);
-      
+      const response = await fetch(`/api/cozinha/compras?id=${id}`, {
+        method: 'DELETE'
+      });
+      const result = await response.json();
+      if (!result.success) return false;
+
+      await carregar();
+      window.dispatchEvent(new CustomEvent('cozinha_data_updated'));
       return true;
     } catch (error) {
       console.error('Erro ao excluir item:', error);
       return false;
     }
-  }, []);
+  }, [carregar]);
 
   // ✅ NOVA FUNÇÃO: Adicionar item
   const adicionar = useCallback(async (novoItem: Omit<CompraItem, 'id'>) => {
     try {
-      const itemCompleto: CompraItem = {
-        ...novoItem,
-        id: Date.now().toString(),
-        comprado: false
-      };
-      
-      setItems(prev => [...prev, itemCompleto]);
-      
-      // Opcional: chamar API para adicionar
-      // await compraService.adicionarItem(itemCompleto);
-      
-      return itemCompleto;
+      const response = await fetch('/api/cozinha/compras', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...novoItem, comprado: false })
+      });
+      const result = await response.json();
+      if (!result.success) return null;
+
+      await carregar();
+      window.dispatchEvent(new CustomEvent('cozinha_data_updated'));
+      return result.data;
     } catch (error) {
       console.error('Erro ao adicionar item:', error);
       return null;
     }
-  }, []);
+  }, [carregar]);
 
   // ✅ NOVA FUNÇÃO: Atualizar item
   const atualizar = useCallback(async (id: string, dados: Partial<CompraItem>) => {
     try {
-      setItems(prev => 
-        prev.map(item => 
-          item.id === id 
-            ? { ...item, ...dados }
-            : item
-        )
-      );
-      
-      // Opcional: chamar API para atualizar
-      // await compraService.atualizarItem(id, dados);
-      
+      const response = await fetch(`/api/cozinha/compras?id=${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dados)
+      });
+      const result = await response.json();
+      if (!result.success) return false;
+
+      await carregar();
+      window.dispatchEvent(new CustomEvent('cozinha_data_updated'));
       return true;
     } catch (error) {
       console.error('Erro ao atualizar item:', error);
       return false;
     }
-  }, []);
+  }, [carregar]);
 
   useEffect(() => {
     carregar();

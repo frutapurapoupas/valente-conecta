@@ -31,7 +31,6 @@ export default function PushSubscriptionManager() {
       // Solicitar permissão
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') {
-        toast.error('Permissão necessária para enviar notificações');
         return;
       }
 
@@ -46,11 +45,9 @@ export default function PushSubscriptionManager() {
       
       if (success) {
         setIsSubscribed(true);
-        toast.success('🔔 Notificações ativadas! Você receberá avisos importantes.');
       }
     } catch (error) {
       console.error('Erro ao assinar push:', error);
-      toast.error('Erro ao ativar notificações');
     }
   };
 
@@ -60,7 +57,6 @@ export default function PushSubscriptionManager() {
     if (subscription) {
       await subscription.unsubscribe();
       setIsSubscribed(false);
-      toast.success('Notificações desativadas');
     }
   };
 

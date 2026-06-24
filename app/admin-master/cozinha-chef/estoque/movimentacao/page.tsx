@@ -26,13 +26,38 @@ export default function MovimentacaoEstoquePage() {
   const [reason, setReason] = useState('');
   const [busca, setBusca] = useState('');
 
-  // Carregar movimentações do localStorage
-  useEffect(() => {
+  const carregarMovimentacoes = async () => {
+    try {
+      const response = await fetch('/api/cozinha/stock-movements');
+      const result = await response.json();
+
+      if (result.success) {
+        const parsed = (result.data || []).map((item: any) => ({
+          id: item.id,
+          ingredientId: item.ingredientId || item.ingredient_id,
+          ingredientName: item.ingredientName || item.ingredient_name,
+          type: item.type,
+          quantity: Number(item.quantity || 0),
+          unit: item.unit || 'un',
+          reason: item.reason || '',
+          createdAt: item.createdAt || item.created_at || new Date().toISOString(),
+        }));
+        setMovimentacoes(parsed);
+        return;
+      }
+    } catch (error) {
+      // fallback local
+    }
+
     const saved = localStorage.getItem('cozinha_movimentacoes');
     if (saved) {
       setMovimentacoes(JSON.parse(saved));
     }
-    setLoadingMovimentacoes(false);
+  };
+
+  // Carregar movimentações
+  useEffect(() => {
+    carregarMovimentacoes().finally(() => setLoadingMovimentacoes(false));
   }, []);
 
   const salvarMovimentacao = () => {
@@ -59,12 +84,32 @@ export default function MovimentacaoEstoquePage() {
     setMovimentacoes(novasMovimentacoes);
     localStorage.setItem('cozinha_movimentacoes', JSON.stringify(novasMovimentacoes));
 
+    // Persistência em API (com fallback local já salvo acima)
+    fetch('/api/cozinha/stock-movements', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ingredientId: novaMovimentacao.ingredientId,
+        ingredientName: novaMovimentacao.ingredientName,
+        ingredient_id: novaMovimentacao.ingredientId,
+        ingredient_name: novaMovimentacao.ingredientName,
+        type: novaMovimentacao.type,
+        quantity: novaMovimentacao.quantity,
+        unit: novaMovimentacao.unit,
+        reason: novaMovimentacao.reason,
+        createdAt: novaMovimentacao.createdAt,
+      })
+    }).catch(() => {
+      // Mantém localStorage como fallback quando API indisponível
+    });
+
     // Atualizar quantidade no estoque
     const novaQuantidade = type === 'entrada' 
       ? item.quantidade + parseFloat(quantity)
       : item.quantidade - parseFloat(quantity);
 
     atualizar(selectedItem, { quantidade: novaQuantidade });
+    window.dispatchEvent(new CustomEvent('cozinha_data_updated'));
 
     // Limpar formulário
     setQuantity('');

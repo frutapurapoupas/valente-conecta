@@ -1,1 +1,6 @@
-﻿export default function Page() { return <div className='p-6'><h1>Página: /admin-master/relatorios</h1></div>; }
+﻿"use client";
+import { DemandView } from './components/DemandView';
+
+export default function Page() {
+  return <DemandView category="RELATORIOS" title="Solicitação: relatorios" />;
+}

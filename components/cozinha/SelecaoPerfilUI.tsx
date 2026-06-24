@@ -24,18 +24,18 @@ interface SelecaoPerfilUIProps {
 // DESIGN - Estilo Vidro (Glassmorphism)
 // ============================================================
 const design = {
-  container: "min-h-screen bg-gradient-to-br from-zinc-900 via-black to-zinc-900 text-white pb-32",
-  header: "sticky top-0 z-50 bg-black/40 backdrop-blur-md border-b border-white/10 px-4 py-5",
-  title: "text-3xl font-extrabold text-center bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent tracking-wide",
+  container: "min-h-screen bg-gradient-to-br from-zinc-900 via-black to-zinc-900 text-white pb-20",
+  header: "sticky top-0 z-50 bg-black/40 backdrop-blur-md border-b border-white/10 px-4 py-4",
+  title: "text-2xl md:text-3xl font-extrabold text-center bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent tracking-wide",
   subtitle: "text-center text-sm text-gray-300 mt-1",
-  cardContainer: "px-4 py-5 space-y-6 max-w-4xl mx-auto",
-  card: "relative overflow-hidden rounded-2xl p-8 cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl backdrop-blur-xl border border-white/20",
+  cardContainer: "px-3 py-4 grid grid-cols-1 md:grid-cols-3 gap-3 max-w-6xl mx-auto",
+  card: "relative overflow-hidden rounded-2xl p-4 md:p-5 cursor-pointer transition-all duration-300 hover:scale-[1.01] hover:shadow-2xl backdrop-blur-xl border border-white/20",
   cardGlow: "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500",
-  cardIcon: "text-7xl text-center mb-4",
-  cardTitle: "text-2xl font-extrabold text-center",
-  cardDesc: "text-center mt-2 text-white/80",
-  cardBadge: "inline-block mt-3 px-4 py-1.5 rounded-full text-xs font-bold backdrop-blur-sm",
-  btnPrimary: "mt-6 w-full font-bold rounded-2xl py-4 transition-all duration-300 backdrop-blur-sm border border-white/20 hover:scale-[1.02]"
+  cardIcon: "text-5xl md:text-6xl text-center mb-2",
+  cardTitle: "text-lg md:text-xl font-extrabold text-center leading-tight",
+  cardDesc: "text-center mt-1 text-sm text-white/80 min-h-[36px]",
+  cardBadge: "inline-block mt-2 px-3 py-1 rounded-full text-[11px] font-bold backdrop-blur-sm",
+  btnPrimary: "mt-3 w-full font-bold rounded-xl py-2.5 text-sm transition-all duration-300 backdrop-blur-sm border border-white/20 hover:scale-[1.01]"
 };
 
 // ============================================================

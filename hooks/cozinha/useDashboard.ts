@@ -16,17 +16,36 @@ export function useDashboard() {
     setError(null);
     
     try {
-      // 1. Chamadas paralelas para as APIs reais do ecossistema cozinha
-      const [resPratos, resInsumos, resProducoes] = await Promise.all([
-        fetch('/api/cozinha/pratos').then(res => res.ok ? res.json() : []),
-        fetch('/api/cozinha/insumos').then(res => res.ok ? res.json() : []),
-        fetch('/api/cozinha/producoes').then(res => res.ok ? res.json() : [])
+      // APIs válidas do módulo cozinha
+      const [recipesResp, estoqueResp, producaoResp, comprasResp, cardapioResp] = await Promise.all([
+        fetch('/api/cozinha/recipes').then(res => res.ok ? res.json() : { success: false, data: [] }),
+        fetch('/api/cozinha/estoque').then(res => res.ok ? res.json() : { success: false, data: [] }),
+        fetch('/api/cozinha/producao').then(res => res.ok ? res.json() : { success: false, data: [] }),
+        fetch('/api/cozinha/compras').then(res => res.ok ? res.json() : { success: false, data: [] }),
+        fetch('/api/cozinha/cardapio').then(res => res.ok ? res.json() : { success: false, data: [] }),
       ]);
 
-      // 2. Mapeamento dinâmico dos dados financeiros reais baseados na produção da Chef Neide
-      const receita_mes = resPratos.reduce((acc: number, p: any) => acc + (p.preco * (p.enviadoProducao || 0)), 0);
-      const custo_total = resPratos.reduce((acc: number, p: any) => acc + (((p.custoIngredientes || 0) + (p.custosFixos || 0)) * (p.enviadoProducao || 0)), 0);
-      const despesa_mes = custo_total;
+      const resPratos = recipesResp.success ? (recipesResp.data || []) : [];
+      const resInsumos = estoqueResp.success ? (estoqueResp.data || []) : [];
+      const resProducoes = producaoResp.success ? (producaoResp.data || []) : [];
+      const resCompras = comprasResp.success ? (comprasResp.data || []) : [];
+      const resCardapio = cardapioResp.success ? (cardapioResp.data || []) : [];
+
+      // Receita estimada a partir do cardápio ativo
+      const receita_mes = resCardapio
+        .filter((item: any) => item.isAvailable)
+        .reduce((acc: number, item: any) => {
+          const receita = resPratos.find((r: any) => r.id === item.receitaId);
+          const valor = Number(item.precoCustomizado ?? receita?.price ?? 0);
+          return acc + valor;
+        }, 0);
+
+      // Despesa real de compras já ajustadas
+      const despesa_mes = resCompras
+        .filter((c: any) => c.comprado)
+        .reduce((acc: number, c: any) => acc + Number(c.preco_real || c.preco_estimado || 0) * Number(c.quantidade || 0), 0);
+
+      const custo_total = despesa_mes;
 
       const financeiro = {
         receita_mes,
@@ -34,8 +53,8 @@ export function useDashboard() {
         custo_total,
         preco_total: receita_mes,
         vendas_hoje: resProducoes.filter((p: any) => p.status === 'concluido').length,
-        vendas_mes: resPratos.reduce((acc: number, p: any) => acc + (p.enviadoProducao || 0), 0),
-        ticket_medio: resPratos.length > 0 ? (receita_mes / resPratos.length) : 0
+        vendas_mes: resCardapio.filter((item: any) => item.isAvailable).length,
+        ticket_medio: resCardapio.length > 0 ? (receita_mes / resCardapio.length) : 0
       };
 
       // 3. Processamento e unificação dos dados na função utilitária original
@@ -52,6 +71,19 @@ export function useDashboard() {
 
   useEffect(() => {
     carregarDados();
+
+    const onRealtimeUpdate = () => carregarDados();
+    const onFocus = () => carregarDados();
+    const interval = setInterval(() => carregarDados(), 20000);
+
+    window.addEventListener('cozinha_data_updated', onRealtimeUpdate as EventListener);
+    window.addEventListener('focus', onFocus);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('cozinha_data_updated', onRealtimeUpdate as EventListener);
+      window.removeEventListener('focus', onFocus);
+    };
   }, [carregarDados]);
 
   return { 

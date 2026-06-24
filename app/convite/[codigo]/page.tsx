@@ -65,6 +65,8 @@ export default function ConvitePage() {
     // Salvar código de convite para usar no cadastro
     if (codigoExtraido) {
       localStorage.setItem("convite_codigo", codigoExtraido);
+      localStorage.setItem("convite_origem", "link");
+      localStorage.setItem("convite_timestamp", new Date().toISOString());
     }
 
     // Evento de instalação PWA
@@ -83,7 +85,7 @@ export default function ConvitePage() {
       }
       setDeferredPrompt(null);
     } else if (!user) {
-      toast.success("📱 Após o cadastro, instale o app pelo menu do navegador!");
+      toast.success("📱 Vamos fazer cadastro rápido e instalar em seguida.");
       router.push("/register");
     } else {
       toast.success("📱 Toque em 'Adicionar à Tela Inicial' no menu do navegador");
@@ -91,6 +93,7 @@ export default function ConvitePage() {
   };
 
   const handleCadastrar = () => {
+    localStorage.setItem("convite_origem", "cadastro-direto");
     router.push("/register");
   };
 

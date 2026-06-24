@@ -8,9 +8,13 @@ import { supabase } from '@/lib/supabase'; // ✅ IMPORTAR INSTÂNCIA ÚNICA
 interface User {
   id: string;
   nome: string;
+  name?: string;
   email: string;
+  whatsapp?: string;
+  telefone?: string;
   wallet: number;
   role: "user" | "admin";
+  codigo_indicacao?: string;
   plan?: string;
   convites_count?: number;
 }

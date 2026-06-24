@@ -202,9 +202,9 @@
   {
     "name": "Frango em cubos + arroz + purê",
     "description": "Frango em cubos com arroz e purê de batata",
-    "price": 23.9,
+    "price": 20.9,
     "category": "prato",
-    "preparationTime": 30,
+    "preparationTime": 60,
     "servings": 1,
     "isAvailable": true,
     "ingredients": [
@@ -249,11 +249,18 @@
         "ingredientName": "Sal",
         "quantity": 6,
         "unit": "g"
+      },
+      {
+        "ingredientId": "1782066071449",
+        "ingredientName": "Embalagem plástica 500g",
+        "quantity": 1,
+        "unit": "un"
       }
     ],
     "images": [],
     "id": "1782063020107",
-    "createdAt": "2026-06-21T17:30:20.107Z"
+    "createdAt": "2026-06-21T17:30:20.107Z",
+    "updatedAt": "2026-06-24T08:01:20.133Z"
   },
   {
     "name": "Carne moída + arroz + legumes",
@@ -392,9 +399,9 @@
   {
     "name": "Carne de panela + arroz + purê",
     "description": "Carne de panela macia com arroz e purê",
-    "price": 27.9,
+    "price": 20.9,
     "category": "prato",
-    "preparationTime": 40,
+    "preparationTime": 60,
     "servings": 1,
     "isAvailable": true,
     "ingredients": [
@@ -439,11 +446,20 @@
         "ingredientName": "Sal",
         "quantity": 6,
         "unit": "g"
+      },
+      {
+        "ingredientId": "1782066071449",
+        "ingredientName": "Embalagem plástica 500g",
+        "quantity": 1,
+        "unit": "un"
       }
     ],
-    "images": [],
+    "images": [
+      "/uploads/receita/1782285778673-0bu0sr.jpeg"
+    ],
     "id": "1782063020755",
-    "createdAt": "2026-06-21T17:30:20.755Z"
+    "createdAt": "2026-06-21T17:30:20.755Z",
+    "updatedAt": "2026-06-24T07:23:21.697Z"
   },
   {
     "name": "Frango em cubos + arroz",

@@ -10,6 +10,8 @@ import toast from 'react-hot-toast';
 import { gerarSessaoTemp, isSessaoTempValida, isUserLoggedIn } from '@/lib/auth';
 import { walletService } from '@/services/walletService';
 import { homeService } from '@/services/homeService';
+import { supabase } from '@/lib/supabase';
+import { calculateReferralWallet } from '@/utils/referralBonus';
 
 export interface NotificacaoAdmin {
   id: string | number;
@@ -28,6 +30,8 @@ export const useHome = () => {
   const [activeSection, setActiveSection] = useState(1);
   const [saldoUsuario, setSaldoUsuario] = useState(0);
   const [carregandoSaldo, setCarregandoSaldo] = useState(true);
+  const [saldoIndicacaoDisponivel, setSaldoIndicacaoDisponivel] = useState(0);
+  const [saldoIndicacaoBloqueado, setSaldoIndicacaoBloqueado] = useState(0);
   const [notificacoesAdmin, setNotificacoesAdmin] = useState<NotificacaoAdmin[]>([]);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
@@ -54,7 +58,7 @@ export const useHome = () => {
   const gridItens = [
     { titulo: "MOTO TÁXI", cor: "#007bff", icone: "🏍️", href: "/mototaxi" },
     { titulo: "MARMITA", cor: "#ff9800", icone: "🍱", href: "/cozinha" },
-    { titulo: "ÁGUA & GÁS", cor: "#e64a19", icone: "💧", href: "/comercio" },
+    { titulo: "ÁGUA & GÁS", cor: "#0288d1", icone: "💧", href: "/agua-gas" },
   ];
 
   const categoriasBloco1 = [
@@ -63,15 +67,15 @@ export const useHome = () => {
     { nome: "MARMITA & BOLOS", icone: "🍱", href: "/cozinha" },
     { nome: "TRANSPORTE & DELIVERY", icone: "🏍️", href: "/mototaxi" },
     { nome: "UTILIDADES", icone: "💡", href: "/servicos" },
-    { nome: "SERVIÇOS", icone: "🔧", href: "/servicos" },
+    { nome: "PROFISSIONAIS / SERVIÇOS", icone: "👷", href: "/profissionais" },
   ];
 
   const categoriasBloco2 = [
     { nome: "MERCADOS", icone: "🏪", href: "/comercio" },
     { nome: "IMÓVEL", icone: "🏠", href: "/servicos" },
     { nome: "AGRO E CAMPO", icone: "🌾", href: "/servicos" },
-    { nome: "CONSTRUÇÃO", icone: "🏗️", href: "/servicos" },
-    { nome: "ALUGUEL MÁQUINAS", icone: "🔨", href: "/servicos" },
+    { nome: "CONSTRUÇÃO", icone: "🏗️", href: "/profissionais?categoria=pedreiro" },
+    { nome: "ALUGUEL MÁQUINAS", icone: "🔨", href: "/publico/maquinas" },
     { nome: "TECNOLOGIA", icone: "💻", href: "/servicos" },
   ];
 
@@ -113,9 +117,64 @@ export const useHome = () => {
     setCarregandoSaldo(false);
   }, [user]);
 
+  const carregarSaldoIndicacoes = useCallback(async () => {
+    if (!user?.id) {
+      setSaldoIndicacaoDisponivel(0);
+      setSaldoIndicacaoBloqueado(0);
+      return;
+    }
+
+    try {
+      const [configResp, payoutResp, usuariosResp, indicacoesResp] = await Promise.all([
+        fetch('/api/referrals/config').then((res) => res.json()).catch(() => ({ success: false })),
+        fetch(`/api/referrals/payout-requests?userId=${user.id}`).then((res) => res.json()).catch(() => ({ success: false, data: [] })),
+        supabase.from('usuarios').select('id').eq('convidado_por_id', user.id),
+        supabase.from('indicacoes_estabelecimentos').select('tipo, status').eq('usuario_id', user.id)
+      ]);
+
+      if (!configResp?.success) return;
+
+      const wallet = calculateReferralWallet(
+        configResp.data,
+        {
+          usuariosGerais: Array.isArray(usuariosResp.data) ? usuariosResp.data.length : 0,
+          empresasLojas: Array.isArray(indicacoesResp.data) ? indicacoesResp.data.filter((item: any) => item.tipo === 'comercio' && (item.status === 'aprovado' || item.status === 'pago')).length : 0,
+          profissionaisLiberais: Array.isArray(indicacoesResp.data) ? indicacoesResp.data.filter((item: any) => item.tipo === 'servico' && (item.status === 'aprovado' || item.status === 'pago')).length : 0,
+        },
+        Array.isArray(payoutResp?.data) ? payoutResp.data : []
+      );
+
+      setSaldoIndicacaoDisponivel(wallet.disponivel);
+      setSaldoIndicacaoBloqueado(wallet.bloqueado);
+    } catch (error) {
+      console.error('Erro ao carregar saldo de indicações:', error);
+    }
+  }, [user]);
+
   // Carregar notificações
   const carregarNotificacoesAdmin = useCallback(() => {
     try {
+      const oficiais = localStorage.getItem("admin_notificacoes_sistema");
+      if (oficiais) {
+        const dadosOficiais = JSON.parse(oficiais);
+        if (Array.isArray(dadosOficiais) && dadosOficiais.length > 0) {
+          const ativas = dadosOficiais
+            .filter((item: any) => item?.ativa)
+            .map((item: any) => ({
+              id: item.id,
+              mensagem: item.mensagem,
+              importancia: item.importancia || "media",
+              data: item.data || new Date().toLocaleDateString(),
+              status: "ativa"
+            }));
+
+          if (ativas.length > 0) {
+            setNotificacoesAdmin(ativas);
+            return;
+          }
+        }
+      }
+
       const solicitacoes = localStorage.getItem("solicitacoes_servicos");
       if (solicitacoes) {
         const dados = JSON.parse(solicitacoes);
@@ -181,16 +240,17 @@ export const useHome = () => {
   useEffect(() => {
     if (user) {
       carregarSaldo();
+      carregarSaldoIndicacoes();
     } else {
       setCarregandoSaldo(false);
     }
-  }, [user, carregarSaldo]);
+  }, [user, carregarSaldo, carregarSaldoIndicacoes]);
 
   useEffect(() => {
     carregarNotificacoesAdmin();
 
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "solicitacoes_servicos" || e.key === "notas_admin" || e.key === "demandas" || e.key === "notificacoes") {
+      if (e.key === "admin_notificacoes_sistema" || e.key === "solicitacoes_servicos" || e.key === "notas_admin" || e.key === "demandas" || e.key === "notificacoes") {
         carregarNotificacoesAdmin();
         if (e.key === "solicitacoes_servicos") {
           toast.success("📢 Nova demanda recebida! Confira o card abaixo.");
@@ -308,6 +368,8 @@ export const useHome = () => {
     activeSection,
     saldoUsuario,
     carregandoSaldo,
+    saldoIndicacaoDisponivel,
+    saldoIndicacaoBloqueado,
     notificacoesAdmin,
     showInstallBanner,
     isInstalling,

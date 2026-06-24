@@ -1,288 +1,211 @@
-"use client";
-import { Bell, CheckCircle, Clock, Link, List, Package, Phone, Store, Users, XCircle } from 'lucide-react';
-import { useEffect, useState } from 'react';
+﻿"use client";
 
-export default function AdminMasterDashboard() {
-  const [suggestions, setSuggestions] = useState([]);
-  const [pendenciasServicos, setPendenciasServicos] = useState([]);
-  const [pendenciasAdmin, setPendenciasAdmin] = useState([]);
-  const [activeTab, setActiveTab] = useState('profissionais');
-  const [copied, setCopied] = useState(null);
-  const [stats] = useState({ users: 124, stores: 45, products: 1023 });
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Bike, Coins, RefreshCw, CreditCard } from "lucide-react";
 
-  // Carregar sugestões de profissionais
-  useEffect(() => {
-    const stored = localStorage.getItem('professional_suggestions');
-    if (stored) setSuggestions(JSON.parse(stored));
-  }, []);
+interface MotoMetrics {
+  activeDrivers: number;
+  ridesToday: number;
+  pendingPayment: number;
+  revenueToday: number;
+}
 
-  // Carregar pendências de serviços (cards não implementados)
-  useEffect(() => {
-    const stored = localStorage.getItem('pendencias_servicos');
-    if (stored) setPendenciasServicos(JSON.parse(stored));
-  }, []);
+interface MCTransaction {
+  valor: number;
+  tipo: "pagar" | "receber";
+}
 
-  // Carregar pendências do Admin Master (incluindo mototáxi)
-  useEffect(() => {
-    const stored = localStorage.getItem('pendencias_admin');
-    if (stored) setPendenciasAdmin(JSON.parse(stored));
-  }, []);
+interface PlanConfig {
+  id: string;
+  preco: number | null;
+  ativo: boolean;
+}
 
-  // Aprovar profissional
-  const handleApprove = (id) => {
-    const updated = suggestions.filter(s => s.id !== id);
-    localStorage.setItem('professional_suggestions', JSON.stringify(updated));
-    setSuggestions(updated);
-    alert('✅ Profissional aprovado!');
+interface PlanosConfigSnapshot {
+  settings: {
+    unlockContactPrice: number;
+    freePhotosPerItem: number;
+    basicoPhotosPerItem: number;
+    premiumPhotosPerItem: number;
   };
+  plans: PlanConfig[];
+  services: Array<{ id: string; enabledPlans: string[] }>;
+}
 
-  // Rejeitar profissional
-  const handleReject = (id) => {
-    const updated = suggestions.filter(s => s.id !== id);
-    localStorage.setItem('professional_suggestions', JSON.stringify(updated));
-    setSuggestions(updated);
-    alert('❌ Sugestão rejeitada');
-  };
+interface RevenueProjection {
+  basicoAssinantes: number;
+  premiumAssinantes: number;
+  basicoMensal: number;
+  premiumMensal: number;
+  totalMensal: number;
+}
 
-  // Remover pendência de serviço
-  const removerPendenciaServico = (id) => {
-    const updated = pendenciasServicos.filter(p => p.id !== id);
-    setPendenciasServicos(updated);
-    localStorage.setItem('pendencias_servicos', JSON.stringify(updated));
-    alert('✅ Pendência removida');
-  };
+export default function AdminDashboardPage() {
+  const [motoMetrics, setMotoMetrics] = useState<MotoMetrics | null>(null);
+  const [mcMetrics, setMcMetrics] = useState({ entradas: 0, saidas: 0, liquido: 0, total: 0 });
+  const [planosSnapshot, setPlanosSnapshot] = useState<PlanosConfigSnapshot | null>(null);
+  const [projection, setProjection] = useState<RevenueProjection>({
+    basicoAssinantes: 0,
+    premiumAssinantes: 0,
+    basicoMensal: 0,
+    premiumMensal: 0,
+    totalMensal: 0
+  });
+  const [loading, setLoading] = useState(true);
 
-  // Marcar pendência Admin como resolvida
-  const marcarPendenciaResolvida = (id) => {
-    const updated = pendenciasAdmin.filter(p => p.id !== id);
-    setPendenciasAdmin(updated);
-    localStorage.setItem('pendencias_admin', JSON.stringify(updated));
-    alert('✅ Pendência marcada como resolvida!');
-  };
+  const load = async () => {
+    setLoading(true);
+    try {
+      const [motoRes, mcRes, planosRes, profissionaisRes, driversRes] = await Promise.all([
+        fetch("/api/mototaxi?recurso=metrics", { cache: "no-store" }),
+        fetch("/api/moeda-conecta/transactions?limit=400", { cache: "no-store" }),
+        fetch("/api/planos-config", { cache: "no-store" }),
+        fetch("/api/profissionais", { cache: "no-store" }),
+        fetch("/api/mototaxi?recurso=drivers", { cache: "no-store" })
+      ]);
 
-  // Convidar mototaxista via WhatsApp
-  const convidarMototaxistaWhatsApp = (pendencia) => {
-    const message = `📢 *URGENTE - Cliente sem Mototáxi em Valente!*\n\n` +
-      `Temos um cliente precisando de corrida AGORA:\n` +
-      `*Cliente:* ${pendencia.dados.cliente}\n` +
-      `*Telefone:* ${pendencia.dados.telefone}\n` +
-      `*Valor:* R$ ${pendencia.dados.valor}\n` +
-      `*Origem:* ${pendencia.dados.origem}\n` +
-      `*Destino:* ${pendencia.dados.destino}\n\n` +
-      `Cadastre-se agora no Valente Conecta e comece a faturar hoje mesmo!\n` +
-      `👉 https://valente-conecta.clic.com.br/mototaxi\n\n` +
-      `Atenciosamente,\nEquipe Valente Conecta`;
+      const motoData = await motoRes.json();
+      const mcData = await mcRes.json();
+      const planosData = await planosRes.json();
+      const profissionaisData = await profissionaisRes.json();
+      const driversData = await driversRes.json();
 
-    const encodedMessage = encodeURIComponent(message);
-    window.open(`https://wa.me/5575999999999?text=${encodedMessage}`, '_blank');
-  };
+      setMotoMetrics(motoData?.data || null);
+      setPlanosSnapshot(planosData?.success ? planosData.data : null);
 
-  // Copiar link de convite para prestador de serviço
-  const copiarLinkConvite = (servico, categoria) => {
-    const link = `${window.location.origin}/admin-master/convite?servico=${encodeURIComponent(servico)}&categoria=${encodeURIComponent(categoria)}`;
-    navigator.clipboard.writeText(link);
-    setCopied(servico);
-    setTimeout(() => setCopied(null), 2000);
-  };
+      const txs: MCTransaction[] = Array.isArray(mcData?.data) ? mcData.data : [];
+      const entradas = txs.filter((t) => t.tipo === "receber").reduce((sum, t) => sum + Number(t.valor || 0), 0);
+      const saidas = txs.filter((t) => t.tipo === "pagar").reduce((sum, t) => sum + Number(t.valor || 0), 0);
+      setMcMetrics({
+        entradas,
+        saidas,
+        liquido: entradas - saidas,
+        total: txs.length
+      });
 
-  // Enviar convite via WhatsApp
-  const enviarWhatsApp = (servico, categoria) => {
-    const link = `${window.location.origin}/admin-master/convite?servico=${encodeURIComponent(servico)}&categoria=${encodeURIComponent(categoria)}`;
-    const message = `📢 *Convite para cadastro - Valente Conecta*\n\n` +
-      `Recebemos uma solicitação para incluir o serviço:\n` +
-      `*${servico}* (${categoria})\n\n` +
-      `Clique no link para cadastrar este serviço na plataforma:\n${link}\n\n` +
-      `Atenciosamente,\nEquipe Valente Conecta`;
+      const profissionais = Array.isArray(profissionaisData?.data) ? profissionaisData.data : [];
+      const drivers = Array.isArray(driversData?.data) ? driversData.data : [];
+      const assinantes = [...profissionais, ...drivers];
 
-    const encodedMessage = encodeURIComponent(message);
-    window.open(`https://wa.me/5575999999999?text=${encodedMessage}`, '_blank');
-  };
+      const basicoAssinantes = assinantes.filter((item: any) => String(item?.plano || "").toLowerCase() === "basico").length;
+      const premiumAssinantes = assinantes.filter((item: any) => String(item?.plano || "").toLowerCase() === "premium").length;
+      const basicoPreco = Number((planosData?.data?.plans || []).find((p: any) => p.id === "basico")?.preco || 0);
+      const premiumPreco = Number((planosData?.data?.plans || []).find((p: any) => p.id === "premium")?.preco || 0);
 
-  const getIconByCategoria = (categoria) => {
-    switch (categoria) {
-      case 'Gastronomia': return <Package className="text-orange-500" size={16} />;
-      case 'Serviços': return <Users className="text-blue-500" size={16} />;
-      case 'Comércio': return <Store className="text-purple-500" size={16} />;
-      case 'Utilidades': return <Clock className="text-cyan-500" size={16} />;
-      default: return <Package className="text-gray-500" size={16} />;
+      const basicoMensal = Number((basicoAssinantes * basicoPreco).toFixed(2));
+      const premiumMensal = Number((premiumAssinantes * premiumPreco).toFixed(2));
+      const totalMensal = Number((basicoMensal + premiumMensal).toFixed(2));
+
+      setProjection({
+        basicoAssinantes,
+        premiumAssinantes,
+        basicoMensal,
+        premiumMensal,
+        totalMensal
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
+  useEffect(() => {
+    load();
+  }, []);
+
+  const planoById = (planId: string) => planosSnapshot?.plans?.find((p) => p.id === planId) || null;
+  const basico = planoById("basico");
+  const premium = planoById("premium");
+  const ativos = (planosSnapshot?.plans || []).filter((p) => p.ativo).length;
+  const servicos = (planosSnapshot?.services || []).length;
+
   return (
-    <div className="min-h-screen bg-gray-100 pb-8">
-      {/* Header */}
-      <div className="bg-indigo-700 text-white p-6 rounded-b-3xl">
-        <h1 className="text-2xl font-bold">Admin Master</h1>
-        <p className="text-sm opacity-80">Controle total do Valente Conecta</p>
+    <div className="space-y-6 p-4 md:p-6">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">Dashboard Geral</h1>
+          <p className="text-sm text-gray-500">Resumo para tomada de decisão do Admin Master</p>
+        </div>
+        <button onClick={load} className="bg-slate-800 text-white px-3 py-2 rounded-lg text-sm flex items-center gap-2">
+          <RefreshCw size={14} /> Atualizar
+        </button>
       </div>
 
-      {/* Stats */}
-      <div className="p-4 grid grid-cols-2 gap-3">
-        <div className="bg-white rounded-xl p-3"><Users className="text-blue-600 mb-1" size={20} /><p className="text-2xl font-bold">{stats.users}</p><p className="text-xs text-gray-500">Usuarios</p></div>
-        <div className="bg-white rounded-xl p-3"><Store className="text-green-600 mb-1" size={20} /><p className="text-2xl font-bold">{stats.stores}</p><p className="text-xs text-gray-500">Lojas</p></div>
-        <div className="bg-white rounded-xl p-3"><Package className="text-orange-600 mb-1" size={20} /><p className="text-2xl font-bold">{stats.products}</p><p className="text-xs text-gray-500">Produtos</p></div>
-        <div className="bg-white rounded-xl p-3"><List className="text-purple-600 mb-1" size={20} /><p className="text-2xl font-bold">{suggestions.length + pendenciasServicos.length + pendenciasAdmin.length}</p><p className="text-xs text-gray-500">Total Pendentes</p></div>
-      </div>
+      {loading ? (
+        <div className="text-sm text-gray-500">Carregando métricas...</div>
+      ) : (
+        <>
+          <section className="bg-white border border-gray-200 rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-3 text-gray-800 font-semibold">
+              <Bike size={16} /> Moto Táxi
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+              <MetricCard label="Motoristas ativos" value={motoMetrics?.activeDrivers || 0} />
+              <MetricCard label="Corridas hoje" value={motoMetrics?.ridesToday || 0} />
+              <MetricCard label="Pag. pendentes" value={motoMetrics?.pendingPayment || 0} />
+              <MetricCard label="Receita hoje" value={`R$ ${Number(motoMetrics?.revenueToday || 0).toFixed(2)}`} />
+            </div>
+            <div className="mt-3">
+              <Link href="/admin-master/mototaxi" className="text-xs text-blue-600 hover:underline">Abrir gestão completa do Moto Táxi</Link>
+            </div>
+          </section>
 
-      {/* Tabs */}
-      <div className="px-4">
-        <div className="flex gap-2 border-b">
-          <button onClick={() => setActiveTab('profissionais')} className={`pb-2 px-3 text-sm font-medium ${activeTab === 'profissionais' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500'}`}>
-            👥 Profissionais ({suggestions.length})
-          </button>
-          <button onClick={() => setActiveTab('servicos')} className={`pb-2 px-3 text-sm font-medium ${activeTab === 'servicos' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500'}`}>
-            📦 Serviços ({pendenciasServicos.length})
-          </button>
-          <button onClick={() => setActiveTab('alertas')} className={`pb-2 px-3 text-sm font-medium ${activeTab === 'alertas' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500'}`}>
-            🚨 Alertas ({pendenciasAdmin.length})
-          </button>
-        </div>
-      </div>
+          <section className="bg-white border border-gray-200 rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-3 text-gray-800 font-semibold">
+              <Coins size={16} /> Moeda Conecta
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+              <MetricCard label="Transações" value={mcMetrics.total} />
+              <MetricCard label="Entradas" value={`R$ ${mcMetrics.entradas.toFixed(2)}`} />
+              <MetricCard label="Saídas" value={`R$ ${mcMetrics.saidas.toFixed(2)}`} />
+              <MetricCard label="Líquido" value={`R$ ${mcMetrics.liquido.toFixed(2)}`} />
+            </div>
+            <div className="mt-3">
+              <Link href="/admin-master/moeda-conecta/transacoes" className="text-xs text-blue-600 hover:underline">Abrir relatório com PDF</Link>
+            </div>
+          </section>
 
-      {/* Conteúdo - Profissionais */}
-      {activeTab === 'profissionais' && (
-        <div className="p-4">
-          <div className="bg-white rounded-xl p-4">
-            <h2 className="font-bold mb-3 flex items-center gap-2"><Users size={18} /> Sugestões de Profissionais</h2>
-            {suggestions.length === 0 ? (
-              <p className="text-gray-500 py-4 text-center">Nenhuma sugestão pendente</p>
-            ) : (
-              suggestions.map(s => (
-                <div key={s.id} className="border-b py-3 flex justify-between items-center">
-                  <div><p className="font-semibold">{s.name}</p><p className="text-sm text-gray-500">{s.category}</p><p className="text-xs text-gray-400">{new Date(s.timestamp).toLocaleDateString('pt-BR')}</p></div>
-                  <div className="flex gap-2">
-                    <button onClick={() => handleApprove(s.id)} className="bg-green-500 text-white px-3 py-1 rounded-full text-xs">Aprovar</button>
-                    <button onClick={() => handleReject(s.id)} className="bg-red-500 text-white px-3 py-1 rounded-full text-xs">Rejeitar</button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
+          <section className="bg-white border border-gray-200 rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-3 text-gray-800 font-semibold">
+              <CreditCard size={16} /> Planos e Assinaturas
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-sm">
+              <MetricCard label="Planos ativos" value={ativos} />
+              <MetricCard label="Serviços mapeados" value={servicos} />
+              <MetricCard label="Basico" value={`R$ ${Number(basico?.preco || 0).toFixed(2)}`} />
+              <MetricCard label="Premium" value={`R$ ${Number(premium?.preco || 0).toFixed(2)}`} />
+              <MetricCard label="Desbloqueio" value={`R$ ${Number(planosSnapshot?.settings?.unlockContactPrice || 0).toFixed(2)}`} />
+            </div>
+
+            <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+              <p className="text-sm font-semibold text-emerald-800">Projecao Mensal de Receita (assinaturas)</p>
+              <p className="text-xs text-emerald-700 mt-0.5">Calculo: quantidade de assinantes por plano x valor do plano configurado.</p>
+              <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+                <MetricCard label={`Basico (${projection.basicoAssinantes} assinantes)`} value={`R$ ${projection.basicoMensal.toFixed(2)}`} />
+                <MetricCard label={`Premium (${projection.premiumAssinantes} assinantes)`} value={`R$ ${projection.premiumMensal.toFixed(2)}`} />
+                <MetricCard label="Receita mensal prevista" value={`R$ ${projection.totalMensal.toFixed(2)}`} />
+              </div>
+              <p className="text-[11px] text-emerald-700 mt-2">
+                Base atual considerada: profissionais + motoristas cadastrados com plano basico/premium.
+              </p>
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-4">
+              <Link href="/admin-master/planos" className="text-xs text-blue-600 hover:underline">Controlar planos liberados por serviço</Link>
+              <Link href="/planos" className="text-xs text-blue-600 hover:underline">Abrir visão pública de planos</Link>
+            </div>
+          </section>
+        </>
       )}
+    </div>
+  );
+}
 
-      {/* Conteúdo - Serviços (Cards não implementados) */}
-      {activeTab === 'servicos' && (
-        <div className="p-4">
-          <div className="bg-white rounded-xl p-4">
-            <h2 className="font-bold mb-3 flex items-center gap-2"><Bell size={18} /> Solicitações de Serviços</h2>
-            {pendenciasServicos.length === 0 ? (
-              <p className="text-gray-500 py-4 text-center">Nenhuma solicitação de serviço pendente</p>
-            ) : (
-              pendenciasServicos.map(p => (
-                <div key={p.id} className="border-b py-3">
-                  <div className="flex items-start gap-3">
-                    <div className="bg-gray-100 p-2 rounded-full">{getIconByCategoria(p.categoria)}</div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-semibold text-gray-800">{p.servico}</p>
-                        <span className="text-[9px] bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded-full">{p.categoria}</span>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">Solicitado em: {new Date(p.data).toLocaleDateString('pt-BR')}</p>
-                      <p className="text-xs text-gray-500">Usuário: {p.usuario}</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 mt-2">
-                    <button onClick={() => copiarLinkConvite(p.servico, p.categoria)} className="flex-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-lg text-xs flex items-center justify-center gap-1">
-                      {copied === p.servico ? <CheckCircle size={12} /> : <Link size={12} />}
-                      {copied === p.servico ? "Copiado!" : "Copiar Link"}
-                    </button>
-                    <button onClick={() => enviarWhatsApp(p.servico, p.categoria)} className="flex-1 bg-green-100 text-green-700 px-2 py-1 rounded-lg text-xs flex items-center justify-center gap-1">
-                      <Phone size={12} /> WhatsApp
-                    </button>
-                    <button onClick={() => removerPendenciaServico(p.id)} className="px-2 py-1 bg-red-100 text-red-700 rounded-lg text-xs flex items-center justify-center gap-1">
-                      <XCircle size={12} /> Remover
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-
-          {/* Instruções */}
-          <div className="mt-4 bg-blue-50 rounded-xl p-4 border border-blue-200">
-            <h3 className="font-semibold text-blue-800 text-sm mb-2">📌 Como proceder com solicitações de serviços</h3>
-            <ul className="text-xs text-blue-700 space-y-1">
-              <li>• Clique em <strong>"Copiar Link"</strong> para gerar um convite personalizado</li>
-              <li>• Envie o convite para o prestador de serviço via WhatsApp</li>
-              <li>• Após o prestador se cadastrar, remova a pendência da lista</li>
-              <li>• O serviço aparecerá automaticamente para os usuários</li>
-            </ul>
-          </div>
-        </div>
-      )}
-
-      {/* Conteúdo - Alertas Admin */}
-      {activeTab === 'alertas' && (
-        <div className="p-4">
-          <div className="bg-white rounded-xl p-4">
-            <h2 className="font-bold mb-3 flex items-center gap-2"><Bell size={18} /> Alertas do Sistema</h2>
-            {pendenciasAdmin.length === 0 ? (
-              <p className="text-gray-500 py-4 text-center">Nenhum alerta pendente</p>
-            ) : (
-              pendenciasAdmin.map(p => (
-                <div key={p.id} className="border-b py-3">
-                  <div className="flex items-start gap-3">
-                    <div className="bg-red-100 p-2 rounded-full">
-                      <Bell className="text-red-600" size={16} />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-semibold text-red-800">{p.titulo}</p>
-                        <span className="text-[9px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full">
-                          {p.tipo === 'mototaxi_indisponivel' ? 'Mototáxi' : 'Sistema'}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-700 mt-1">{p.descricao}</p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {new Date(p.data).toLocaleDateString('pt-BR')} às {new Date(p.data).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                      </p>
-
-                      {p.tipo === 'mototaxi_indisponivel' && p.dados && (
-                        <div className="mt-2 p-2 bg-gray-50 rounded-lg text-xs">
-                          <p><strong>Cliente:</strong> {p.dados.cliente}</p>
-                          <p><strong>Telefone:</strong> {p.dados.telefone}</p>
-                          <p><strong>Valor:</strong> R$ {p.dados.valor}</p>
-                          <p><strong>Rota:</strong> {p.dados.origem} → {p.dados.destino}</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex gap-2 mt-2">
-                    {p.tipo === 'mototaxi_indisponivel' && (
-                      <button
-                        onClick={() => convidarMototaxistaWhatsApp(p)}
-                        className="flex-1 bg-green-100 text-green-700 px-2 py-1 rounded-lg text-xs flex items-center justify-center gap-1"
-                      >
-                        <Phone size={12} /> Convidar Mototaxista
-                      </button>
-                    )}
-                    <button
-                      onClick={() => marcarPendenciaResolvida(p.id)}
-                      className="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs flex items-center justify-center gap-1"
-                    >
-                      <CheckCircle size={12} /> Marcar Resolvido
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-
-          {/* Instruções para Alertas */}
-          <div className="mt-4 bg-red-50 rounded-xl p-4 border border-red-200">
-            <h3 className="font-semibold text-red-800 text-sm mb-2">🚨 Como proceder com alertas</h3>
-            <ul className="text-xs text-red-700 space-y-1">
-              <li>• <strong>Alertas de Mototáxi:</strong> Clientes sem motoristas disponíveis</li>
-              <li>• Use <strong>"Convidar Mototaxista"</strong> para enviar WhatsApp rápido</li>
-              <li>• Após resolver, marque como <strong>"Resolvido"</strong></li>
-              <li>• Alertas críticos requerem ação imediata</li>
-            </ul>
-          </div>
-        </div>
-      )}
-
-      <div className="p-4"><a href="/" className="block text-center text-blue-600">← Voltar para Home</a></div>
+function MetricCard({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="rounded-lg border border-gray-200 p-3">
+      <p className="text-lg font-bold text-gray-800">{value}</p>
+      <p className="text-xs text-gray-500">{label}</p>
     </div>
   );
 }

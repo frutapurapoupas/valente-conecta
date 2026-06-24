@@ -90,7 +90,7 @@ export const homeService = {
         { nome: "IMÓVEL", icone: "🏠", href: "/servicos" },
         { nome: "AGRO E CAMPO", icone: "🌾", href: "/servicos" },
         { nome: "CONSTRUÇÃO", icone: "🏗️", href: "/servicos" },
-        { nome: "ALUGUEL MÁQUINAS", icone: "🔨", href: "/servicos" },
+      { nome: "ALUGUEL MÁQUINAS", icone: "🔨", href: "/publico/maquinas" },
         { nome: "TECNOLOGIA", icone: "💻", href: "/servicos" },
       ],
       categoriasBloco3: [

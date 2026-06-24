@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "updatedAt": "2026-06-24T10:43:43.269Z",
+  "driverPlanBenefits": {
+    "gratis": {
+      "prioridadeFila": 0,
+      "alertaSonoro": false,
+      "vantagens": [
+        "Recebimento padrao de corridas"
+      ]
+    },
+    "basico": {
+      "prioridadeFila": 1,
+      "alertaSonoro": true,
+      "vantagens": [
+        "Alerta sonoro de nova corrida",
+        "Prioridade media na fila",
+        "Selo motorista verificado"
+      ]
+    },
+    "premium": {
+      "prioridadeFila": 2,
+      "alertaSonoro": true,
+      "vantagens": [
+        "Alerta sonoro reforcado",
+        "Prioridade alta na fila",
+        "Destaque no topo e corridas preferenciais"
+      ]
+    }
+  },
+  "adsConfig": {
+    "enabled": true,
+    "showToFreePassengersOnly": true,
+    "cooldownMinutes": 30,
+    "popupTitle": "Destrave vantagens no Moto Taxi",
+    "popupMessage": "Assine e evite pop-ups durante as corridas.",
+    "items": [
+      {
+        "id": "ad_1",
+        "titulo": "Plano Passageiro Basico",
+        "mensagem": "Evite pop-ups e tenha prioridade no atendimento por apenas R$ 7,90/mes.",
+        "ctaLabel": "Quero Assinar",
+        "ctaLink": "/planos",
+        "ativo": true
+      }
+    ]
+  },
+  "drivers": [
+    {
+      "id": "drv_1",
+      "nome": "Carlos Moto",
+      "fotoUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=320&q=80",
+      "telefone": "75999999999",
+      "veiculo": "Honda CG 160",
+      "placa": "ABC-1234",
+      "avaliacao": 4.8,
+      "plano": "premium",
+      "online": true,
+      "latitude": -11.406,
+      "longitude": -39.461,
+      "cnhNumero": "00000000001",
+      "cnhValida": true,
+      "documentoVeiculoOk": true,
+      "licenciamentoVencimento": "2027-01-10",
+      "createdAt": "2026-06-24T10:43:43.269Z",
+      "updatedAt": "2026-06-24T10:43:43.269Z"
+    },
+    {
+      "id": "drv_2",
+      "nome": "Paulo Freire",
+      "fotoUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=320&q=80",
+      "telefone": "75988888888",
+      "veiculo": "Yamaha Fazer 250",
+      "placa": "DEF-5678",
+      "avaliacao": 4.9,
+      "plano": "basico",
+      "online": true,
+      "latitude": -11.408,
+      "longitude": -39.459,
+      "cnhNumero": "00000000002",
+      "cnhValida": true,
+      "documentoVeiculoOk": true,
+      "licenciamentoVencimento": "2026-11-18",
+      "createdAt": "2026-06-24T10:43:43.269Z",
+      "updatedAt": "2026-06-24T10:43:43.269Z"
+    }
+  ],
+  "rides": []
+}

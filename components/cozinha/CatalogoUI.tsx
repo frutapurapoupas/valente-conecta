@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import { ShoppingCart, Plus, Minus } from 'lucide-react';
+import { ModalPagamento } from '@/components/cozinha/ModalPagamento';
 
 interface ItemCardapio {
   id: string | number;
@@ -25,12 +26,21 @@ interface CatalogoUIProps {
   onAumentar: (id: string | number) => void;
   onDiminuir: (id: string | number) => void;
   getQuantidade: (id: string | number) => number;
+  onLimparCarrinho?: () => void;
   desconto?: number;
   perfil?: string;
 }
 
 // DIAS DA SEMANA
 const DIAS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+
+const normalizar = (valor: string) =>
+  String(valor || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace('-feira', '')
+    .trim();
 
 // SUBCATEGORIAS DE SOBREMESAS
 const SUBCATEGORIAS = {
@@ -46,6 +56,7 @@ export default function CatalogoUI({
   onAumentar,
   onDiminuir,
   getQuantidade,
+  onLimparCarrinho,
   desconto = 0,
   perfil = 'publico'
 }: CatalogoUIProps) {
@@ -54,6 +65,10 @@ export default function CatalogoUI({
   
   // SUB-ABA: dia da semana ou subcategoria
   const [subAba, setSubAba] = useState<string>('Segunda');
+  const [modalPagamentoAberto, setModalPagamentoAberto] = useState(false);
+  const [clienteNome, setClienteNome] = useState('');
+  const [clienteContato, setClienteContato] = useState('');
+  const [statusPedido, setStatusPedido] = useState<string | null>(null);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -65,10 +80,8 @@ export default function CatalogoUI({
 
   // Filtrar pratos por dia
   const getPratosPorDia = (dia: string) => {
-    return pratos.filter(item => 
-      item.dia?.toLowerCase() === dia.toLowerCase() ||
-      item.categoria?.toLowerCase() === 'prato'
-    );
+    const diaNormalizado = normalizar(dia);
+    return pratos.filter(item => normalizar(item.dia) === diaNormalizado);
   };
 
   // Filtrar sobremesas por subcategoria
@@ -133,6 +146,84 @@ export default function CatalogoUI({
   ];
 
   const itens = getItensAtuais();
+  const todosItens = [...pratos, ...sobremesas];
+  const itensCarrinho = todosItens
+    .map((item) => ({ ...item, quantidade: getQuantidade(item.id) }))
+    .filter((item) => item.quantidade > 0);
+
+  const totalCarrinho = itensCarrinho.reduce(
+    (acc, item) => acc + Number(item.preco || 0) * Number(item.quantidade || 0),
+    0
+  );
+
+  const quantidadeCarrinho = itensCarrinho.reduce((acc, item) => acc + Number(item.quantidade || 0), 0);
+
+  const finalizarPagamento = async (dados: {
+    metodo: string;
+    valor: number;
+    descricao: string;
+    clienteNome?: string;
+    clienteContato?: string;
+  }) => {
+    if (totalCarrinho <= 0) {
+      throw new Error('Carrinho vazio');
+    }
+
+    const payload = {
+      clienteNome: dados.clienteNome || clienteNome || 'Cliente',
+      clienteContato: dados.clienteContato || clienteContato || '',
+      metodo: dados.metodo,
+      valor: totalCarrinho,
+      status: 'pendente',
+      items: itensCarrinho.map((item) => ({
+        produtoId: item.id,
+        nome: item.titulo,
+        quantidade: item.quantidade,
+        preco: item.preco
+      })),
+      observacao: `Perfil ${perfil}`
+    };
+
+    const response = await fetch('/api/cozinha/pedidos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+    if (!result?.success) {
+      throw new Error(result?.error || 'Falha ao registrar pedido');
+    }
+
+    const pedidoCriado = result?.data;
+
+    try {
+      const pagamentoResponse = await fetch('/api/pagamentos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pedidoId: pedidoCriado?.id,
+          metodo: dados.metodo,
+          payerEmail: clienteContato?.includes('@') ? clienteContato : undefined
+        })
+      });
+
+      const pagamentoResult = await pagamentoResponse.json();
+      const checkoutUrl = pagamentoResult?.data?.checkoutUrl;
+
+      if (pagamentoResult?.success && checkoutUrl) {
+        window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
+        setStatusPedido('✅ Pedido enviado! Abra o checkout para concluir o pagamento real.');
+      } else {
+        setStatusPedido('✅ Pedido enviado! Aguardando confirmacao real do pagamento.');
+      }
+    } catch {
+      setStatusPedido('✅ Pedido enviado! Aguardando confirmacao real do pagamento.');
+    }
+
+    onLimparCarrinho?.();
+    setModalPagamentoAberto(false);
+  };
 
   if (loading) {
     return (
@@ -208,7 +299,7 @@ export default function CatalogoUI({
                         : 'bg-zinc-800/50 text-gray-400 hover:bg-zinc-700'
                     }`}
                   >
-                    {sub.label} ({sub.count})
+                    {sub.label}
                   </button>
                 ))
               : subAbasSobremesas.map((sub) => (
@@ -310,9 +401,12 @@ export default function CatalogoUI({
                     </div>
 
                     {quantidade > 0 && (
-                      <button className="mt-3 w-full bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-2 rounded-lg transition flex items-center justify-center gap-2">
+                      <button
+                        onClick={() => setModalPagamentoAberto(true)}
+                        className="mt-3 w-full bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-2 rounded-lg transition flex items-center justify-center gap-2"
+                      >
                         <ShoppingCart size={18} />
-                        Adicionar ({quantidade})
+                        Carrinho ({quantidade})
                       </button>
                     )}
                   </div>
@@ -322,6 +416,44 @@ export default function CatalogoUI({
           </div>
         )}
       </div>
+
+          {statusPedido && (
+            <div className="fixed top-4 right-4 z-40 bg-green-500 text-black px-4 py-2 rounded-lg text-sm font-semibold shadow-lg">
+              {statusPedido}
+            </div>
+          )}
+
+          {quantidadeCarrinho > 0 && (
+            <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 bg-zinc-900 border border-yellow-500 rounded-2xl px-4 py-3 w-[min(92vw,560px)] shadow-2xl">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs text-gray-400">Seu carrinho</p>
+                  <p className="text-sm font-semibold text-white">
+                    {quantidadeCarrinho} itens • {formatCurrency(totalCarrinho)}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setModalPagamentoAberto(true)}
+                  className="px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-black rounded-xl text-sm font-bold"
+                >
+                  Pagar Agora
+                </button>
+              </div>
+            </div>
+          )}
+
+          <ModalPagamento
+            isOpen={modalPagamentoAberto}
+            onClose={() => setModalPagamentoAberto(false)}
+            onConfirm={finalizarPagamento}
+            valor={totalCarrinho}
+            descricao={`${quantidadeCarrinho} itens no pedido`}
+            titulo="💳 Finalizar Pedido"
+            clienteNome={clienteNome}
+            clienteContato={clienteContato}
+            onClienteNomeChange={setClienteNome}
+            onClienteContatoChange={setClienteContato}
+          />
     </div>
   );
 }

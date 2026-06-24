@@ -11,11 +11,15 @@ export interface CompraItem {
   quantidade: number;
   preco_estimado?: number;
   preco_real?: number;
+  fornecedor?: string;
   comprado: boolean;
   prioridade?: 'alta' | 'media' | 'baixa';
   data_compra?: Date;
   categoria?: string;
+  receita_origem?: string;
   observacao?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 // ============================================================

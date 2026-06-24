@@ -1,217 +1,186 @@
-"use client";
+﻿"use client";
 
-export const dynamic = 'force-dynamic';
+import { useEffect, useMemo, useState } from "react";
+import { ChevronDown, ChevronUp, CheckCircle2, CreditCard, Shield, Star, Building2 } from "lucide-react";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useApp } from "@/app/context/AppContext";
-import toast from "react-hot-toast";
-import { CheckCircle, Crown, Star, Building, ArrowRight, Shield, Zap, TrendingUp } from "lucide-react";
-
-// Planos sincronizados com o Admin Master
-// Estes valores serão carregados do localStorage/admin_configuracoes
-// Por enquanto, mantemos a mesma estrutura do admin
-
-interface Plano {
-  id: number;
+interface PlanConfig {
+  id: string;
   nome: string;
-  preco: number;
-  descricao: string;
-  recursos: string[];
-  cor: string;
+  preco: number | null;
+  periodo: string;
+  negociavel: boolean;
   ativo: boolean;
-  destaque?: boolean;
+  descricao: string;
+  fotosPorItem: number;
+  featuresPadrao: string[];
 }
 
-export default function PlanosPage() {
-  const router = useRouter();
-  const { user } = useApp();
-  const [loading, setLoading] = useState(false);
-  const [planos, setPlanos] = useState<Plano[]>([
-    { id: 1, nome: "Grátis", preco: 0, descricao: "Acesso básico", recursos: ["Perfil público", "Busca limitada"], cor: "gray", ativo: true },
-    { id: 2, nome: "Básico", preco: 15, descricao: "Para profissionais", recursos: ["Destaque na busca", "Contato visível"], cor: "blue", ativo: true },
-    { id: 3, nome: "Premium", preco: 49.90, descricao: "Para empresas", recursos: ["Destaque VIP", "Produtos ilimitados"], cor: "yellow", ativo: true, destaque: true },
-    { id: 4, nome: "Fisco", preco: 99.90, descricao: "Módulo fiscal completo", recursos: ["Nota fiscal", "Relatórios"], cor: "purple", ativo: true },
-  ]);
+interface ServiceConfig {
+  id: string;
+  nome: string;
+  enabledPlans: string[];
+  planFeatures: Record<string, string[]>;
+}
 
-  // Carregar planos do localStorage (configurações do Admin Master)
+interface PlanosConfig {
+  version: number;
+  settings: {
+    unlockContactPrice: number;
+    blurContactOnFree: boolean;
+    paidAdsOpen: boolean;
+    freePhotosPerItem: number;
+    basicoPhotosPerItem: number;
+    premiumPhotosPerItem: number;
+  };
+  plans: PlanConfig[];
+  services: ServiceConfig[];
+}
+
+const iconByPlan: Record<string, any> = {
+  gratis: Shield,
+  basico: CreditCard,
+  premium: Star,
+  fisco: Building2
+};
+
+const cardByPlan: Record<string, string> = {
+  gratis: "border-slate-600 bg-slate-900",
+  basico: "border-blue-500/50 bg-blue-950/30",
+  premium: "border-yellow-500/50 bg-yellow-950/20",
+  fisco: "border-purple-500/50 bg-purple-950/20"
+};
+
+export default function PlanosPage() {
+  const [config, setConfig] = useState<PlanosConfig | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [openServices, setOpenServices] = useState<Record<string, boolean>>({});
+
   useEffect(() => {
-    const saved = localStorage.getItem("admin_planos_config");
-    if (saved) {
+    const load = async () => {
+      setLoading(true);
       try {
-        const savedPlanos = JSON.parse(saved);
-        setPlanos(savedPlanos);
-      } catch (e) {}
-    }
+        const res = await fetch("/api/planos-config", { cache: "no-store" });
+        const data = await res.json();
+        if (data?.success && data?.data) {
+          setConfig(data.data);
+        } else {
+          setConfig(null);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
   }, []);
 
-  const handleAssinar = async (plano: Plano) => {
-    if (!plano.ativo) {
-      toast.error("Este plano está temporariamente indisponível");
-      return;
-    }
+  const planById = useMemo(() => {
+    const map: Record<string, PlanConfig> = {};
+    (config?.plans || []).forEach((p) => {
+      map[p.id] = p;
+    });
+    return map;
+  }, [config]);
 
-    setLoading(true);
-
-    // Verificar se o usuário já fez o cadastro completo (CPF/CNPJ, email, senha)
-    if (!user?.cadastroCompleto) {
-      // Salvar o plano escolhido para redirecionar após autenticação
-      localStorage.setItem("plano_escolhido", JSON.stringify(plano));
-      toast.info("Complete seu cadastro para assinar o plano");
-      router.push("/autenticacao-completa");
-    } else {
-      // Usuário já tem cadastro completo, prosseguir para checkout/pagamento
-      toast.success(`Redirecionando para assinatura do plano ${plano.nome}...`);
-      // Aqui você pode redirecionar para página de pagamento
-      // router.push(`/checkout/${plano.id}`);
-    }
-
-    setLoading(false);
+  const toggleService = (serviceId: string) => {
+    setOpenServices((prev) => ({ ...prev, [serviceId]: !prev[serviceId] }));
   };
 
-  const getCorBg = (cor: string) => {
-    const cores: Record<string, string> = {
-      gray: "from-gray-800 to-gray-900",
-      blue: "from-blue-800 to-blue-900",
-      yellow: "from-yellow-700 to-amber-800",
-      purple: "from-purple-800 to-indigo-900"
-    };
-    return cores[cor] || "from-gray-800 to-gray-900";
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-white p-6">
+        <div className="max-w-5xl mx-auto animate-pulse space-y-3">
+          <div className="h-10 rounded bg-slate-800" />
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="h-16 rounded bg-slate-800" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
-  const getCorTexto = (cor: string) => {
-    const cores: Record<string, string> = {
-      gray: "text-gray-400",
-      blue: "text-blue-400",
-      yellow: "text-yellow-400",
-      purple: "text-purple-400"
-    };
-    return cores[cor] || "text-gray-400";
-  };
-
-  const getCorBotao = (cor: string) => {
-    const cores: Record<string, string> = {
-      gray: "bg-gray-600 hover:bg-gray-500",
-      blue: "bg-blue-600 hover:bg-blue-500",
-      yellow: "bg-yellow-500 hover:bg-yellow-400 text-black",
-      purple: "bg-purple-600 hover:bg-purple-500"
-    };
-    return cores[cor] || "bg-gray-600 hover:bg-gray-500";
-  };
-
-  const getCorDestaque = (cor: string) => {
-    const cores: Record<string, string> = {
-      gray: "border-gray-500",
-      blue: "border-blue-500",
-      yellow: "border-yellow-500",
-      purple: "border-purple-500"
-    };
-    return cores[cor] || "border-gray-500";
-  };
+  if (!config) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-white p-6">
+        <div className="max-w-3xl mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center">
+          <p>Nao foi possivel carregar os planos agora.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 pb-28">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-green-400 to-green-700 p-4 sticky top-0 z-40 shadow-lg">
-        <div className="flex items-center gap-3">
-          <button onClick={() => router.back()} className="text-white">
-            <i className="fas fa-arrow-left text-xl"></i>
-          </button>
-          <h1 className="text-white font-bold text-lg">💰 Planos e Assinaturas</h1>
+    <div className="min-h-screen bg-slate-950 text-white pb-24">
+      <header className="bg-gradient-to-r from-blue-700 to-cyan-600 p-4 sticky top-0 z-40 shadow-lg">
+        <div className="max-w-5xl mx-auto">
+          <h1 className="text-white font-bold text-lg">PLANOS E ASSINATURA</h1>
+          <p className="text-white/80 text-xs mt-1">Gratis, Basico, Premium e Fisco (quando aplicavel)</p>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto p-6">
-        {/* Banner de informação */}
-        <div className="bg-gradient-to-r from-indigo-600/20 to-purple-600/20 rounded-2xl p-6 mb-8 text-center border border-indigo-500/30">
-          <Crown className="w-12 h-12 text-yellow-400 mx-auto mb-3" />
-          <h2 className="text-2xl font-bold text-white mb-2">Escolha o plano ideal para você</h2>
-          <p className="text-gray-300">Desbloqueie todos os recursos e leve seu negócio ao próximo nível</p>
+      <main className="max-w-5xl mx-auto p-4 space-y-4">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-sm text-slate-300">
+          <p className="font-semibold text-white mb-2">Regras gerais</p>
+          <ul className="space-y-1 list-disc list-inside">
+            <li>Gratis e Basico: 1 foto por produto/servico.</li>
+            <li>Premium: 5 fotos por produto/servico.</li>
+            <li>Itens pagos ficam com anuncio aberto (nome, endereco e localizador visiveis).</li>
+            <li>No gratis, contato pode ficar borrado com desbloqueio de R$ {Number(config.settings.unlockContactPrice || 0).toFixed(2)}.</li>
+            <li>Fotos, descricao e preco sao visiveis em todos os planos.</li>
+            <li>A cada 3 indicacoes pagas (usuario, empresa, profissional liberal e outros), quem indicou recebe integralmente o valor do primeiro pagamento via PIX.</li>
+          </ul>
         </div>
 
-        {/* Grid de planos */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {planos.filter(p => p.ativo).map((plano) => (
-            <div
-              key={plano.id}
-              className={`relative rounded-2xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl
-                bg-gradient-to-br ${getCorBg(plano.cor)} border ${getCorDestaque(plano.cor)}`}
-            >
-              {/* Badge de destaque */}
-              {plano.destaque && (
-                <div className="absolute top-0 right-0">
-                  <div className="bg-yellow-500 text-black text-xs font-bold px-3 py-1 rounded-bl-2xl">
-                    ⭐ Mais Popular
-                  </div>
+        {(config.services || []).map((service) => {
+          const isOpen = !!openServices[service.id];
+          return (
+            <section key={service.id} className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+              <button
+                onClick={() => toggleService(service.id)}
+                className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors text-left"
+              >
+                <div>
+                  <h2 className="text-base font-bold text-white">{service.nome}</h2>
+                  <p className="text-xs text-slate-400 mt-1">{service.enabledPlans.length} plano(s) disponivel(is)</p>
+                </div>
+                {isOpen ? <ChevronUp className="w-5 h-5 text-slate-300" /> : <ChevronDown className="w-5 h-5 text-slate-300" />}
+              </button>
+
+              {isOpen && (
+                <div className="px-4 pb-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+                  {service.enabledPlans.map((planId) => {
+                    const plan = planById[planId];
+                    if (!plan) return null;
+                    const Icon = iconByPlan[plan.id] || CreditCard;
+                    const features = (service.planFeatures?.[plan.id] || []).length > 0
+                      ? service.planFeatures[plan.id]
+                      : plan.featuresPadrao;
+
+                    return (
+                      <div key={`${service.id}-${plan.id}`} className={`rounded-xl border p-3 ${cardByPlan[plan.id] || "border-slate-600 bg-slate-900"}`}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Icon className="w-4 h-4" />
+                            <h3 className="font-bold">{plan.nome}</h3>
+                          </div>
+                          <span className="text-xs text-slate-300">{plan.negociavel ? "A negociar" : `R$ ${Number(plan.preco || 0).toFixed(2)}/${plan.periodo}`}</span>
+                        </div>
+                        <p className="text-xs text-slate-400 mt-1">{plan.descricao}</p>
+                        <ul className="mt-3 space-y-1">
+                          {features.map((f, i) => (
+                            <li key={i} className="text-xs text-slate-200 flex items-start gap-1.5">
+                              <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 text-green-400 shrink-0" />
+                              <span>{f}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
-
-              <div className="p-6">
-                {/* Ícone e nome */}
-                <div className="text-center mb-4">
-                  <div className={`w-16 h-16 mx-auto rounded-full bg-white/10 flex items-center justify-center mb-3`}>
-                    {plano.nome === "Premium" && <Crown className={`w-8 h-8 ${getCorTexto(plano.cor)}`} />}
-                    {plano.nome === "Básico" && <Zap className={`w-8 h-8 ${getCorTexto(plano.cor)}`} />}
-                    {plano.nome === "Grátis" && <Shield className={`w-8 h-8 ${getCorTexto(plano.cor)}`} />}
-                    {plano.nome === "Fisco" && <TrendingUp className={`w-8 h-8 ${getCorTexto(plano.cor)}`} />}
-                  </div>
-                  <h3 className="text-xl font-bold text-white">{plano.nome}</h3>
-                  <div className="mt-2">
-                    <span className="text-3xl font-bold text-yellow-400">R$ {plano.preco}</span>
-                    {plano.preco > 0 && <span className="text-gray-400 text-sm">/mês</span>}
-                  </div>
-                  <p className="text-gray-400 text-sm mt-1">{plano.descricao}</p>
-                </div>
-
-                {/* Recursos */}
-                <ul className="space-y-2 mb-6">
-                  {plano.recursos.map((recurso, idx) => (
-                    <li key={idx} className="flex items-center gap-2 text-gray-300 text-sm">
-                      <CheckCircle className={`w-4 h-4 ${getCorTexto(plano.cor)} flex-shrink-0`} />
-                      <span>{recurso}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                {/* Botão de ação */}
-                <button
-                  onClick={() => handleAssinar(plano)}
-                  disabled={loading}
-                  className={`w-full py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${getCorBotao(plano.cor)} disabled:opacity-50`}
-                >
-                  {plano.preco === 0 ? (
-                    <>Começar Grátis <ArrowRight className="w-4 h-4" /></>
-                  ) : (
-                    <>Assinar Agora <ArrowRight className="w-4 h-4" /></>
-                  )}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Informações adicionais */}
-        <div className="mt-8 bg-white/5 rounded-2xl p-6">
-          <h3 className="text-white font-bold mb-3 text-center">❓ Dúvidas frequentes</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-300">
-            <div>
-              <p className="font-bold text-yellow-400">🔒 Como cancelar?</p>
-              <p>Você pode cancelar sua assinatura a qualquer momento pelo app</p>
-            </div>
-            <div>
-              <p className="font-bold text-yellow-400">💳 Formas de pagamento</p>
-              <p>Cartão de crédito, PIX e boleto bancário</p>
-            </div>
-            <div>
-              <p className="font-bold text-yellow-400">🔄 Mudar de plano</p>
-              <p>Você pode trocar de plano a qualquer momento</p>
-            </div>
-            <div>
-              <p className="font-bold text-yellow-400">📞 Suporte</p>
-              <p>Suporte 24/7 para planos Premium e Fisco</p>
-            </div>
-          </div>
-        </div>
+            </section>
+          );
+        })}
       </main>
     </div>
   );

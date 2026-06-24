@@ -1,283 +1,330 @@
-// app/extrato/page.tsx
 'use client';
 
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/app/context/AppContext';
-import { supabase } from '@/lib/supabase';
-import { ArrowLeft, Wallet, CreditCard, History, TrendingUp, TrendingDown, Calendar, RefreshCw } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Landmark, ArrowDownCircle, ArrowUpCircle, FileText, Gift, CreditCard, Star } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { walletService } from '@/services/walletService';
+import { gerarSessaoTemp, isSessaoTempValida } from '@/lib/auth';
 
-interface Transacao {
+type TipoLancamento = 'credito_mc' | 'debito_mc' | 'bonus_indicacao' | 'pagamento_plano' | 'cashback' | 'estorno';
+
+type ExtratoLine = {
   id: string;
-  tipo: 'credito' | 'debito';
+  tipo: TipoLancamento;
   valor: number;
   descricao: string;
-  servico: string;
-  saldo_antes: number;
-  saldo_depois: number;
-  created_at: string;
-  status: string;
-}
+  origem: string;
+  status: 'concluida' | 'pendente' | 'cancelada';
+  createdAt: string;
+  direction: 'credito' | 'debito';
+  runningBalance: number;
+};
 
-interface CambioConfig {
-  taxa: number;
-  cidade: string;
+const TIPO_LABEL: Record<TipoLancamento, string> = {
+  credito_mc: 'Transferencia recebida',
+  debito_mc: 'Transferencia enviada',
+  bonus_indicacao: 'Bonus de indicacao',
+  pagamento_plano: 'Pagamento de plano',
+  cashback: 'Cashback / reembolso',
+  estorno: 'Estorno'
+};
+
+const TIPO_ICON: Record<TipoLancamento, JSX.Element> = {
+  credito_mc: <ArrowDownCircle size={14} className="text-emerald-500" />,
+  debito_mc: <ArrowUpCircle size={14} className="text-rose-500" />,
+  bonus_indicacao: <Gift size={14} className="text-yellow-400" />,
+  pagamento_plano: <CreditCard size={14} className="text-blue-400" />,
+  cashback: <Star size={14} className="text-purple-400" />,
+  estorno: <ArrowDownCircle size={14} className="text-cyan-400" />
+};
+
+function formatDate(value: string) {
+  return new Date(value).toLocaleString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
 }
 
 export default function ExtratoPage() {
   const router = useRouter();
   const { user } = useApp();
-  const [transacoes, setTransacoes] = useState<Transacao[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [saldoAtual, setSaldoAtual] = useState(0);
-  const [cambio, setCambio] = useState<CambioConfig>({ taxa: 1, cidade: 'Valente' });
-  const [usandoMoedaConecta, setUsandoMoedaConecta] = useState(true);
 
-  useEffect(() => {
-    if (!user) {
-      router.push('/login');
-      return;
-    }
-    carregarCambio();
-    carregarTransacoes();
+  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState<ExtratoLine[]>([]);
+  const [filtro, setFiltro] = useState<'todos' | 'creditos' | 'debitos' | 'bonus'>('todos');
+
+  const actorId = useMemo(() => {
+    if (typeof window === 'undefined') return '';
+    const session = localStorage.getItem('sessao_temp_id') || '';
+    if (user?.id) return String(user.id);
+    if (session && isSessaoTempValida()) return session;
+    return gerarSessaoTemp();
   }, [user]);
 
-  const carregarCambio = async () => {
-    try {
-      const cidadeBase = localStorage.getItem('usuario_cidade_base') || 'Valente';
-      const response = await fetch(`/api/cambio?cidade=${encodeURIComponent(cidadeBase)}`);
-      if (response.ok) {
-        const data = await response.json();
-        setCambio({ taxa: data.taxa || 1, cidade: cidadeBase });
-      }
-    } catch (error) {
-      console.error('Erro ao carregar câmbio:', error);
-    }
-  };
+  const cidadeBase = useMemo(() => {
+    if (typeof window === 'undefined') return 'VALENTE';
+    return String((user as any)?.cidade || localStorage.getItem('usuario_cidade_base') || 'VALENTE').toUpperCase();
+  }, [user]);
 
-  const carregarTransacoes = async () => {
+  const titular = useMemo(() => String(user?.nome || user?.name || 'Conta Conecta Visitante'), [user]);
+
+  const carregarExtrato = async () => {
+    if (!actorId) return;
     setLoading(true);
-    
-    // Usar walletService para buscar transações
-    walletService.setUsuarioId(user?.id);
-    const saldo = await walletService.getSaldo();
-    setSaldoAtual(saldo.disponivel);
-    
-    const transacoesWallet = await walletService.getTransacoes(100);
-    
-    // Converter transações do walletService para o formato esperado
-    const transacoesFormatadas: Transacao[] = transacoesWallet.map(t => ({
-      id: t.id,
-      tipo: t.tipo === 'recebimento' || t.tipo === 'recarga' || t.tipo === 'cashback' || t.tipo === 'indicacao' ? 'credito' : 'debito',
-      valor: t.valor,
-      descricao: t.descricao,
-      servico: t.tipo,
-      saldo_antes: 0,
-      saldo_depois: 0,
-      created_at: t.data,
-      status: t.status
-    }));
-    
-    setTransacoes(transacoesFormatadas);
-    
-    setLoading(false);
-  };
+    try {
+      const mcRes = await fetch(
+        `/api/moeda-conecta/transactions?userId=${encodeURIComponent(actorId)}&cidadeBase=${encodeURIComponent(cidadeBase)}&limit=300`,
+        { cache: 'no-store' }
+      );
+      const mcData = await mcRes.json();
+      const mcRaw = Array.isArray(mcData?.data) ? mcData.data : [];
 
-  const converterParaReais = (valorMC: number): number => {
-    return valorMC * cambio.taxa;
-  };
+      let bonusLines: ExtratoLine[] = [];
+      try {
+        const bonusRes = await fetch(`/api/referrals/payout-requests?userId=${encodeURIComponent(actorId)}`, { cache: 'no-store' });
+        const bonusData = await bonusRes.json();
+        if (Array.isArray(bonusData?.data)) {
+          bonusLines = bonusData.data.map((item: any) => ({
+            id: `bonus_${item.id || item.createdAt}`,
+            tipo: 'bonus_indicacao' as TipoLancamento,
+            valor: Number(item.valor || item.amount || 0),
+            descricao: item.descricao || `Bonus indicacao #${item.id}`,
+            origem: 'referral',
+            status: item.status === 'pago' ? 'concluida' : 'pendente',
+            createdAt: item.createdAt || item.created_at || new Date().toISOString(),
+            direction: 'credito' as const,
+            runningBalance: 0
+          })).filter((line: ExtratoLine) => line.valor > 0);
+        }
+      } catch {
+        // Bonus opcional.
+      }
 
-  const formatarValor = (valorMC: number): string => {
-    const valorReal = converterParaReais(valorMC);
-    if (usandoMoedaConecta) {
-      return `${valorMC.toFixed(2)} MC`;
+      const mcLines: ExtratoLine[] = mcRaw.map((item: any) => {
+        const isCred = item.destinatarioId === actorId;
+        return {
+          id: item.id,
+          tipo: (isCred ? 'credito_mc' : 'debito_mc') as TipoLancamento,
+          valor: Number(item.valor || 0),
+          descricao: item.descricao || 'Transferencia Conta Conecta',
+          origem: isCred ? item.remetenteNome || 'Remetente' : item.destinatarioQr || 'Destinatario',
+          status: item.status || 'concluida',
+          createdAt: item.createdAt,
+          direction: isCred ? 'credito' : 'debito',
+          runningBalance: 0
+        };
+      });
+
+      const all = [...mcLines, ...bonusLines].sort((a, b) => +new Date(a.createdAt) - +new Date(b.createdAt));
+
+      let saldo = 0;
+      const withBalance = all.map((line) => {
+        saldo += line.direction === 'credito' ? line.valor : -line.valor;
+        return { ...line, runningBalance: Number(saldo.toFixed(2)) };
+      });
+
+      setItems(withBalance.reverse());
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error?.message || 'Erro ao carregar extrato');
+      setItems([]);
+    } finally {
+      setLoading(false);
     }
-    return `R$ ${valorReal.toFixed(2)}`;
   };
 
-  const formatarData = (data: string) => {
-    return new Date(data).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+  useEffect(() => {
+    carregarExtrato();
+  }, [actorId, cidadeBase]);
 
-  const totalCreditos = transacoes
-    .filter(t => t.tipo === 'credito')
-    .reduce((sum, t) => sum + converterParaReais(t.valor), 0);
-  
-  const totalDebitos = transacoes
-    .filter(t => t.tipo === 'debito')
-    .reduce((sum, t) => sum + converterParaReais(t.valor), 0);
+  const filtrados = useMemo(() => {
+    if (filtro === 'creditos') return items.filter((line) => line.direction === 'credito');
+    if (filtro === 'debitos') return items.filter((line) => line.direction === 'debito');
+    if (filtro === 'bonus') return items.filter((line) => line.tipo === 'bonus_indicacao');
+    return items;
+  }, [items, filtro]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
-      </div>
-    );
-  }
+  const totalCreditos = useMemo(() => items.filter((line) => line.direction === 'credito').reduce((sum, line) => sum + line.valor, 0), [items]);
+  const totalDebitos = useMemo(() => items.filter((line) => line.direction === 'debito').reduce((sum, line) => sum + line.valor, 0), [items]);
+  const totalBonus = useMemo(() => items.filter((line) => line.tipo === 'bonus_indicacao').reduce((sum, line) => sum + line.valor, 0), [items]);
+  const saldoFinal = items.length > 0 ? items[0].runningBalance : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 pb-20">
-      <header className="bg-gradient-to-r from-green-400 to-green-700 p-4 sticky top-0 z-40">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button onClick={() => router.back()} className="text-white">
-              <ArrowLeft className="w-6 h-6" />
-            </button>
-            <h1 className="text-white font-bold text-lg">💰 Meu Extrato</h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setUsandoMoedaConecta(!usandoMoedaConecta)}
-              className="bg-white/20 text-white px-3 py-1 rounded-full text-xs font-medium"
-            >
-              {usandoMoedaConecta ? 'MC' : 'R$'}
-            </button>
-            <button
-              onClick={carregarTransacoes}
-              className="bg-white/20 text-white p-2 rounded-full hover:bg-white/30 transition"
-            >
-              <RefreshCw className="w-4 h-4" />
-            </button>
-          </div>
+    <div className="min-h-screen bg-slate-100">
+      <header className="sticky top-0 z-30 bg-gradient-to-r from-green-600 to-emerald-500 px-4 py-3 shadow">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
+          <button onClick={() => router.back()} className="text-white flex items-center gap-2 text-sm font-medium">
+            <ArrowLeft size={16} /> Voltar
+          </button>
+          <h1 className="text-white font-bold">Extrato Conta Conecta</h1>
+          <button onClick={carregarExtrato} className="text-white/90 hover:text-white">
+            <RefreshCw size={16} />
+          </button>
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto p-6 space-y-6">
-        {/* Saldo Atual */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 text-center">
-          <Wallet className="w-12 h-12 text-white mx-auto mb-3" />
-          <p className="text-white/80 text-sm">Saldo disponível</p>
-          <p className="text-4xl font-bold text-white">
-            {usandoMoedaConecta 
-              ? `${saldoAtual.toFixed(2)} MC`
-              : `R$ ${(saldoAtual * cambio.taxa).toFixed(2)}`
-            }
-          </p>
-          <p className="text-white/50 text-xs mt-1">
-            {usandoMoedaConecta 
-              ? `≈ R$ ${(saldoAtual * cambio.taxa).toFixed(2)}`
-              : `≈ ${saldoAtual.toFixed(2)} MC`
-            }
-          </p>
-          <p className="text-white/60 text-[10px] mt-1">
-            Câmbio da cidade: 1 MC = R$ {cambio.taxa.toFixed(4)}
-          </p>
-          <button 
-            onClick={() => router.push('/recarga')}
-            className="mt-3 bg-yellow-500 text-black px-6 py-2 rounded-xl font-bold text-sm"
-          >
-            + Adicionar Saldo
-          </button>
-        </div>
-
-        {/* Resumo */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-green-500/10 border border-green-500/30 rounded-2xl p-4 text-center">
-            <TrendingUp className="w-6 h-6 text-green-400 mx-auto mb-2" />
-            <p className="text-gray-400 text-sm">Total de Entradas</p>
-            <p className="text-2xl font-bold text-green-400">
-              {usandoMoedaConecta 
-                ? `${(totalCreditos / cambio.taxa).toFixed(2)} MC`
-                : `R$ ${totalCreditos.toFixed(2)}`
-              }
-            </p>
-          </div>
-          <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-4 text-center">
-            <TrendingDown className="w-6 h-6 text-red-400 mx-auto mb-2" />
-            <p className="text-gray-400 text-sm">Total de Saídas</p>
-            <p className="text-2xl font-bold text-red-400">
-              {usandoMoedaConecta 
-                ? `${(totalDebitos / cambio.taxa).toFixed(2)} MC`
-                : `R$ ${totalDebitos.toFixed(2)}`
-              }
-            </p>
-          </div>
-        </div>
-
-        {/* Lista de Transações */}
-        <div className="bg-gray-800/50 rounded-2xl overflow-hidden">
-          <div className="bg-gray-800 px-5 py-3 border-b border-gray-700 flex justify-between items-center">
-            <h2 className="text-white font-bold flex items-center gap-2">
-              <History className="w-5 h-5 text-yellow-400" />
-              Histórico de Transações
-            </h2>
-            <span className="text-xs text-gray-400">
-              1 MC = R$ {cambio.taxa.toFixed(4)}
-            </span>
-          </div>
-          
-          <div className="divide-y divide-gray-700">
-            {transacoes.length === 0 ? (
-              <div className="p-8 text-center">
-                <CreditCard className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-                <p className="text-gray-400">Nenhuma transação encontrada</p>
-                <p className="text-gray-500 text-sm mt-1">Suas movimentações aparecerão aqui</p>
+      <main className="max-w-5xl mx-auto p-4 space-y-4 pb-10">
+        <section className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2 mb-0.5">
+                <Landmark size={16} className="text-emerald-600" />
+                <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">Banco Conecta Digital</p>
               </div>
-            ) : (
-              transacoes.map((transacao) => (
-                <div key={transacao.id} className="p-4 hover:bg-white/5 transition">
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-start gap-3">
-                      <div className={`p-2 rounded-xl ${
-                        transacao.tipo === 'credito' 
-                          ? 'bg-green-500/20' 
-                          : 'bg-red-500/20'
-                      }`}>
-                        {transacao.tipo === 'credito' ? (
-                          <TrendingUp className="w-5 h-5 text-green-400" />
-                        ) : (
-                          <TrendingDown className="w-5 h-5 text-red-400" />
-                        )}
-                      </div>
-                      <div>
-                        <p className="text-white font-medium">{transacao.descricao}</p>
-                        <p className="text-gray-500 text-xs flex items-center gap-1 mt-1">
-                          <Calendar className="w-3 h-3" />
-                          {formatarData(transacao.created_at)}
-                        </p>
-                        {transacao.servico && (
-                          <p className="text-gray-500 text-xs mt-1">Tipo: {transacao.servico}</p>
-                        )}
-                      </div>
+              <p className="font-bold text-slate-800 text-lg">{titular}</p>
+              <p className="text-xs text-slate-500">Conta MC · {actorId.slice(0, 16)}...</p>
+              <p className="text-xs text-slate-400">Cidade: {cidadeBase}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-slate-500">Saldo disponivel</p>
+              <p className={`text-2xl font-extrabold ${saldoFinal >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                {saldoFinal >= 0 ? '+' : ''}{saldoFinal.toFixed(2)} MC
+              </p>
+              <p className="text-[10px] text-slate-400">Moeda Conecta</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2 mt-4">
+            <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-2.5 text-center">
+              <p className="text-[10px] text-emerald-700 font-medium">Total creditos</p>
+              <p className="font-bold text-emerald-700 text-sm">+{totalCreditos.toFixed(2)}</p>
+            </div>
+            <div className="rounded-xl bg-rose-50 border border-rose-200 p-2.5 text-center">
+              <p className="text-[10px] text-rose-700 font-medium">Total debitos</p>
+              <p className="font-bold text-rose-700 text-sm">-{totalDebitos.toFixed(2)}</p>
+            </div>
+            <div className="rounded-xl bg-yellow-50 border border-yellow-200 p-2.5 text-center">
+              <p className="text-[10px] text-yellow-700 font-medium">Bonus recebidos</p>
+              <p className="font-bold text-yellow-700 text-sm">+{totalBonus.toFixed(2)}</p>
+            </div>
+          </div>
+        </section>
+
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {(['todos', 'creditos', 'debitos', 'bonus'] as const).map((current) => (
+            <button
+              key={current}
+              onClick={() => setFiltro(current)}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition ${
+                filtro === current
+                  ? 'bg-emerald-600 text-white shadow'
+                  : 'bg-white border border-slate-300 text-slate-600 hover:border-emerald-400'
+              }`}
+            >
+              {current === 'todos' ? 'Todos' : current === 'creditos' ? 'Creditos' : current === 'debitos' ? 'Debitos' : 'Bonus'}
+            </button>
+          ))}
+        </div>
+
+        <section className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+          <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <FileText size={15} className="text-slate-600" />
+              <p className="font-semibold text-slate-700 text-sm">Lancamentos bancarios</p>
+            </div>
+            <p className="text-xs text-slate-500">{filtrados.length} registros</p>
+          </div>
+
+          {loading ? (
+            <div className="p-8 text-center text-slate-500">
+              <div className="animate-spin inline-block w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full mb-2" />
+              <p className="text-sm">Carregando extrato...</p>
+            </div>
+          ) : filtrados.length === 0 ? (
+            <div className="p-8 text-center text-slate-500">
+              <FileText className="mx-auto mb-2 text-slate-300" size={28} />
+              <p className="text-sm">Nenhum lancamento encontrado.</p>
+              <p className="text-xs mt-1 text-slate-400">Realize uma transacao para ver aqui.</p>
+            </div>
+          ) : (
+            <>
+              <div className="hidden md:block overflow-auto">
+                <table className="min-w-full text-sm">
+                  <thead className="bg-slate-100 text-slate-600 text-xs uppercase tracking-wide">
+                    <tr>
+                      <th className="text-left px-3 py-2.5">Data / Hora</th>
+                      <th className="text-left px-3 py-2.5">Historico</th>
+                      <th className="text-left px-3 py-2.5">Origem / Destino</th>
+                      <th className="text-left px-3 py-2.5">Tipo</th>
+                      <th className="text-right px-3 py-2.5 text-emerald-700">Credito</th>
+                      <th className="text-right px-3 py-2.5 text-rose-700">Debito</th>
+                      <th className="text-right px-3 py-2.5">Saldo</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtrados.map((line) => (
+                      <tr key={line.id} className="border-t border-slate-100 hover:bg-slate-50 transition">
+                        <td className="px-3 py-2.5 text-slate-500 whitespace-nowrap text-xs">{formatDate(line.createdAt)}</td>
+                        <td className="px-3 py-2.5">
+                          <div className="flex items-center gap-1.5">
+                            {TIPO_ICON[line.tipo]}
+                            <span className="text-slate-700 text-xs">{line.descricao}</span>
+                          </div>
+                          <p className="text-[10px] text-slate-400 mt-0.5 ml-5">{TIPO_LABEL[line.tipo]}</p>
+                        </td>
+                        <td className="px-3 py-2.5 text-xs text-slate-500 max-w-[120px] truncate">{line.origem}</td>
+                        <td className="px-3 py-2.5">
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                            line.status === 'concluida'
+                              ? 'bg-emerald-100 text-emerald-700'
+                              : line.status === 'pendente'
+                                ? 'bg-yellow-100 text-yellow-700'
+                                : 'bg-red-100 text-red-700'
+                          }`}>
+                            {line.status}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2.5 text-right font-semibold text-emerald-700 whitespace-nowrap text-xs">
+                          {line.direction === 'credito' ? `+${line.valor.toFixed(2)}` : '-'}
+                        </td>
+                        <td className="px-3 py-2.5 text-right font-semibold text-rose-700 whitespace-nowrap text-xs">
+                          {line.direction === 'debito' ? `-${line.valor.toFixed(2)}` : '-'}
+                        </td>
+                        <td className={`px-3 py-2.5 text-right font-bold whitespace-nowrap text-xs ${line.runningBalance >= 0 ? 'text-slate-700' : 'text-rose-700'}`}>
+                          {line.runningBalance.toFixed(2)} MC
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="md:hidden divide-y divide-slate-100">
+                {filtrados.map((line) => (
+                  <div key={line.id} className="px-4 py-3 flex items-start gap-3">
+                    <div className="mt-0.5">{TIPO_ICON[line.tipo]}</div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-slate-700 text-sm font-medium truncate">{line.descricao}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">{TIPO_LABEL[line.tipo]} · {line.origem}</p>
+                      <p className="text-[10px] text-slate-400">{formatDate(line.createdAt)}</p>
                     </div>
-                    <div className="text-right">
-                      <p className={`font-bold ${
-                        transacao.tipo === 'credito' 
-                          ? 'text-green-400' 
-                          : 'text-red-400'
+                    <div className="text-right shrink-0">
+                      <p className={`font-bold text-sm ${line.direction === 'credito' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                        {line.direction === 'credito' ? '+' : '-'}{line.valor.toFixed(2)} MC
+                      </p>
+                      <p className="text-[10px] text-slate-400">Saldo {line.runningBalance.toFixed(2)}</p>
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${
+                        line.status === 'concluida'
+                          ? 'bg-emerald-100 text-emerald-600'
+                          : line.status === 'pendente'
+                            ? 'bg-yellow-100 text-yellow-600'
+                            : 'bg-red-100 text-red-600'
                       }`}>
-                        {transacao.tipo === 'credito' ? '+' : '-'} {formatarValor(transacao.valor)}
-                      </p>
-                      <p className="text-gray-500 text-xs mt-1">
-                        {usandoMoedaConecta 
-                          ? `≈ R$ ${(transacao.valor * cambio.taxa).toFixed(2)}`
-                          : `≈ ${transacao.valor.toFixed(2)} MC`
-                        }
-                      </p>
+                        {line.status}
+                      </span>
                     </div>
                   </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* Informação do câmbio */}
-        <div className="bg-gray-800/30 rounded-xl p-3 text-center">
-          <p className="text-xs text-gray-500">
-            💱 Câmbio baseado na cidade <strong>{cambio.cidade}</strong><br />
-            1 Moeda Conecta (MC) = R$ {cambio.taxa.toFixed(4)}
-          </p>
-        </div>
+                ))}
+              </div>
+            </>
+          )}
+        </section>
       </main>
     </div>
   );

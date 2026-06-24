@@ -15,7 +15,8 @@ export default function CatalogoPage() {
     perfil,
     aumentar,
     diminuir,
-    getQuantidade
+    getQuantidade,
+    limparQuantidades
   } = useCatalogo();
 
   return (
@@ -26,6 +27,7 @@ export default function CatalogoPage() {
       onAumentar={aumentar}
       onDiminuir={diminuir}
       getQuantidade={getQuantidade}
+      onLimparCarrinho={limparQuantidades}
       desconto={desconto}
       perfil={perfil}
     />

@@ -26,9 +26,15 @@ export function InstallPrompt() {
       return;
     }
 
+    // Priorizar exibição no primeiro acesso vindo por convite/cadastro
+    const onboardingPosCadastro = localStorage.getItem('onboarding_pos_cadastro');
+    if (onboardingPosCadastro === '1') {
+      setTimeout(() => setShow(true), 800);
+    }
+
     // Verificar se já mostrou o prompt antes
     const alreadyShown = localStorage.getItem('install_prompt_shown');
-    if (alreadyShown) return;
+    if (alreadyShown && onboardingPosCadastro !== '1') return;
 
     const handler = (e: Event) => {
       e.preventDefault();
@@ -41,6 +47,9 @@ export function InstallPrompt() {
       setIsInstalled(true);
       setShow(false);
       localStorage.setItem('install_prompt_shown', 'true');
+      localStorage.removeItem('onboarding_pos_cadastro');
+      localStorage.removeItem('convite_origem');
+      localStorage.removeItem('convite_timestamp');
     });
 
     return () => window.removeEventListener('beforeinstallprompt', handler);
@@ -54,6 +63,9 @@ export function InstallPrompt() {
         setIsInstalled(true);
         setShow(false);
         localStorage.setItem('install_prompt_shown', 'true');
+        localStorage.removeItem('onboarding_pos_cadastro');
+        localStorage.removeItem('convite_origem');
+        localStorage.removeItem('convite_timestamp');
       }
       setDeferredPrompt(null);
     } else if (isIOS) {
@@ -64,6 +76,7 @@ export function InstallPrompt() {
   const handleClose = () => {
     setShow(false);
     localStorage.setItem('install_prompt_shown', 'true');
+    localStorage.removeItem('onboarding_pos_cadastro');
   };
 
   if (isInstalled) return null;

@@ -23,6 +23,8 @@ export default function ConviteAdminPage() {
     
     // Salvar código de convite para usar no cadastro
     localStorage.setItem("convite_codigo", codigo);
+    localStorage.setItem("convite_origem", "admin");
+    localStorage.setItem("convite_timestamp", new Date().toISOString());
     toast.success("🎉 Você foi convidado pelo Admin Master!");
 
     // Evento de instalação PWA
@@ -55,6 +57,7 @@ export default function ConviteAdminPage() {
   };
 
   const handleCadastrar = () => {
+    localStorage.setItem("convite_origem", "admin-cadastro-direto");
     router.push("/register");
   };
 

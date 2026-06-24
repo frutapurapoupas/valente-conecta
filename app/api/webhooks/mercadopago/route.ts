@@ -1,0 +1,133 @@
+import { NextRequest, NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
+
+const pedidosPath = path.join(process.cwd(), 'data', 'pedidos.json');
+
+function ensurePedidosFile() {
+	if (!fs.existsSync(pedidosPath)) {
+		fs.writeFileSync(pedidosPath, JSON.stringify([], null, 2));
+	}
+}
+
+function readPedidos() {
+	ensurePedidosFile();
+	return JSON.parse(fs.readFileSync(pedidosPath, 'utf-8'));
+}
+
+function writePedidos(data: any[]) {
+	fs.writeFileSync(pedidosPath, JSON.stringify(data, null, 2));
+}
+
+function normalizeStatus(status: string) {
+	if (status === 'approved') return 'pago';
+	if (status === 'cancelled' || status === 'rejected') return 'cancelado';
+	return 'pendente';
+}
+
+async function fetchPaymentFromMP(paymentId: string) {
+	const accessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN;
+	if (!accessToken) {
+		throw new Error('MERCADO_PAGO_ACCESS_TOKEN nao configurado.');
+	}
+
+	const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+		headers: {
+			Authorization: `Bearer ${accessToken}`,
+			'Content-Type': 'application/json'
+		}
+	});
+
+	const data = await response.json();
+	if (!response.ok) {
+		throw new Error(data?.message || 'Falha ao consultar pagamento no Mercado Pago.');
+	}
+
+	return data;
+}
+
+async function processWebhook(request: NextRequest, payload: any) {
+	try {
+		const { searchParams } = new URL(request.url);
+		const type = String(
+			payload?.type ||
+			payload?.topic ||
+			searchParams.get('type') ||
+			searchParams.get('topic') ||
+			''
+		).toLowerCase();
+
+		const paymentId = String(
+			payload?.data?.id ||
+			payload?.id ||
+			searchParams.get('data.id') ||
+			searchParams.get('id') ||
+			''
+		);
+
+		if (!paymentId) {
+			return NextResponse.json({ success: true, ignored: true, reason: 'paymentId ausente' });
+		}
+
+		if (type && type !== 'payment') {
+			return NextResponse.json({ success: true, ignored: true, reason: 'evento nao-payment' });
+		}
+
+		const payment = await fetchPaymentFromMP(paymentId);
+		const pedidoId = String(payment?.external_reference || payment?.metadata?.pedidoId || '');
+
+		if (!pedidoId) {
+			return NextResponse.json({ success: true, ignored: true, reason: 'external_reference ausente' });
+		}
+
+		const pedidos = readPedidos();
+		const index = pedidos.findIndex((item: any) => item.id === pedidoId);
+
+		if (index === -1) {
+			return NextResponse.json({ success: true, ignored: true, reason: 'pedido nao encontrado' });
+		}
+
+		const statusPedido = normalizeStatus(String(payment?.status || ''));
+		pedidos[index] = {
+			...pedidos[index],
+			status: statusPedido,
+			paymentMethod: {
+				...(pedidos[index].paymentMethod || {}),
+				provider: 'mercado_pago',
+				paymentId: String(payment?.id || ''),
+				paymentStatusRaw: String(payment?.status || ''),
+				paymentStatusDetail: String(payment?.status_detail || ''),
+				status: statusPedido
+			},
+			updatedAt: new Date().toISOString(),
+			paidAt: statusPedido === 'pago' ? new Date().toISOString() : pedidos[index].paidAt
+		};
+
+		writePedidos(pedidos);
+		return NextResponse.json({ success: true, pedidoId, status: statusPedido });
+	} catch (error: any) {
+		return NextResponse.json({ success: false, error: error?.message || 'Erro no webhook.' }, { status: 500 });
+	}
+}
+
+export async function POST(request: NextRequest) {
+	let payload: any = {};
+	try {
+		payload = await request.json();
+	} catch {
+		payload = {};
+	}
+	return processWebhook(request, payload);
+}
+
+export async function GET(request: NextRequest) {
+	const { searchParams } = new URL(request.url);
+	const payload = {
+		type: searchParams.get('type') || searchParams.get('topic') || '',
+		data: {
+			id: searchParams.get('data.id') || searchParams.get('id') || ''
+		}
+	};
+	return processWebhook(request, payload);
+}
+

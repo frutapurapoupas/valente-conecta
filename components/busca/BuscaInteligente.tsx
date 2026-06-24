@@ -41,7 +41,42 @@ export default function BuscaInteligente({
   const [recognition, setRecognition] = useState<any>(null);
   const [mensagemCard, setMensagemCard] = useState<string | null>(null);
   const [origemBusca, setOrigemBusca] = useState<string | null>(null);
+  const [notificacaoMostrada, setNotificacaoMostrada] = useState<string | null>(null);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // ============================================
+  // OBTER LOCALIZAÇÃO E ID DO USUÁRIO
+  // ============================================
+  useEffect(() => {
+    const carregarUserData = async () => {
+      try {
+        // Obter ID do usuário do localStorage ou context
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+          const user = JSON.parse(userStr);
+          setUserId(user.id || user.email);
+        }
+
+        // Obter localização
+        if ('geolocation' in navigator) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              setUserLocation({
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+              });
+            },
+            () => console.log('Localização não disponível')
+          );
+        }
+      } catch (error) {
+        console.error('Erro ao carregar dados do usuário:', error);
+      }
+    };
+    carregarUserData();
+  }, []);
 
   // ============================================
   // RECONHECIMENTO DE VOZ (2.7)
@@ -128,9 +163,14 @@ export default function BuscaInteligente({
     setMensagemCard(null);
 
     try {
-      const response = await fetch(
-        `/api/busca?q=${encodeURIComponent(busca)}`
-      );
+      // Construir URL com parâmetros
+      const params = new URLSearchParams({
+        q: busca,
+        userId: userId || '',
+        ...(userLocation && { lat: userLocation.lat.toString(), lng: userLocation.lng.toString() })
+      });
+
+      const response = await fetch(`/api/busca?${params.toString()}`);
       const data = await response.json();
 
       if (data.success && data.produtos && data.produtos.length > 0) {
@@ -138,28 +178,10 @@ export default function BuscaInteligente({
         setOrigemBusca(data.origem);
         setMostrarResultados(true);
 
-        // Fallback internet: pendência (2.4)
-        if (data.origem === 'internet' && data.mensagemCard) {
-          setMensagemCard(data.mensagemCard);
-          toast.custom(
-            (t) => (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 max-w-md shadow-lg">
-                <div className="flex items-start gap-2">
-                  <Bell className="w-5 h-5 text-blue-500 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-blue-800">
-                      Busca registrada!
-                    </p>
-                    <p className="text-xs text-blue-600">
-                      Em até 24h você receberá uma resposta sobre &ldquo;{busca}
-                      &rdquo; em Valente, BA.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ),
-            { duration: 8000 }
-          );
+        // Uma única notificação por termo de busca
+        if (data.demandaRegistrada && data.demandaMensagem && notificacaoMostrada !== busca) {
+          setNotificacaoMostrada(busca);
+          setMensagemCard(data.demandaMensagem);
         }
       } else {
         setResultados([]);
@@ -168,10 +190,11 @@ export default function BuscaInteligente({
     } catch (error) {
       console.error('Erro na busca:', error);
       setResultados([]);
+      toast.error('Erro ao processar busca');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [userId, userLocation, notificacaoMostrada]);
 
   // ============================================
   // DEBOUNCE (500ms)

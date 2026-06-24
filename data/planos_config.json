@@ -1,0 +1,553 @@
+﻿{
+    "version":  1,
+    "updatedAt":  "2026-06-24T07:26:34.1929761-03:00",
+    "settings":  {
+                     "unlockContactPrice":  0.5,
+                     "blurContactOnFree":  true,
+                     "paidAdsOpen":  true,
+                     "freePhotosPerItem":  1,
+                     "basicoPhotosPerItem":  1,
+                     "premiumPhotosPerItem":  5
+                 },
+    "plans":  [
+                  {
+                      "id":  "gratis",
+                      "nome":  "Gratis",
+                      "preco":  0,
+                      "periodo":  "mes",
+                      "negociavel":  false,
+                      "ativo":  true,
+                      "descricao":  "Entrada para comeÃ§ar no app",
+                      "fotosPorItem":  1,
+                      "featuresPadrao":  [
+                                             "Anuncio com foto, descricao e preco",
+                                             "1 foto por produto/servico",
+                                             "Contato da loja borrado para o cliente",
+                                             "Cliente pode desbloquear contato por R$ 0,50"
+                                         ]
+                  },
+                  {
+                      "id":  "basico",
+                      "nome":  "Basico",
+                      "preco":  15,
+                      "periodo":  "mes",
+                      "negociavel":  false,
+                      "ativo":  true,
+                      "descricao":  "Plano pago com anuncio aberto",
+                      "fotosPorItem":  1,
+                      "featuresPadrao":  [
+                                             "Anuncio aberto (nome, endereco e localizador visiveis)",
+                                             "1 foto por produto/servico",
+                                             "Recebimento de contatos sem desbloqueio",
+                                             "Prioridade normal de exibicao"
+                                         ]
+                  },
+                  {
+                      "id":  "premium",
+                      "nome":  "Premium",
+                      "preco":  29.9,
+                      "periodo":  "mes",
+                      "negociavel":  false,
+                      "ativo":  true,
+                      "descricao":  "Maior destaque e mais fotos",
+                      "fotosPorItem":  5,
+                      "featuresPadrao":  [
+                                             "Anuncio aberto (nome, endereco e localizador visiveis)",
+                                             "5 fotos por produto/servico",
+                                             "Destaque no topo das buscas",
+                                             "Maior prioridade nas recomendacoes"
+                                         ]
+                  },
+                  {
+                      "id":  "fisco",
+                      "nome":  "Fisco / Contabilidade",
+                      "preco":  null,
+                      "periodo":  "mes",
+                      "negociavel":  true,
+                      "ativo":  true,
+                      "descricao":  "Integracao fiscal e contabil (valor a negociar)",
+                      "fotosPorItem":  5,
+                      "featuresPadrao":  [
+                                             "Integracao com rotinas fiscais",
+                                             "Integracao contabil e relatorios avancados",
+                                             "Suporte de implantacao",
+                                             "Valor sob consulta"
+                                         ]
+                  }
+              ],
+    "services":  [
+                     {
+                         "id":  "academia__aluno",
+                         "nome":  "ACADEMIA - ALUNO",
+                         "enabledPlans":  [
+                                              "gratis",
+                                              "basico",
+                                              "premium"
+                                          ],
+                         "planFeatures":  {
+                                              "gratis":  [
+                                                             "Publicacao com 1 foto por item",
+                                                             "Descricao e preco visiveis",
+                                                             "Contato borrado (desbloqueio R$ 0,50 por cliente)"
+                                                         ],
+                                              "basico":  [
+                                                             "R$ 15,00 / mes",
+                                                             "1 foto por item",
+                                                             "Nome da loja e endereco liberados",
+                                                             "Anuncio aberto para todos os clientes"
+                                                         ],
+                                              "premium":  [
+                                                              "5 fotos por item",
+                                                              "Anuncio com destaque na listagem",
+                                                              "Anuncio aberto para todos os clientes",
+                                                              "Prioridade maior de exibicao"
+                                                          ],
+                                              "fisco":  [
+
+                                                        ]
+                                          }
+                     },
+                     {
+                         "id":  "ambulantes",
+                         "nome":  "AMBULANTES",
+                         "enabledPlans":  [
+                                              "gratis",
+                                              "basico",
+                                              "premium"
+                                          ],
+                         "planFeatures":  {
+                                              "gratis":  [
+                                                             "Publicacao com 1 foto por item",
+                                                             "Descricao e preco visiveis",
+                                                             "Contato borrado (desbloqueio R$ 0,50 por cliente)"
+                                                         ],
+                                              "basico":  [
+                                                             "R$ 15,00 / mes",
+                                                             "1 foto por item",
+                                                             "Nome da loja e endereco liberados",
+                                                             "Anuncio aberto para todos os clientes"
+                                                         ],
+                                              "premium":  [
+                                                              "5 fotos por item",
+                                                              "Anuncio com destaque na listagem",
+                                                              "Anuncio aberto para todos os clientes",
+                                                              "Prioridade maior de exibicao"
+                                                          ],
+                                              "fisco":  [
+
+                                                        ]
+                                          }
+                     },
+                     {
+                         "id":  "servicos_com_agendamento",
+                         "nome":  "SERVICOS COM AGENDAMENTO",
+                         "enabledPlans":  [
+                                              "gratis",
+                                              "basico",
+                                              "premium"
+                                          ],
+                         "planFeatures":  {
+                                              "gratis":  [
+                                                             "Publicacao com 1 foto por item",
+                                                             "Descricao e preco visiveis",
+                                                             "Contato borrado (desbloqueio R$ 0,50 por cliente)"
+                                                         ],
+                                              "basico":  [
+                                                             "R$ 15,00 / mes",
+                                                             "1 foto por item",
+                                                             "Nome da loja e endereco liberados",
+                                                             "Anuncio aberto para todos os clientes"
+                                                         ],
+                                              "premium":  [
+                                                              "5 fotos por item",
+                                                              "Anuncio com destaque na listagem",
+                                                              "Anuncio aberto para todos os clientes",
+                                                              "Prioridade maior de exibicao"
+                                                          ],
+                                              "fisco":  [
+
+                                                        ]
+                                          }
+                     },
+                     {
+                         "id":  "mercearia_mercados",
+                         "nome":  "MERCEARIA / MERCADOS",
+                         "enabledPlans":  [
+                                              "gratis",
+                                              "basico",
+                                              "premium",
+                                              "fisco"
+                                          ],
+                         "planFeatures":  {
+                                              "gratis":  [
+                                                             "Publicacao com 1 foto por item",
+                                                             "Descricao e preco visiveis",
+                                                             "Contato borrado (desbloqueio R$ 0,50 por cliente)"
+                                                         ],
+                                              "basico":  [
+                                                             "R$ 15,00 / mes",
+                                                             "1 foto por item",
+                                                             "Nome da loja e endereco liberados",
+                                                             "Anuncio aberto para todos os clientes"
+                                                         ],
+                                              "premium":  [
+                                                              "5 fotos por item",
+                                                              "Anuncio com destaque na listagem",
+                                                              "Anuncio aberto para todos os clientes",
+                                                              "Prioridade maior de exibicao"
+                                                          ],
+                                              "fisco":  [
+                                                            "Integracao fiscal/contabil",
+                                                            "Relatorios gerenciais",
+                                                            "Suporte de implantacao",
+                                                            "Valor a negociar"
+                                                        ]
+                                          }
+                     },
+                     {
+                         "id":  "lojas",
+                         "nome":  "LOJAS",
+                         "enabledPlans":  [
+                                              "gratis",
+                                              "basico",
+                                              "premium",
+                                              "fisco"
+                                          ],
+                         "planFeatures":  {
+                                              "gratis":  [
+                                                             "Publicacao com 1 foto por item",
+                                                             "Descricao e preco visiveis",
+                                                             "Contato borrado (desbloqueio R$ 0,50 por cliente)"
+                                                         ],
+                                              "basico":  [
+                                                             "R$ 15,00 / mes",
+                                                             "1 foto por item",
+                                                             "Nome da loja e endereco liberados",
+                                                             "Anuncio aberto para todos os clientes"
+                                                         ],
+                                              "premium":  [
+                                                              "5 fotos por item",
+                                                              "Anuncio com destaque na listagem",
+                                                              "Anuncio aberto para todos os clientes",
+                                                              "Prioridade maior de exibicao"
+                                                          ],
+                                              "fisco":  [
+                                                            "Integracao fiscal/contabil",
+                                                            "Relatorios gerenciais",
+                                                            "Suporte de implantacao",
+                                                            "Valor a negociar"
+                                                        ]
+                                          }
+                     },
+                     {
+                         "id":  "profissionais_liberais",
+                         "nome":  "PROFISSIONAIS LIBERAIS",
+                         "enabledPlans":  [
+                                              "gratis",
+                                              "basico",
+                                              "premium"
+                                          ],
+                         "planFeatures":  {
+                                              "gratis":  [
+                                                             "Publicacao com 1 foto por item",
+                                                             "Descricao e preco visiveis",
+                                                             "Contato borrado (desbloqueio R$ 0,50 por cliente)"
+                                                         ],
+                                              "basico":  [
+                                                             "R$ 15,00 / mes",
+                                                             "1 foto por item",
+                                                             "Nome da loja e endereco liberados",
+                                                             "Anuncio aberto para todos os clientes"
+                                                         ],
+                                              "premium":  [
+                                                              "5 fotos por item",
+                                                              "Anuncio com destaque na listagem",
+                                                              "Anuncio aberto para todos os clientes",
+                                                              "Prioridade maior de exibicao"
+                                                          ],
+                                              "fisco":  [
+
+                                                        ]
+                                          }
+                     },
+                     {
+                         "id":  "utilidades",
+                         "nome":  "UTILIDADES",
+                         "enabledPlans":  [
+                                              "gratis",
+                                              "basico",
+                                              "premium"
+                                          ],
+                         "planFeatures":  {
+                                              "gratis":  [
+                                                             "Publicacao com 1 foto por item",
+                                                             "Descricao e preco visiveis",
+                                                             "Contato borrado (desbloqueio R$ 0,50 por cliente)"
+                                                         ],
+                                              "basico":  [
+                                                             "R$ 15,00 / mes",
+                                                             "1 foto por item",
+                                                             "Nome da loja e endereco liberados",
+                                                             "Anuncio aberto para todos os clientes"
+                                                         ],
+                                              "premium":  [
+                                                              "5 fotos por item",
+                                                              "Anuncio com destaque na listagem",
+                                                              "Anuncio aberto para todos os clientes",
+                                                              "Prioridade maior de exibicao"
+                                                          ],
+                                              "fisco":  [
+
+                                                        ]
+                                          }
+                     },
+                     {
+                         "id":  "moto_taxi",
+                         "nome":  "MOTO TAXI",
+                         "enabledPlans":  [
+                                              "gratis",
+                                              "basico",
+                                              "premium"
+                                          ],
+                         "planFeatures":  {
+                                              "gratis":  [
+                                                             "Publicacao com 1 foto por item",
+                                                             "Descricao e preco visiveis",
+                                                             "Contato borrado (desbloqueio R$ 0,50 por cliente)"
+                                                         ],
+                                              "basico":  [
+                                                             "R$ 15,00 / mes",
+                                                             "1 foto por item",
+                                                             "Nome da loja e endereco liberados",
+                                                             "Anuncio aberto para todos os clientes"
+                                                         ],
+                                              "premium":  [
+                                                              "5 fotos por item",
+                                                              "Anuncio com destaque na listagem",
+                                                              "Anuncio aberto para todos os clientes",
+                                                              "Prioridade maior de exibicao"
+                                                          ],
+                                              "fisco":  [
+
+                                                        ]
+                                          }
+                     },
+                     {
+                         "id":  "transporte",
+                         "nome":  "TRANSPORTE",
+                         "enabledPlans":  [
+                                              "gratis",
+                                              "basico",
+                                              "premium"
+                                          ],
+                         "planFeatures":  {
+                                              "gratis":  [
+                                                             "Publicacao com 1 foto por item",
+                                                             "Descricao e preco visiveis",
+                                                             "Contato borrado (desbloqueio R$ 0,50 por cliente)"
+                                                         ],
+                                              "basico":  [
+                                                             "R$ 15,00 / mes",
+                                                             "1 foto por item",
+                                                             "Nome da loja e endereco liberados",
+                                                             "Anuncio aberto para todos os clientes"
+                                                         ],
+                                              "premium":  [
+                                                              "5 fotos por item",
+                                                              "Anuncio com destaque na listagem",
+                                                              "Anuncio aberto para todos os clientes",
+                                                              "Prioridade maior de exibicao"
+                                                          ],
+                                              "fisco":  [
+
+                                                        ]
+                                          }
+                     },
+                     {
+                         "id":  "alimentacao",
+                         "nome":  "ALIMENTACAO",
+                         "enabledPlans":  [
+                                              "gratis",
+                                              "basico",
+                                              "premium"
+                                          ],
+                         "planFeatures":  {
+                                              "gratis":  [
+                                                             "Publicacao com 1 foto por item",
+                                                             "Descricao e preco visiveis",
+                                                             "Contato borrado (desbloqueio R$ 0,50 por cliente)"
+                                                         ],
+                                              "basico":  [
+                                                             "R$ 15,00 / mes",
+                                                             "1 foto por item",
+                                                             "Nome da loja e endereco liberados",
+                                                             "Anuncio aberto para todos os clientes"
+                                                         ],
+                                              "premium":  [
+                                                              "5 fotos por item",
+                                                              "Anuncio com destaque na listagem",
+                                                              "Anuncio aberto para todos os clientes",
+                                                              "Prioridade maior de exibicao"
+                                                          ],
+                                              "fisco":  [
+
+                                                        ]
+                                          }
+                     },
+                     {
+                         "id":  "imoveis",
+                         "nome":  "IMOVEIS",
+                         "enabledPlans":  [
+                                              "gratis",
+                                              "basico",
+                                              "premium"
+                                          ],
+                         "planFeatures":  {
+                                              "gratis":  [
+                                                             "Publicacao com 1 foto por item",
+                                                             "Descricao e preco visiveis",
+                                                             "Contato borrado (desbloqueio R$ 0,50 por cliente)"
+                                                         ],
+                                              "basico":  [
+                                                             "R$ 15,00 / mes",
+                                                             "1 foto por item",
+                                                             "Nome da loja e endereco liberados",
+                                                             "Anuncio aberto para todos os clientes"
+                                                         ],
+                                              "premium":  [
+                                                              "5 fotos por item",
+                                                              "Anuncio com destaque na listagem",
+                                                              "Anuncio aberto para todos os clientes",
+                                                              "Prioridade maior de exibicao"
+                                                          ],
+                                              "fisco":  [
+
+                                                        ]
+                                          }
+                     },
+                     {
+                         "id":  "saude",
+                         "nome":  "SAUDE",
+                         "enabledPlans":  [
+                                              "gratis",
+                                              "basico",
+                                              "premium"
+                                          ],
+                         "planFeatures":  {
+                                              "gratis":  [
+                                                             "Publicacao com 1 foto por item",
+                                                             "Descricao e preco visiveis",
+                                                             "Contato borrado (desbloqueio R$ 0,50 por cliente)"
+                                                         ],
+                                              "basico":  [
+                                                             "R$ 15,00 / mes",
+                                                             "1 foto por item",
+                                                             "Nome da loja e endereco liberados",
+                                                             "Anuncio aberto para todos os clientes"
+                                                         ],
+                                              "premium":  [
+                                                              "5 fotos por item",
+                                                              "Anuncio com destaque na listagem",
+                                                              "Anuncio aberto para todos os clientes",
+                                                              "Prioridade maior de exibicao"
+                                                          ],
+                                              "fisco":  [
+
+                                                        ]
+                                          }
+                     },
+                     {
+                         "id":  "hotel_pousada",
+                         "nome":  "HOTEL / POUSADA",
+                         "enabledPlans":  [
+                                              "gratis",
+                                              "basico",
+                                              "premium"
+                                          ],
+                         "planFeatures":  {
+                                              "gratis":  [
+                                                             "Publicacao com 1 foto por item",
+                                                             "Descricao e preco visiveis",
+                                                             "Contato borrado (desbloqueio R$ 0,50 por cliente)"
+                                                         ],
+                                              "basico":  [
+                                                             "R$ 15,00 / mes",
+                                                             "1 foto por item",
+                                                             "Nome da loja e endereco liberados",
+                                                             "Anuncio aberto para todos os clientes"
+                                                         ],
+                                              "premium":  [
+                                                              "5 fotos por item",
+                                                              "Anuncio com destaque na listagem",
+                                                              "Anuncio aberto para todos os clientes",
+                                                              "Prioridade maior de exibicao"
+                                                          ],
+                                              "fisco":  [
+
+                                                        ]
+                                          }
+                     },
+                     {
+                         "id":  "publico_geral",
+                         "nome":  "PUBLICO GERAL",
+                         "enabledPlans":  [
+                                              "gratis",
+                                              "basico",
+                                              "premium"
+                                          ],
+                         "planFeatures":  {
+                                              "gratis":  [
+                                                             "Publicacao com 1 foto por item",
+                                                             "Descricao e preco visiveis",
+                                                             "Contato borrado (desbloqueio R$ 0,50 por cliente)"
+                                                         ],
+                                              "basico":  [
+                                                             "R$ 15,00 / mes",
+                                                             "1 foto por item",
+                                                             "Nome da loja e endereco liberados",
+                                                             "Anuncio aberto para todos os clientes"
+                                                         ],
+                                              "premium":  [
+                                                              "5 fotos por item",
+                                                              "Anuncio com destaque na listagem",
+                                                              "Anuncio aberto para todos os clientes",
+                                                              "Prioridade maior de exibicao"
+                                                          ],
+                                              "fisco":  [
+
+                                                        ]
+                                          }
+                     },
+                     {
+                         "id":  "academia__empresa",
+                         "nome":  "ACADEMIA - EMPRESA",
+                         "enabledPlans":  [
+                                              "gratis",
+                                              "basico",
+                                              "premium"
+                                          ],
+                         "planFeatures":  {
+                                              "gratis":  [
+                                                             "Publicacao com 1 foto por item",
+                                                             "Descricao e preco visiveis",
+                                                             "Contato borrado (desbloqueio R$ 0,50 por cliente)"
+                                                         ],
+                                              "basico":  [
+                                                             "R$ 15,00 / mes",
+                                                             "1 foto por item",
+                                                             "Nome da loja e endereco liberados",
+                                                             "Anuncio aberto para todos os clientes"
+                                                         ],
+                                              "premium":  [
+                                                              "5 fotos por item",
+                                                              "Anuncio com destaque na listagem",
+                                                              "Anuncio aberto para todos os clientes",
+                                                              "Prioridade maior de exibicao"
+                                                          ],
+                                              "fisco":  [
+
+                                                        ]
+                                          }
+                     }
+                 ]
+}
