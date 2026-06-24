@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save, Trash2, Plus, Image as ImageIcon, Calculator, TrendingUp, TrendingDown } from 'lucide-react';
 import ModalFotoProduto from '@/components/cozinha/ModalFotoProduto';
 import { useComprasRequests } from '@/hooks/cozinha/useComprasRequests';
+import { supabase } from '@/lib/supabase';
 
 // ============================================================
 // DESIGN
@@ -72,6 +73,14 @@ interface Receita {
   images?: string[];
 }
 
+function normalizarNome(valor: string) {
+  return String(valor || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+}
+
 // ============================================================
 // FUNÇÃO PARA CALCULAR CUSTO REAL
 // ============================================================
@@ -137,6 +146,56 @@ export default function EditarReceitaPage({ params }: { params: { id: string } }
   const [quantidadeProduzir, setQuantidadeProduzir] = useState(1);
   const [ingredientesComPreco, setIngredientesComPreco] = useState<IngredienteReceita[]>([]);
   const [ultimaSolicitacao, setUltimaSolicitacao] = useState<any | null>(null);
+
+  async function sincronizarReceitaComPratoLegacy(receitaSalva: Receita) {
+    try {
+      const nomeNorm = normalizarNome(receitaSalva.name);
+
+      const { data: pratosExistentes, error: listarError } = await supabase
+        .from('pratos')
+        .select('*')
+        .limit(500);
+
+      if (listarError) throw listarError;
+
+      const pratoExistente = (pratosExistentes || []).find((p: any) => {
+        const nomePrato = normalizarNome(p.nome || '');
+        return nomePrato === nomeNorm;
+      });
+
+      const payloadPrato = {
+        nome: receitaSalva.name,
+        descricao: receitaSalva.description || '',
+        categoria: receitaSalva.category || 'prato',
+        preco: Number(receitaSalva.price || 0),
+        custo: Number(custoReal || 0),
+        margem: Number(margemLucro || 0),
+        tempo_preparo: Number(receitaSalva.preparationTime || 30),
+        porcoes: Number(receitaSalva.servings || 1),
+        ingredientes: Array.isArray(receitaSalva.ingredients) ? receitaSalva.ingredients : [],
+        imagem_url: (receitaSalva.images || [])[0] || '',
+        ativo: receitaSalva.isAvailable !== false,
+        destaque: false,
+        updated_at: new Date().toISOString()
+      };
+
+      if (pratoExistente?.id) {
+        const { error: updateError } = await supabase
+          .from('pratos')
+          .update(payloadPrato)
+          .eq('id', pratoExistente.id);
+        if (updateError) throw updateError;
+      } else {
+        const { error: insertError } = await supabase
+          .from('pratos')
+          .insert([{ ...payloadPrato, created_at: new Date().toISOString() }]);
+        if (insertError) throw insertError;
+      }
+    } catch (syncError) {
+      console.error('⚠️ Falha na sincronização com pratos legacy:', syncError);
+      // Não interrompe o fluxo de salvar receita.
+    }
+  }
 
   // 🔥 VERIFICAR SE É "NOVO"
   const isNovo = params.id === 'novo';
@@ -248,6 +307,7 @@ export default function EditarReceitaPage({ params }: { params: { id: string } }
         });
         const data = await response.json();
         if (data.success) {
+          await sincronizarReceitaComPratoLegacy(data.data);
           alert('✅ Receita criada com sucesso!');
           router.push('/admin-master/cozinha-chef/receitas');
         } else {
@@ -271,6 +331,7 @@ export default function EditarReceitaPage({ params }: { params: { id: string } }
       });
       const data = await response.json();
       if (data.success) {
+        await sincronizarReceitaComPratoLegacy(data.data);
         alert('✅ Receita salva com sucesso!');
         router.push('/admin-master/cozinha-chef/receitas');
       } else {

@@ -1,7 +1,7 @@
 // app/teste-estoque/page.jsx
 'use client';
 
-import { useEstoque } from '@/app/hooks/useEstoque';
+import { useEstoque } from '@/hooks/useEstoque';
 
 export default function TesteEstoque() {
   const { ingredientes, loading, error, adicionarItem } = useEstoque();

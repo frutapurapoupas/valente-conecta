@@ -33,7 +33,7 @@ interface GroupedProduct {
   descricao: string;
   imagem?: string;
   categoria: string;
-  locations: LocalProduct[]; // Múltiplos locais do mesmo produto
+  locations: LocalProduct[];
   isGrouped: boolean;
   totalLocations: number;
 }
@@ -80,7 +80,7 @@ function lerDadosLocais(): LocalProduct[] {
           nome: item.nome,
           descricao: item.descricao || '',
           preco: item.preco || 0,
-          imagem: item foto,
+          imagem: item.foto, // CORRIGIDO: adicionado ponto
           categoria: item.categoria || 'comercial',
           usuarioId: item.vendedorId,
           usuarioNome: item.vendedorNome,
@@ -251,23 +251,28 @@ async function buscarInternet(termo: string): Promise<any[]> {
 function registrarPendencia(termo: string, userId: string, localizacao?: { lat: number; lng: number }) {
   try {
     const demandasPath = path.join(process.cwd(), 'data', 'demandas_busca.json');
-    let demandas = [];
+    let demandas: any[] = [];
 
     if (fs.existsSync(demandasPath)) {
       demandas = JSON.parse(fs.readFileSync(demandasPath, 'utf8'));
     }
 
-    demandas.push({
+    // CORRIGIDO: Certifique-se de que todos os campos estão definidos corretamente
+    const novaDemanda = {
       id: `demanda-${Date.now()}`,
       termo,
       userId,
-      localizacao,
+      localizacao: localizacao || null, // Usar null se não tiver localização
       status: 'pendente',
       criadoEm: new Date().toISOString(),
       respondidoEm: null,
       resposta: null
-    });
+    };
 
+    // Verificar tipo antes de adicionar
+    console.log('Registrando demanda:', novaDemanda);
+    
+    demandas.push(novaDemanda);
     fs.writeFileSync(demandasPath, JSON.stringify(demandas, null, 2));
   } catch (error) {
     console.error('Erro ao registrar pendência:', error);

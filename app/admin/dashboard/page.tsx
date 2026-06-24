@@ -1,38 +1,53 @@
-import { supabase } from '@/lib/supabase'
 "use client";
+
 import { useEffect, useState } from "react";
 import { useApp } from "@/app/context/AppContext";
-
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+import { supabase } from '@/lib/supabase';
 
 export default function AdminDashboard() {
   const { isAdmin } = useApp();
   const [meuContador, setMeuContador] = useState(0);
 
   useEffect(() => {
+    // Se o usuário não for admin, não executa a lógica de banco
     if (!isAdmin) return;
 
-    // Busca valor inicial
-    supabase.from('usuarios')
-      .select('convites_count')
-      .eq('id', '92ba677e-7b13-4298-bd37-7175afb211b4')
-      .single()
-      .then(({ data }) => setMeuContador(data?.convites_count || 0));
+    // 1. Busca valor inicial (Snapshot único)
+    const fetchCount = async () => {
+      const { data, error } = await supabase
+        .from('usuarios')
+        .select('convites_count')
+        .eq('id', '92ba677e-7b13-4298-bd37-7175afb211b4')
+        .single();
 
-    // Escuta mudanças em tempo real
+      if (!error && data) {
+        setMeuContador(data.convites_count || 0);
+      }
+    };
+
+    fetchCount();
+
+    // 2. Escuta mudanças em tempo real (Realtime)
     const channel = supabase
       .channel('db-changes')
-      .on('postgres_changes', { 
-        event: 'UPDATE', 
-        schema: 'public', 
-        table: 'usuarios',
-        filter: 'id=eq.92ba677e-7b13-4298-bd37-7175afb211b4' 
-      }, payload => {
-        setMeuContador(payload.new.convites_count);
-      })
+      .on(
+        'postgres_changes', 
+        { 
+          event: 'UPDATE', 
+          schema: 'public', 
+          table: 'usuarios',
+          filter: 'id=eq.92ba677e-7b13-4298-bd37-7175afb211b4' 
+        }, 
+        (payload) => {
+          setMeuContador(payload.new.convites_count);
+        }
+      )
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    // 3. Cleanup para evitar vazamento de memória (Remover canal ao sair)
+    return () => { 
+      supabase.removeChannel(channel); 
+    };
   }, [isAdmin]);
 
   return (
@@ -43,4 +58,3 @@ export default function AdminDashboard() {
     </div>
   );
 }
-

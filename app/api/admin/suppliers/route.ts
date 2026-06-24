@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+Ôªøimport { supabase } from '@/lib/supabase'
 import { NextResponse } from 'next/server';
 
 
@@ -69,7 +69,7 @@ export async function PUT(request: Request) {
   const body = await request.json();
   
   if (!id) {
-    return NextResponse.json({ success: false, error: 'ID n„o informado' }, { status: 400 });
+    return NextResponse.json({ success: false, error: 'ID n√£o informado' }, { status: 400 });
   }
   
   try {
@@ -102,7 +102,7 @@ export async function DELETE(request: Request) {
   const id = searchParams.get('id');
   
   if (!id) {
-    return NextResponse.json({ success: false, error: 'ID n„o informado' }, { status: 400 });
+    return NextResponse.json({ success: false, error: 'ID n√£o informado' }, { status: 400 });
   }
   
   try {
@@ -119,4 +119,6 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: false, error: 'Erro ao remover fornecedor' }, { status: 500 });
   }
 }
+
+
 
