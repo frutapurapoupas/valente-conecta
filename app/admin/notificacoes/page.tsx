@@ -316,7 +316,7 @@ export default function AdminNotificacoesPage() {
     const novas = [nova, ...notificacoes];
     salvarNotificacoes(novas);
 
-    const msgCanais = [];
+    const msgCanais: string[] = [];
     const msgAlvo = novaNotificacao.tipoAlvo === 'todos' ? 'para todos' : (novaNotificacao.tipoAlvo === 'grupo' ? `para grupo ${novaNotificacao.grupoAlvo}` : `para usuário específico`);
     const msgTeste = modoTeste ? ' 🧪 MODO TESTE ATIVADO' : '';
     
