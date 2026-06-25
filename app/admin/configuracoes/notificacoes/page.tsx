@@ -530,7 +530,6 @@ export default function AdminConfiguracoesNotificacoesPage() {
                   rows={2}
                   placeholder="-----BEGIN PRIVATE KEY-----..."
                   className="w-full px-4 py-2 border border-gray-300 rounded-xl font-mono text-xs"
-                  type="password"
                 />
                 <p className="text-xs text-gray-500 mt-1">Chave privada VAPID (mantenha em segredo)</p>
               </div>
