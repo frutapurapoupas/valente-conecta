@@ -274,7 +274,6 @@ export default function AdminNotificacoesPage() {
         body: `${notificacao.mensagem}${modoTeste ? ' 🧪 MODO TESTE' : ''}${notificacao.para_grupo ? `\n📌 Para: ${notificacao.para_grupo}` : ''}`,
         icon: '/icons/icon-192x192.png',
         badge: '/icons/badge-72x72.png',
-        vibrate: [200, 100, 200],
         data: { url: notificacao.link_url || '/' }
       });
       return true;
