@@ -1,4 +1,4 @@
-﻿// Arquivo: components/home/CarrosselBanners.tsx
+// Arquivo: components/home/CarrosselBanners.tsx
 // Status: AGUARDANDO CÓDIGO
 // Este arquivo será preenchido na próxima etapa
 'use client';
@@ -52,3 +52,4 @@ export default function CarrosselBanners({ bannerAtual }: CarrosselBannersProps)
     </div>
   );
 }
+

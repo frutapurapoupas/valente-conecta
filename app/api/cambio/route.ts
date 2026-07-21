@@ -1,13 +1,13 @@
 // ============================================================================
 // ARQUIVO: app/api/cambio/route.ts
-// Funcionalidade: API para buscar e atualizar taxas de câmbio
+// Funcionalidade: API para buscar e atualizar taxas de cÃ¢mbio
 // ============================================================================
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { cambioService } from '@/services/cambioService';
 
-// Verificar se o usuário é Admin
+// Verificar se o usuÃ¡rio Ã© Admin
 async function isAdmin(request: NextRequest): Promise<boolean> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
@@ -26,7 +26,7 @@ async function isAdmin(request: NextRequest): Promise<boolean> {
 }
 
 // ============================================================================
-// GET - Buscar câmbio
+// GET - Buscar cÃ¢mbio
 // ============================================================================
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -41,64 +41,65 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: true, data: listaCidades });
   }
 
-  // Buscar todas configurações de câmbio (apenas admin)
+  // Buscar todas configuraÃ§Ãµes de cÃ¢mbio (apenas admin)
   if (todas) {
     const admin = await isAdmin(request);
     if (!admin) {
-      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+      return NextResponse.json({ error: 'NÃ£o autorizado' }, { status: 401 });
     }
     const cambios = await cambioService.getAllCambios();
     return NextResponse.json({ success: true, data: cambios });
   }
 
-  // Buscar câmbio por ID do usuário
+  // Buscar cÃ¢mbio por ID do usuÃ¡rio
   if (usuarioId) {
     const cambio = await cambioService.getCambioPorUsuario(usuarioId);
     return NextResponse.json({ success: true, data: cambio });
   }
 
-  // Buscar câmbio por cidade
+  // Buscar cÃ¢mbio por cidade
   if (cidade) {
     const cambio = await cambioService.getCambioPorCidade(cidade);
     return NextResponse.json({ success: true, data: cambio });
   }
 
-  // Buscar câmbio da cidade do usuário logado
+  // Buscar cÃ¢mbio da cidade do usuÃ¡rio logado
   const { data: { user } } = await supabase.auth.getUser();
   if (user) {
     const cambio = await cambioService.getCambioPorUsuario(user.id);
     return NextResponse.json({ success: true, data: cambio });
   }
 
-  return NextResponse.json({ error: 'Parâmetros inválidos' }, { status: 400 });
+  return NextResponse.json({ error: 'ParÃ¢metros invÃ¡lidos' }, { status: 400 });
 }
 
 // ============================================================================
-// POST - Atualizar câmbio (apenas admin)
+// POST - Atualizar cÃ¢mbio (apenas admin)
 // ============================================================================
 export async function POST(request: NextRequest) {
   const admin = await isAdmin(request);
   if (!admin) {
-    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    return NextResponse.json({ error: 'NÃ£o autorizado' }, { status: 401 });
   }
 
   try {
     const { cidade, taxa_cambio } = await request.json();
     
     if (!cidade || !taxa_cambio || taxa_cambio <= 0) {
-      return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 });
+      return NextResponse.json({ error: 'Dados invÃ¡lidos' }, { status: 400 });
     }
 
     const { data: { user } } = await supabase.auth.getUser();
     const sucesso = await cambioService.atualizarCambio(cidade, taxa_cambio, user?.id || 'admin');
 
     if (sucesso) {
-      return NextResponse.json({ success: true, message: 'Câmbio atualizado' });
+      return NextResponse.json({ success: true, message: 'CÃ¢mbio atualizado' });
     } else {
-      return NextResponse.json({ error: 'Erro ao atualizar câmbio' }, { status: 500 });
+      return NextResponse.json({ error: 'Erro ao atualizar cÃ¢mbio' }, { status: 500 });
     }
   } catch (error) {
     console.error('Erro na API:', error);
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 });
   }
 }
+

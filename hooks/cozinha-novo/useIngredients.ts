@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useCozinhaData } from './useCozinhaData';
 
@@ -15,3 +15,4 @@ export function useIngredients() {
     reload
   };
 }
+

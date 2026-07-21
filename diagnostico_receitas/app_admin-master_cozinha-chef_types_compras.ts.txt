@@ -1,0 +1,40 @@
+﻿========================================
+ARQUIVO: app\admin-master\cozinha-chef\types\compras.ts
+DATA: 07/20/2026 21:56:56
+========================================
+
+export interface CompraType {
+  id: string;
+  fornecedor_id: string;
+  fornecedor_nome?: string;
+  data: string;
+  status: 'pendente' | 'aprovada' | 'recebida' | 'cancelada';
+  total: number;
+  itens: CompraItemType[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CompraItemType {
+  id: string;
+  compra_id: string;
+  produto: string;
+  quantidade: number;
+  preco_unitario: number;
+  total: number;
+}
+
+export interface CompraRequestType {
+  id: string;
+  solicitante: string;
+  solicitante_id?: string;
+  produto: string;
+  quantidade: number;
+  justificativa: string;
+  status: 'pendente' | 'aprovado' | 'rejeitado' | 'comprado';
+  created_at: string;
+  updated_at: string;
+}
+
+
+

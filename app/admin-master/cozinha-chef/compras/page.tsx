@@ -16,8 +16,8 @@ import {
   Loader2,
   Printer
 } from 'lucide-react';
-import { useCompras } from '@/hooks/cozinha/useCompras';
-import { useComprasRequests } from '@/hooks/cozinha/useComprasRequests';
+import { useCompras } from '../hooks/useCompras';
+import { useComprasRequests } from '../hooks/useComprasRequests';
 import { CompraItem } from '@/types/cozinha';
 
 export default function ListaCompras() {
@@ -49,7 +49,7 @@ export default function ListaCompras() {
       await Promise.all([carregar(), reloadRequests()]);
       window.dispatchEvent(new CustomEvent('cozinha_data_updated'));
     } else {
-      alert('Erro ao aprovar solicitação');
+      alert('Erro ao aprovar solicitaÃƒÂ§ÃƒÂ£o');
     }
   };
 
@@ -67,7 +67,7 @@ export default function ListaCompras() {
     const success = results.every((r: any) => r?.success);
 
     if (!success) {
-      alert('Uma ou mais remessas falharam na aprovação.');
+      alert('Uma ou mais remessas falharam na aprovaÃƒÂ§ÃƒÂ£o.');
     }
 
     setSelectedRequestIds({});
@@ -77,7 +77,7 @@ export default function ListaCompras() {
 
   const handleAprovarTodas = async () => {
     if (pendentes.length === 0) {
-      alert('Não há remessas pendentes para aprovar.');
+      alert('NÃƒÂ£o hÃƒÂ¡ remessas pendentes para aprovar.');
       return;
     }
 
@@ -89,7 +89,7 @@ export default function ListaCompras() {
     const success = results.every((r: any) => r?.success);
 
     if (!success) {
-      alert('Uma ou mais remessas falharam na aprovação.');
+      alert('Uma ou mais remessas falharam na aprovaÃƒÂ§ÃƒÂ£o.');
     }
 
     setSelectedRequestIds({});
@@ -160,7 +160,7 @@ export default function ListaCompras() {
               <th>Quantidade</th>
               <th>Unidade</th>
               <th>Fornecedor</th>
-              <th>Valor Unitário</th>
+              <th>Valor UnitÃƒÂ¡rio</th>
               <th>Total</th>
             </tr>
           </thead>
@@ -178,7 +178,7 @@ export default function ListaCompras() {
     w.print();
   };
 
-  // Função para obter cor da prioridade
+  // FunÃƒÂ§ÃƒÂ£o para obter cor da prioridade
   const getPrioridadeColor = (prioridade?: string) => {
     switch (prioridade) {
       case 'alta': return 'text-red-400 bg-red-500/20';
@@ -188,13 +188,13 @@ export default function ListaCompras() {
     }
   };
 
-  // Função para obter label da prioridade
+  // FunÃƒÂ§ÃƒÂ£o para obter label da prioridade
   const getPrioridadeLabel = (prioridade?: string) => {
     switch (prioridade) {
-      case 'alta': return '🔴 Alta';
-      case 'media': return '🟡 Média';
-      case 'baixa': return '🟢 Baixa';
-      default: return '⚪ N/A';
+      case 'alta': return 'Ã°Å¸â€Â´ Alta';
+      case 'media': return 'Ã°Å¸Å¸Â¡ MÃƒÂ©dia';
+      case 'baixa': return 'Ã°Å¸Å¸Â¢ Baixa';
+      default: return 'Ã¢Å¡Âª N/A';
     }
   };
 
@@ -209,7 +209,7 @@ export default function ListaCompras() {
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6">
       <div className="max-w-4xl mx-auto">
-        {/* Cabeçalho */}
+        {/* CabeÃƒÂ§alho */}
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div>
             <Link href="/admin-master/cozinha-chef" className="text-sm text-gray-400 hover:text-white flex items-center gap-1 transition">
@@ -239,7 +239,7 @@ export default function ListaCompras() {
               href="/admin-master/cozinha-chef/compras/ajuste"
               className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg flex items-center gap-2 text-sm transition"
             >
-              <CheckCircle size={16} /> Ajuste Pós-Compra
+              <CheckCircle size={16} /> Ajuste PÃƒÂ³s-Compra
             </Link>
           </div>
         </div>
@@ -247,7 +247,7 @@ export default function ListaCompras() {
         {/* Lista de Itens */}
         <div className="bg-gray-800/30 rounded-xl border border-gray-700 p-4 mb-6">
           <div className="flex items-center justify-between gap-2">
-            <h2 className="text-lg font-semibold">Solicitações de Compra Pendentes ({pendentes.length})</h2>
+            <h2 className="text-lg font-semibold">SolicitaÃƒÂ§ÃƒÂµes de Compra Pendentes ({pendentes.length})</h2>
             <button
               onClick={() => setRequestsCollapsed((v) => !v)}
               className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-lg text-xs flex items-center gap-1"
@@ -258,9 +258,9 @@ export default function ListaCompras() {
           </div>
 
           {loadingRequests ? (
-            <p className="text-gray-400 text-sm">Carregando solicitações...</p>
+            <p className="text-gray-400 text-sm">Carregando solicitaÃƒÂ§ÃƒÂµes...</p>
           ) : pendentes.length === 0 ? (
-            <p className="text-gray-400 text-sm">Nenhuma solicitação pendente</p>
+            <p className="text-gray-400 text-sm">Nenhuma solicitaÃƒÂ§ÃƒÂ£o pendente</p>
           ) : requestsCollapsed ? (
             <p className="text-gray-400 text-sm mt-2">
               Card recolhido. Abra para aprovar remessas individuais ou em lote.
@@ -295,10 +295,10 @@ export default function ListaCompras() {
                       <div>
                         <p className="font-medium text-white">{req.receitaNome}</p>
                         <p className="text-xs text-gray-400">
-                          {new Date(req.createdAt).toLocaleString('pt-BR')} • Produção: {req.quantidadeProduzir}x • Itens: {req.ingredientes.length}
+                          {new Date(req.createdAt).toLocaleString('pt-BR')} Ã¢â‚¬Â¢ ProduÃƒÂ§ÃƒÂ£o: {req.quantidadeProduzir}x Ã¢â‚¬Â¢ Itens: {req.ingredientes.length}
                         </p>
                         <p className="text-xs text-amber-300 mt-1">
-                          Excluídos da soma: {getExcludedIndexes(req.id).length}
+                          ExcluÃƒÂ­dos da soma: {getExcludedIndexes(req.id).length}
                         </p>
                       </div>
                     </div>
@@ -326,7 +326,7 @@ export default function ListaCompras() {
                             <div className="flex items-center justify-between gap-2">
                               <div>
                                 <span className="font-medium text-white">{ing.ingredientName}</span>
-                                <span> • {Number(ing.quantidade || ing.quantity || 0).toFixed(2)} {ing.unit}</span>
+                                <span> Ã¢â‚¬Â¢ {Number(ing.quantidade || ing.quantity || 0).toFixed(2)} {ing.unit}</span>
                               </div>
                               <label className="inline-flex items-center gap-1 text-[11px] text-amber-300">
                                 <input
@@ -334,7 +334,7 @@ export default function ListaCompras() {
                                   checked={Boolean(excludedIngredientIndexesByRequest[req.id]?.[index])}
                                   onChange={() => toggleIngredientExclude(req.id, index)}
                                 />
-                                Não somar
+                                NÃƒÂ£o somar
                               </label>
                             </div>
                           </div>
@@ -356,11 +356,11 @@ export default function ListaCompras() {
                   <th className="px-4 py-3 text-left text-gray-400">Item</th>
                   <th className="px-4 py-3 text-left text-gray-400">Qtd</th>
                   <th className="px-4 py-3 text-left text-gray-400">Unidade</th>
-                  <th className="px-4 py-3 text-left text-gray-400">Preço Est.</th>
+                  <th className="px-4 py-3 text-left text-gray-400">PreÃƒÂ§o Est.</th>
                   <th className="px-4 py-3 text-left text-gray-400">Fornecedor</th>
                   <th className="px-4 py-3 text-left text-gray-400">Prioridade</th>
                   <th className="px-4 py-3 text-left text-gray-400">Status</th>
-                  <th className="px-4 py-3 text-center text-gray-400">Ações</th>
+                  <th className="px-4 py-3 text-center text-gray-400">AÃƒÂ§ÃƒÂµes</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700">
@@ -456,3 +456,6 @@ export default function ListaCompras() {
     </div>
   );
 }
+
+
+

@@ -10,7 +10,7 @@ function CadastroPopupContent() {
   const searchParams = useSearchParams();
   const codigoIndicacao = searchParams.get('ref') || undefined;
   
-  // Se já logado, não mostrar
+  // Se jÃ¡ logado, nÃ£o mostrar
   if (isUserLoggedIn()) return null;
   
   return <CadastroPopup codigoIndicacao={codigoIndicacao} />;
@@ -23,3 +23,4 @@ export function CadastroPopupWrapper() {
     </Suspense>
   );
 }
+

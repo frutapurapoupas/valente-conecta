@@ -1,60 +1,40 @@
-"use client";
+﻿"use client";
 
-import { useEffect, useState } from "react";
-import { useApp } from "@/app/context/AppContext";
-import { supabase } from '@/lib/supabase';
+import { useDashboard } from "@/modules/admin";
 
-export default function AdminDashboard() {
-  const { isAdmin } = useApp();
-  const [meuContador, setMeuContador] = useState(0);
+export default function DashboardPage() {
+  const { data, loading, error } = useDashboard();
 
-  useEffect(() => {
-    // Se o usuário não for admin, não executa a lógica de banco
-    if (!isAdmin) return;
+  if (loading) return <div className="p-6">Carregando dashboard...</div>;
+  if (error) return <div className="p-6 text-red-600">Erro: {error.message}</div>;
 
-    // 1. Busca valor inicial (Snapshot único)
-    const fetchCount = async () => {
-      const { data, error } = await supabase
-        .from('usuarios')
-        .select('convites_count')
-        .eq('id', '92ba677e-7b13-4298-bd37-7175afb211b4')
-        .single();
-
-      if (!error && data) {
-        setMeuContador(data.convites_count || 0);
-      }
-    };
-
-    fetchCount();
-
-    // 2. Escuta mudanças em tempo real (Realtime)
-    const channel = supabase
-      .channel('db-changes')
-      .on(
-        'postgres_changes', 
-        { 
-          event: 'UPDATE', 
-          schema: 'public', 
-          table: 'usuarios',
-          filter: 'id=eq.92ba677e-7b13-4298-bd37-7175afb211b4' 
-        }, 
-        (payload) => {
-          setMeuContador(payload.new.convites_count);
-        }
-      )
-      .subscribe();
-
-    // 3. Cleanup para evitar vazamento de memória (Remover canal ao sair)
-    return () => { 
-      supabase.removeChannel(channel); 
-    };
-  }, [isAdmin]);
+  const cards = [
+    { label: "Usuários", value: data?.totalUsuarios || 0, icon: "👤" },
+    { label: "Benefícios", value: data?.totalBeneficios || 0, icon: "🎁" },
+    { label: "Serviços Pagos", value: data?.totalServicosPagos || 0, icon: "💳" },
+  ];
 
   return (
-    <div className="p-8 text-center">
-      <h1 className="text-2xl font-bold">Progresso Viral</h1>
-      <div className="text-6xl my-4">{meuContador} / 50</div>
-      <p>Convites realizados em tempo real.</p>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {cards.map((card, i) => (
+          <div key={i} className="bg-white p-6 rounded-lg shadow">
+            <div className="flex items-center gap-4">
+              <span className="text-3xl">{card.icon}</span>
+              <div>
+                <p className="text-sm text-gray-600">{card.label}</p>
+                <p className="text-2xl font-bold">{card.value}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-6 bg-white p-4 rounded-lg shadow">
+        <p className="text-sm text-gray-600">
+          Último Sync: {data?.ultimoSync ? new Date(data.ultimoSync).toLocaleString() : "Nunca"}
+        </p>
+      </div>
     </div>
   );
 }

@@ -1245,15 +1245,29 @@
   },
   {
     "id": "1782074460464",
-    "name": "Nova Receita",
-    "description": "",
-    "price": 0,
+    "name": "Macarrão com Almondegas",
+    "description": "O macarrão com almôndegas é uma refeição clássica, reconfortante e muito simples de preparar. A combinação perfeita exige almôndegas douradas e suculentas cozidas diretamente em um molho de tomate encorpado",
+    "price": 20.9,
     "category": "prato",
-    "preparationTime": 30,
+    "preparationTime": 60,
     "servings": 1,
     "isAvailable": true,
     "ingredients": [],
     "images": [],
-    "createdAt": "2026-06-21T20:41:00.464Z"
+    "createdAt": "2026-06-21T20:41:00.464Z",
+    "updatedAt": "2026-07-14T21:52:57.726Z"
+  },
+  {
+    "id": "1784043006436",
+    "name": "Picadinho de carne",
+    "description": "Picadinho de carne com arroz e legumes",
+    "price": 18.9,
+    "category": "prato",
+    "ingredients": [],
+    "preparationTime": 30,
+    "servings": 1,
+    "isAvailable": true,
+    "images": [],
+    "createdAt": "2026-07-14T15:30:06.436Z"
   }
 ]

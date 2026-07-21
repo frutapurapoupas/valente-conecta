@@ -1,0 +1,143 @@
+// app/admin-master/cozinha/repositories/ReceitaRepository.ts
+import { supabase } from '@/lib/supabase';
+import { Receita, ReceitaInput } from '../types/receita';
+import { calcularFinanceiroReceita, normalizarIngredienteCanonico } from '../../cozinha-chef/services/custoService';
+
+export class ReceitaRepository {
+  async buscarTodos(): Promise<Receita[]> {
+    const { data, error } = await supabase
+      .from('cozinha_receitas')
+      .select('*, ingredientes:cozinha_receita_ingredientes(*)')
+      .order('nome', { ascending: true });
+
+    if (error) {
+      console.error('Erro ao buscar receitas:', error);
+      throw new Error('Falha ao carregar receitas');
+    }
+
+    return data || [];
+  }
+
+  async buscarPorId(id: string): Promise<Receita | null> {
+    const { data, error } = await supabase
+      .from('cozinha_receitas')
+      .select('*, ingredientes:cozinha_receita_ingredientes(*)')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      console.error('Erro ao buscar receita:', error);
+      return null;
+    }
+
+    return data;
+  }
+
+  async buscarPorCategoria(categoria: string): Promise<Receita[]> {
+    const { data, error } = await supabase
+      .from('cozinha_receitas')
+      .select('*, ingredientes:cozinha_receita_ingredientes(*)')
+      .eq('categoria', categoria)
+      .eq('ativo', true);
+
+    if (error) {
+      console.error('Erro ao buscar receitas por categoria:', error);
+      throw new Error('Falha ao carregar receitas da categoria');
+    }
+
+    return data || [];
+  }
+
+  async criar(receita: ReceitaInput): Promise<Receita> {
+    const { ingredientes, ...dadosReceita } = receita;
+
+    const ingredientesNormalizados = (ingredientes || []).map((ing: any) =>
+      normalizarIngredienteCanonico({
+        ingredienteId: ing.ingredienteId,
+        ingredienteNome: ing.ingredienteNome,
+        quantidade: ing.quantidade,
+        unidade: ing.unidade,
+        custoUnitario: ing.custoUnitario,
+        custoTotal: ing.custoTotal,
+      })
+    );
+
+    const financeiro = calcularFinanceiroReceita({
+      ingredientes: ingredientesNormalizados,
+      porcoes: receita.rendimento,
+      preco_sugerido: receita.precoSugerido,
+      preco_venda: receita.precoSugerido,
+    });
+
+    // Inserir receita
+    const { data, error } = await supabase
+      .from('cozinha_receitas')
+      .insert({
+        ...dadosReceita,
+        custoTotal: financeiro.custo_receita,
+        margemLucro: financeiro.margem_percentual,
+        precoSugerido: financeiro.preco_sugerido,
+        ativo: true,
+        created_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Erro ao criar receita:', error);
+      throw new Error('Falha ao criar receita');
+    }
+
+    // Inserir ingredientes da receita
+    const ingredientesData = ingredientesNormalizados.map((ing) => ({
+      receitaId: data.id,
+      ingredienteId: ing.ingrediente_id,
+      quantidade: ing.quantidade,
+      unidade: ing.unidade,
+      custoUnitario: ing.custo_unitario,
+      custoTotal: ing.custo_total
+    }));
+
+    const { error: ingError } = await supabase
+      .from('cozinha_receita_ingredientes')
+      .insert(ingredientesData);
+
+    if (ingError) {
+      console.error('Erro ao adicionar ingredientes à receita:', ingError);
+      // Rollback? Considerar transação
+    }
+
+    return this.buscarPorId(data.id) as Promise<Receita>;
+  }
+
+  async atualizar(id: string, receita: Partial<ReceitaInput>): Promise<Receita> {
+    const { data, error } = await supabase
+      .from('cozinha_receitas')
+      .update({
+        ...receita,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Erro ao atualizar receita:', error);
+      throw new Error('Falha ao atualizar receita');
+    }
+
+    return data;
+  }
+
+  async deletar(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('cozinha_receitas')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Erro ao deletar receita:', error);
+      throw new Error('Falha ao deletar receita');
+    }
+  }
+}

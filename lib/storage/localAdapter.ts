@@ -1,4 +1,4 @@
-﻿import { IStorageAdapter, SyncResult } from './index';
+import { IStorageAdapter, SyncResult } from './index';
 import { Ingredient, Recipe, MediaFile } from '@/lib/cozinha/types';
 import fs from 'fs';
 import path from 'path';
@@ -138,3 +138,4 @@ export class LocalAdapter implements IStorageAdapter {
     return { success: 0, failed: 0 };
   }
 }
+

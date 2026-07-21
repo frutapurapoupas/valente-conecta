@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import toast from "react-hot-toast";
 interface CartItem { id: number; nome: string; preco: number; quantidade: number; imagem?: string; }
 export function useCart() {
@@ -10,3 +10,4 @@ export function useCart() {
   const clear = () => setItems([]);
   return { items, addItem, removeItem, updateQuantity, total, clear, count: items.length };
 }
+

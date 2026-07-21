@@ -1,5 +1,5 @@
 // ============================================
-// TYPES - MÓDULO COZINHA DONA NEIDE
+// TYPES - MÃ“DULO COZINHA DONA NEIDE
 // ============================================
 
 export interface Ingredient {
@@ -90,3 +90,4 @@ export interface Fornecedor {
 }
 
 export type PeriodoType = 'semana' | 'mes' | 'total';
+

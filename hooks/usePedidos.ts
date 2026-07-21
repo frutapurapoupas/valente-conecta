@@ -41,3 +41,4 @@ export const usePedidos = () => {
 
   return { orders, loading, filter, setFilter, carregarPedidos, atualizarStatus };
 };
+

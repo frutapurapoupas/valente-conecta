@@ -1,5 +1,5 @@
-﻿// components/financeiro/CardsResumoFinanceiro.tsx
-// 🎨 DESIGN - Cards de resumo
+// components/financeiro/CardsResumoFinanceiro.tsx
+// ?? DESIGN - Cards de resumo
 
 interface CardsResumoFinanceiroProps {
   totalReceitas: number;
@@ -43,3 +43,4 @@ export default function CardsResumoFinanceiro({
     </div>
   );
 }
+

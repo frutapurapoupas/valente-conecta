@@ -25,3 +25,5 @@ export const SupplierStorage = {
     SupplierStorage.saveAll(list);
   }
 };
+
+

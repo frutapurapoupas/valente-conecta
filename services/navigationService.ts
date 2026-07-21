@@ -7,3 +7,5 @@ export const NavigationService = {
     return dados.length > 0;
   }
 };
+
+

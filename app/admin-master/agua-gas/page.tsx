@@ -8,12 +8,12 @@ import {
 import toast, { Toaster } from 'react-hot-toast';
 
 const TIPOS_PRODUTO = [
-  { id: 'agua_garrafao', label: 'Garrafão 20L',  unidade: 'unidade' },
-  { id: 'agua_mineral',  label: 'Água Mineral',  unidade: 'fardo'   },
-  { id: 'gas_p13',       label: 'Gás P13',       unidade: 'unidade' },
-  { id: 'gas_p20',       label: 'Gás P20',       unidade: 'unidade' },
-  { id: 'gas_p45',       label: 'Gás P45',       unidade: 'unidade' },
-  { id: 'gas_granel',    label: 'Gás Granel',    unidade: 'kg'      },
+  { id: 'agua_garrafao', label: 'GarrafÃ£o 20L',  unidade: 'unidade' },
+  { id: 'agua_mineral',  label: 'Ãgua Mineral',  unidade: 'fardo'   },
+  { id: 'gas_p13',       label: 'GÃ¡s P13',       unidade: 'unidade' },
+  { id: 'gas_p20',       label: 'GÃ¡s P20',       unidade: 'unidade' },
+  { id: 'gas_p45',       label: 'GÃ¡s P45',       unidade: 'unidade' },
+  { id: 'gas_granel',    label: 'GÃ¡s Granel',    unidade: 'kg'      },
   { id: 'outro',         label: 'Outro produto', unidade: 'unidade' },
 ];
 
@@ -87,7 +87,7 @@ export default function AdminAguaGasPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Excluir este fornecedor?')) return;
     await fetch(`/api/agua-gas?id=${id}`, { method: 'DELETE' });
-    toast.success('Fornecedor excluído.');
+    toast.success('Fornecedor excluÃ­do.');
     carregarFornecedores();
   };
 
@@ -134,7 +134,7 @@ export default function AdminAguaGasPage() {
         <div className="flex items-center gap-3">
           <div className="flex gap-1"><Droplets className="w-7 h-7 text-blue-400" /><Flame className="w-7 h-7 text-orange-400" /></div>
           <div>
-            <h1 className="text-2xl font-extrabold">Água e Gás</h1>
+            <h1 className="text-2xl font-extrabold">Ãgua e GÃ¡s</h1>
             <p className="text-gray-400 text-sm">Gerencie fornecedores e pedidos</p>
           </div>
         </div>
@@ -172,7 +172,7 @@ export default function AdminAguaGasPage() {
         ))}
       </div>
 
-      {/* ── FORNECEDORES ─────────────────────────────────────────────────────── */}
+      {/* â”€â”€ FORNECEDORES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {aba === 'fornecedores' && (
         <>
           <div className="flex flex-wrap gap-3 mb-6">
@@ -202,7 +202,7 @@ export default function AdminAguaGasPage() {
                       <th className="px-5 py-4 text-left">Produtos</th>
                       <th className="px-5 py-4 text-left">Entrega</th>
                       <th className="px-5 py-4 text-left">Status</th>
-                      <th className="px-5 py-4 text-left">Ações</th>
+                      <th className="px-5 py-4 text-left">AÃ§Ãµes</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
@@ -232,10 +232,10 @@ export default function AdminAguaGasPage() {
                         <td className="px-5 py-4">
                           {f.temEntrega ? (
                             <span className="flex items-center gap-1 text-xs text-green-400"><Truck className="w-3 h-3" />
-                              {f.taxaEntrega === 0 ? 'Grátis' : `R$ ${f.taxaEntrega.toFixed(2)}`}
+                              {f.taxaEntrega === 0 ? 'GrÃ¡tis' : `R$ ${f.taxaEntrega.toFixed(2)}`}
                             </span>
                           ) : (
-                            <span className="text-xs text-gray-400">Não faz</span>
+                            <span className="text-xs text-gray-400">NÃ£o faz</span>
                           )}
                         </td>
                         <td className="px-5 py-4">
@@ -267,7 +267,7 @@ export default function AdminAguaGasPage() {
         </>
       )}
 
-      {/* ── PEDIDOS ───────────────────────────────────────────────────────────── */}
+      {/* â”€â”€ PEDIDOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {aba === 'pedidos' && (
         <div className="bg-slate-900 border border-white/10 rounded-2xl overflow-hidden">
           {pedidos.length === 0 ? (
@@ -280,9 +280,9 @@ export default function AdminAguaGasPage() {
                     <th className="px-5 py-4 text-left">Cliente</th>
                     <th className="px-5 py-4 text-left">Fornecedor</th>
                     <th className="px-5 py-4 text-left">Produto / Qtd</th>
-                    <th className="px-5 py-4 text-left">Endereço</th>
+                    <th className="px-5 py-4 text-left">EndereÃ§o</th>
                     <th className="px-5 py-4 text-left">Status</th>
-                    <th className="px-5 py-4 text-left">Ações</th>
+                    <th className="px-5 py-4 text-left">AÃ§Ãµes</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
@@ -298,7 +298,7 @@ export default function AdminAguaGasPage() {
                         <div className="text-xs text-gray-400">Qtd: {p.quantidade}</div>
                         {p.observacoes && <div className="text-xs text-gray-500 line-clamp-1 mt-0.5">{p.observacoes}</div>}
                       </td>
-                      <td className="px-5 py-4 text-sm text-gray-400">{p.endereco || '—'}</td>
+                      <td className="px-5 py-4 text-sm text-gray-400">{p.endereco || 'â€”'}</td>
                       <td className="px-5 py-4">
                         <span className={`text-xs font-semibold px-2 py-1 rounded-full ${p.status === 'confirmado' ? 'bg-green-500/20 text-green-400' : p.status === 'cancelado' ? 'bg-red-500/20 text-red-400' : 'bg-orange-500/20 text-orange-400'}`}>{p.status}</span>
                       </td>
@@ -330,7 +330,7 @@ export default function AdminAguaGasPage() {
         </div>
       )}
 
-      {/* ── MODAL EDIÇÃO ─────────────────────────────────────────────────────── */}
+      {/* â”€â”€ MODAL EDIÃ‡ÃƒO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {editando && (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-start sm:items-center justify-center p-4 overflow-y-auto">
           <div className="bg-slate-900 border border-white/10 rounded-2xl w-full max-w-2xl my-4">
@@ -342,11 +342,11 @@ export default function AdminAguaGasPage() {
               <div className="grid grid-cols-2 gap-3">
                 {[
                   { label: 'Nome da empresa *', key: 'nome', req: true },
-                  { label: 'Responsável', key: 'responsavel' },
+                  { label: 'ResponsÃ¡vel', key: 'responsavel' },
                   { label: 'Telefone *', key: 'telefone', req: true },
                   { label: 'WhatsApp', key: 'whatsapp' },
                   { label: 'Bairro', key: 'bairro' },
-                  { label: 'Horário', key: 'horario' },
+                  { label: 'HorÃ¡rio', key: 'horario' },
                 ].map((f) => (
                   <div key={f.key}>
                     <label className="text-sm text-gray-400">{f.label}</label>
@@ -394,7 +394,7 @@ export default function AdminAguaGasPage() {
                       className="bg-slate-700 border border-white/10 text-white rounded-lg px-2 py-2 text-xs outline-none col-span-1">
                       {TIPOS_PRODUTO.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
                     </select>
-                    <input value={p.descricao} onChange={(e) => setProd(i, 'descricao', e.target.value)} placeholder="Descrição"
+                    <input value={p.descricao} onChange={(e) => setProd(i, 'descricao', e.target.value)} placeholder="DescriÃ§Ã£o"
                       className="bg-slate-700 border border-white/10 text-white rounded-lg px-2 py-2 text-xs outline-none col-span-1" />
                     <div className="flex items-center gap-1">
                       <span className="text-xs text-gray-400">R$</span>
@@ -411,7 +411,7 @@ export default function AdminAguaGasPage() {
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setEditando(null)} className="flex-1 bg-white/5 hover:bg-white/10 text-gray-300 font-semibold py-3 rounded-xl">Cancelar</button>
                 <button type="submit" disabled={salvando} className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold py-3 rounded-xl">
-                  {salvando ? 'Salvando...' : editando.id ? 'Salvar alterações' : 'Cadastrar'}
+                  {salvando ? 'Salvando...' : editando.id ? 'Salvar alteraÃ§Ãµes' : 'Cadastrar'}
                 </button>
               </div>
             </form>
@@ -421,3 +421,5 @@ export default function AdminAguaGasPage() {
     </div>
   );
 }
+
+

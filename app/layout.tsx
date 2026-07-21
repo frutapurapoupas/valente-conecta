@@ -1,4 +1,4 @@
-﻿"use client"; // Precisa ser client para usar usePathname
+"use client"; // Precisa ser client para usar usePathname
 
 import { Inter } from 'next/font/google';
 import './globals.css';
@@ -52,3 +52,4 @@ function LoadingSpinner() {
     </div>
   );
 }
+

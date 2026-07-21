@@ -78,3 +78,7 @@ node_modules/
 *.log
 .vercel
 .env*
+
+# Ignorar arquivos do sistema Windows
+pagefile.sys
+

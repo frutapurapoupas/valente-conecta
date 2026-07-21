@@ -1,388 +1,101 @@
-"use client";
+﻿"use client";
 
-export const dynamic = 'force-dynamic';
-
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useApp } from "@/app/context/AppContext";
-import { supabase } from "@/lib/supabase";
-import toast from "react-hot-toast";
-import { 
-  Users, Store, Briefcase, Target, Trophy, 
-  Gift, CheckCircle, XCircle, Clock, TrendingUp,
-  ChevronRight, UserPlus, Store as StoreIcon, Wrench
-} from "lucide-react";
-
-interface IndicacaoUsuario {
-  id: string;
-  nome: string;
-  whatsapp: string;
-  status: "pendente" | "ativo" | "invalido";
-  dataCadastro: string;
-}
-
-interface IndicacaoEstabelecimento {
-  id: string;
-  nome: string;
-  tipo: "comercio" | "servico";
-  telefone: string;
-  status: "pendente" | "aprovado" | "rejeitado" | "pago";
-  itensCadastrados: number;
-  itensNecessarios: number;
-  created_at: string;
-}
-
-interface BonusBloqueado {
-  tipo: "usuarios" | "estabelecimentos" | "servicos";
-  meta: number;
-  atual: number;
-  valor: number;
-  bloqueado: boolean;
-}
+import { useIndicacoes } from "@/modules/indicacoes";
+import { useState } from "react";
 
 export default function IndicacoesPage() {
-  const router = useRouter();
-  const { user } = useApp();
-  const [loading, setLoading] = useState(true);
-  const [indicados, setIndicados] = useState<IndicacaoUsuario[]>([]);
-  const [estabelecimentos, setEstabelecimentos] = useState<IndicacaoEstabelecimento[]>([]);
-  const [servicos, setServicos] = useState<IndicacaoEstabelecimento[]>([]);
-  const [bonus, setBonus] = useState({
-    usuarios: { meta: 50, atual: 0, valor: 10, liberado: false },
-    estabelecimentos: { meta: 2, atual: 0, valor: 30, liberado: false, itensPorEstabelecimento: 30 },
-    servicos: { meta: 4, atual: 0, valor: 15, liberado: false, itensPorServico: 3 }
-  });
-  const [saldoTotal, setSaldoTotal] = useState(0);
+  const { indicacoes, stats, loading, error, criar, atualizarStatus, aplicarFiltro } = useIndicacoes();
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({ nome_indicante: "", nome_indicado: "", telefone_indicado: "", email_indicado: "" });
 
-  useEffect(() => {
-    if (!user) {
-      router.push("/login");
-      return;
-    }
-    carregarDados();
-  }, [user]);
-
-  const carregarDados = async () => {
-    setLoading(true);
-    
-    // Buscar usuários indicados (que se cadastraram com o código)
-    const { data: indicadosData } = await supabase
-      .from('usuarios')
-      .select('*')
-      .eq('convidado_por_id', user?.id);
-    
-    if (indicadosData) {
-      const indicadosFormatados = indicadosData.map(u => ({
-        id: u.id,
-        nome: u.nome,
-        whatsapp: u.whatsapp,
-        status: u.trial_end_at > new Date().toISOString() ? "ativo" : "pendente",
-        dataCadastro: u.created_at
-      }));
-      setIndicados(indicadosFormatados);
-      
-      // Contar apenas usuários ativos (que ainda estão no período de teste)
-      const ativos = indicadosFormatados.filter(i => i.status === "ativo").length;
-      setBonus(prev => ({
-        ...prev,
-        usuarios: { ...prev.usuarios, atual: ativos }
-      }));
-    }
-
-    // Buscar estabelecimentos indicados
-    const { data: estabelecimentosData } = await supabase
-      .from('indicacoes_estabelecimentos')
-      .select('*')
-      .eq('usuario_id', user?.id)
-      .eq('tipo', 'comercio');
-    
-    if (estabelecimentosData) {
-      setEstabelecimentos(estabelecimentosData);
-      const aprovados = estabelecimentosData.filter(e => e.status === "aprovado").length;
-      setBonus(prev => ({
-        ...prev,
-        estabelecimentos: { ...prev.estabelecimentos, atual: aprovados }
-      }));
-    }
-
-    // Buscar serviços indicados
-    const { data: servicosData } = await supabase
-      .from('indicacoes_estabelecimentos')
-      .select('*')
-      .eq('usuario_id', user?.id)
-      .eq('tipo', 'servico');
-    
-    if (servicosData) {
-      setServicos(servicosData);
-      const aprovados = servicosData.filter(s => s.status === "aprovado").length;
-      setBonus(prev => ({
-        ...prev,
-        servicos: { ...prev.servicos, atual: aprovados }
-      }));
-    }
-
-    // Calcular saldo total disponível
-    let total = 0;
-    if (bonus.usuarios.atual >= bonus.usuarios.meta) total += bonus.usuarios.valor;
-    if (bonus.estabelecimentos.atual >= bonus.estabelecimentos.meta) total += bonus.estabelecimentos.valor;
-    if (bonus.servicos.atual >= bonus.servicos.meta) total += bonus.servicos.valor;
-    setSaldoTotal(total);
-    
-    setLoading(false);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await criar({ ...formData, user_id: "current-user-id", status: "pendente" });
+      setShowForm(false);
+      setFormData({ nome_indicante: "", nome_indicado: "", telefone_indicado: "", email_indicado: "" });
+    } catch (err) {}
   };
 
-  const faltamUsuarios = bonus.usuarios.meta - bonus.usuarios.atual;
-  const faltamEstabelecimentos = bonus.estabelecimentos.meta - bonus.estabelecimentos.atual;
-  const faltamServicos = bonus.servicos.meta - bonus.servicos.atual;
+  if (loading) return <div className="p-6 text-center">Carregando...</div>;
+  if (error) return <div className="p-6 text-red-600">Erro: {error.message}</div>;
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
-      </div>
-    );
-  }
+  const statusColors: Record<string, string> = {
+    pendente: "bg-yellow-100 text-yellow-800",
+    aceito: "bg-blue-100 text-blue-800",
+    concluido: "bg-green-100 text-green-800",
+    cancelado: "bg-red-100 text-red-800"
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 pb-28">
-      <header className="bg-gradient-to-r from-green-400 to-green-700 p-4 sticky top-0 z-40">
-        <div className="flex items-center gap-3">
-          <button onClick={() => router.back()} className="text-white">
-            <i className="fas fa-arrow-left text-xl"></i>
-          </button>
-          <h1 className="text-white font-bold text-lg">💰 Indicações e Ganhos</h1>
+    <div className="max-w-7xl mx-auto p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Minhas Indicações</h1>
+        <button onClick={() => setShowForm(true)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+          + Nova Indicação
+        </button>
+      </div>
+
+      {stats && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white p-4 rounded-lg shadow"><p className="text-sm text-gray-600">Total</p><p className="text-2xl font-bold">{stats.total}</p></div>
+          <div className="bg-white p-4 rounded-lg shadow"><p className="text-sm text-gray-600">Pendentes</p><p className="text-2xl font-bold text-yellow-600">{stats.pendentes}</p></div>
+          <div className="bg-white p-4 rounded-lg shadow"><p className="text-sm text-gray-600">Concluídos</p><p className="text-2xl font-bold text-green-600">{stats.concluidos}</p></div>
+          <div className="bg-white p-4 rounded-lg shadow"><p className="text-sm text-gray-600">Bônus Total</p><p className="text-2xl font-bold text-blue-600">R$ {stats.bonusTotal.toFixed(2)}</p></div>
         </div>
-      </header>
+      )}
 
-      <main className="max-w-4xl mx-auto p-6 space-y-6">
-        {/* Saldo Total */}
-        <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-2xl p-6 text-center">
-          <Trophy className="w-12 h-12 text-white mx-auto mb-3" />
-          <p className="text-white/80 text-sm">Saldo disponível para saque</p>
-          <p className="text-4xl font-bold text-white">R$ {saldoTotal},00</p>
-          <button 
-            onClick={() => toast.success("Em breve você poderá sacar via PIX!")}
-            className="mt-3 bg-white text-orange-600 px-6 py-2 rounded-xl font-bold text-sm"
-          >
-            Solicitar Saque
-          </button>
-        </div>
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-gray-50"><tr>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Indicante</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Indicado</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bônus</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>
+          </tr></thead>
+          <tbody className="divide-y divide-gray-200">
+            {indicacoes.length === 0 ? (
+              <tr><td colSpan={5} className="px-6 py-4 text-center text-gray-500">Nenhuma indicação</td></tr>
+            ) : (
+              indicacoes.map((i) => (
+                <tr key={i.id}>
+                  <td className="px-6 py-4">{i.nome_indicante}</td>
+                  <td className="px-6 py-4">{i.nome_indicado}</td>
+                  <td className="px-6 py-4"><span className={`px-2 py-1 rounded-full text-xs ${statusColors[i.status] || "bg-gray-100"}`}>{i.status}</span></td>
+                  <td className="px-6 py-4">R$ {(i.bonus || 0).toFixed(2)}</td>
+                  <td className="px-6 py-4">
+                    <select onChange={(e) => atualizarStatus(i.id, e.target.value)} value={i.status} className="text-sm border rounded px-2 py-1">
+                      <option value="pendente">Pendente</option>
+                      <option value="aceito">Aceito</option>
+                      <option value="concluido">Concluído</option>
+                      <option value="cancelado">Cancelado</option>
+                    </select>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
 
-        {/* Cards de Metas */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Meta Usuários */}
-          <div className="bg-gray-800 rounded-2xl p-5">
-            <div className="flex items-center gap-3 mb-3">
-              <Users className="w-6 h-6 text-blue-400" />
-              <h3 className="text-white font-bold">Indicar Usuários</h3>
-            </div>
-            <div className="text-center mb-3">
-              <p className="text-3xl font-bold text-white">{bonus.usuarios.atual}</p>
-              <p className="text-gray-400 text-sm">de {bonus.usuarios.meta} usuários</p>
-            </div>
-            <div className="w-full bg-gray-700 rounded-full h-2 mb-3">
-              <div 
-                className="bg-blue-500 h-2 rounded-full transition-all"
-                style={{ width: `${(bonus.usuarios.atual / bonus.usuarios.meta) * 100}%` }}
-              />
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-yellow-400 font-bold">R$ {bonus.usuarios.valor},00</span>
-              {bonus.usuarios.atual >= bonus.usuarios.meta ? (
-                <span className="text-green-400 text-sm flex items-center gap-1"><CheckCircle className="w-4 h-4" /> Liberado</span>
-              ) : (
-                <span className="text-gray-400 text-sm flex items-center gap-1"><Clock className="w-4 h-4" /> Faltam {faltamUsuarios}</span>
-              )}
-            </div>
-          </div>
-
-          {/* Meta Estabelecimentos */}
-          <div className="bg-gray-800 rounded-2xl p-5">
-            <div className="flex items-center gap-3 mb-3">
-              <Store className="w-6 h-6 text-purple-400" />
-              <h3 className="text-white font-bold">Indicar Estabelecimentos</h3>
-            </div>
-            <div className="text-center mb-3">
-              <p className="text-3xl font-bold text-white">{bonus.estabelecimentos.atual}</p>
-              <p className="text-gray-400 text-sm">de {bonus.estabelecimentos.meta} lojas</p>
-            </div>
-            <div className="w-full bg-gray-700 rounded-full h-2 mb-3">
-              <div 
-                className="bg-purple-500 h-2 rounded-full transition-all"
-                style={{ width: `${(bonus.estabelecimentos.atual / bonus.estabelecimentos.meta) * 100}%` }}
-              />
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-yellow-400 font-bold">R$ {bonus.estabelecimentos.valor},00</span>
-              {bonus.estabelecimentos.atual >= bonus.estabelecimentos.meta ? (
-                <span className="text-green-400 text-sm flex items-center gap-1"><CheckCircle className="w-4 h-4" /> Liberado</span>
-              ) : (
-                <span className="text-gray-400 text-sm flex items-center gap-1"><Clock className="w-4 h-4" /> Faltam {faltamEstabelecimentos}</span>
-              )}
-            </div>
-          </div>
-
-          {/* Meta Serviços */}
-          <div className="bg-gray-800 rounded-2xl p-5">
-            <div className="flex items-center gap-3 mb-3">
-              <Briefcase className="w-6 h-6 text-green-400" />
-              <h3 className="text-white font-bold">Indicar Profissionais</h3>
-            </div>
-            <div className="text-center mb-3">
-              <p className="text-3xl font-bold text-white">{bonus.servicos.atual}</p>
-              <p className="text-gray-400 text-sm">de {bonus.servicos.meta} profissionais</p>
-            </div>
-            <div className="w-full bg-gray-700 rounded-full h-2 mb-3">
-              <div 
-                className="bg-green-500 h-2 rounded-full transition-all"
-                style={{ width: `${(bonus.servicos.atual / bonus.servicos.meta) * 100}%` }}
-              />
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-yellow-400 font-bold">R$ {bonus.servicos.valor},00</span>
-              {bonus.servicos.atual >= bonus.servicos.meta ? (
-                <span className="text-green-400 text-sm flex items-center gap-1"><CheckCircle className="w-4 h-4" /> Liberado</span>
-              ) : (
-                <span className="text-gray-400 text-sm flex items-center gap-1"><Clock className="w-4 h-4" /> Faltam {faltamServicos}</span>
-              )}
-            </div>
+      {showForm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-96 max-w-full">
+            <h2 className="text-xl font-bold mb-4">Nova Indicação</h2>
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <input name="nome_indicante" value={formData.nome_indicante} onChange={(e) => setFormData({...formData, nome_indicante: e.target.value})} placeholder="Seu nome" className="w-full p-2 border rounded" required />
+              <input name="nome_indicado" value={formData.nome_indicado} onChange={(e) => setFormData({...formData, nome_indicado: e.target.value})} placeholder="Nome do indicado" className="w-full p-2 border rounded" required />
+              <input name="telefone_indicado" value={formData.telefone_indicado} onChange={(e) => setFormData({...formData, telefone_indicado: e.target.value})} placeholder="Telefone do indicado" className="w-full p-2 border rounded" required />
+              <input name="email_indicado" value={formData.email_indicado} onChange={(e) => setFormData({...formData, email_indicado: e.target.value})} placeholder="Email do indicado (opcional)" className="w-full p-2 border rounded" />
+              <div className="flex gap-2 mt-4">
+                <button type="submit" className="flex-1 bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Enviar</button>
+                <button type="button" onClick={() => setShowForm(false)} className="flex-1 bg-gray-300 p-2 rounded hover:bg-gray-400">Cancelar</button>
+              </div>
+            </form>
           </div>
         </div>
-
-        {/* Instruções */}
-        <div className="bg-gray-800/50 rounded-2xl p-5">
-          <h3 className="text-white font-bold mb-3 flex items-center gap-2">
-            <Gift className="w-5 h-5 text-yellow-400" />
-            Como funciona?
-          </h3>
-          <div className="space-y-3 text-sm text-gray-300">
-            <p>📱 <strong>Indique 50 usuários REAIS</strong> (que nunca instalaram o app) - Ganhe R$10</p>
-            <p>🏪 <strong>Indique 2 estabelecimentos</strong> que cadastrem 30 itens cada no catálogo - Ganhe R$30</p>
-            <p>🔧 <strong>Indique 4 profissionais</strong> que publiquem 3 serviços com foto - Ganhe R$15</p>
-            <p className="text-yellow-400 text-xs mt-2">⚠️ Cada usuário/estabelecimento só conta uma vez. Não é permitido auto-indicação.</p>
-          </div>
-        </div>
-
-        {/* Lista de Indicados */}
-        <div className="space-y-6">
-          {/* Usuários Indicados */}
-          <div className="bg-gray-800 rounded-2xl overflow-hidden">
-            <div className="bg-gray-700/50 px-5 py-3 flex justify-between items-center">
-              <h3 className="text-white font-bold flex items-center gap-2"><UserPlus className="w-5 h-5 text-blue-400" /> Usuários Indicados</h3>
-              <span className="text-gray-400 text-sm">{indicados.filter(i => i.status === "ativo").length}/{indicados.length}</span>
-            </div>
-            <div className="max-h-64 overflow-y-auto">
-              {indicados.length === 0 ? (
-                <p className="text-gray-500 text-center py-6">Nenhum usuário indicado ainda</p>
-              ) : (
-                indicados.map(i => (
-                  <div key={i.id} className="p-4 border-b border-gray-700 flex justify-between items-center">
-                    <div>
-                      <p className="text-white font-medium">{i.nome}</p>
-                      <p className="text-gray-400 text-xs">{i.whatsapp}</p>
-                    </div>
-                    <div>
-                      {i.status === "ativo" ? (
-                        <span className="text-green-400 text-xs flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Válido</span>
-                      ) : i.status === "pendente" ? (
-                        <span className="text-yellow-400 text-xs flex items-center gap-1"><Clock className="w-3 h-3" /> Pendente</span>
-                      ) : (
-                        <span className="text-red-400 text-xs flex items-center gap-1"><XCircle className="w-3 h-3" /> Inválido</span>
-                      )}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Estabelecimentos Indicados */}
-          <div className="bg-gray-800 rounded-2xl overflow-hidden">
-            <div className="bg-gray-700/50 px-5 py-3 flex justify-between items-center">
-              <h3 className="text-white font-bold flex items-center gap-2"><StoreIcon className="w-5 h-5 text-purple-400" /> Estabelecimentos Indicados</h3>
-            </div>
-            <div className="max-h-64 overflow-y-auto">
-              {estabelecimentos.length === 0 ? (
-                <p className="text-gray-500 text-center py-6">Nenhum estabelecimento indicado</p>
-              ) : (
-                estabelecimentos.map(e => (
-                  <div key={e.id} className="p-4 border-b border-gray-700">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="text-white font-medium">{e.nome}</p>
-                        <p className="text-gray-400 text-xs">{e.telefone}</p>
-                        <p className="text-gray-500 text-xs mt-1">Itens: {e.itensCadastrados}/{e.itensNecessarios}</p>
-                      </div>
-                      <div>
-                        {e.status === "aprovado" ? (
-                          <span className="text-green-400 text-xs flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Aprovado</span>
-                        ) : e.status === "pendente" ? (
-                          <span className="text-yellow-400 text-xs flex items-center gap-1"><Clock className="w-3 h-3" /> Aguardando</span>
-                        ) : e.status === "pago" ? (
-                          <span className="text-blue-400 text-xs flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Pago</span>
-                        ) : (
-                          <span className="text-red-400 text-xs flex items-center gap-1"><XCircle className="w-3 h-3" /> Rejeitado</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Serviços Indicados */}
-          <div className="bg-gray-800 rounded-2xl overflow-hidden">
-            <div className="bg-gray-700/50 px-5 py-3 flex justify-between items-center">
-              <h3 className="text-white font-bold flex items-center gap-2"><Wrench className="w-5 h-5 text-green-400" /> Profissionais Indicados</h3>
-            </div>
-            <div className="max-h-64 overflow-y-auto">
-              {servicos.length === 0 ? (
-                <p className="text-gray-500 text-center py-6">Nenhum profissional indicado</p>
-              ) : (
-                servicos.map(s => (
-                  <div key={s.id} className="p-4 border-b border-gray-700">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="text-white font-medium">{s.nome}</p>
-                        <p className="text-gray-400 text-xs">{s.telefone}</p>
-                        <p className="text-gray-500 text-xs mt-1">Serviços: {s.itensCadastrados}/{s.itensNecessarios}</p>
-                      </div>
-                      <div>
-                        {s.status === "aprovado" ? (
-                          <span className="text-green-400 text-xs flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Aprovado</span>
-                        ) : s.status === "pendente" ? (
-                          <span className="text-yellow-400 text-xs flex items-center gap-1"><Clock className="w-3 h-3" /> Aguardando</span>
-                        ) : s.status === "pago" ? (
-                          <span className="text-blue-400 text-xs flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Pago</span>
-                        ) : (
-                          <span className="text-red-400 text-xs flex items-center gap-1"><XCircle className="w-3 h-3" /> Rejeitado</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Botões de Ação */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <button 
-            onClick={() => router.push("/qr-code")}
-            className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2"
-          >
-            📱 Compartilhar Link de Indicação
-          </button>
-          <button 
-            onClick={() => router.push("/indicar-estabelecimento")}
-            className="flex-1 bg-purple-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2"
-          >
-            🏪 Indicar Estabelecimento
-          </button>
-        </div>
-      </main>
+      )}
     </div>
   );
 }

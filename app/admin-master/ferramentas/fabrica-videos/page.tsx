@@ -384,9 +384,9 @@ export default function FabricaVideosPage() {
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-4 border border-blue-100">
             <h4 className="text-xs font-bold text-blue-900 mb-2">Dicas para melhores videos:</h4>
             <ul className="text-xs text-blue-800 space-y-1">
-              <li>• Use imagens nitidas e bem iluminadas</li>
-              <li>• Mensagens curtas (ate 200 caracteres)</li>
-              <li>• Ative o modo Premium para movimento real</li>
+              <li>â€¢ Use imagens nitidas e bem iluminadas</li>
+              <li>â€¢ Mensagens curtas (ate 200 caracteres)</li>
+              <li>â€¢ Ative o modo Premium para movimento real</li>
             </ul>
           </div>
         </div>
@@ -394,3 +394,4 @@ export default function FabricaVideosPage() {
     </div>
   );
 }
+

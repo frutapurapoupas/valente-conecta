@@ -1,0 +1,35 @@
+﻿========================================
+ARQUIVO: app/admin-master/cozinha/types/producao.ts
+MÓDULO: types
+DATA: 2026-07-20 22:08:00
+========================================
+// app/admin-master/cozinha/types/producao.ts
+export interface Producao {
+  id: string;
+  receitaId: string;
+  receitaNome?: string;
+  quantidadeProduzida: number;
+  dataProducao: string;
+  ingredientesUtilizados: ProducaoIngrediente[];
+  custoTotal: number;
+  observacao?: string;
+  status: 'planejado' | 'em_andamento' | 'concluido' | 'cancelado';
+  created_at: string;
+}
+
+export interface ProducaoIngrediente {
+  ingredienteId: string;
+  ingredienteNome?: string;
+  quantidadeNecessaria: number;
+  quantidadeUtilizada: number;
+  unidade: string;
+  custoUnitario: number;
+  custoTotal: number;
+}
+
+export interface ProducaoInput {
+  receitaId: string;
+  quantidadeProduzida: number;
+  dataProducao?: string;
+  observacao?: string;
+}

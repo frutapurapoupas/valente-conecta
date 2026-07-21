@@ -12,7 +12,7 @@
     "receita_origem": "Carne moída + arroz + legumes (24/06/2026, 04:36:17); Carne moída + arroz + legumes (24/06/2026, 04:43:33); Carne moída + arroz + legumes (24/06/2026, 04:43:06)",
     "observacao": "",
     "created_at": "2026-06-24T07:37:00.536Z",
-    "updated_at": "2026-06-24T08:18:05.413Z"
+    "updated_at": "2026-07-08T11:29:36.585Z"
   },
   {
     "id": "1782286620536409",
@@ -138,16 +138,16 @@
     "id": "1782286620536209",
     "nome": "Embalagem plástica 500g",
     "unidade": "un",
-    "quantidade": 98,
+    "quantidade": 118,
     "preco_estimado": 1,
     "preco_real": 0,
     "fornecedor": "",
     "comprado": false,
     "prioridade": "media",
-    "receita_origem": "Carne moída + arroz + legumes (24/06/2026, 04:36:17); Carne moída + arroz + legumes (24/06/2026, 04:43:33); Carne moída + arroz + legumes (24/06/2026, 04:43:06); Carne moída + arroz + legumes (24/06/2026, 04:52:02); Carne moída + arroz + legumes (24/06/2026, 04:51:46); Frango em cubos + arroz + purê (24/06/2026, 04:56:58); Frango em cubos + arroz + purê (24/06/2026, 04:56:47); Carne moída + arroz + legumes (24/06/2026, 04:51:41)",
+    "receita_origem": "Carne moída + arroz + legumes (24/06/2026, 04:36:17); Carne moída + arroz + legumes (24/06/2026, 04:43:33); Carne moída + arroz + legumes (24/06/2026, 04:43:06); Carne moída + arroz + legumes (24/06/2026, 04:52:02); Carne moída + arroz + legumes (24/06/2026, 04:51:46); Frango em cubos + arroz + purê (24/06/2026, 04:56:58); Frango em cubos + arroz + purê (24/06/2026, 04:56:47); Carne moída + arroz + legumes (24/06/2026, 04:51:41); Fricassê de Frango (30/06/2026, 18:52:11); Frango em cubos + arroz + purê (24/06/2026, 05:01:11)",
     "observacao": "",
     "created_at": "2026-06-24T07:37:00.536Z",
-    "updated_at": "2026-06-24T07:57:44.226Z"
+    "updated_at": "2026-07-08T11:30:05.766Z"
   },
   {
     "id": "1782287548408126",
@@ -168,31 +168,31 @@
     "id": "178228754840880",
     "nome": "Arroz branco",
     "unidade": "kg",
-    "quantidade": 8.82,
+    "quantidade": 11.520000000000001,
     "preco_estimado": 5.9,
     "preco_real": 0,
     "fornecedor": "",
     "comprado": false,
     "prioridade": "media",
-    "receita_origem": "Carne moída + arroz + legumes (24/06/2026, 04:52:02); Carne moída + arroz + legumes (24/06/2026, 04:51:46); Frango em cubos + arroz + purê (24/06/2026, 04:56:58); Frango em cubos + arroz + purê (24/06/2026, 04:56:47); Carne moída + arroz + legumes (24/06/2026, 04:51:41)",
+    "receita_origem": "Carne moída + arroz + legumes (24/06/2026, 04:52:02); Carne moída + arroz + legumes (24/06/2026, 04:51:46); Frango em cubos + arroz + purê (24/06/2026, 04:56:58); Frango em cubos + arroz + purê (24/06/2026, 04:56:47); Carne moída + arroz + legumes (24/06/2026, 04:51:41); Fricassê de Frango (30/06/2026, 18:52:11); Frango em cubos + arroz + purê (24/06/2026, 05:01:11)",
     "observacao": "",
     "created_at": "2026-06-24T07:52:28.408Z",
-    "updated_at": "2026-06-24T07:57:44.226Z"
+    "updated_at": "2026-07-08T11:30:05.766Z"
   },
   {
     "id": "1782287548408533",
     "nome": "Batata",
     "unidade": "kg",
-    "quantidade": 5.8500000000000005,
+    "quantidade": 7.25,
     "preco_estimado": 3.5,
     "preco_real": 0,
     "fornecedor": "",
     "comprado": false,
     "prioridade": "media",
-    "receita_origem": "Carne moída + arroz + legumes (24/06/2026, 04:52:02); Carne moída + arroz + legumes (24/06/2026, 04:51:46); Frango em cubos + arroz + purê (24/06/2026, 04:56:58); Frango em cubos + arroz + purê (24/06/2026, 04:56:47); Carne moída + arroz + legumes (24/06/2026, 04:51:41)",
+    "receita_origem": "Carne moída + arroz + legumes (24/06/2026, 04:52:02); Carne moída + arroz + legumes (24/06/2026, 04:51:46); Frango em cubos + arroz + purê (24/06/2026, 04:56:58); Frango em cubos + arroz + purê (24/06/2026, 04:56:47); Carne moída + arroz + legumes (24/06/2026, 04:51:41); Frango em cubos + arroz + purê (24/06/2026, 05:01:11)",
     "observacao": "",
     "created_at": "2026-06-24T07:52:28.408Z",
-    "updated_at": "2026-06-24T07:57:44.226Z"
+    "updated_at": "2026-07-08T11:30:05.766Z"
   },
   {
     "id": "178228754840836",
@@ -228,75 +228,90 @@
     "id": "1782287548408895",
     "nome": "Alho",
     "unidade": "kg",
-    "quantidade": 0.252,
+    "quantidade": 0.33199999999999996,
     "preco_estimado": 15.9,
     "preco_real": 0,
     "fornecedor": "",
     "comprado": false,
     "prioridade": "media",
-    "receita_origem": "Carne moída + arroz + legumes (24/06/2026, 04:52:02); Carne moída + arroz + legumes (24/06/2026, 04:51:46); Frango em cubos + arroz + purê (24/06/2026, 04:56:58); Frango em cubos + arroz + purê (24/06/2026, 04:56:47); Carne moída + arroz + legumes (24/06/2026, 04:51:41)",
+    "receita_origem": "Carne moída + arroz + legumes (24/06/2026, 04:52:02); Carne moída + arroz + legumes (24/06/2026, 04:51:46); Frango em cubos + arroz + purê (24/06/2026, 04:56:58); Frango em cubos + arroz + purê (24/06/2026, 04:56:47); Carne moída + arroz + legumes (24/06/2026, 04:51:41); Fricassê de Frango (30/06/2026, 18:52:11); Frango em cubos + arroz + purê (24/06/2026, 05:01:11)",
     "observacao": "",
     "created_at": "2026-06-24T07:52:28.408Z",
-    "updated_at": "2026-06-24T07:57:44.226Z"
+    "updated_at": "2026-07-08T11:30:05.766Z"
   },
   {
     "id": "1782287548408787",
     "nome": "Cebola",
     "unidade": "kg",
-    "quantidade": 0.252,
+    "quantidade": 0.33199999999999996,
     "preco_estimado": 4.9,
     "preco_real": 0,
     "fornecedor": "",
     "comprado": false,
     "prioridade": "media",
-    "receita_origem": "Carne moída + arroz + legumes (24/06/2026, 04:52:02); Carne moída + arroz + legumes (24/06/2026, 04:51:46); Frango em cubos + arroz + purê (24/06/2026, 04:56:58); Frango em cubos + arroz + purê (24/06/2026, 04:56:47); Carne moída + arroz + legumes (24/06/2026, 04:51:41)",
+    "receita_origem": "Carne moída + arroz + legumes (24/06/2026, 04:52:02); Carne moída + arroz + legumes (24/06/2026, 04:51:46); Frango em cubos + arroz + purê (24/06/2026, 04:56:58); Frango em cubos + arroz + purê (24/06/2026, 04:56:47); Carne moída + arroz + legumes (24/06/2026, 04:51:41); Fricassê de Frango (30/06/2026, 18:52:11); Frango em cubos + arroz + purê (24/06/2026, 05:01:11)",
     "observacao": "",
     "created_at": "2026-06-24T07:52:28.408Z",
-    "updated_at": "2026-06-24T07:57:44.226Z"
+    "updated_at": "2026-07-08T11:30:05.766Z"
   },
   {
     "id": "1782287548408587",
     "nome": "Coentro",
     "unidade": "kg",
-    "quantidade": 0.126,
+    "quantidade": 0.156,
     "preco_estimado": 25.9,
     "preco_real": 0,
     "fornecedor": "",
     "comprado": false,
     "prioridade": "media",
-    "receita_origem": "Carne moída + arroz + legumes (24/06/2026, 04:52:02); Carne moída + arroz + legumes (24/06/2026, 04:51:46); Frango em cubos + arroz + purê (24/06/2026, 04:56:58); Frango em cubos + arroz + purê (24/06/2026, 04:56:47); Carne moída + arroz + legumes (24/06/2026, 04:51:41)",
+    "receita_origem": "Carne moída + arroz + legumes (24/06/2026, 04:52:02); Carne moída + arroz + legumes (24/06/2026, 04:51:46); Frango em cubos + arroz + purê (24/06/2026, 04:56:58); Frango em cubos + arroz + purê (24/06/2026, 04:56:47); Carne moída + arroz + legumes (24/06/2026, 04:51:41); Fricassê de Frango (30/06/2026, 18:52:11); Frango em cubos + arroz + purê (24/06/2026, 05:01:11)",
     "observacao": "",
     "created_at": "2026-06-24T07:52:28.408Z",
-    "updated_at": "2026-06-24T07:57:44.226Z"
+    "updated_at": "2026-07-08T11:30:05.766Z"
   },
   {
     "id": "1782287548408907",
     "nome": "Sal",
     "unidade": "kg",
-    "quantidade": 0.378,
+    "quantidade": 0.488,
     "preco_estimado": 2.5,
     "preco_real": 0,
     "fornecedor": "",
     "comprado": false,
     "prioridade": "media",
-    "receita_origem": "Carne moída + arroz + legumes (24/06/2026, 04:52:02); Carne moída + arroz + legumes (24/06/2026, 04:51:46); Frango em cubos + arroz + purê (24/06/2026, 04:56:58); Frango em cubos + arroz + purê (24/06/2026, 04:56:47); Carne moída + arroz + legumes (24/06/2026, 04:51:41)",
+    "receita_origem": "Carne moída + arroz + legumes (24/06/2026, 04:52:02); Carne moída + arroz + legumes (24/06/2026, 04:51:46); Frango em cubos + arroz + purê (24/06/2026, 04:56:58); Frango em cubos + arroz + purê (24/06/2026, 04:56:47); Carne moída + arroz + legumes (24/06/2026, 04:51:41); Fricassê de Frango (30/06/2026, 18:52:11); Frango em cubos + arroz + purê (24/06/2026, 05:01:11)",
     "observacao": "",
     "created_at": "2026-06-24T07:52:28.408Z",
-    "updated_at": "2026-06-24T07:57:44.226Z"
+    "updated_at": "2026-07-08T11:30:05.766Z"
   },
   {
     "id": "1782287861277938",
     "nome": "Frango em cubos",
     "unidade": "kg",
-    "quantidade": 6,
+    "quantidade": 10,
     "preco_estimado": 18.9,
     "preco_real": 0,
     "fornecedor": "",
     "comprado": false,
     "prioridade": "media",
-    "receita_origem": "Frango em cubos + arroz + purê (24/06/2026, 04:56:58); Frango em cubos + arroz + purê (24/06/2026, 04:56:47)",
+    "receita_origem": "Frango em cubos + arroz + purê (24/06/2026, 04:56:58); Frango em cubos + arroz + purê (24/06/2026, 04:56:47); Fricassê de Frango (30/06/2026, 18:52:11); Frango em cubos + arroz + purê (24/06/2026, 05:01:11)",
     "observacao": "",
     "created_at": "2026-06-24T07:57:41.277Z",
-    "updated_at": "2026-06-24T07:57:43.361Z"
+    "updated_at": "2026-07-08T11:30:05.766Z"
+  },
+  {
+    "id": "1782856450702265",
+    "nome": "Creme de leite",
+    "unidade": "kg",
+    "quantidade": 1.5,
+    "preco_estimado": 12.9,
+    "preco_real": 0,
+    "fornecedor": "",
+    "comprado": false,
+    "prioridade": "media",
+    "receita_origem": "Fricassê de Frango (30/06/2026, 18:52:11)",
+    "observacao": "",
+    "created_at": "2026-06-30T21:54:10.702Z",
+    "updated_at": "2026-06-30T21:54:10.702Z"
   }
 ]

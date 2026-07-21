@@ -20,19 +20,19 @@ export function InstallPrompt() {
     const userAgent = window.navigator.userAgent.toLowerCase();
     setIsIOS(/iphone|ipad|ipod/.test(userAgent));
 
-    // Verificar se já está instalado
+    // Verificar se jÃ¡ estÃ¡ instalado
     if (window.matchMedia('(display-mode: standalone)').matches) {
       setIsInstalled(true);
       return;
     }
 
-    // Priorizar exibição no primeiro acesso vindo por convite/cadastro
+    // Priorizar exibiÃ§Ã£o no primeiro acesso vindo por convite/cadastro
     const onboardingPosCadastro = localStorage.getItem('onboarding_pos_cadastro');
     if (onboardingPosCadastro === '1') {
       setTimeout(() => setShow(true), 800);
     }
 
-    // Verificar se já mostrou o prompt antes
+    // Verificar se jÃ¡ mostrou o prompt antes
     const alreadyShown = localStorage.getItem('install_prompt_shown');
     if (alreadyShown && onboardingPosCadastro !== '1') return;
 
@@ -69,7 +69,7 @@ export function InstallPrompt() {
       }
       setDeferredPrompt(null);
     } else if (isIOS) {
-      alert('📱 No iPhone: Toque no ícone "Compartilhar" e depois em "Adicionar à Tela de Início"');
+      alert('ðŸ“± No iPhone: Toque no Ã­cone "Compartilhar" e depois em "Adicionar Ã  Tela de InÃ­cio"');
     }
   };
 
@@ -93,7 +93,7 @@ export function InstallPrompt() {
             <div className="flex-1">
               <h3 className="text-white font-bold text-base">Instale o App!</h3>
               <p className="text-green-100 text-xs mt-0.5">
-                Tenha acesso rápido ao Valente Conecta direto da tela inicial
+                Tenha acesso rÃ¡pido ao Valente Conecta direto da tela inicial
               </p>
               <div className="flex gap-2 mt-3">
                 <button
@@ -120,3 +120,4 @@ export function InstallPrompt() {
     </div>
   );
 }
+

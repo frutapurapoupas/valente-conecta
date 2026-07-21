@@ -1,4 +1,4 @@
-﻿export interface MediaFile {
+export interface MediaFile {
   id: string;
   url: string;
   type: 'image' | 'video';
@@ -76,3 +76,43 @@ export interface SyncResult {
   failed: number;
   errors?: string[];
 }
+
+// Canonical aliases used by modules that already consume lib/cozinha/types.
+export type ReceitaCanonica = {
+  id: string;
+  nome: string;
+  descricao: string;
+  categoria: string;
+  imagem: string | null;
+  status: 'ativo' | 'inativo';
+  ingredientes: Array<{
+    ingrediente_id: string;
+    ingrediente_nome: string;
+    quantidade: number;
+    unidade: string;
+    custo_unitario: number;
+    custo_total: number;
+  }>;
+  rendimento: number;
+  peso_final: number | null;
+  porcoes: number;
+  custo_receita: number;
+  custo_por_unidade: number;
+  margem_percentual: number;
+  lucro: number;
+  preco_sugerido: number;
+  preco_venda: number;
+  integracoes: {
+    catalogo: boolean;
+    cardapio: boolean;
+    producao: boolean;
+    estoque: boolean;
+    compras: boolean;
+  };
+  created_at: string;
+  updated_at: string;
+};
+
+export type CanonicalRecipe = ReceitaCanonica;
+
+

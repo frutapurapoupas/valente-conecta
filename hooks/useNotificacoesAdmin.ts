@@ -1,4 +1,4 @@
-﻿// hooks/useNotificacoesAdmin.ts - Versão temporária
+// hooks/useNotificacoesAdmin.ts - Versão temporária
 export const useNotificacoesAdmin = () => {
   return {
     notificacoes: [],
@@ -6,3 +6,4 @@ export const useNotificacoesAdmin = () => {
     error: null
   }
 }
+

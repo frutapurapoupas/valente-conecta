@@ -46,7 +46,7 @@ export default function RelatoriosPage() {
 
   const formatCurrency = (value: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
-  const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+  const meses = ['Janeiro', 'Fevereiro', 'MarÃ§o', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
   const handlePrint = () => window.print();
 
@@ -54,8 +54,8 @@ export default function RelatoriosPage() {
     <div>
       <div className="flex justify-between items-center mb-6 print:hidden">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">📊 Relatórios Financeiros</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Análise detalhada das suas finanças</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">ðŸ“Š RelatÃ³rios Financeiros</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">AnÃ¡lise detalhada das suas finanÃ§as</p>
         </div>
         <button onClick={handlePrint} className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 flex items-center gap-2">
           <Printer className="w-4 h-4" /> Imprimir
@@ -64,7 +64,7 @@ export default function RelatoriosPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">📅 Ano</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">ðŸ“… Ano</label>
           <select
             value={ano}
             onChange={(e) => setAno(parseInt(e.target.value))}
@@ -76,7 +76,7 @@ export default function RelatoriosPage() {
           </select>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">📆 Mês</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">ðŸ“† MÃªs</label>
           <select
             value={mes}
             onChange={(e) => setMes(parseInt(e.target.value))}
@@ -97,7 +97,7 @@ export default function RelatoriosPage() {
           <p className="text-2xl font-bold">{formatCurrency(totalDespesas)}</p>
         </div>
         <div className={`rounded-2xl p-4 text-white ${saldo >= 0 ? 'bg-gradient-to-r from-blue-600 to-cyan-600' : 'bg-gradient-to-r from-orange-600 to-red-600'}`}>
-          <p className="text-white/80 text-sm">Saldo do Mês</p>
+          <p className="text-white/80 text-sm">Saldo do MÃªs</p>
           <p className="text-2xl font-bold">{formatCurrency(saldo)}</p>
         </div>
       </div>
@@ -105,11 +105,11 @@ export default function RelatoriosPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-lg font-semibold text-red-600 dark:text-red-400">💸 Despesas por Categoria</h2>
+            <h2 className="text-lg font-semibold text-red-600 dark:text-red-400">ðŸ’¸ Despesas por Categoria</h2>
           </div>
           <div className="p-4">
             {Object.keys(despesasPorCategoria).length === 0 ? (
-              <p className="text-center text-gray-500 dark:text-gray-400 py-8">Nenhuma despesa neste período</p>
+              <p className="text-center text-gray-500 dark:text-gray-400 py-8">Nenhuma despesa neste perÃ­odo</p>
             ) : (
               <div className="space-y-3">
                 {Object.entries(despesasPorCategoria).map(([cat, valor]) => (
@@ -130,11 +130,11 @@ export default function RelatoriosPage() {
 
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-lg font-semibold text-green-600 dark:text-green-400">💰 Receitas por Categoria</h2>
+            <h2 className="text-lg font-semibold text-green-600 dark:text-green-400">ðŸ’° Receitas por Categoria</h2>
           </div>
           <div className="p-4">
             {Object.keys(receitasPorCategoria).length === 0 ? (
-              <p className="text-center text-gray-500 dark:text-gray-400 py-8">Nenhuma receita neste período</p>
+              <p className="text-center text-gray-500 dark:text-gray-400 py-8">Nenhuma receita neste perÃ­odo</p>
             ) : (
               <div className="space-y-3">
                 {Object.entries(receitasPorCategoria).map(([cat, valor]) => (
@@ -155,14 +155,14 @@ export default function RelatoriosPage() {
       </div>
 
       <div className="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow p-4">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">📈 Resumo do Período</h2>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">ðŸ“ˆ Resumo do PerÃ­odo</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-            <p className="text-xs text-gray-500 dark:text-gray-400">Média Receitas</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">MÃ©dia Receitas</p>
             <p className="text-lg font-bold text-green-600 dark:text-green-400">{formatCurrency(totalReceitas / 1)}</p>
           </div>
           <div className="text-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-            <p className="text-xs text-gray-500 dark:text-gray-400">Média Despesas</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">MÃ©dia Despesas</p>
             <p className="text-lg font-bold text-red-600 dark:text-red-400">{formatCurrency(totalDespesas / 1)}</p>
           </div>
           <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
@@ -180,3 +180,4 @@ export default function RelatoriosPage() {
     </div>
   );
 }
+

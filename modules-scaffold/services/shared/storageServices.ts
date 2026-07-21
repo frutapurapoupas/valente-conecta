@@ -1,7 +1,7 @@
 import { Item, Demand } from '@/modules-scaffold/types/modules';
 
 /**
- * CatalogStorage: gerencia itens publicados no catálogo de um módulo
+ * CatalogStorage: gerencia itens publicados no catÃ¡logo de um mÃ³dulo
  * Uso: localStorage para cliente, depois migra para Supabase
  */
 export const CatalogStorage = {
@@ -48,7 +48,7 @@ export const CatalogStorage = {
 };
 
 /**
- * DemandService: gerencia demandas/solicitações de clientes
+ * DemandService: gerencia demandas/solicitaÃ§Ãµes de clientes
  */
 export const DemandService = {
   key: 'modulos_demandas',
@@ -88,7 +88,7 @@ export const DemandService = {
 };
 
 /**
- * SupplierStorage: gerencia fornecedores/provedores por módulo
+ * SupplierStorage: gerencia fornecedores/provedores por mÃ³dulo
  */
 export const SupplierStorage = {
   key: 'modulos_fornecedores',
@@ -119,7 +119,7 @@ export const SupplierStorage = {
 };
 
 /**
- * UserService: gerencia dados do usuário logado
+ * UserService: gerencia dados do usuÃ¡rio logado
  */
 export const UserService = {
   key: 'modulos_user',
@@ -145,3 +145,4 @@ export const UserService = {
     localStorage.removeItem(UserService.key);
   },
 };
+

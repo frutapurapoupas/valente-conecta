@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { useState } from 'react';
 import { calcularValores } from '../services/cozinhaService';
 
@@ -32,3 +32,4 @@ export default function PriceSimulator() {
     </div>
   );
 }
+

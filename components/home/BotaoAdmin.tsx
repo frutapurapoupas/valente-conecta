@@ -1,4 +1,4 @@
-﻿// Arquivo: components/home/BotaoAdmin.tsx
+// Arquivo: components/home/BotaoAdmin.tsx
 // Status: AGUARDANDO CÓDIGO
 // Este arquivo será preenchido na próxima etapa
 'use client';
@@ -26,3 +26,4 @@ export default function BotaoAdmin({ isAdmin }: BotaoAdminProps) {
     </Link>
   );
 }
+

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -375,7 +375,7 @@ export default function NovoProdutoWizard() {
               {produto.desconto > 0 && (
                 <div className="bg-green-50 p-3 rounded-lg">
                   <p className="text-sm text-green-700">
-                    🎉 Desconto aplicado: {produto.desconto}% OFF
+                    ?? Desconto aplicado: {produto.desconto}% OFF
                   </p>
                 </div>
               )}
@@ -652,3 +652,4 @@ export default function NovoProdutoWizard() {
     </div>
   );
 }
+

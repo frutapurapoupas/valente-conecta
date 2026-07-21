@@ -1,6 +1,8 @@
 ﻿"use client";
-import { DemandView } from './components/DemandView';
+import { DemandView } from '@/components/DemandView';
 
 export default function Page() {
-  return <DemandView category="EVENTOS" title="Solicitação: eventos" />;
+  return <DemandView category="EVENTOS" title="SolicitaÃ§Ã£o: eventos" />;
 }
+
+

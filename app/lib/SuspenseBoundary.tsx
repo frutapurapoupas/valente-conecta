@@ -14,3 +14,4 @@ export function withSuspense<P extends object>(
     );
   };
 }
+

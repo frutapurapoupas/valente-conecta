@@ -128,3 +128,4 @@ export interface ShoppingListItem {
   supplierName?: string;
   estimatedCost: number;
 }
+

@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
-// Verificar se o usuário é Admin
+// Verificar se o usuÃ¡rio Ã© Admin
 async function isAdmin(request: NextRequest): Promise<boolean> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
@@ -32,7 +32,7 @@ async function isAdmin(request: NextRequest): Promise<boolean> {
 export async function GET(request: NextRequest) {
   const admin = await isAdmin(request);
   if (!admin) {
-    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    return NextResponse.json({ error: 'NÃ£o autorizado' }, { status: 401 });
   }
 
   const searchParams = request.nextUrl.searchParams;
@@ -79,17 +79,17 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const admin = await isAdmin(request);
   if (!admin) {
-    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    return NextResponse.json({ error: 'NÃ£o autorizado' }, { status: 401 });
   }
 
   try {
     const { nome, estado, regiao, taxa_cambio_inicial } = await request.json();
 
     if (!nome || !estado) {
-      return NextResponse.json({ error: 'Nome e estado são obrigatórios' }, { status: 400 });
+      return NextResponse.json({ error: 'Nome e estado sÃ£o obrigatÃ³rios' }, { status: 400 });
     }
 
-    // Verificar se cidade já existe
+    // Verificar se cidade jÃ¡ existe
     const { data: existing, error: checkError } = await supabase
       .from('cidades')
       .select('id')
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (existing) {
-      return NextResponse.json({ error: 'Cidade já cadastrada' }, { status: 400 });
+      return NextResponse.json({ error: 'Cidade jÃ¡ cadastrada' }, { status: 400 });
     }
 
     // Inserir cidade
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
 
     if (cidadeError) throw cidadeError;
 
-    // Criar configuração de câmbio para a nova cidade
+    // Criar configuraÃ§Ã£o de cÃ¢mbio para a nova cidade
     const taxa = taxa_cambio_inicial || 1.0;
     const { data: cambio, error: cambioError } = await supabase
       .from('configuracoes_cambio')
@@ -149,14 +149,14 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   const admin = await isAdmin(request);
   if (!admin) {
-    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    return NextResponse.json({ error: 'NÃ£o autorizado' }, { status: 401 });
   }
 
   try {
     const { id, nome, estado, regiao, ativo } = await request.json();
 
     if (!id) {
-      return NextResponse.json({ error: 'ID da cidade é obrigatório' }, { status: 400 });
+      return NextResponse.json({ error: 'ID da cidade Ã© obrigatÃ³rio' }, { status: 400 });
     }
 
     // Buscar cidade atual
@@ -184,7 +184,7 @@ export async function PUT(request: NextRequest) {
 
     if (error) throw error;
 
-    // Se o nome mudou, atualizar também na tabela de câmbio
+    // Se o nome mudou, atualizar tambÃ©m na tabela de cÃ¢mbio
     if (nome && nome !== cidadeAtual.nome) {
       await supabase
         .from('configuracoes_cambio')
@@ -209,7 +209,7 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   const admin = await isAdmin(request);
   if (!admin) {
-    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    return NextResponse.json({ error: 'NÃ£o autorizado' }, { status: 401 });
   }
 
   const searchParams = request.nextUrl.searchParams;
@@ -217,12 +217,12 @@ export async function DELETE(request: NextRequest) {
   const permanent = searchParams.get('permanent') === 'true';
 
   if (!id) {
-    return NextResponse.json({ error: 'ID da cidade é obrigatório' }, { status: 400 });
+    return NextResponse.json({ error: 'ID da cidade Ã© obrigatÃ³rio' }, { status: 400 });
   }
 
   try {
     if (permanent) {
-      // Remoção permanente (cuidado!)
+      // RemoÃ§Ã£o permanente (cuidado!)
       const { error: cidadesError } = await supabase
         .from('cidades')
         .delete()
@@ -230,7 +230,7 @@ export async function DELETE(request: NextRequest) {
 
       if (cidadesError) throw cidadesError;
 
-      // Remover também configuração de câmbio
+      // Remover tambÃ©m configuraÃ§Ã£o de cÃ¢mbio
       await supabase
         .from('configuracoes_cambio')
         .delete()
@@ -254,3 +254,4 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: 'Erro ao remover cidade' }, { status: 500 });
   }
 }
+

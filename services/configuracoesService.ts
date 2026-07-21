@@ -508,3 +508,6 @@ class BuscaInteligenteService {
 }
 
 export const buscaInteligenteService = new BuscaInteligenteService();
+
+
+

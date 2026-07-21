@@ -12,3 +12,4 @@ if (typeof window === 'undefined') {
     fetch: () => Promise.resolve({ blob: () => Promise.resolve(new Blob()), url: '' }),
   } as any;
 }
+

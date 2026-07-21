@@ -199,13 +199,13 @@ export default function BuscaInteligente({ onResultadoClick, placeholder = "O qu
                           <div className="flex justify-between items-center">
                             <div>
                               <p className={`text-sm ${desbloqueado ? 'text-gray-700' : 'text-gray-400 blur-sm select-none'}`}>
-                                📍 {displayInfo.fornecedorNome}
+                                ðŸ“ {displayInfo.fornecedorNome}
                               </p>
                               <p className={`text-xs ${desbloqueado ? 'text-gray-500' : 'text-gray-400 blur-sm select-none'}`}>
-                                🏠 {displayInfo.fornecedorEndereco}
+                                ðŸ  {displayInfo.fornecedorEndereco}
                               </p>
                               <p className={`text-xs ${desbloqueado ? 'text-blue-600' : 'text-gray-400 blur-sm select-none'}`}>
-                                📞 {displayInfo.fornecedorTelefone}
+                                ðŸ“ž {displayInfo.fornecedorTelefone}
                               </p>
                             </div>
                             {!desbloqueado && (
@@ -267,9 +267,9 @@ export default function BuscaInteligente({ onResultadoClick, placeholder = "O qu
             <div className="bg-gray-50 rounded-lg p-4 mb-4">
               <p className="text-sm text-gray-600 mb-2">Ao desbloquear, voce tera acesso a:</p>
               <ul className="text-sm space-y-1">
-                <li>✅ Nome do fornecedor</li>
-                <li>✅ Endereco completo</li>
-                <li>✅ Telefone para contato</li>
+                <li>âœ… Nome do fornecedor</li>
+                <li>âœ… Endereco completo</li>
+                <li>âœ… Telefone para contato</li>
               </ul>
             </div>
 
@@ -303,3 +303,4 @@ export default function BuscaInteligente({ onResultadoClick, placeholder = "O qu
     </>
   );
 }
+

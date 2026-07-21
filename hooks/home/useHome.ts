@@ -1,5 +1,5 @@
 // hooks/home/useHome.ts
-// 🪝 LÓGICA COMPLETA - Home
+// ðŸ§  LÃ“GICA COMPLETA - Home
 
 "use client";
 
@@ -24,7 +24,7 @@ export interface NotificacaoAdmin {
 export const useHome = () => {
   const router = useRouter();
   const { user, isAdmin } = useApp();
-  
+
   // Estados
   const [searchTerm, setSearchTerm] = useState("");
   const [activeSection, setActiveSection] = useState(1);
@@ -38,12 +38,12 @@ export const useHome = () => {
   const [isInstalling, setIsInstalling] = useState(false);
   const [installSupported, setInstallSupported] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
-  
-  // ✅ ESTADO DO MODAL (AGORA AQUI)
-  const [modalSolicitacao, setModalSolicitacao] = useState({ 
-    open: false, 
-    servico: "", 
-    categoria: "" 
+
+  // âœ… ESTADO DO MODAL (AGORA AQUI)
+  const [modalSolicitacao, setModalSolicitacao] = useState({
+    open: false,
+    servico: "",
+    categoria: ""
   });
 
   // Refs
@@ -54,58 +54,84 @@ export const useHome = () => {
   const categorias3Ref = useRef<HTMLDivElement>(null);
   const categorias4Ref = useRef<HTMLDivElement>(null);
 
-  // Dados estáticos
+  // ============================================================================
+  // DADOS ESTÃTICOS - GRID DE ÃCONES RÃPIDOS
+  // ============================================================================
+
   const gridItens = [
-    { titulo: "MOTO TÁXI", cor: "#007bff", icone: "🏍️", href: "/mototaxi" },
-    { titulo: "MARMITA", cor: "#ff9800", icone: "🍱", href: "/cozinha" },
-    { titulo: "ÁGUA & GÁS", cor: "#0288d1", icone: "💧", href: "/agua-gas" },
+    { titulo: "MOTO TÃXI", cor: "#007bff", icone: "ðŸï¸", href: "/mototaxi" },
+    { titulo: "MARMITA", cor: "#ff9800", icone: "ðŸ±", href: "/cozinha" },
+    { titulo: "ÃGUA & GÃS", cor: "#0288d1", icone: "ðŸ’§", href: "/agua-gas" },
   ];
+
+  // ============================================================================
+  // CATEGORIAS - BLOCO 1 (SERVIÃ‡OS PRINCIPAIS)
+  // ============================================================================
 
   const categoriasBloco1 = [
-    { nome: "ACADEMIAS & ESPORTES", icone: "💪", href: "/academia" },
-    { nome: "ALIMENTAÇÃO", icone: "🍔", href: null },
-    { nome: "MARMITA & BOLOS", icone: "🍱", href: "/cozinha" },
-    { nome: "TRANSPORTE & DELIVERY", icone: "🏍️", href: "/mototaxi" },
-    { nome: "UTILIDADES", icone: "💡", href: "/servicos" },
-    { nome: "PROFISSIONAIS / SERVIÇOS", icone: "👷", href: "/profissionais" },
+    { nome: "ACADEMIAS & ESPORTES", icone: "ðŸ’ª", href: "/academia" },
+    { nome: "ALIMENTAÃ‡ÃƒO", icone: "ðŸ”", href: null },
+    { nome: "MARMITA & BOLOS", icone: "ðŸ±", href: "/cozinha" },
+    { nome: "TRANSPORTE & DELIVERY", icone: "ðŸï¸", href: "/mototaxi" },
+    { nome: "UTILIDADES", icone: "ðŸ’¡", href: "/servicos" },
+    { nome: "PROFISSIONAIS / SERVIÃ‡OS", icone: "ðŸ‘·", href: "/profissionais" },
+    // âœ… ADICIONADO: EMPREGOS
+    { nome: "EMPREGOS", icone: "ðŸ’¼", href: "/empregos" },
   ];
+
+  // ============================================================================
+  // CATEGORIAS - BLOCO 2 (MERCADOS E SERVIÃ‡OS)
+  // ============================================================================
 
   const categoriasBloco2 = [
-    { nome: "MERCADOS", icone: "🏪", href: "/comercio" },
-    { nome: "IMÓVEL", icone: "🏠", href: "/servicos" },
-    { nome: "AGRO E CAMPO", icone: "🌾", href: "/servicos" },
-    { nome: "CONSTRUÇÃO", icone: "🏗️", href: "/profissionais?categoria=pedreiro" },
-    { nome: "ALUGUEL MÁQUINAS", icone: "🔨", href: "/publico/maquinas" },
-    { nome: "TECNOLOGIA", icone: "💻", href: "/servicos" },
+    { nome: "MERCADOS", icone: "ðŸª", href: "/comercio" },
+    { nome: "IMÃ“VEL", icone: "ðŸ ", href: "/servicos" },
+    { nome: "AGRO E CAMPO", icone: "ðŸŒ¾", href: "/servicos" },
+    { nome: "CONSTRUÃ‡ÃƒO", icone: "ðŸ—ï¸", href: "/profissionais?categoria=pedreiro" },
+    { nome: "ALUGUEL MÃQUINAS", icone: "ðŸ”¨", href: "/publico/maquinas" },
+    { nome: "TECNOLOGIA", icone: "ðŸ’»", href: "/servicos" },
   ];
+
+  // ============================================================================
+  // CATEGORIAS - BLOCO 3 (AUTOMOTIVO, SAÃšDE, MODA)
+  // ============================================================================
 
   const categoriasBloco3 = [
-    { nome: "AUTOMOTIVO", icone: "🚗", href: "/servicos" },
-    { nome: "EDUCAÇÃO", icone: "📚", href: "/servicos" },
-    { nome: "SAÚDE", icone: "🏥", href: "/servicos" },
-    { nome: "MODA MASCULINA", icone: "👔", href: "/servicos" },
-    { nome: "MODA FEMININA", icone: "👗", href: "/servicos" },
-    { nome: "BELEZA & ESTÉTICA", icone: "💇", href: "/servicos" },
+    { nome: "AUTOMOTIVO", icone: "ðŸš—", href: "/servicos" },
+    { nome: "EDUCAÃ‡ÃƒO", icone: "ðŸ“š", href: "/servicos" },
+    { nome: "SAÃšDE", icone: "ðŸ¥", href: "/servicos" },
+    { nome: "MODA MASCULINA", icone: "ðŸ‘”", href: "/servicos" },
+    { nome: "MODA FEMININA", icone: "ðŸ‘—", href: "/servicos" },
+    { nome: "BELEZA & ESTÃ‰TICA", icone: "ðŸ’‡", href: "/servicos" },
   ];
+
+  // ============================================================================
+  // CATEGORIAS - BLOCO 4 (EVENTOS, PET, FINANCEIRO)
+  // ============================================================================
 
   const categoriasBloco4 = [
-    { nome: "BELEZA & ESTÉTICA", icone: "💅", href: "/servicos" },
-    { nome: "EVENTOS & ENTRETENIMENTO", icone: "🎉", href: "/servicos" },
-    { nome: "PET SHOP & ANIMAIS", icone: "🐕", href: "/servicos" },
-    { nome: "FINANCEIRO", icone: "💰", href: "/servicos" },
+    { nome: "BELEZA & ESTÃ‰TICA", icone: "ðŸ’…", href: "/servicos" },
+    { nome: "EVENTOS & ENTRETENIMENTO", icone: "ðŸŽ‰", href: "/servicos" },
+    { nome: "PET SHOP & ANIMAIS", icone: "ðŸ•", href: "/servicos" },
+    { nome: "FINANCEIRO", icone: "ðŸ’°", href: "/servicos" },
   ];
 
-  // ✅ FUNÇÃO PARA ABRIR SOLICITAÇÃO (AGORA AQUI)
+  // ============================================================================
+  // FUNÃ‡Ã•ES DO MODAL
+  // ============================================================================
+
   const abrirSolicitacao = useCallback((servico: string, categoria: string) => {
     setModalSolicitacao({ open: true, servico, categoria });
   }, []);
 
-  // ✅ FUNÇÃO PARA FECHAR SOLICITAÇÃO (AGORA AQUI)
   const fecharSolicitacao = useCallback(() => {
     setModalSolicitacao({ open: false, servico: "", categoria: "" });
   }, []);
 
-  // Carregar saldo
+  // ============================================================================
+  // FUNÃ‡Ã•ES DE CARREGAMENTO
+  // ============================================================================
+
   const carregarSaldo = useCallback(async () => {
     if (user?.id) {
       walletService.setUsuarioId(user.id, user.nome || user.name);
@@ -147,11 +173,10 @@ export const useHome = () => {
       setSaldoIndicacaoDisponivel(wallet.disponivel);
       setSaldoIndicacaoBloqueado(wallet.bloqueado);
     } catch (error) {
-      console.error('Erro ao carregar saldo de indicações:', error);
+      console.error('Erro ao carregar saldo de indicaÃ§Ãµes:', error);
     }
   }, [user]);
 
-  // Carregar notificações
   const carregarNotificacoesAdmin = useCallback(() => {
     try {
       const oficiais = localStorage.getItem("admin_notificacoes_sistema");
@@ -183,7 +208,7 @@ export const useHome = () => {
           if (ativas.length > 0) {
             const notas = ativas.map((solicitacao: any) => ({
               id: solicitacao.id,
-              mensagem: `📋 ${solicitacao.servico} - ${solicitacao.cliente?.nome || "Alguém"} solicitou ${solicitacao.servico}`,
+              mensagem: `ðŸ“‹ ${solicitacao.servico} - ${solicitacao.cliente?.nome || "AlguÃ©m"} solicitou ${solicitacao.servico}`,
               importancia: solicitacao.status === "pendente" ? "alta" : "media",
               data: new Date(solicitacao.data).toLocaleDateString(),
               status: solicitacao.status
@@ -203,184 +228,126 @@ export const useHome = () => {
         }
       }
 
-      const demandas = localStorage.getItem("demandas");
-      if (demandas) {
-        const dados = JSON.parse(demandas);
-        if (Array.isArray(dados) && dados.length > 0) {
-          setNotificacoesAdmin(dados);
-          return;
-        }
-      }
-
-      const notificacoes = localStorage.getItem("notificacoes");
-      if (notificacoes) {
-        const dados = JSON.parse(notificacoes);
-        if (Array.isArray(dados) && dados.length > 0) {
-          setNotificacoesAdmin(dados);
-          return;
-        }
-      }
-
-      setNotificacoesAdmin([
-        { id: "default", mensagem: "✅ Sistema operando normalmente", importancia: "info", data: new Date().toLocaleDateString() }
-      ]);
+      setNotificacoesAdmin([]);
     } catch (error) {
-      console.error("Erro ao carregar notificações:", error);
-      setNotificacoesAdmin([
-        { id: "error", mensagem: "📢 Fique ligado nas novidades!", importancia: "info", data: new Date().toLocaleDateString() }
-      ]);
+      console.error('Erro ao carregar notificaÃ§Ãµes:', error);
+      setNotificacoesAdmin([]);
     }
   }, []);
 
-  // Efeitos
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  // ============================================================================
+  // FUNÃ‡Ã•ES DE NAVEGAÃ‡ÃƒO E AÃ‡ÃƒO
+  // ============================================================================
 
-  useEffect(() => {
-    if (user) {
-      carregarSaldo();
-      carregarSaldoIndicacoes();
-    } else {
-      setCarregandoSaldo(false);
-    }
-  }, [user, carregarSaldo, carregarSaldoIndicacoes]);
-
-  useEffect(() => {
-    carregarNotificacoesAdmin();
-
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "admin_notificacoes_sistema" || e.key === "solicitacoes_servicos" || e.key === "notas_admin" || e.key === "demandas" || e.key === "notificacoes") {
-        carregarNotificacoesAdmin();
-        if (e.key === "solicitacoes_servicos") {
-          toast.success("📢 Nova demanda recebida! Confira o card abaixo.");
-        }
-      }
-    };
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, [carregarNotificacoesAdmin]);
-
-  useEffect(() => {
-    if (isUserLoggedIn()) return;
-    if (!isSessaoTempValida()) {
-      gerarSessaoTemp();
-      const sessaoId = localStorage.getItem('sessao_temp_id');
-      if (sessaoId) {
-        document.cookie = `sessao_temp_id=${sessaoId}; path=/; max-age=1800`;
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      setInstallSupported(true);
-    };
-    window.addEventListener("beforeinstallprompt", handler);
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-    const alreadyInstalled = localStorage.getItem("app_installed");
-    const alreadyDismissed = localStorage.getItem("install_banner_dismissed");
-    if (alreadyInstalled || alreadyDismissed || isStandalone) {
-      setShowInstallBanner(false);
-    }
-    return () => window.removeEventListener("beforeinstallprompt", handler);
-  }, []);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const sections = [homeRef, lancamentoRef, categorias1Ref, categorias2Ref, categorias3Ref, categorias4Ref];
-      const scrollPosition = window.scrollY + 100;
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const section = sections[i].current;
-        if (section && section.offsetTop <= scrollPosition) {
-          setActiveSection(i + 1);
-          break;
-        }
-      }
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  // Funções de navegação
   const handleSearch = useCallback(() => {
-    if (searchTerm.trim()) router.push(`/busca?q=${encodeURIComponent(searchTerm)}`);
+    if (searchTerm.trim()) {
+      router.push(`/busca?q=${encodeURIComponent(searchTerm.trim())}`);
+    }
   }, [searchTerm, router]);
 
   const handleVoiceSearch = useCallback(() => {
-    if (typeof window !== "undefined" && "webkitSpeechRecognition" in window) {
+    if ('webkitSpeechRecognition' in window) {
       const recognition = new (window as any).webkitSpeechRecognition();
-      recognition.lang = "pt-BR";
-      recognition.onresult = (event: any) => {
-        setSearchTerm(event.results[0][0].transcript);
-        setTimeout(handleSearch, 500);
-      };
+      recognition.lang = 'pt-BR';
       recognition.start();
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setSearchTerm(transcript);
+        setTimeout(() => {
+          router.push(`/busca?q=${encodeURIComponent(transcript)}`);
+        }, 500);
+      };
     } else {
-      toast.error("Busca por voz não suportada neste navegador");
+      toast.error('Reconhecimento de voz nÃ£o disponÃ­vel neste navegador');
     }
-  }, [handleSearch]);
+  }, [router]);
 
   const handleBuscaFallback = useCallback((termo: string) => {
-    setSearchTerm(termo);
-    setTimeout(handleSearch, 100);
-  }, [handleSearch]);
+    router.push(`/busca?q=${encodeURIComponent(termo)}`);
+  }, [router]);
+
+  const scrollToSection = useCallback((ref: React.RefObject<HTMLDivElement>) => {
+    if (ref.current) {
+      ref.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, []);
+
+  const showQR = useCallback(() => router.push("/qr-code"), [router]);
+  const verExtrato = useCallback(() => router.push("/extrato"), [router]);
+
+  // ============================================================================
+  // INSTALAÃ‡ÃƒO DO APP
+  // ============================================================================
 
   const handleInstall = useCallback(async () => {
-    if (isInstalling) return;
-    setIsInstalling(true);
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === "accepted") {
-        localStorage.setItem("app_installed", "true");
-        setShowInstallBanner(false);
-        toast.success("✅ App instalado na tela inicial!");
-      }
-      setDeferredPrompt(null);
-    } else {
-      toast.success("📱 Toque em 'Adicionar à Tela Inicial' no menu do navegador", { duration: 5000 });
+    if (!deferredPrompt) {
+      toast.error('InstalaÃ§Ã£o nÃ£o disponÃ­vel no momento');
+      return;
     }
-    setIsInstalling(false);
-  }, [deferredPrompt, isInstalling]);
+    setIsInstalling(true);
+    try {
+      await deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        toast.success('âœ… App instalado com sucesso!');
+        setShowInstallBanner(false);
+        localStorage.setItem("app_installed", "true");
+      } else {
+        toast.error('InstalaÃ§Ã£o cancelada');
+      }
+    } catch (error) {
+      console.error('Erro na instalaÃ§Ã£o:', error);
+      toast.error('Erro ao instalar o app');
+    } finally {
+      setIsInstalling(false);
+      setDeferredPrompt(null);
+    }
+  }, [deferredPrompt]);
 
   const handleDismissBanner = useCallback(() => {
     setShowInstallBanner(false);
     localStorage.setItem("install_banner_dismissed", "true");
   }, []);
 
-  const scrollToSection = useCallback((ref: React.RefObject<HTMLDivElement>) => {
-    ref.current?.scrollIntoView({ behavior: "smooth" });
+  // ============================================================================
+  // EFFECTS
+  // ============================================================================
+
+  useEffect(() => {
+    setIsMounted(true);
   }, []);
 
-  const showQR = useCallback(() => router.push("/qr-code"), [router]);
-  const verExtrato = useCallback(() => router.push("/extrato"), [router]);
+  useEffect(() => {
+    if (isMounted) {
+      carregarSaldo();
+      carregarSaldoIndicacoes();
+      carregarNotificacoesAdmin();
+    }
+  }, [isMounted, carregarSaldo, carregarSaldoIndicacoes, carregarNotificacoesAdmin]);
+
+  // ============================================================================
+  // RETORNO
+  // ============================================================================
 
   return {
-    // Estado
+    // Estados
     user,
     isAdmin,
     searchTerm,
     setSearchTerm,
     activeSection,
+    setActiveSection,
     saldoUsuario,
     carregandoSaldo,
     saldoIndicacaoDisponivel,
     saldoIndicacaoBloqueado,
     notificacoesAdmin,
+    isMounted,
+    deferredPrompt,
     showInstallBanner,
     isInstalling,
     installSupported,
-    isMounted,
-    
-    // Modal
-    modalSolicitacao,
-    abrirSolicitacao,
-    fecharSolicitacao,
-    
+
     // Refs
     homeRef,
     lancamentoRef,
@@ -388,23 +355,34 @@ export const useHome = () => {
     categorias2Ref,
     categorias3Ref,
     categorias4Ref,
-    
+
     // Dados
     gridItens,
     categoriasBloco1,
     categoriasBloco2,
     categoriasBloco3,
     categoriasBloco4,
-    
-    // Funções
+
+    // Modal
+    modalSolicitacao,
+    abrirSolicitacao,
+    fecharSolicitacao,
+
+    // FunÃ§Ãµes
+    carregarSaldo,
+    carregarSaldoIndicacoes,
+    carregarNotificacoesAdmin,
     handleSearch,
     handleVoiceSearch,
     handleBuscaFallback,
-    handleInstall,
-    handleDismissBanner,
     scrollToSection,
     showQR,
     verExtrato,
+    handleInstall,
+    handleDismissBanner,
+
+    // Router
     router,
   };
 };
+

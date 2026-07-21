@@ -73,3 +73,4 @@ export function calculateReferralWallet(
     lotes: lots
   };
 }
+

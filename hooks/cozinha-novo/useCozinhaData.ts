@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 
@@ -67,3 +67,4 @@ export function useCozinhaData<T = any>(endpoint: string) {
 
   return { data, loading, error, create, update, delete: remove, reload: loadData };
 }
+

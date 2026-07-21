@@ -1,7 +1,9 @@
-ï»¿// services/notificacaoService.ts - VersÃ£o temporÃ¡ria
+// services/notificacaoService.ts - Versão temporária
 export const notificacaoService = {
   enviar: async (data: any) => {
-    console.log('Enviando notificaÃ§Ã£o:', data)
+    console.log('Enviando notificação:', data)
     return { success: true }
   }
 }
+
+

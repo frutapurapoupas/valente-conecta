@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect } from 'react';
 import { 
@@ -614,7 +614,7 @@ export default function PDVPage() {
               {metodoPagamento === 'credito' && !clienteSelecionado && (
                 <div className="bg-yellow-50 p-3 rounded-lg mb-4">
                   <p className="text-sm text-yellow-700">
-                    ⚠️ Selecione um cliente para usar crédito
+                    ?? Selecione um cliente para usar crédito
                   </p>
                   <button
                     onClick={() => {
@@ -722,3 +722,4 @@ export default function PDVPage() {
     </div>
   );
 }
+

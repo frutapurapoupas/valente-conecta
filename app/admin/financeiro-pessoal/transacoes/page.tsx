@@ -16,8 +16,8 @@ interface Transacao {
 }
 
 const categorias = [
-  'Salário', 'Freelance', 'Investimentos', 'Presentes',
-  'Alimentação', 'Contas', 'Lazer', 'Transporte', 'Saúde', 'Educação', 'Moradia'
+  'SalÃ¡rio', 'Freelance', 'Investimentos', 'Presentes',
+  'AlimentaÃ§Ã£o', 'Contas', 'Lazer', 'Transporte', 'SaÃºde', 'EducaÃ§Ã£o', 'Moradia'
 ];
 
 export default function TransacoesPage() {
@@ -31,7 +31,7 @@ export default function TransacoesPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [formData, setFormData] = useState({
     tipo: 'receita' as 'receita' | 'despesa',
-    categoria: 'Salário',
+    categoria: 'SalÃ¡rio',
     descricao: '',
     valor: 0,
     data: new Date().toISOString().split('T')[0],
@@ -51,9 +51,9 @@ export default function TransacoesPage() {
       setTransacoes(dados.transacoes || []);
     } else {
       const mockTransacoes: Transacao[] = [
-        { id: '1', tipo: 'receita', categoria: 'Salário', descricao: 'Salário Mensal', valor: 5000, data: new Date().toISOString().split('T')[0], status: 'pago', recorrente: true, recorrencia: 'mensal' },
-        { id: '2', tipo: 'despesa', categoria: 'Alimentação', descricao: 'Supermercado', valor: 350, data: new Date().toISOString().split('T')[0], status: 'pago', recorrente: false },
-        { id: '3', tipo: 'despesa', categoria: 'Contas', descricao: 'Energia Elétrica', valor: 180, data: new Date().toISOString().split('T')[0], status: 'pendente', recorrente: true, recorrencia: 'mensal' }
+        { id: '1', tipo: 'receita', categoria: 'SalÃ¡rio', descricao: 'SalÃ¡rio Mensal', valor: 5000, data: new Date().toISOString().split('T')[0], status: 'pago', recorrente: true, recorrencia: 'mensal' },
+        { id: '2', tipo: 'despesa', categoria: 'AlimentaÃ§Ã£o', descricao: 'Supermercado', valor: 350, data: new Date().toISOString().split('T')[0], status: 'pago', recorrente: false },
+        { id: '3', tipo: 'despesa', categoria: 'Contas', descricao: 'Energia ElÃ©trica', valor: 180, data: new Date().toISOString().split('T')[0], status: 'pendente', recorrente: true, recorrencia: 'mensal' }
       ];
       setTransacoes(mockTransacoes);
       localStorage.setItem('financeiro_pessoal', JSON.stringify({ transacoes: mockTransacoes }));
@@ -73,11 +73,11 @@ export default function TransacoesPage() {
     e.preventDefault();
     
     if (!formData.descricao.trim()) {
-      alert('❌ A descrição é obrigatória');
+      alert('âŒ A descriÃ§Ã£o Ã© obrigatÃ³ria');
       return;
     }
     if (formData.valor <= 0) {
-      alert('❌ O valor deve ser maior que zero');
+      alert('âŒ O valor deve ser maior que zero');
       return;
     }
     
@@ -99,7 +99,7 @@ export default function TransacoesPage() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm('⚠️ Tem certeza que deseja excluir esta transação?')) {
+    if (confirm('âš ï¸ Tem certeza que deseja excluir esta transaÃ§Ã£o?')) {
       salvarTransacoes(transacoes.filter(t => t.id !== id));
     }
   };
@@ -107,7 +107,7 @@ export default function TransacoesPage() {
   const resetForm = () => {
     setFormData({
       tipo: 'receita',
-      categoria: 'Salário',
+      categoria: 'SalÃ¡rio',
       descricao: '',
       valor: 0,
       data: new Date().toISOString().split('T')[0],
@@ -153,15 +153,15 @@ export default function TransacoesPage() {
   const totalDespesas = transacoesFiltradas.filter(t => t.tipo === 'despesa').reduce((acc, t) => acc + t.valor, 0);
   const saldo = totalReceitas - totalDespesas;
 
-  if (loading) return <div className="text-center py-8 text-gray-900 dark:text-gray-100">🔄 Carregando transações...</div>;
+  if (loading) return <div className="text-center py-8 text-gray-900 dark:text-gray-100">ðŸ”„ Carregando transaÃ§Ãµes...</div>;
 
   return (
     <div>
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">📋 Transações Financeiras</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Gerencie todas as suas movimentações financeiras</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">ðŸ“‹ TransaÃ§Ãµes Financeiras</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Gerencie todas as suas movimentaÃ§Ãµes financeiras</p>
         </div>
         <button
           onClick={() => {
@@ -170,7 +170,7 @@ export default function TransacoesPage() {
           }}
           className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 shadow-sm"
         >
-          <Plus className="w-4 h-4" /> Nova Transação
+          <Plus className="w-4 h-4" /> Nova TransaÃ§Ã£o
         </button>
       </div>
 
@@ -197,7 +197,7 @@ export default function TransacoesPage() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
             <input
               type="text"
-              placeholder="Buscar por descrição ou categoria..."
+              placeholder="Buscar por descriÃ§Ã£o ou categoria..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 placeholder-gray-400 dark:placeholder-gray-500"
@@ -207,7 +207,7 @@ export default function TransacoesPage() {
             onClick={() => setShowFilters(!showFilters)}
             className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 transition-colors"
           >
-            <Filter className="w-4 h-4" /> Filtros {showFilters ? '▲' : '▼'}
+            <Filter className="w-4 h-4" /> Filtros {showFilters ? 'â–²' : 'â–¼'}
           </button>
           {(filterTipo || filterStatus) && (
             <button
@@ -227,8 +227,8 @@ export default function TransacoesPage() {
               className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               <option value="">Todos os tipos</option>
-              <option value="receita">💰 Receitas</option>
-              <option value="despesa">💸 Despesas</option>
+              <option value="receita">ðŸ’° Receitas</option>
+              <option value="despesa">ðŸ’¸ Despesas</option>
             </select>
             <select
               value={filterStatus}
@@ -236,15 +236,15 @@ export default function TransacoesPage() {
               className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               <option value="">Todos os status</option>
-              <option value="pago">✅ Pago</option>
-              <option value="pendente">⏳ Pendente</option>
-              <option value="cancelado">❌ Cancelado</option>
+              <option value="pago">âœ… Pago</option>
+              <option value="pendente">â³ Pendente</option>
+              <option value="cancelado">âŒ Cancelado</option>
             </select>
           </div>
         )}
       </div>
 
-      {/* Tabela de Transações */}
+      {/* Tabela de TransaÃ§Ãµes */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full">
@@ -253,17 +253,17 @@ export default function TransacoesPage() {
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Data</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tipo</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Categoria</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Descrição</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">DescriÃ§Ã£o</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Valor</th>
                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ações</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">AÃ§Ãµes</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {transacoesFiltradas.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">
-                    📭 Nenhuma transação encontrada
+                    ðŸ“­ Nenhuma transaÃ§Ã£o encontrada
                   </td>
                 </tr>
               ) : (
@@ -303,7 +303,7 @@ export default function TransacoesPage() {
                         t.status === 'pendente' ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-300' : 
                         'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300'
                       }`}>
-                        {t.status === 'pago' ? '✅ Pago' : t.status === 'pendente' ? '⏳ Pendente' : '❌ Cancelado'}
+                        {t.status === 'pago' ? 'âœ… Pago' : t.status === 'pendente' ? 'â³ Pendente' : 'âŒ Cancelado'}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center whitespace-nowrap">
@@ -332,13 +332,13 @@ export default function TransacoesPage() {
         </div>
       </div>
 
-      {/* Modal de Nova/Editar Transação */}
+      {/* Modal de Nova/Editar TransaÃ§Ã£o */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                {editingTransacao ? '✏️ Editar Transação' : '➕ Nova Transação'}
+                {editingTransacao ? 'âœï¸ Editar TransaÃ§Ã£o' : 'âž• Nova TransaÃ§Ã£o'}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
@@ -357,20 +357,20 @@ export default function TransacoesPage() {
                       type="radio"
                       value="receita"
                       checked={formData.tipo === 'receita'}
-                      onChange={() => setFormData({ ...formData, tipo: 'receita', categoria: 'Salário' })}
+                      onChange={() => setFormData({ ...formData, tipo: 'receita', categoria: 'SalÃ¡rio' })}
                       className="w-4 h-4 text-green-600"
                     />
-                    <span className="text-gray-700 dark:text-gray-300">💰 Receita</span>
+                    <span className="text-gray-700 dark:text-gray-300">ðŸ’° Receita</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
                       value="despesa"
                       checked={formData.tipo === 'despesa'}
-                      onChange={() => setFormData({ ...formData, tipo: 'despesa', categoria: 'Alimentação' })}
+                      onChange={() => setFormData({ ...formData, tipo: 'despesa', categoria: 'AlimentaÃ§Ã£o' })}
                       className="w-4 h-4 text-red-600"
                     />
-                    <span className="text-gray-700 dark:text-gray-300">💸 Despesa</span>
+                    <span className="text-gray-700 dark:text-gray-300">ðŸ’¸ Despesa</span>
                   </label>
                 </div>
               </div>
@@ -388,10 +388,10 @@ export default function TransacoesPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Descrição *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">DescriÃ§Ã£o *</label>
                 <input
                   type="text"
-                  placeholder="Ex: Salário, Supermercado, Conta de Luz..."
+                  placeholder="Ex: SalÃ¡rio, Supermercado, Conta de Luz..."
                   value={formData.descricao}
                   onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
                   className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 placeholder-gray-400 dark:placeholder-gray-500"
@@ -431,9 +431,9 @@ export default function TransacoesPage() {
                   onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
                   className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
                 >
-                  <option value="pendente">⏳ Pendente</option>
-                  <option value="pago">✅ Pago</option>
-                  <option value="cancelado">❌ Cancelado</option>
+                  <option value="pendente">â³ Pendente</option>
+                  <option value="pago">âœ… Pago</option>
+                  <option value="cancelado">âŒ Cancelado</option>
                 </select>
               </div>
 
@@ -445,21 +445,21 @@ export default function TransacoesPage() {
                     onChange={(e) => setFormData({ ...formData, recorrente: e.target.checked })}
                     className="w-4 h-4"
                   />
-                  <span className="text-gray-700 dark:text-gray-300">🔄 Conta Recorrente</span>
+                  <span className="text-gray-700 dark:text-gray-300">ðŸ”„ Conta Recorrente</span>
                 </label>
               </div>
 
               {formData.recorrente && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Recorrência</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">RecorrÃªncia</label>
                   <select
                     value={formData.recorrencia}
                     onChange={(e) => setFormData({ ...formData, recorrencia: e.target.value as any })}
                     className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
                   >
-                    <option value="mensal">📅 Mensal</option>
-                    <option value="semanal">📆 Semanal</option>
-                    <option value="anual">🗓️ Anual</option>
+                    <option value="mensal">ðŸ“… Mensal</option>
+                    <option value="semanal">ðŸ“† Semanal</option>
+                    <option value="anual">ðŸ—“ï¸ Anual</option>
                   </select>
                 </div>
               )}
@@ -479,7 +479,7 @@ export default function TransacoesPage() {
                   type="submit"
                   className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                 >
-                  {editingTransacao ? '💾 Salvar Alterações' : '✅ Criar Transação'}
+                  {editingTransacao ? 'ðŸ’¾ Salvar AlteraÃ§Ãµes' : 'âœ… Criar TransaÃ§Ã£o'}
                 </button>
               </div>
             </form>
@@ -489,3 +489,4 @@ export default function TransacoesPage() {
     </div>
   );
 }
+

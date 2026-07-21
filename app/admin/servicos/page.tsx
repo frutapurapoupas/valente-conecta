@@ -12,9 +12,10 @@ export default function AdminServicosPage() {
       <button onClick={() => router.push("/admin")} className="text-white mb-4"><i className="fas fa-arrow-left"></i> Voltar</button>
       <div className="bg-gray-800 rounded-2xl p-6 text-center">
         <i className="fas fa-tools text-6xl text-blue-500 mb-4"></i>
-        <h1 className="text-white text-2xl font-bold">🔧 Serviços</h1>
-        <p className="text-gray-400 mt-2">Módulo em desenvolvimento</p>
+        <h1 className="text-white text-2xl font-bold">ðŸ”§ ServiÃ§os</h1>
+        <p className="text-gray-400 mt-2">MÃ³dulo em desenvolvimento</p>
       </div>
     </div>
   );
 }
+

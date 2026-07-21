@@ -20,7 +20,7 @@ export default function ContasReceberPage() {
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
     descricao: '',
-    categoria: 'Salário',
+    categoria: 'SalÃ¡rio',
     valor: 0,
     data: new Date().toISOString().split('T')[0],
     recorrente: false
@@ -60,7 +60,7 @@ export default function ContasReceberPage() {
     localStorage.setItem('financeiro_pessoal', JSON.stringify(dados));
     carregarContas();
     setShowModal(false);
-    setFormData({ descricao: '', categoria: 'Salário', valor: 0, data: new Date().toISOString().split('T')[0], recorrente: false });
+    setFormData({ descricao: '', categoria: 'SalÃ¡rio', valor: 0, data: new Date().toISOString().split('T')[0], recorrente: false });
   };
 
   const marcarComoRecebido = (id: string) => {
@@ -94,7 +94,7 @@ export default function ContasReceberPage() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">💰 Contas a Receber</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">ðŸ’° Contas a Receber</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Total a receber: <span className="font-bold text-green-600">{formatCurrency(totalPendente)}</span></p>
         </div>
         <button onClick={() => setShowModal(true)} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2">
@@ -105,7 +105,7 @@ export default function ContasReceberPage() {
       <div className="space-y-3">
         {contas.length === 0 ? (
           <div className="bg-white dark:bg-gray-800 rounded-xl p-8 text-center">
-            <p className="text-gray-500 dark:text-gray-400">✅ Nenhuma conta a receber</p>
+            <p className="text-gray-500 dark:text-gray-400">âœ… Nenhuma conta a receber</p>
           </div>
         ) : (
           contas.map((conta) => (
@@ -136,9 +136,9 @@ export default function ContasReceberPage() {
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
             <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Nova Conta a Receber</h2>
             <form onSubmit={salvarConta} className="space-y-4">
-              <input type="text" placeholder="Descrição" value={formData.descricao} onChange={(e) => setFormData({...formData, descricao: e.target.value})} className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder-gray-400 dark:placeholder-gray-500" required />
+              <input type="text" placeholder="DescriÃ§Ã£o" value={formData.descricao} onChange={(e) => setFormData({...formData, descricao: e.target.value})} className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder-gray-400 dark:placeholder-gray-500" required />
               <select value={formData.categoria} onChange={(e) => setFormData({...formData, categoria: e.target.value})} className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700">
-                <option>Salário</option><option>Freelance</option><option>Investimentos</option><option>Presentes</option>
+                <option>SalÃ¡rio</option><option>Freelance</option><option>Investimentos</option><option>Presentes</option>
               </select>
               <input type="number" step="0.01" placeholder="Valor" value={formData.valor} onChange={(e) => setFormData({...formData, valor: parseFloat(e.target.value) || 0})} className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder-gray-400 dark:placeholder-gray-500" required />
               <input type="date" value={formData.data} onChange={(e) => setFormData({...formData, data: e.target.value})} className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700" required />
@@ -151,3 +151,4 @@ export default function ContasReceberPage() {
     </div>
   );
 }
+

@@ -22,17 +22,17 @@ interface BonusContentConfig {
 
 export default function ConfiguracoesBonusPage() {
   const [bonus, setBonus] = useState<BonusConfig[]>([
-    { id: "usuarios_gerais", nome: "Usuários Gerais", bonus: 10, meta: 30, ativo: true, descricao: "Bônus a cada lote de 30 usuários novos validados" },
-    { id: "empresas_lojas", nome: "Empresas / Lojas", bonus: 5, meta: 3, ativo: true, descricao: "Bônus a cada lote de 3 empresas ou lojas validadas" },
-    { id: "profissionais_liberais", nome: "Profissionais Liberais", bonus: 4, meta: 5, ativo: true, descricao: "Bônus a cada lote de 5 profissionais liberais validados" }
+    { id: "usuarios_gerais", nome: "UsuÃ¡rios Gerais", bonus: 10, meta: 30, ativo: true, descricao: "BÃ´nus a cada lote de 30 usuÃ¡rios novos validados" },
+    { id: "empresas_lojas", nome: "Empresas / Lojas", bonus: 5, meta: 3, ativo: true, descricao: "BÃ´nus a cada lote de 3 empresas ou lojas validadas" },
+    { id: "profissionais_liberais", nome: "Profissionais Liberais", bonus: 4, meta: 5, ativo: true, descricao: "BÃ´nus a cada lote de 5 profissionais liberais validados" }
   ]);
   const [pixMinimo, setPixMinimo] = useState(1);
   const [content, setContent] = useState<BonusContentConfig>({
     publicHeadline: "Ganhe dinheiro indicando!",
-    publicSubtitle: "Receba bônus por lotes de indicações validadas.",
-    explanationTitle: "Como funcionam as bonificações",
-    explanationText: "Cada bônus é liberado por lote validado: usuários gerais, empresas/lojas e profissionais liberais.",
-    shareTemplate: "Use meu código {codigo}. Bônus por lotes validados no Valente Conecta. Link: {link}"
+    publicSubtitle: "Receba bÃ´nus por lotes de indicaÃ§Ãµes validadas.",
+    explanationTitle: "Como funcionam as bonificaÃ§Ãµes",
+    explanationText: "Cada bÃ´nus Ã© liberado por lote validado: usuÃ¡rios gerais, empresas/lojas e profissionais liberais.",
+    shareTemplate: "Use meu cÃ³digo {codigo}. BÃ´nus por lotes validados no Valente Conecta. Link: {link}"
   });
 
   useEffect(() => {
@@ -48,7 +48,7 @@ export default function ConfiguracoesBonusPage() {
           }
         }
       } catch (error) {
-        console.error('Erro ao carregar configuração de bônus', error);
+        console.error('Erro ao carregar configuraÃ§Ã£o de bÃ´nus', error);
       }
     }
 
@@ -63,10 +63,10 @@ export default function ConfiguracoesBonusPage() {
     });
     const result = await response.json();
     if (result?.success) {
-      alert("✅ Configurações de bônus salvas!");
+      alert("âœ… ConfiguraÃ§Ãµes de bÃ´nus salvas!");
       return;
     }
-    alert("❌ Não foi possível salvar as configurações.");
+    alert("âŒ NÃ£o foi possÃ­vel salvar as configuraÃ§Ãµes.");
   };
 
   const handleToggle = (id: string) => {
@@ -86,7 +86,7 @@ export default function ConfiguracoesBonusPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <div><h1 className="text-2xl font-bold text-gray-800">🎁 Configuração de Bônus</h1><p className="text-sm text-gray-500">Defina os valores de bônus por tipo de indicação</p></div>
+        <div><h1 className="text-2xl font-bold text-gray-800">ðŸŽ ConfiguraÃ§Ã£o de BÃ´nus</h1><p className="text-sm text-gray-500">Defina os valores de bÃ´nus por tipo de indicaÃ§Ã£o</p></div>
         <button onClick={handleSave} className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2"><Save size={16} /> Salvar</button>
       </div>
 
@@ -104,7 +104,7 @@ export default function ConfiguracoesBonusPage() {
               <div className="flex items-center justify-between mb-2"><span className="text-sm text-gray-500">Valor do lote</span><input type="number" value={b.bonus} onChange={(e) => handleBonusChange(b.id, parseFloat(e.target.value))} className="w-24 p-1 border rounded text-right font-bold text-green-600" step="0.5" /><span className="text-sm">R$</span></div>
               <div className="flex items-center justify-between mb-2"><span className="text-sm text-gray-500">Quantidade por lote</span><input type="number" value={b.meta} onChange={(e) => handleMetaChange(b.id, parseInt(e.target.value) || 0)} className="w-24 p-1 border rounded text-right font-bold text-indigo-600" step="1" /></div>
               <p className="text-xs text-gray-400 mb-3">{b.descricao}</p>
-              <button onClick={() => handleToggle(b.id)} className={`w-full py-1 rounded-lg text-sm font-semibold ${b.ativo ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-500"}`}>{b.ativo ? "✅ Ativo" : "❌ Inativo"}</button>
+              <button onClick={() => handleToggle(b.id)} className={`w-full py-1 rounded-lg text-sm font-semibold ${b.ativo ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-500"}`}>{b.ativo ? "âœ… Ativo" : "âŒ Inativo"}</button>
             </div>
           );
         })}
@@ -113,12 +113,12 @@ export default function ConfiguracoesBonusPage() {
       <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
         <div className="flex items-center gap-2 mb-3">
           <Wallet size={20} className="text-emerald-600" />
-          <h3 className="font-semibold text-lg">Solicitação de PIX</h3>
+          <h3 className="font-semibold text-lg">SolicitaÃ§Ã£o de PIX</h3>
         </div>
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-sm text-gray-500">Valor mínimo disponível para solicitar recebimento</p>
-            <p className="text-xs text-gray-400">Quando um lote fechar, o usuário recebe aviso e pode informar sua chave PIX.</p>
+            <p className="text-sm text-gray-500">Valor mÃ­nimo disponÃ­vel para solicitar recebimento</p>
+            <p className="text-xs text-gray-400">Quando um lote fechar, o usuÃ¡rio recebe aviso e pode informar sua chave PIX.</p>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-500">R$</span>
@@ -128,10 +128,10 @@ export default function ConfiguracoesBonusPage() {
       </div>
 
       <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 space-y-4">
-        <h3 className="font-semibold text-lg">📝 Conteúdo da página de indicação (QR)</h3>
+        <h3 className="font-semibold text-lg">ðŸ“ ConteÃºdo da pÃ¡gina de indicaÃ§Ã£o (QR)</h3>
 
         <div>
-          <label className="text-sm text-gray-600">Título público</label>
+          <label className="text-sm text-gray-600">TÃ­tulo pÃºblico</label>
           <input
             type="text"
             value={content.publicHeadline}
@@ -141,7 +141,7 @@ export default function ConfiguracoesBonusPage() {
         </div>
 
         <div>
-          <label className="text-sm text-gray-600">Subtítulo público</label>
+          <label className="text-sm text-gray-600">SubtÃ­tulo pÃºblico</label>
           <input
             type="text"
             value={content.publicSubtitle}
@@ -151,7 +151,7 @@ export default function ConfiguracoesBonusPage() {
         </div>
 
         <div>
-          <label className="text-sm text-gray-600">Título do pop-up explicativo</label>
+          <label className="text-sm text-gray-600">TÃ­tulo do pop-up explicativo</label>
           <input
             type="text"
             value={content.explanationTitle}
@@ -177,7 +177,7 @@ export default function ConfiguracoesBonusPage() {
             onChange={(e) => setContent((prev) => ({ ...prev, shareTemplate: e.target.value }))}
             className="w-full mt-1 p-2 border rounded"
           />
-          <p className="text-xs text-gray-500 mt-1">Use {'{codigo}'} e {'{link}'} como variáveis.</p>
+          <p className="text-xs text-gray-500 mt-1">Use {'{codigo}'} e {'{link}'} como variÃ¡veis.</p>
         </div>
       </div>
 
@@ -187,3 +187,4 @@ export default function ConfiguracoesBonusPage() {
     </div>
   );
 }
+

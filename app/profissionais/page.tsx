@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import {
@@ -224,3 +224,5 @@ export default function ProfissionaisPage() {
     </div>
   );
 }
+
+

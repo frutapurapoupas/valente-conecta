@@ -1,12 +1,12 @@
 // ============================================================================
 // ARQUIVO 3: app/admin/configuracoes/notificacoes/page.tsx
-// Funcionalidade: Interface do Admin Master para configurações de notificações
+// Funcionalidade: Interface do Admin Master para configuraÃ§Ãµes de notificaÃ§Ãµes
 // Onde: /admin/configuracoes/notificacoes
 // Funcionalidades:
 //   - Configurar Telegram (bot token, grupos)
 //   - Configurar Push (VAPID keys, Firebase)
-//   - Gerenciar grupos dinâmicos (criar, editar, deletar)
-//   - Ver logs de notificações enviadas
+//   - Gerenciar grupos dinÃ¢micos (criar, editar, deletar)
+//   - Ver logs de notificaÃ§Ãµes enviadas
 //   - Modo de teste
 // ============================================================================
 
@@ -63,7 +63,7 @@ export default function AdminConfiguracoesNotificacoesPage() {
   const [loading, setLoading] = useState(false);
   const [salvando, setSalvando] = useState(false);
   
-  // Estado das configurações
+  // Estado das configuraÃ§Ãµes
   const [configs, setConfigs] = useState({
     modo_teste: true,
     telegram_bot_token: '',
@@ -90,13 +90,13 @@ export default function AdminConfiguracoesNotificacoesPage() {
   const [logs, setLogs] = useState<NotificacaoLog[]>([]);
   const [filtroLog, setFiltroLog] = useState({ canal: '', status: '' });
   
-  // Cores disponíveis para grupos
+  // Cores disponÃ­veis para grupos
   const coresDisponiveis = [
     '#6366f1', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', 
     '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#14b8a6'
   ];
   
-  // Ícones disponíveis para grupos
+  // Ãcones disponÃ­veis para grupos
   const iconesDisponiveis = [
     'Globe', 'Award', 'Dumbbell', 'Bike', 'Store', 'Briefcase', 
     'Users', 'Star', 'Heart', 'Crown', 'Rocket'
@@ -130,7 +130,7 @@ export default function AdminConfiguracoesNotificacoesPage() {
         }));
       }
       
-      // Carregar configurações específicas
+      // Carregar configuraÃ§Ãµes especÃ­ficas
       const configsEspecificas = [
         'telegram_bot_token',
         'push_vapid_public_key',
@@ -146,8 +146,8 @@ export default function AdminConfiguracoesNotificacoesPage() {
       }
       
     } catch (error) {
-      console.error('Erro ao carregar configurações:', error);
-      toast.error('Erro ao carregar configurações');
+      console.error('Erro ao carregar configuraÃ§Ãµes:', error);
+      toast.error('Erro ao carregar configuraÃ§Ãµes');
     } finally {
       setLoading(false);
     }
@@ -188,13 +188,13 @@ export default function AdminConfiguracoesNotificacoesPage() {
       
       const data = await response.json();
       if (data.success) {
-        toast.success(`Configuração salva: ${chave}`);
+        toast.success(`ConfiguraÃ§Ã£o salva: ${chave}`);
       } else {
         toast.error(`Erro ao salvar ${chave}`);
       }
     } catch (error) {
       console.error('Erro ao salvar:', error);
-      toast.error('Erro ao salvar configuração');
+      toast.error('Erro ao salvar configuraÃ§Ã£o');
     } finally {
       setSalvando(false);
     }
@@ -202,7 +202,7 @@ export default function AdminConfiguracoesNotificacoesPage() {
 
   const criarGrupo = async () => {
     if (!novoGrupo.nome) {
-      toast.error('Nome do grupo é obrigatório');
+      toast.error('Nome do grupo Ã© obrigatÃ³rio');
       return;
     }
     
@@ -237,7 +237,7 @@ export default function AdminConfiguracoesNotificacoesPage() {
 
   const atualizarGrupo = async () => {
     if (!grupoEditando || !grupoEditando.nome) {
-      toast.error('Nome do grupo é obrigatório');
+      toast.error('Nome do grupo Ã© obrigatÃ³rio');
       return;
     }
     
@@ -300,28 +300,28 @@ export default function AdminConfiguracoesNotificacoesPage() {
   };
 
   const testarConexaoTelegram = async () => {
-    toast.loading('Testando conexão com Telegram...');
+    toast.loading('Testando conexÃ£o com Telegram...');
     try {
       const response = await fetch('/api/telegram/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           chatId: configs.telegram_grupo_teste_id,
-          message: `🧪 *TESTE DE CONEXÃO*\n\nEsta é uma mensagem de teste do sistema de notificações do Valente Conecta.\n\n✅ Configuração funcionando corretamente!\n\n📡 Modo de teste: ${configs.modo_teste ? 'ATIVADO' : 'DESATIVADO'}`,
+          message: `ðŸ§ª *TESTE DE CONEXÃƒO*\n\nEsta Ã© uma mensagem de teste do sistema de notificaÃ§Ãµes do Valente Conecta.\n\nâœ… ConfiguraÃ§Ã£o funcionando corretamente!\n\nðŸ“¡ Modo de teste: ${configs.modo_teste ? 'ATIVADO' : 'DESATIVADO'}`,
           parseMode: 'Markdown'
         })
       });
       
       if (response.ok) {
         toast.dismiss();
-        toast.success('✅ Conexão com Telegram funcionando!');
+        toast.success('âœ… ConexÃ£o com Telegram funcionando!');
       } else {
         toast.dismiss();
-        toast.error('❌ Falha na conexão com Telegram');
+        toast.error('âŒ Falha na conexÃ£o com Telegram');
       }
     } catch (error) {
       toast.dismiss();
-      toast.error('Erro ao testar conexão');
+      toast.error('Erro ao testar conexÃ£o');
     }
   };
 
@@ -355,7 +355,7 @@ export default function AdminConfiguracoesNotificacoesPage() {
           <ArrowLeft className="w-6 h-6" />
         </button>
         <Settings className="w-6 h-6 text-white" />
-        <h1 className="text-white font-bold text-xl">⚙️ Configurações de Notificações</h1>
+        <h1 className="text-white font-bold text-xl">âš™ï¸ ConfiguraÃ§Ãµes de NotificaÃ§Ãµes</h1>
       </header>
 
       <main className="max-w-5xl mx-auto p-6 space-y-6">
@@ -363,12 +363,12 @@ export default function AdminConfiguracoesNotificacoesPage() {
         <div className="grid grid-cols-4 gap-4">
           <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl p-4 text-white text-center">
             <MessageCircle className="w-6 h-6 mx-auto mb-2" />
-            <p className="text-2xl font-bold">{configs.telegram_bot_token ? '✅' : '⚠️'}</p>
+            <p className="text-2xl font-bold">{configs.telegram_bot_token ? 'âœ…' : 'âš ï¸'}</p>
             <p className="text-sm opacity-90">Telegram</p>
           </div>
           <div className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl p-4 text-white text-center">
             <Smartphone className="w-6 h-6 mx-auto mb-2" />
-            <p className="text-2xl font-bold">{configs.push_vapid_public_key ? '✅' : '⚠️'}</p>
+            <p className="text-2xl font-bold">{configs.push_vapid_public_key ? 'âœ…' : 'âš ï¸'}</p>
             <p className="text-sm opacity-90">Push Notification</p>
           </div>
           <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-4 text-white text-center">
@@ -377,7 +377,7 @@ export default function AdminConfiguracoesNotificacoesPage() {
             <p className="text-sm opacity-90">Grupos</p>
           </div>
           <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-2xl p-4 text-white text-center">
-            <div className="w-6 h-6 mx-auto mb-2 text-white text-2xl">{configs.modo_teste ? '🧪' : '🔒'}</div>
+            <div className="w-6 h-6 mx-auto mb-2 text-white text-2xl">{configs.modo_teste ? 'ðŸ§ª' : 'ðŸ”’'}</div>
             <p className="text-2xl font-bold">{configs.modo_teste ? 'ON' : 'OFF'}</p>
             <p className="text-sm opacity-90">Modo Teste</p>
           </div>
@@ -436,7 +436,7 @@ export default function AdminConfiguracoesNotificacoesPage() {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-6">
             <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
               <MessageCircle className="w-5 h-5 text-blue-500" />
-              Configurações do Telegram
+              ConfiguraÃ§Ãµes do Telegram
             </h2>
             
             <div className="space-y-4">
@@ -457,7 +457,7 @@ export default function AdminConfiguracoesNotificacoesPage() {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Chat ID (Todos os usuários)
+                  Chat ID (Todos os usuÃ¡rios)
                 </label>
                 <input
                   type="text"
@@ -481,7 +481,7 @@ export default function AdminConfiguracoesNotificacoesPage() {
                   placeholder="@valenteconecta_teste"
                   className="w-full px-4 py-2 border border-gray-300 rounded-xl"
                 />
-                <p className="text-xs text-gray-500 mt-1">Grupo usado para testar notificações antes de enviar para todos</p>
+                <p className="text-xs text-gray-500 mt-1">Grupo usado para testar notificaÃ§Ãµes antes de enviar para todos</p>
               </div>
               
               <button
@@ -489,7 +489,7 @@ export default function AdminConfiguracoesNotificacoesPage() {
                 className="px-4 py-2 bg-blue-600 text-white rounded-xl flex items-center gap-2 hover:bg-blue-700 transition"
               >
                 <Send className="w-4 h-4" />
-                Testar Conexão
+                Testar ConexÃ£o
               </button>
             </div>
           </div>
@@ -500,7 +500,7 @@ export default function AdminConfiguracoesNotificacoesPage() {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-6">
             <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
               <Smartphone className="w-5 h-5 text-green-500" />
-              Configurações de Push Notification
+              ConfiguraÃ§Ãµes de Push Notification
             </h2>
             
             <div className="space-y-4">
@@ -516,7 +516,7 @@ export default function AdminConfiguracoesNotificacoesPage() {
                   placeholder="BM5KbQ3xY7vJnR8tLpW2mN4oP6qS0uV8wX2yZ4aB6cD8eF0gH2iJ4kL6mN8oP0qR2sT4uV6wX8yZ"
                   className="w-full px-4 py-2 border border-gray-300 rounded-xl font-mono text-xs"
                 />
-                <p className="text-xs text-gray-500 mt-1">Chave pública VAPID para Web Push</p>
+                <p className="text-xs text-gray-500 mt-1">Chave pÃºblica VAPID para Web Push</p>
               </div>
               
               <div>
@@ -536,7 +536,7 @@ export default function AdminConfiguracoesNotificacoesPage() {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Timeout da Notificação (ms)
+                  Timeout da NotificaÃ§Ã£o (ms)
                 </label>
                 <input
                   type="number"
@@ -545,7 +545,7 @@ export default function AdminConfiguracoesNotificacoesPage() {
                   onBlur={() => salvarConfiguracao('notificacao_timeout', configs.notificacao_timeout)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-xl"
                 />
-                <p className="text-xs text-gray-500 mt-1">Tempo que a notificação fica visível</p>
+                <p className="text-xs text-gray-500 mt-1">Tempo que a notificaÃ§Ã£o fica visÃ­vel</p>
               </div>
               
               <div className="bg-yellow-50 rounded-xl p-4 border border-yellow-200">
@@ -571,7 +571,7 @@ export default function AdminConfiguracoesNotificacoesPage() {
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                 <Users className="w-5 h-5 text-purple-500" />
-                Grupos de Usuários
+                Grupos de UsuÃ¡rios
               </h2>
               <button
                 onClick={() => {
@@ -651,7 +651,7 @@ export default function AdminConfiguracoesNotificacoesPage() {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-6">
             <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
               <Database className="w-5 h-5 text-cyan-500" />
-              Histórico de Notificações
+              HistÃ³rico de NotificaÃ§Ãµes
             </h2>
             
             {/* Filtros */}
@@ -673,10 +673,10 @@ export default function AdminConfiguracoesNotificacoesPage() {
                 className="px-3 py-2 border border-gray-300 rounded-xl text-sm"
               >
                 <option value="">Todos os status</option>
-                <option value="enviado">✅ Enviado</option>
-                <option value="entregue">📱 Entregue</option>
-                <option value="visualizado">👁️ Visualizado</option>
-                <option value="falhou">❌ Falhou</option>
+                <option value="enviado">âœ… Enviado</option>
+                <option value="entregue">ðŸ“± Entregue</option>
+                <option value="visualizado">ðŸ‘ï¸ Visualizado</option>
+                <option value="falhou">âŒ Falhou</option>
               </select>
               
               <button
@@ -693,7 +693,7 @@ export default function AdminConfiguracoesNotificacoesPage() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-4 py-3 text-left text-gray-600">Data</th>
-                    <th className="px-4 py-3 text-left text-gray-600">Usuário</th>
+                    <th className="px-4 py-3 text-left text-gray-600">UsuÃ¡rio</th>
                     <th className="px-4 py-3 text-left text-gray-600">Grupo</th>
                     <th className="px-4 py-3 text-left text-gray-600">Canal</th>
                     <th className="px-4 py-3 text-left text-gray-600">Status</th>
@@ -727,10 +727,10 @@ export default function AdminConfiguracoesNotificacoesPage() {
                           {log.canal === 'popup' && <Globe className="w-4 h-4 text-purple-500" />}
                         </td>
                         <td className="px-4 py-2">
-                          {log.status === 'enviado' && <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">📤 Enviado</span>}
-                          {log.status === 'entregue' && <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">✅ Entregue</span>}
-                          {log.status === 'visualizado' && <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">👁️ Visualizado</span>}
-                          {log.status === 'falhou' && <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">❌ Falhou</span>}
+                          {log.status === 'enviado' && <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">ðŸ“¤ Enviado</span>}
+                          {log.status === 'entregue' && <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">âœ… Entregue</span>}
+                          {log.status === 'visualizado' && <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">ðŸ‘ï¸ Visualizado</span>}
+                          {log.status === 'falhou' && <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">âŒ Falhou</span>}
                         </td>
                       </tr>
                     ))
@@ -747,7 +747,7 @@ export default function AdminConfiguracoesNotificacoesPage() {
             <div className="bg-white rounded-2xl max-w-md w-full p-6">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-gray-800">
-                  {grupoEditando ? '✏️ Editar Grupo' : '➕ Novo Grupo'}
+                  {grupoEditando ? 'âœï¸ Editar Grupo' : 'âž• Novo Grupo'}
                 </h2>
                 <button onClick={() => setMostrarModalGrupo(false)} className="text-gray-400">
                   <XCircle className="w-6 h-6" />
@@ -768,12 +768,12 @@ export default function AdminConfiguracoesNotificacoesPage() {
                       }
                     }}
                     className="w-full px-4 py-2 border border-gray-300 rounded-xl"
-                    placeholder="Ex: Usuários Premium"
+                    placeholder="Ex: UsuÃ¡rios Premium"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">DescriÃ§Ã£o</label>
                   <textarea
                     value={novoGrupo.descricao}
                     onChange={(e) => {
@@ -785,13 +785,13 @@ export default function AdminConfiguracoesNotificacoesPage() {
                     }}
                     rows={2}
                     className="w-full px-4 py-2 border border-gray-300 rounded-xl"
-                    placeholder="Descrição do grupo"
+                    placeholder="DescriÃ§Ã£o do grupo"
                   />
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Ícone</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Ãcone</label>
                     <select
                       value={novoGrupo.icone}
                       onChange={(e) => {
@@ -849,7 +849,7 @@ export default function AdminConfiguracoesNotificacoesPage() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-xl"
                     placeholder="@meugrupo"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Se preenchido, as notificações vão para este grupo específico</p>
+                  <p className="text-xs text-gray-500 mt-1">Se preenchido, as notificaÃ§Ãµes vÃ£o para este grupo especÃ­fico</p>
                 </div>
               </div>
               
@@ -877,8 +877,9 @@ export default function AdminConfiguracoesNotificacoesPage() {
   );
 }
 
-// Ícones adicionais para grupos
+// Ãcones adicionais para grupos
 function Award(props: any) { return <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-4a2 2 0 00-2-2H6a2 2 0 00-2 2v4a2 2 0 002 2zm10-10c0-2.21-1.79-4-4-4s-4 1.79-4 4 1.79 4 4 4 4-1.79 4-4z"/></svg>; }
 function Dumbbell(props: any) { return <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 8h.01M6 16h.01M18 8h.01M18 16h.01M8 8l8 8M16 8l-8 8"/></svg>; }
 function Bike(props: any) { return <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-3 11V8l-4 2"/><path d="M12 8l4 2"/></svg>; }
 function Store(props: any) { return <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9h18v9H3zM6 9v9M12 9v9M18 9v9M9 3h6l2 6H7z"/></svg>; }
+

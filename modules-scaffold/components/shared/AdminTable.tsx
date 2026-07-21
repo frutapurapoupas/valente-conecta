@@ -21,9 +21,9 @@ export default function AdminTable({
           <tr className="border-b border-white/10">
             <th className="px-6 py-4 text-left">Nome</th>
             <th className="px-6 py-4">Categoria</th>
-            <th className="px-6 py-4">Preço</th>
+            <th className="px-6 py-4">PreÃ§o</th>
             <th className="px-6 py-4">Status</th>
-            <th className="px-6 py-4">Ações</th>
+            <th className="px-6 py-4">AÃ§Ãµes</th>
           </tr>
         </thead>
         <tbody>
@@ -50,7 +50,7 @@ export default function AdminTable({
                   <button
                     onClick={() => onToggle(item)}
                     className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition text-gray-300"
-                    title="Toggle publicação"
+                    title="Toggle publicaÃ§Ã£o"
                   >
                     {item.status === 'publicado' ? (
                       <EyeOff className="h-4 w-4" />
@@ -81,3 +81,4 @@ export default function AdminTable({
     </div>
   );
 }
+

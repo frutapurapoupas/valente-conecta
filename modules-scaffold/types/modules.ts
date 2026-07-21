@@ -1,6 +1,6 @@
 /**
- * Tipos compartilhados para módulos
- * Estes tipos são utilizados em todos os módulos (Saúde, Transporte, Mercado, etc.)
+ * Tipos compartilhados para mÃ³dulos
+ * Estes tipos sÃ£o utilizados em todos os mÃ³dulos (SaÃºde, Transporte, Mercado, etc.)
  */
 
 export interface Item {
@@ -88,3 +88,4 @@ export interface ModuleConfig {
   hasCatalog?: boolean;
   customFields?: Record<string, any>;
 }
+

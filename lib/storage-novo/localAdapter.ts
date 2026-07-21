@@ -1,4 +1,4 @@
-﻿import { Ingredient, Recipe } from '@/lib/cozinha-novo/types';
+import { Ingredient, Recipe } from '@/lib/cozinha-novo/types';
 import fs from 'fs';
 import path from 'path';
 
@@ -101,3 +101,4 @@ export class LocalAdapter {
     this.writeJSON('receitas.json', filtered);
   }
 }
+

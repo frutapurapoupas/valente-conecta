@@ -1,0 +1,44 @@
+﻿========================================
+RELATÓRIO DE APIS - cozinha-chef
+========================================
+Gerado em: 2026-07-08 22:41:03
+Total: 18
+
+--------------------------------------------------------------------------------
+📡 app\api\cozinha\cardapio\route.ts
+   Linhas: 69 | Métodos: GET, POST, PUT, DELETE
+📡 app\api\cozinha\compras\route.ts
+   Linhas: 90 | Métodos: GET, POST, PUT, DELETE
+📡 app\api\cozinha\compras-requests\route.ts
+   Linhas: 152 | Métodos: GET, POST, PUT
+📡 app\api\cozinha\estoque\route.ts
+   Linhas: 530 | Métodos: GET, POST, PUT, DELETE
+📡 app\api\cozinha\estoque\[id]\route.ts
+   Linhas: 0 | Métodos: GET, POST, PUT, DELETE
+📡 app\api\cozinha\financeiro\route.ts
+   Linhas: 93 | Métodos: GET, POST
+📡 app\api\cozinha\financeiro\[id]\route.ts
+   Linhas: 0 | Métodos: GET, POST
+📡 app\api\cozinha\fornecedores\route.ts
+   Linhas: 11 | Métodos: GET
+📡 app\api\cozinha\ingredients\route.ts
+   Linhas: 68 | Métodos: GET, POST, PUT, DELETE
+📡 app\api\cozinha\pedidos\route.ts
+   Linhas: 75 | Métodos: GET, POST, PUT
+📡 app\api\cozinha\pratos\route.ts
+   Linhas: 38 | Métodos: GET
+📡 app\api\cozinha\producao\route.ts
+   Linhas: 72 | Métodos: GET, POST, PUT
+📡 app\api\cozinha\receitas\route.ts
+   Linhas: 89 | Métodos: GET, POST, PUT, DELETE
+📡 app\api\cozinha\receitas\[id]\route.ts
+   Linhas: 0 | Métodos: GET, POST, PUT, DELETE
+📡 app\api\cozinha\recipe-items\route.ts
+   Linhas: 88 | Métodos: GET, POST, PUT, DELETE
+📡 app\api\cozinha\recipes\route.ts
+   Linhas: 116 | Métodos: GET, POST, PUT, DELETE
+📡 app\api\cozinha\stock-movements\route.ts
+   Linhas: 73 | Métodos: GET, POST, PUT, DELETE
+📡 app\api\cozinha\upload\route.ts
+   Linhas: 43 | Métodos: POST
+

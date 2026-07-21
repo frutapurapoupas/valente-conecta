@@ -65,7 +65,7 @@ export default function ControlCenter() {
 
   const executarAcao = (acao: string) => {
     if (selectedUsers.length === 0) {
-      alert("Selecione pelo menos um usuário!");
+      alert("Selecione pelo menos um usuÃ¡rio!");
       return;
     }
     setActionType(acao);
@@ -74,9 +74,9 @@ export default function ControlCenter() {
 
   const confirmarAcao = () => {
     if ((actionType === "enviar_mensagem" || actionType === "enviar_push") && mensagemPersonalizada) {
-      alert(`✅ ${actionType === "enviar_mensagem" ? "Mensagem" : "Push"} enviado para ${selectedUsers.length} usuário(s)`);
+      alert(`âœ… ${actionType === "enviar_mensagem" ? "Mensagem" : "Push"} enviado para ${selectedUsers.length} usuÃ¡rio(s)`);
     } else {
-      alert(`✅ Ação "${actionType}" aplicada para ${selectedUsers.length} usuário(s)`);
+      alert(`âœ… AÃ§Ã£o "${actionType}" aplicada para ${selectedUsers.length} usuÃ¡rio(s)`);
     }
     setShowActionModal(false);
     setSelectedUsers([]);
@@ -91,10 +91,10 @@ export default function ControlCenter() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6">
             <h3 className="text-xl font-bold mb-4">
-              {actionType === "bloquear" && "🔒 Bloquear"}
-              {actionType === "desbloquear" && "🔓 Desbloquear"}
-              {actionType === "enviar_mensagem" && "✉️ Enviar Mensagem"}
-              {actionType === "enviar_push" && "📱 Enviar Push"}
+              {actionType === "bloquear" && "ðŸ”’ Bloquear"}
+              {actionType === "desbloquear" && "ðŸ”“ Desbloquear"}
+              {actionType === "enviar_mensagem" && "âœ‰ï¸ Enviar Mensagem"}
+              {actionType === "enviar_push" && "ðŸ“± Enviar Push"}
             </h3>
             {(actionType === "enviar_mensagem" || actionType === "enviar_push") && (
               <textarea
@@ -104,7 +104,7 @@ export default function ControlCenter() {
                 className="w-full p-2 border rounded-lg h-24 mb-3"
               />
             )}
-            <p className="text-sm text-gray-600 mb-4">Aplicar a <strong>{stats.selecionados}</strong> usuário(s)</p>
+            <p className="text-sm text-gray-600 mb-4">Aplicar a <strong>{stats.selecionados}</strong> usuÃ¡rio(s)</p>
             <button onClick={confirmarAcao} className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold">Confirmar</button>
             <button onClick={() => setShowActionModal(false)} className="w-full bg-gray-200 text-gray-700 py-2 rounded-lg mt-2">Cancelar</button>
           </div>
@@ -113,12 +113,12 @@ export default function ControlCenter() {
 
       {stats.selecionados > 0 && (
         <div className="bg-indigo-50 rounded-xl p-3 flex flex-wrap gap-2 items-center justify-between">
-          <span className="text-sm text-indigo-700">{stats.selecionados} usuário(s) selecionado(s)</span>
+          <span className="text-sm text-indigo-700">{stats.selecionados} usuÃ¡rio(s) selecionado(s)</span>
           <div className="flex gap-2">
-            <button onClick={() => executarAcao("enviar_push")} className="bg-blue-600 text-white px-3 py-1 rounded-lg text-xs">📱 Push</button>
-            <button onClick={() => executarAcao("enviar_mensagem")} className="bg-green-600 text-white px-3 py-1 rounded-lg text-xs">✉️ Msg</button>
-            <button onClick={() => executarAcao("bloquear")} className="bg-red-600 text-white px-3 py-1 rounded-lg text-xs">🔒 Bloquear</button>
-            <button onClick={() => executarAcao("desbloquear")} className="bg-yellow-600 text-white px-3 py-1 rounded-lg text-xs">🔓 Desbloquear</button>
+            <button onClick={() => executarAcao("enviar_push")} className="bg-blue-600 text-white px-3 py-1 rounded-lg text-xs">ðŸ“± Push</button>
+            <button onClick={() => executarAcao("enviar_mensagem")} className="bg-green-600 text-white px-3 py-1 rounded-lg text-xs">âœ‰ï¸ Msg</button>
+            <button onClick={() => executarAcao("bloquear")} className="bg-red-600 text-white px-3 py-1 rounded-lg text-xs">ðŸ”’ Bloquear</button>
+            <button onClick={() => executarAcao("desbloquear")} className="bg-yellow-600 text-white px-3 py-1 rounded-lg text-xs">ðŸ”“ Desbloquear</button>
           </div>
         </div>
       )}
@@ -127,11 +127,11 @@ export default function ControlCenter() {
         <div className="flex flex-wrap gap-3">
           <div className="flex-1 relative">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Buscar usuário..." className="w-full pl-9 p-2 border rounded-lg text-sm" />
+            <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Buscar usuÃ¡rio..." className="w-full pl-9 p-2 border rounded-lg text-sm" />
           </div>
           <select value={filterTipo} onChange={(e) => setFilterTipo(e.target.value)} className="p-2 border rounded-lg text-sm">
             <option value="todos">Todos os tipos</option>
-            <option value="comum">Usuários Comuns</option>
+            <option value="comum">UsuÃ¡rios Comuns</option>
             <option value="empresa">Empresas</option>
           </select>
           <select value={filterCidade} onChange={(e) => setFilterCidade(e.target.value)} className="p-2 border rounded-lg text-sm">
@@ -153,11 +153,11 @@ export default function ControlCenter() {
             <thead className="bg-gray-50 border-b">
               <tr>
                 <th className="p-3 w-10"><input type="checkbox" onChange={handleSelectAll} className="w-4 h-4" /></th>
-                <th className="p-3 text-left text-xs">Usuário</th>
+                <th className="p-3 text-left text-xs">UsuÃ¡rio</th>
                 <th className="p-3 text-left text-xs">Tipo</th>
                 <th className="p-3 text-left text-xs">Cidade</th>
                 <th className="p-3 text-left text-xs">Status</th>
-                <th className="p-3 text-left text-xs">Ações</th>
+                <th className="p-3 text-left text-xs">AÃ§Ãµes</th>
               </tr>
             </thead>
             <tbody>
@@ -183,3 +183,4 @@ export default function ControlCenter() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-﻿import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 import { NextResponse } from 'next/server';
 
 
@@ -119,6 +119,7 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: false, error: 'Erro ao remover fornecedor' }, { status: 500 });
   }
 }
+
 
 
 

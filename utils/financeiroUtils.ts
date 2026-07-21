@@ -1,5 +1,5 @@
-﻿// utils/financeiroUtils.ts
-// 🛠️ FUNÇÕES AUXILIARES - Cálculos, filtros e formatação
+// utils/financeiroUtils.ts
+// ??? FUNÃ‡Ã•ES AUXILIARES - CÃ¡lculos, filtros e formataÃ§Ã£o
 
 import { Transacao } from '@/services/financeiroService';
 
@@ -33,7 +33,7 @@ export const calcularResumo = (transacoes: Transacao[]): ResumoFinanceiro => {
   };
 };
 
-// Filtrar transações por período e tipo
+// Filtrar transaÃ§Ãµes por perÃ­odo e tipo
 export const filtrarTransacoes = (
   transacoes: Transacao[],
   filtroPeriodo: string,
@@ -41,7 +41,7 @@ export const filtrarTransacoes = (
 ): Transacao[] => {
   let filtradas = [...transacoes];
 
-  // Filtro por período
+  // Filtro por perÃ­odo
   if (filtroPeriodo !== 'todos') {
     const hoje = new Date();
     const inicio = new Date();
@@ -91,37 +91,38 @@ export const formatarDataCompleta = (data: string): string => {
   });
 };
 
-// Opções de recorrência
+// OpÃ§Ãµes de recorrÃªncia
 export const opcoesRecorrencia = [
   { value: 'nenhuma', label: 'Nenhuma' },
-  { value: 'diária', label: 'Diária' },
+  { value: 'diÃ¡ria', label: 'DiÃ¡ria' },
   { value: 'semanal', label: 'Semanal' },
   { value: 'quinzenal', label: 'Quinzenal' },
   { value: 'mensal', label: 'Mensal' },
   { value: 'anual', label: 'Anual' },
 ];
 
-// Categorias padrão
+// Categorias padrÃ£o
 export const categoriasPadrao = [
   'Vendas', 'Compras', 'Folha', 'Aluguel', 'Contas', 'Outros'
 ];
 
 // Formas de pagamento
 export const formasPagamento = [
-  'PIX', 'Dinheiro', 'Cartão', 'Boleto', 'Transferência'
+  'PIX', 'Dinheiro', 'CartÃ£o', 'Boleto', 'TransferÃªncia'
 ];
 
-// Opções de período para filtro
+// OpÃ§Ãµes de perÃ­odo para filtro
 export const opcoesPeriodo = [
-  { value: 'todos', label: 'Todos os períodos' },
+  { value: 'todos', label: 'Todos os perÃ­odos' },
   { value: 'hoje', label: 'Hoje' },
-  { value: 'semana', label: 'Últimos 7 dias' },
-  { value: 'mes', label: 'Último mês' },
+  { value: 'semana', label: 'Ãšltimos 7 dias' },
+  { value: 'mes', label: 'Ãšltimo mÃªs' },
 ];
 
-// Opções de tipo para filtro
+// OpÃ§Ãµes de tipo para filtro
 export const opcoesTipo = [
   { value: 'todos', label: 'Todos os tipos' },
   { value: 'receita', label: 'Receitas' },
   { value: 'despesa', label: 'Despesas' },
 ];
+

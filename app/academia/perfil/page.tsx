@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-export const dynamic = 'force-dynamic';  // ← ÚNICA LINHA ADICIONADA
+export const dynamic = 'force-dynamic';  // ? ÚNICA LINHA ADICIONADA
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -40,10 +40,10 @@ const CONDICOES_MEDICAS_OPCOES = [
 ];
 
 const OBJETIVOS = [
-  { valor: "emagrecer", label: "🎯 Emagrecimento", icone: "🎯" },
-  { valor: "hipertrofia", label: "💪 Hipertrofia", icone: "💪" },
-  { valor: "condicionamento", label: "🏃 Condicionamento Físico", icone: "🏃" },
-  { valor: "saude", label: "❤️ Saúde", icone: "❤️" }
+  { valor: "emagrecer", label: "?? Emagrecimento", icone: "??" },
+  { valor: "hipertrofia", label: "?? Hipertrofia", icone: "??" },
+  { valor: "condicionamento", label: "?? Condicionamento Físico", icone: "??" },
+  { valor: "saude", label: "?? Saúde", icone: "??" }
 ];
 
 const NIVEIS = [
@@ -119,10 +119,10 @@ export default function PerfilPage() {
   };
 
   const getStatusIMC = (imc: number) => {
-    if (imc < 18.5) return { texto: 'Abaixo do peso', cor: 'text-yellow-400', bg: 'bg-yellow-500/20', icone: '⚠️' };
-    if (imc < 25) return { texto: 'Peso saudável', cor: 'text-green-400', bg: 'bg-green-500/20', icone: '✅' };
-    if (imc < 30) return { texto: 'Sobrepeso', cor: 'text-orange-400', bg: 'bg-orange-500/20', icone: '📊' };
-    return { texto: 'Obesidade', cor: 'text-red-400', bg: 'bg-red-500/20', icone: '⚠️' };
+    if (imc < 18.5) return { texto: 'Abaixo do peso', cor: 'text-yellow-400', bg: 'bg-yellow-500/20', icone: '??' };
+    if (imc < 25) return { texto: 'Peso saudável', cor: 'text-green-400', bg: 'bg-green-500/20', icone: '?' };
+    if (imc < 30) return { texto: 'Sobrepeso', cor: 'text-orange-400', bg: 'bg-orange-500/20', icone: '??' };
+    return { texto: 'Obesidade', cor: 'text-red-400', bg: 'bg-red-500/20', icone: '??' };
   };
 
   const toggleCondicaoMedica = (condicao: string) => {
@@ -185,7 +185,7 @@ export default function PerfilPage() {
     
     setPerfil(formData);
     setEditando(false);
-    toast.success('✅ Perfil atualizado com sucesso!');
+    toast.success('? Perfil atualizado com sucesso!');
   };
 
   const cancelarEdicao = () => {
@@ -524,3 +524,4 @@ export default function PerfilPage() {
     </div>
   );
 }
+

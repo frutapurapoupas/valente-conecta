@@ -16,3 +16,4 @@ export function getStableReferralCode(user: any, isAdmin?: boolean) {
   const short = base.slice(-10) || 'USUARIO';
   return `VC_${short}`;
 }
+

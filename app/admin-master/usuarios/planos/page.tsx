@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { Save, ChevronDown, ChevronUp, Plus, Trash2, Settings, CreditCard, Building2, Shield, Star } from "lucide-react";
@@ -184,7 +184,7 @@ export default function AdminPlanosPage() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">💳 Configuração de Planos</h1>
+          <h1 className="text-2xl font-bold text-gray-800">?? Configuração de Planos</h1>
           <p className="text-gray-500 text-sm">Defina preços, fotos por item, desbloqueio e o que cada serviço libera em cada plano.</p>
         </div>
         <button
@@ -301,7 +301,7 @@ export default function AdminPlanosPage() {
                           onClick={() => togglePlanForService(service.id, p.id)}
                           className={`text-xs px-3 py-1.5 rounded-full border ${enabled ? "bg-green-100 text-green-700 border-green-300" : "bg-gray-100 text-gray-600 border-gray-300"}`}
                         >
-                          {enabled ? "✓" : "+"} {p.nome}
+                          {enabled ? "?" : "+"} {p.nome}
                         </button>
                       );
                     })}
@@ -345,3 +345,4 @@ export default function AdminPlanosPage() {
     </div>
   );
 }
+

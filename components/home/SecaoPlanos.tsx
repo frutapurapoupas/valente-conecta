@@ -1,4 +1,4 @@
-﻿// Arquivo: components/home/SecaoPlanos.tsx
+// Arquivo: components/home/SecaoPlanos.tsx
 // Status: AGUARDANDO CÓDIGO
 // Este arquivo será preenchido na próxima etapa
 'use client';
@@ -59,3 +59,4 @@ export default function SecaoPlanos() {
     </div>
   );
 }
+

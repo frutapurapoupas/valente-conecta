@@ -1,142 +1,109 @@
-"use client";
+﻿"use client";
 
-export const dynamic = 'force-dynamic';
+import { useBeneficios } from "@/modules/admin";
+import { useState } from "react";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useApp } from "@/app/context/AppContext";
-import { supabase } from "@/lib/supabase";
-import toast from "react-hot-toast";
-import { Plus, Trash2, Save, X, Gift, ArrowLeft } from "lucide-react";
+export default function BeneficiosPage() {
+  const { data: beneficios, loading, error, create, update, remove } = useBeneficios();
+  const [showForm, setShowForm] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
 
-export default function AdminBeneficiosPage() {
-  const router = useRouter();
-  const { isAdmin } = useApp();
-  const [beneficios, setBeneficios] = useState<{ id: number; valor: string }[]>([]);
-  const [novoBeneficio, setNovoBeneficio] = useState("");
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!isAdmin) {
-      router.push("/login");
-      return;
-    }
-    carregarBeneficios();
-  }, [isAdmin]);
-
-  const carregarBeneficios = async () => {
-    const { data, error } = await supabase
-      .from('admin_beneficios')
-      .select('*')
-      .order('id');
-    
-    if (error) {
-      toast.error("Erro ao carregar benefícios");
+  const handleSubmit = async (data: any) => {
+    if (editing) {
+      await update(editing.id, data);
     } else {
-      setBeneficios(data || []);
+      await create(data);
     }
-    setLoading(false);
+    setShowForm(false);
+    setEditing(null);
   };
 
-  const adicionarBeneficio = async () => {
-    if (!novoBeneficio.trim()) {
-      toast.error("Digite um benefício");
-      return;
-    }
-
-    const { error } = await supabase
-      .from('admin_beneficios')
-      .insert({
-        chave: `beneficio_${Date.now()}`,
-        valor: novoBeneficio,
-        descricao: "Benefício para novos usuários"
-      });
-    
-    if (error) {
-      toast.error("Erro ao adicionar");
-    } else {
-      toast.success("Benefício adicionado!");
-      setNovoBeneficio("");
-      carregarBeneficios();
+  const handleDelete = async (id: string) => {
+    if (confirm("Tem certeza que deseja remover este benefício?")) {
+      await remove(id);
     }
   };
 
-  const removerBeneficio = async (id: number) => {
-    await supabase.from('admin_beneficios').delete().eq('id', id);
-    toast.success("Benefício removido!");
-    carregarBeneficios();
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
-      </div>
-    );
-  }
+  if (loading) return <div className="p-6">Carregando...</div>;
+  if (error) return <div className="p-6 text-red-600">Erro: {error.message}</div>;
 
   return (
-    <div className="min-h-screen bg-gray-900 pb-20">
-      <header className="bg-gradient-to-r from-green-400 to-green-700 p-4 sticky top-0 z-40">
-        <div className="flex items-center gap-3">
-          <button onClick={() => router.push("/admin")} className="text-white">
-            <ArrowLeft className="w-6 h-6" />
-          </button>
-          <Gift className="w-6 h-6 text-yellow-300" />
-          <h1 className="text-white font-bold text-lg">Gerenciar Benefícios</h1>
-        </div>
-      </header>
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Benefícios</h1>
+        <button
+          onClick={() => { setEditing(null); setShowForm(true); }}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
+          + Novo Benefício
+        </button>
+      </div>
 
-      <main className="max-w-2xl mx-auto p-6 space-y-6">
-        <div className="bg-yellow-500/10 border border-yellow-500 rounded-2xl p-4">
-          <p className="text-yellow-400 text-sm">
-            Estes benefícios aparecerão na página de convite para novos usuários.
-            Qualquer alteração aqui será refletida instantaneamente.
-          </p>
-        </div>
-
-        <div className="bg-gray-800 rounded-2xl p-6">
-          <h2 className="text-white font-bold mb-4 flex items-center gap-2">
-            <Gift className="w-5 h-5 text-yellow-400" />
-            Benefícios Atuais
-          </h2>
-          
-          <div className="space-y-2 mb-4">
-            {beneficios.length === 0 ? (
-              <p className="text-gray-400 text-center py-4">Nenhum benefício cadastrado</p>
-            ) : (
-              beneficios.map((beneficio) => (
-                <div key={beneficio.id} className="flex items-center justify-between p-3 bg-gray-700 rounded-xl">
-                  <span className="text-white">{beneficio.valor}</span>
-                  <button
-                    onClick={() => removerBeneficio(beneficio.id)}
-                    className="text-red-400 hover:text-red-300 transition"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                </div>
-              ))
-            )}
+      <div className="grid gap-4">
+        {beneficios?.map((item) => (
+          <div key={item.id} className="bg-white p-4 rounded-lg shadow flex justify-between items-center">
+            <div>
+              <h3 className="font-semibold">{item.nome}</h3>
+              <p className="text-sm text-gray-600">{item.descricao}</p>
+              <span className="text-sm font-medium text-green-600">
+                R$ {item.valor?.toFixed(2)}
+              </span>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => { setEditing(item); setShowForm(true); }}
+                className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+              >
+                Editar
+              </button>
+              <button
+                onClick={() => handleDelete(item.id)}
+                className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+              >
+                Remover
+              </button>
+            </div>
           </div>
+        ))}
+      </div>
 
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={novoBeneficio}
-              onChange={(e) => setNovoBeneficio(e.target.value)}
-              placeholder="Ex: R$10 de bônus na carteira"
-              className="flex-1 px-4 py-2 bg-gray-700 rounded-xl text-white placeholder-gray-400"
-            />
-            <button
-              onClick={adicionarBeneficio}
-              className="px-4 py-2 bg-green-600 text-white rounded-xl font-bold flex items-center gap-2 hover:bg-green-500 transition"
-            >
-              <Plus className="w-5 h-5" />
-              Adicionar
-            </button>
+      {showForm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg w-96">
+            <h2 className="text-xl font-bold mb-4">
+              {editing ? "Editar" : "Novo"} Benefício
+            </h2>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const form = e.target as HTMLFormElement;
+              const data = {
+                nome: (form.elements.namedItem("nome") as HTMLInputElement).value,
+                descricao: (form.elements.namedItem("descricao") as HTMLInputElement).value,
+                valor: parseFloat((form.elements.namedItem("valor") as HTMLInputElement).value),
+                tipo: (form.elements.namedItem("tipo") as HTMLSelectElement).value,
+              };
+              handleSubmit(data);
+            }}>
+              <input name="nome" defaultValue={editing?.nome || ""} placeholder="Nome" className="w-full p-2 border rounded mb-2" required />
+              <input name="descricao" defaultValue={editing?.descricao || ""} placeholder="Descrição" className="w-full p-2 border rounded mb-2" />
+              <input name="valor" type="number" defaultValue={editing?.valor || ""} placeholder="Valor" className="w-full p-2 border rounded mb-2" required />
+              <select name="tipo" defaultValue={editing?.tipo || "desconto"} className="w-full p-2 border rounded mb-4">
+                <option value="desconto">Desconto</option>
+                <option value="bonus">Bônus</option>
+                <option value="voucher">Voucher</option>
+              </select>
+              <div className="flex gap-2">
+                <button type="submit" className="flex-1 bg-blue-600 text-white p-2 rounded hover:bg-blue-700">
+                  Salvar
+                </button>
+                <button type="button" onClick={() => { setShowForm(false); setEditing(null); }} className="flex-1 bg-gray-300 p-2 rounded hover:bg-gray-400">
+                  Cancelar
+                </button>
+              </div>
+            </form>
           </div>
         </div>
-      </main>
+      )}
     </div>
   );
 }

@@ -66,7 +66,7 @@ export function useEstoque(): UseEstoqueReturn {
           }
         }
       } catch (fallbackErr) {
-        console.error('Fallback também falhou:', fallbackErr);
+        console.error('Fallback tambÃ©m falhou:', fallbackErr);
       }
       
       // Dados mockados para teste se tudo falhar
@@ -81,7 +81,7 @@ export function useEstoque(): UseEstoqueReturn {
         },
         { 
           id: '2', 
-          nome: 'Açúcar', 
+          nome: 'AÃ§Ãºcar', 
           categoria: 'Secos/Mercearia', 
           quantidade: 8, 
           unidade: 'kg', 
@@ -90,7 +90,7 @@ export function useEstoque(): UseEstoqueReturn {
         { 
           id: '3', 
           nome: 'Leite', 
-          categoria: 'Laticínios', 
+          categoria: 'LaticÃ­nios', 
           quantidade: 5, 
           unidade: 'L', 
           preco: 5.50 
@@ -195,3 +195,4 @@ export function useEstoque(): UseEstoqueReturn {
     excluirItem
   };
 }
+

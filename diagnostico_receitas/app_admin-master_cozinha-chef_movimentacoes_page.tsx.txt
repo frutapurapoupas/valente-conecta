@@ -1,0 +1,351 @@
+﻿========================================
+ARQUIVO: app\admin-master\cozinha-chef\movimentacoes\page.tsx
+DATA: 07/20/2026 21:56:56
+========================================
+
+"use client";
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { ArrowLeft, Plus, Minus, Package, TrendingUp, TrendingDown, Search, RefreshCw, Calendar } from 'lucide-react';
+import { useEstoque } from '../hooks/useEstoque';
+
+interface StockMovement {
+  id: string;
+  ingredientId: string;
+  ingredientName: string;
+  type: 'entrada' | 'saida';
+  quantity: number;
+  unit: string;
+  reason: string;
+  createdAt: string;
+}
+
+export default function MovimentacaoEstoquePage() {
+  const { items, loading, carregar, atualizar } = useEstoque();
+  const [movimentacoes, setMovimentacoes] = useState<StockMovement[]>([]);
+  const [loadingMovimentacoes, setLoadingMovimentacoes] = useState(true);
+  const [selectedItem, setSelectedItem] = useState('');
+  const [quantity, setQuantity] = useState('');
+  const [type, setType] = useState<'entrada' | 'saida'>('entrada');
+  const [reason, setReason] = useState('');
+  const [busca, setBusca] = useState('');
+
+  const carregarMovimentacoes = async () => {
+    try {
+      const response = await fetch('/api/cozinha/stock-movements');
+      const result = await response.json();
+
+      if (result.success) {
+        const parsed = (result.data || []).map((item: any) => ({
+          id: item.id,
+          ingredientId: item.ingredientId || item.ingredient_id,
+          ingredientName: item.ingredientName || item.ingredient_name,
+          type: item.type,
+          quantity: Number(item.quantity || 0),
+          unit: item.unit || 'un',
+          reason: item.reason || '',
+          createdAt: item.createdAt || item.created_at || new Date().toISOString(),
+        }));
+        setMovimentacoes(parsed);
+        return;
+      }
+    } catch (error) {
+      // fallback local
+    }
+
+    const saved = localStorage.getItem('cozinha_movimentacoes');
+    if (saved) {
+      setMovimentacoes(JSON.parse(saved));
+    }
+  };
+
+  // Carregar movimentaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Âµes
+  useEffect(() => {
+    carregarMovimentacoes().finally(() => setLoadingMovimentacoes(false));
+  }, []);
+
+  const salvarMovimentacao = () => {
+    if (!selectedItem || !quantity) {
+      alert('Selecione um item e informe a quantidade');
+      return;
+    }
+
+    const item = items.find(i => i.id === selectedItem);
+    if (!item) return;
+
+    const novaMovimentacao: StockMovement = {
+      id: Date.now().toString(),
+      ingredientId: selectedItem,
+      ingredientName: item.nome,
+      type,
+      quantity: parseFloat(quantity),
+      unit: item.unidade,
+      reason: reason || (type === 'entrada' ? 'Entrada manual' : 'SaÃƒÆ’Ã‚Â­da manual'),
+      createdAt: new Date().toISOString()
+    };
+
+    const novasMovimentacoes = [novaMovimentacao, ...movimentacoes];
+    setMovimentacoes(novasMovimentacoes);
+    localStorage.setItem('cozinha_movimentacoes', JSON.stringify(novasMovimentacoes));
+
+    // PersistÃƒÆ’Ã‚Âªncia em API (com fallback local jÃƒÆ’Ã‚Â¡ salvo acima)
+    fetch('/api/cozinha/stock-movements', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ingredientId: novaMovimentacao.ingredientId,
+        ingredientName: novaMovimentacao.ingredientName,
+        ingredient_id: novaMovimentacao.ingredientId,
+        ingredient_name: novaMovimentacao.ingredientName,
+        type: novaMovimentacao.type,
+        quantity: novaMovimentacao.quantity,
+        unit: novaMovimentacao.unit,
+        reason: novaMovimentacao.reason,
+        createdAt: novaMovimentacao.createdAt,
+      })
+    }).catch(() => {
+      // MantÃƒÆ’Ã‚Â©m localStorage como fallback quando API indisponÃƒÆ’Ã‚Â­vel
+    });
+
+    // Atualizar quantidade no estoque
+    const novaQuantidade = type === 'entrada' 
+      ? item.quantidade + parseFloat(quantity)
+      : item.quantidade - parseFloat(quantity);
+
+    atualizar(selectedItem, { quantidade: novaQuantidade });
+    window.dispatchEvent(new CustomEvent('cozinha_data_updated'));
+
+    // Limpar formulÃƒÆ’Ã‚Â¡rio
+    setQuantity('');
+    setReason('');
+    setSelectedItem('');
+  };
+
+  const movimentacoesFiltradas = movimentacoes.filter(m =>
+    m.ingredientName.toLowerCase().includes(busca.toLowerCase()) ||
+    m.reason.toLowerCase().includes(busca.toLowerCase())
+  );
+
+  const totalEntradas = movimentacoesFiltradas
+    .filter(m => m.type === 'entrada')
+    .reduce((acc, m) => acc + m.quantity, 0);
+
+  const totalSaidas = movimentacoesFiltradas
+    .filter(m => m.type === 'saida')
+    .reduce((acc, m) => acc + m.quantity, 0);
+
+  if (loading || loadingMovimentacoes) {
+    return (
+      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p>Carregando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-900 text-white p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <Link href="/admin-master/cozinha-chef/estoque" className="text-gray-400 hover:text-white flex items-center gap-2 mb-2">
+              <ArrowLeft size={16} /> Voltar ao Estoque
+            </Link>
+            <h1 className="text-3xl font-bold flex items-center gap-3">
+              <Package className="text-blue-500" /> MovimentaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o de Estoque
+            </h1>
+            <p className="text-gray-400 mt-1">Registre entradas e saÃƒÆ’Ã‚Â­das de itens</p>
+          </div>
+          <button onClick={carregar} className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg flex items-center gap-2">
+            <RefreshCw size={18} />
+          </button>
+        </div>
+
+        {/* Cards de Resumo */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-400 text-sm">Total de MovimentaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Âµes</p>
+                <p className="text-2xl font-bold">{movimentacoesFiltradas.length}</p>
+              </div>
+              <Package className="text-blue-500" size={32} />
+            </div>
+          </div>
+          <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-400 text-sm">Total Entradas</p>
+                <p className="text-2xl font-bold text-green-500">{totalEntradas.toFixed(2)}</p>
+              </div>
+              <TrendingUp className="text-green-500" size={32} />
+            </div>
+          </div>
+          <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-400 text-sm">Total SaÃƒÆ’Ã‚Â­das</p>
+                <p className="text-2xl font-bold text-red-500">{totalSaidas.toFixed(2)}</p>
+              </div>
+              <TrendingDown className="text-red-500" size={32} />
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* FormulÃƒÆ’Ã‚Â¡rio de MovimentaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o */}
+          <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <Plus size={20} /> Nova MovimentaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o
+            </h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm text-gray-300 mb-2">Tipo de MovimentaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => setType('entrada')}
+                    className={`p-4 rounded-lg border-2 transition ${
+                      type === 'entrada'
+                        ? 'border-green-500 bg-green-500/20 text-green-500'
+                        : 'border-gray-600 hover:border-gray-500'
+                    }`}
+                  >
+                    <TrendingUp className="mx-auto mb-2" />
+                    <p className="font-bold">Entrada</p>
+                  </button>
+                  <button
+                    onClick={() => setType('saida')}
+                    className={`p-4 rounded-lg border-2 transition ${
+                      type === 'saida'
+                        ? 'border-red-500 bg-red-500/20 text-red-500'
+                        : 'border-gray-600 hover:border-gray-500'
+                    }`}
+                  >
+                    <TrendingDown className="mx-auto mb-2" />
+                    <p className="font-bold">SaÃƒÆ’Ã‚Â­da</p>
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-300 mb-2">Item</label>
+                <select
+                  value={selectedItem}
+                  onChange={(e) => setSelectedItem(e.target.value)}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:border-blue-500 focus:outline-none"
+                >
+                  <option value="">Selecione um item...</option>
+                  {items.map(item => (
+                    <option key={item.id} value={item.id}>
+                      {item.nome} (Estoque: {item.quantidade} {item.unidade})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-300 mb-2">Quantidade</label>
+                <input
+                  type="number"
+                  value={quantity}
+                  onChange={(e) => setQuantity(e.target.value)}
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-300 mb-2">Motivo (opcional)</label>
+                <input
+                  type="text"
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  placeholder="Ex: Compra, Uso em receita, Ajuste..."
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+
+              <button
+                onClick={salvarMovimentacao}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition"
+              >
+                Registrar MovimentaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o
+              </button>
+            </div>
+          </div>
+
+          {/* HistÃƒÆ’Ã‚Â³rico de MovimentaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Âµes */}
+          <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <Calendar size={20} /> HistÃƒÆ’Ã‚Â³rico
+              </h2>
+              <div className="relative">
+                <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  value={busca}
+                  onChange={(e) => setBusca(e.target.value)}
+                  placeholder="Buscar..."
+                  className="bg-gray-700 border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-white focus:border-blue-500 focus:outline-none text-sm"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-3 max-h-[600px] overflow-y-auto">
+              {movimentacoesFiltradas.length === 0 ? (
+                <div className="text-center py-12 text-gray-400">
+                  <Package size={48} className="mx-auto mb-4 opacity-50" />
+                  <p>Nenhuma movimentaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o registrada</p>
+                </div>
+              ) : (
+                movimentacoesFiltradas.map(mov => (
+                  <div
+                    key={mov.id}
+                    className={`p-4 rounded-lg border ${
+                      mov.type === 'entrada'
+                        ? 'border-green-500/30 bg-green-500/10'
+                        : 'border-red-500/30 bg-red-500/10'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        {mov.type === 'entrada' ? (
+                          <TrendingUp className="text-green-500" size={20} />
+                        ) : (
+                          <TrendingDown className="text-red-500" size={20} />
+                        )}
+                        <div>
+                          <p className="font-bold">{mov.ingredientName}</p>
+                          <p className="text-sm text-gray-400">{mov.reason}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className={`font-bold ${mov.type === 'entrada' ? 'text-green-500' : 'text-red-500'}`}>
+                          {mov.type === 'entrada' ? '+' : '-'}{mov.quantity} {mov.unit}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          {new Date(mov.createdAt).toLocaleString('pt-BR')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
+

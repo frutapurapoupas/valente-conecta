@@ -1,4 +1,4 @@
-﻿// components/home/SecaoCategorias.tsx
+// components/home/SecaoCategorias.tsx
 // Substituir FontAwesome por Lucide React
 
 import Link from 'next/link';
@@ -94,3 +94,4 @@ export default function SecaoCategorias({ categorias }) {
     </section>
   );
 }
+

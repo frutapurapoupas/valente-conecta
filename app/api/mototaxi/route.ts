@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
@@ -377,3 +377,4 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ success: false, error: error?.message || 'Erro ao atualizar.' }, { status: 500 });
   }
 }
+

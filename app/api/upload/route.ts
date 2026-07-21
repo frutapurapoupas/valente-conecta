@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 import { existsSync } from 'fs';
@@ -51,3 +51,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'Erro ao salvar imagem' }, { status: 500 });
   }
 }
+

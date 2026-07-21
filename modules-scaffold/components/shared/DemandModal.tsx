@@ -24,7 +24,7 @@ export default function DemandModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.nomeCliente.trim() || !form.descricao.trim()) {
-      toast.error('Preencha nome e descrição.');
+      toast.error('Preencha nome e descriÃ§Ã£o.');
       return;
     }
     onSubmit({
@@ -83,3 +83,4 @@ export default function DemandModal({
     </div>
   );
 }
+

@@ -1,0 +1,17 @@
+﻿{
+    "Api":  0,
+    "Services":  0,
+    "Supabase":  0,
+    "UXScore":  50,
+    "PerformanceScore":  100,
+    "Hooks":  0,
+    "Components":  0,
+    "Imports":  6,
+    "ImportsQuebrados":  3,
+    "Duplicados":  0,
+    "Path":  "C:\\valente_conecta\\app\\admin-master\\cozinha-chef-neide",
+    "Modulo":  "cozinha-chef-neide",
+    "Mortos":  0,
+    "TotalArquivos":  1,
+    "Pages":  1
+}

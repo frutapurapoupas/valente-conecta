@@ -46,3 +46,4 @@ export async function GET(request: NextRequest) {
   
   return NextResponse.json({ status: 'ok', message: 'Webhook do Telegram ativo', bot: '@valenteconecta_bot' });
 }
+

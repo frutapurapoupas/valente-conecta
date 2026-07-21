@@ -81,7 +81,7 @@ const defaultConfig = {
       periodo: 'mes',
       negociavel: false,
       ativo: true,
-      descricao: 'Entrada para começar no app',
+      descricao: 'Entrada para comeÃ§ar no app',
       fotosPorItem: 1,
       featuresPadrao: [
         'Anuncio com foto, descricao e preco',
@@ -206,3 +206,4 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ success: false, error: error?.message || 'Erro ao salvar.' }, { status: 500 });
   }
 }
+

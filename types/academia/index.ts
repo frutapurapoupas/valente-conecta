@@ -1,4 +1,4 @@
-﻿// types/academia/index.ts
+// types/academia/index.ts
 
 export interface ExercicioUsuario {
   id: string;
@@ -38,3 +38,4 @@ export interface PerfilUsuario {
   nivel: string;
   freq_semanal: number;
 }
+

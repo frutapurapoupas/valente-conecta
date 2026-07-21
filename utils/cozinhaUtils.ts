@@ -147,3 +147,4 @@ export function calcularTotaisReceita(receita: Receita): TotaisReceita {
     margem
   };
 }
+

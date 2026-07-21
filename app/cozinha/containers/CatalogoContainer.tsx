@@ -1,0 +1,61 @@
+﻿"use client";
+// app/cozinha/containers/CatalogoContainer.tsx
+// ⚠️ LÓGICA PURA - SEM DESIGN!
+
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useReceitas } from '../hooks/useReceitas'
+import { CatalogoUI } from '../components/CatalogoUI'
+
+export function CatalogoContainer() {
+  const router = useRouter()
+  const { receitas, loading, listar, excluir } = useReceitas()
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    carregarReceitas()
+  }, [])
+
+  const carregarReceitas = async () => {
+    setError(null)
+    try {
+      await listar()
+    } catch (err) {
+      setError('Erro ao carregar receitas. Tente novamente.')
+      console.error('Erro ao carregar receitas:', err)
+    }
+  }
+
+  const handleEditar = (id: string) => {
+    router.push(`/admin-master/cozinha-chef/receitas/editar/${id}`)
+  }
+
+  const handleExcluir = async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir esta receita?')) return
+    
+    try {
+      await excluir(id)
+      await carregarReceitas()
+    } catch (err) {
+      setError('Erro ao excluir receita. Tente novamente.')
+      console.error('Erro ao excluir receita:', err)
+    }
+  }
+
+  const handleCriar = () => {
+    router.push('/admin-master/cozinha-chef/receitas/nova')
+  }
+
+  // ⚠️ O Container NUNCA renderiza HTML diretamente!
+  return (
+    <CatalogoUI
+      receitas={receitas}
+      loading={loading}
+      error={error}
+      onEditar={handleEditar}
+      onExcluir={handleExcluir}
+      onCriar={handleCriar}
+    />
+  )
+}
+

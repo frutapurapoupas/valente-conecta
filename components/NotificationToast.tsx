@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect } from 'react';
 import toast from 'react-hot-toast';
@@ -19,7 +19,7 @@ export function NotificationToast() {
           }}
           className="cursor-pointer bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl p-4 shadow-2xl max-w-sm mx-4"
         >
-          <strong className="block text-sm">📢 {notificacao.titulo}</strong>
+          <strong className="block text-sm">?? {notificacao.titulo}</strong>
           <p className="text-xs opacity-90 mt-1">{notificacao.mensagem}</p>
         </div>
       ), { duration: 8000 });
@@ -32,3 +32,4 @@ export function NotificationToast() {
 
   return null;
 }
+

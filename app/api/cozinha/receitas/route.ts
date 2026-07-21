@@ -1,96 +1,135 @@
-import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+import { fromDbToCanonical, fromPayloadToCanonical, toDbPayload } from './canonical';
 
-const dataPath = path.join(process.cwd(), 'data', 'receitas.json');
+export async function GET() {
+  try {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('receitas')
+      .select('*')
+      .order('nome', { ascending: true });
 
-function readData() {
-    try {
-        const data = fs.readFileSync(dataPath, 'utf-8');
-        return JSON.parse(data);
-    } catch {
-        return [];
+    if (error) throw error;
+
+    const receitasCanonicas = (data || []).map(fromDbToCanonical);
+    return NextResponse.json({ success: true, data: receitasCanonicas });
+  } catch (error) {
+    console.error('Erro ao buscar receitas:', error);
+    return NextResponse.json(
+      { success: false, error: 'Erro ao buscar receitas' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const supabase = createClient();
+    const body = await request.json();
+
+    const canonical = fromPayloadToCanonical(body);
+    const dbPayload = {
+      ...toDbPayload(canonical, null, null),
+      created_at: canonical.created_at,
+    };
+
+    const { data, error } = await supabase
+      .from('receitas')
+      .insert([dbPayload])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return NextResponse.json({ success: true, data: fromDbToCanonical(data) });
+  } catch (error) {
+    console.error('Erro ao criar receita:', error);
+    return NextResponse.json(
+      { success: false, error: 'Erro ao criar receita' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const supabase = createClient();
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    const body = await request.json();
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: 'ID não informado' },
+        { status: 400 }
+      );
     }
-}
 
-function writeData(data: any) {
-    fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
-}
+    const { data: atual, error: erroAtual } = await supabase
+      .from('receitas')
+      .select('*')
+      .eq('id', id)
+      .single();
 
-// GET - Buscar receitas (com ou sem ID)
-export async function GET(request: NextRequest) {
-    try {
-        const { searchParams } = new URL(request.url);
-        const id = searchParams.get('id');
-        
-        const receitas = readData();
-        
-        // Se tiver ID, filtrar
-        if (id) {
-            const receita = receitas.find((r: any) => r.id === id);
-            if (receita) {
-                return NextResponse.json({ success: true, data: receita });
-            } else {
-                return NextResponse.json({ success: false, error: 'Receita não encontrada' }, { status: 404 });
-            }
-        }
-        
-        // Se não tiver ID, retornar todas
-        return NextResponse.json({ success: true, data: receitas });
-    } catch (error: any) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    if (erroAtual || !atual) {
+      return NextResponse.json(
+        { success: false, error: 'Receita não encontrada' },
+        { status: 404 }
+      );
     }
+
+    const atualCanonica = fromDbToCanonical(atual);
+    const canonical = fromPayloadToCanonical({ ...body, id }, atualCanonica);
+    const dbPayload = toDbPayload(canonical, atual.instrucoes, atual.tempo_preparo);
+
+    const { data, error } = await supabase
+      .from('receitas')
+      .update(dbPayload)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return NextResponse.json({ success: true, data: fromDbToCanonical(data) });
+  } catch (error) {
+    console.error('Erro ao atualizar receita:', error);
+    return NextResponse.json(
+      { success: false, error: 'Erro ao atualizar receita' },
+      { status: 500 }
+    );
+  }
 }
 
-// POST - Criar nova receita
-export async function POST(request: NextRequest) {
-    try {
-        const body = await request.json();
-        const receitas = readData();
-        const newReceita = {
-            id: Date.now().toString(),
-            ...body,
-            createdAt: new Date().toISOString()
-        };
-        receitas.push(newReceita);
-        writeData(receitas);
-        return NextResponse.json({ success: true, data: newReceita });
-    } catch (error: any) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+export async function DELETE(request: Request) {
+  try {
+    const supabase = createClient();
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: 'ID não informado' },
+        { status: 400 }
+      );
     }
+
+    const { error } = await supabase
+      .from('receitas')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Erro ao excluir receita:', error);
+    return NextResponse.json(
+      { success: false, error: 'Erro ao excluir receita' },
+      { status: 500 }
+    );
+  }
 }
 
-// PUT - Atualizar receita
-export async function PUT(request: NextRequest) {
-    try {
-        const { searchParams } = new URL(request.url);
-        const id = searchParams.get('id');
-        const body = await request.json();
-        const receitas = readData();
-        const index = receitas.findIndex((r: any) => r.id === id);
-        
-        if (index === -1) {
-            return NextResponse.json({ success: false, error: 'Receita não encontrada' }, { status: 404 });
-        }
-        
-        receitas[index] = { ...receitas[index], ...body, updatedAt: new Date().toISOString() };
-        writeData(receitas);
-        return NextResponse.json({ success: true, data: receitas[index] });
-    } catch (error: any) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
-    }
-}
 
-// DELETE - Remover receita
-export async function DELETE(request: NextRequest) {
-    try {
-        const { searchParams } = new URL(request.url);
-        const id = searchParams.get('id');
-        const receitas = readData();
-        const filtered = receitas.filter((r: any) => r.id !== id);
-        writeData(filtered);
-        return NextResponse.json({ success: true });
-    } catch (error: any) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
-    }
-}
+
+

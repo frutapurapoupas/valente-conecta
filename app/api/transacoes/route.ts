@@ -2,13 +2,13 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
-// GET - Listar transações do usuário
+// GET - Listar transaÃ§Ãµes do usuÃ¡rio
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const userId = searchParams.get('userId');
   
   if (!userId) {
-    return NextResponse.json({ error: 'userId é obrigatório' }, { status: 400 });
+    return NextResponse.json({ error: 'userId Ã© obrigatÃ³rio' }, { status: 400 });
   }
   
   const { data, error } = await supabase
@@ -24,7 +24,7 @@ export async function GET(request: Request) {
   return NextResponse.json({ transacoes: data });
 }
 
-// POST - Registrar débito/crédito
+// POST - Registrar dÃ©bito/crÃ©dito
 export async function POST(request: Request) {
   const body = await request.json();
   const { usuario_id, tipo, valor, descricao, servico } = body;
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
     saldoDepois = saldoAntes - valor;
   }
   
-  // Registrar transação
+  // Registrar transaÃ§Ã£o
   const { data: transacao, error: transError } = await supabase
     .from('transacoes')
     .insert({
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: transError.message }, { status: 500 });
   }
   
-  // Atualizar saldo do usuário
+  // Atualizar saldo do usuÃ¡rio
   await supabase
     .from('usuarios')
     .update({ wallet: saldoDepois })
@@ -84,3 +84,4 @@ export async function POST(request: Request) {
   
   return NextResponse.json({ transacao, novoSaldo: saldoDepois });
 }
+

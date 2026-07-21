@@ -1,0 +1,31 @@
+﻿========================================
+ARQUIVO: backup_consolidacao_cozinha_2026-07-20_12-42\cardapio.ts
+DATA: 07/20/2026 21:56:57
+========================================
+
+// app/cozinha/types/cardapio.ts
+export interface CardapioItem {
+  id: string;
+  dia: string; // 'segunda', 'terca', etc.
+  produtoId: string;
+  produto?: Produto;
+  precoEspecial?: number;
+  ativo: boolean;
+}
+
+export interface CardapioInput {
+  dia: string;
+  produtoId: string;
+  precoEspecial?: number;
+  ativo?: boolean;
+}
+
+export type DiaSemana = 
+  | 'segunda'
+  | 'terca'
+  | 'quarta'
+  | 'quinta'
+  | 'sexta'
+  | 'sabado'
+  | 'domingo';
+

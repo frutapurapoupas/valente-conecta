@@ -1,0 +1,14 @@
+﻿RELATÓRIO DE COMPONENTES
+========================
+Módulo: cozinha-chef
+Gerado em: 2026-07-16 08:01:14
+
+--------------------------------------------------------------------------------
+Resumo:
+  Total de componentes: 0
+  Componentes gigantes (>200 linhas): 0
+  Média de linhas: 
+
+--------------------------------------------------------------------------------
+
+Componentes por tamanho:

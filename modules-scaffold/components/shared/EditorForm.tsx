@@ -30,7 +30,7 @@ export default function EditorForm({
         />
 
         <textarea
-          placeholder="Descrição"
+          placeholder="DescriÃ§Ã£o"
           value={item.descricao || ''}
           onChange={(e) => onChange({ descricao: e.target.value })}
           rows={3}
@@ -39,7 +39,7 @@ export default function EditorForm({
 
         <input
           type="number"
-          placeholder="Preço (R$)"
+          placeholder="PreÃ§o (R$)"
           value={item.preco || ''}
           onChange={(e) => onChange({ preco: parseFloat(e.target.value) || 0 })}
           className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-white/10 text-white placeholder-gray-500"
@@ -82,3 +82,4 @@ export default function EditorForm({
     </div>
   );
 }
+

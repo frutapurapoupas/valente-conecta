@@ -90,7 +90,7 @@ export default function CadastroProfissionalPage() {
     }
   };
 
-  /* ── Step: Escolha de categoria ───────────────────────────────────────── */
+  /* â”€â”€ Step: Escolha de categoria â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   if (step === 'categoria') {
     return (
       <div className="min-h-screen bg-slate-950 text-white px-4 py-8">
@@ -128,7 +128,7 @@ export default function CadastroProfissionalPage() {
     );
   }
 
-  /* ── Step: Escolha de plano ───────────────────────────────────────────── */
+  /* â”€â”€ Step: Escolha de plano â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   if (step === 'plano') {
     return (
       <div className="min-h-screen bg-slate-950 text-white px-4 py-8">
@@ -171,7 +171,7 @@ export default function CadastroProfissionalPage() {
     );
   }
 
-  /* ── Step: Formulario ─────────────────────────────────────────────────── */
+  /* â”€â”€ Step: Formulario â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   if (step === 'form') {
     const catSel = CATEGORIAS.find((c) => c.id === form.categoria);
     return (
@@ -185,7 +185,7 @@ export default function CadastroProfissionalPage() {
           <div className="mb-6">
             <h1 className="text-2xl font-extrabold">Seus dados</h1>
             <p className="text-gray-400">
-              {catSel?.label} · Plano{' '}
+              {catSel?.label} Â· Plano{' '}
               <span className={form.plano === 'premium' ? 'text-yellow-400' : 'text-gray-300'}>
                 {form.plano === 'premium' ? 'Premium (R$ 25/mes)' : 'Basico (Gratis)'}
               </span>
@@ -260,7 +260,7 @@ export default function CadastroProfissionalPage() {
     );
   }
 
-  /* ── Step: Sucesso ────────────────────────────────────────────────────── */
+  /* â”€â”€ Step: Sucesso â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
       <Toaster position="top-right" />
@@ -289,3 +289,4 @@ export default function CadastroProfissionalPage() {
     </div>
   );
 }
+

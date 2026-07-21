@@ -1,0 +1,31 @@
+// tsconfig.build.json - Configuração para build apenas do módulo Cozinha
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "noEmit": false
+  },
+  "include": [
+    "app/cozinha/**/*",
+    "app/admin-master/cozinha-chef/**/*",
+    "components/cozinha/**/*",
+    "hooks/cozinha/**/*",
+    "services/**/*cozinha*",
+    "types/cozinha.ts",
+    "app/layout.tsx",
+    "app/page.tsx",
+    "components/shared/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "app/academia/**/*",
+    "app/admin-master/financeiro-pessoal/**/*",
+    "app/admin-master/academia-admin/**/*",
+    "components/academia/**/*",
+    "components/financeiro/**/*",
+    "hooks/academia/**/*",
+    "hooks/financeiro/**/*",
+    "services/academia/**/*",
+    "services/financeiro/**/*"
+  ]
+}

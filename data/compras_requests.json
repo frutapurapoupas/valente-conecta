@@ -1,5 +1,72 @@
 [
   {
+    "id": "1782856331588-379372",
+    "receitaId": "1782063021418",
+    "receitaNome": "Fricassê de Frango",
+    "quantidadeProduzir": 10,
+    "ingredientes": [
+      {
+        "ingredientId": "1782062848631",
+        "ingredientName": "Frango em cubos",
+        "quantidade": 2000,
+        "unit": "g",
+        "price": 18.9
+      },
+      {
+        "ingredientId": "1782062852076",
+        "ingredientName": "Creme de leite",
+        "quantidade": 1500,
+        "unit": "g",
+        "price": 12.9
+      },
+      {
+        "ingredientId": "1782062849135",
+        "ingredientName": "Arroz branco",
+        "quantidade": 1300,
+        "unit": "g",
+        "price": 5.9
+      },
+      {
+        "ingredientId": "1782062851104",
+        "ingredientName": "Alho",
+        "quantidade": 40,
+        "unit": "g",
+        "price": 15.9
+      },
+      {
+        "ingredientId": "1782062849954",
+        "ingredientName": "Cebola",
+        "quantidade": 40,
+        "unit": "g",
+        "price": 4.9
+      },
+      {
+        "ingredientId": "1782062851259",
+        "ingredientName": "Coentro",
+        "quantidade": 10,
+        "unit": "g",
+        "price": 25.9
+      },
+      {
+        "ingredientId": "1782062851586",
+        "ingredientName": "Sal",
+        "quantidade": 50,
+        "unit": "g",
+        "price": 2.5
+      },
+      {
+        "ingredientId": "1782066071449",
+        "ingredientName": "Embalagem plástica 500g",
+        "quantidade": 10,
+        "unit": "un",
+        "price": 1
+      }
+    ],
+    "status": "aprovado",
+    "createdAt": "2026-06-30T21:52:11.588Z",
+    "approvedAt": "2026-06-30T21:54:10.703Z"
+  },
+  {
     "id": "1782288071996-504007",
     "receitaId": "1782063020107",
     "receitaNome": "Frango em cubos + arroz + purê",
@@ -62,9 +129,9 @@
         "price": 1
       }
     ],
-    "status": "pendente",
+    "status": "aprovado",
     "createdAt": "2026-06-24T08:01:11.996Z",
-    "approvedAt": null
+    "approvedAt": "2026-07-08T11:30:05.767Z"
   },
   {
     "id": "1782287818667-750552",

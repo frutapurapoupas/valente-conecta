@@ -6,10 +6,10 @@ const handleSalvarReceita = (receita: any, precosAtuais: Record<string, number>)
   // 1. Calcula o custo total com base na lista de ingredientes da receita
   const custoTotal = CozinhaService.calcularCustoReceita(receita, precosAtuais);
   
-  // 2. Aplica a regra de precificação 40/30/30
+  // 2. Aplica a regra de precificaÃ§Ã£o 40/30/30
   const precificacao = CozinhaService.calcularPrecificacao(custoTotal);
   
-  // 3. Monta o objeto que será salvo no banco de dados
+  // 3. Monta o objeto que serÃ¡ salvo no banco de dados
   const receitaFinal = {
     ...receita,
     custoInsumos: precificacao.custoInsumos,
@@ -21,6 +21,7 @@ const handleSalvarReceita = (receita: any, precosAtuais: Record<string, number>)
 
   console.log("Receita pronta para salvar:", receitaFinal);
   
-  // Agora você pode chamar a sua função de salvar no banco, ex:
+  // Agora vocÃª pode chamar a sua funÃ§Ã£o de salvar no banco, ex:
   // await salvarNoBanco(receitaFinal);
 };
+

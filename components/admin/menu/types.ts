@@ -1,5 +1,5 @@
 // components/admin/menu/types.ts
-// 📋 TIPOS - Interfaces de Automação
+// ðŸ“‹ TIPOS - Interfaces de AutomaÃ§Ã£o
 
 import { LucideIcon } from "lucide-react";
 
@@ -27,7 +27,7 @@ export interface MenuGroup {
 export type AdminMenu = MenuGroup[];
 
 // ============================================================
-// 🆕 TIPOS DE AUTOMAÇÃO
+// ðŸ†• TIPOS DE AUTOMAÃ‡ÃƒO
 // ============================================================
 
 export type LojistaStatus = 'pendente' | 'aprovado' | 'reprovado' | 'suspenso' | 'automatico';
@@ -77,3 +77,4 @@ export interface MonitorMetrics {
   comBaixaQualidade: number;
   autoAprovados: number;
 }
+

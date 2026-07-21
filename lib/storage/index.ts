@@ -1,4 +1,4 @@
-﻿import { Ingredient, Recipe, MediaFile, SyncResult } from '@/lib/cozinha/types';
+import { Ingredient, Recipe, MediaFile, SyncResult } from '@/lib/cozinha/types';
 
 export interface IStorageAdapter {
   getIngredients(): Promise<Ingredient[]>;
@@ -23,3 +23,4 @@ export interface IStorageAdapter {
 }
 
 export type StorageMode = 'local' | 'supabase' | 'hybrid';
+

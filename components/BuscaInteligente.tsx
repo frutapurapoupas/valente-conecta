@@ -42,7 +42,7 @@ export default function BuscaInteligente({
   
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Verificar se há busca pendente
+  // Verificar se hÃ¡ busca pendente
   useEffect(() => {
     const pendente = localStorage.getItem("busca_pendente");
     if (pendente) {
@@ -54,9 +54,9 @@ export default function BuscaInteligente({
             <div className="flex items-start gap-3 p-2">
               <Bell className="w-5 h-5 text-yellow-500" />
               <div>
-                <p className="font-bold text-sm">Produto não encontrado</p>
+                <p className="font-bold text-sm">Produto nÃ£o encontrado</p>
                 <p className="text-xs text-gray-600">
-                  "{data.termo}" - Vamos te avisar em até 24h quando encontrarmos
+                  "{data.termo}" - Vamos te avisar em atÃ© 24h quando encontrarmos
                 </p>
                 <button
                   onClick={() => {
@@ -84,10 +84,10 @@ export default function BuscaInteligente({
     }
   };
 
-  // Obter geolocalização do usuário
+  // Obter geolocalizaÃ§Ã£o do usuÃ¡rio
   const obterGeolocalizacao = () => {
     if (!navigator.geolocation) {
-      toast.error("Seu navegador não suporta geolocalização");
+      toast.error("Seu navegador nÃ£o suporta geolocalizaÃ§Ã£o");
       return;
     }
 
@@ -99,14 +99,14 @@ export default function BuscaInteligente({
           lng: position.coords.longitude,
           cidade: "Valente, BA"
         });
-        toast.success(`📍 Localização ativada: ${localizacao?.cidade || "Valente, BA"}`);
+        toast.success(`ðŸ“ LocalizaÃ§Ã£o ativada: ${localizacao?.cidade || "Valente, BA"}`);
         setUsandoGeolocalizacao(false);
         
         localStorage.setItem("user_location", JSON.stringify(localizacao));
       },
       (error) => {
-        console.error("Erro ao obter localização:", error);
-        toast.error("Não foi possível obter sua localização");
+        console.error("Erro ao obter localizaÃ§Ã£o:", error);
+        toast.error("NÃ£o foi possÃ­vel obter sua localizaÃ§Ã£o");
         setUsandoGeolocalizacao(false);
       }
     );
@@ -128,7 +128,7 @@ export default function BuscaInteligente({
         
         toast((t) => (
           <div className="max-w-sm p-3">
-            <p className="font-bold text-sm">🔍 Produto não encontrado localmente</p>
+            <p className="font-bold text-sm">ðŸ” Produto nÃ£o encontrado localmente</p>
             <p className="text-xs text-gray-600 mt-1">
               Encontramos "{termo}" na internet. Deseja ver os resultados?
             </p>
@@ -159,10 +159,10 @@ export default function BuscaInteligente({
         ), { duration: 10000 });
       } else if (resultadosEncontrados) {
         setResultados([
-          { id: "1", nome: termo, tipo: "produto", preco: 29.90, loja: "Mercearia do João", distancia: 0.5, avaliacao: 4.5 },
-          { id: "2", nome: termo, tipo: "servico", preco: 49.90, loja: "Serviços Valente", distancia: 1.2, avaliacao: 4.8 }
+          { id: "1", nome: termo, tipo: "produto", preco: 29.90, loja: "Mercearia do JoÃ£o", distancia: 0.5, avaliacao: 4.5 },
+          { id: "2", nome: termo, tipo: "servico", preco: 49.90, loja: "ServiÃ§os Valente", distancia: 1.2, avaliacao: 4.8 }
         ]);
-        toast.success(`Encontramos ${resultados.length} resultados próximos a você!`);
+        toast.success(`Encontramos ${resultados.length} resultados prÃ³ximos a vocÃª!`);
       }
       
     } catch (error) {
@@ -194,7 +194,7 @@ export default function BuscaInteligente({
       termo,
       usuario_nome: localStorage.getItem("user_name") || "Visitante",
       usuario_email: localStorage.getItem("user_email") || "anonimo@email.com",
-      tipo: termo.includes("serviço") ? "servico" : "produto",
+      tipo: termo.includes("serviÃ§o") ? "servico" : "produto",
       status: "pendente",
       data_busca: new Date().toISOString(),
       notificado_usuario: false
@@ -202,7 +202,7 @@ export default function BuscaInteligente({
     localStorage.setItem("buscas_pendentes", JSON.stringify(lista));
     
     setBuscaPendente({ termo, notificado: false });
-    toast.success("📢 Anotamos sua busca! Vamos te avisar quando encontrarmos.");
+    toast.success("ðŸ“¢ Anotamos sua busca! Vamos te avisar quando encontrarmos.");
   };
 
   // Executar busca principal
@@ -236,7 +236,7 @@ export default function BuscaInteligente({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && executarBusca()}
-            placeholder="Buscar produtos ou serviços perto de você..."
+            placeholder="Buscar produtos ou serviÃ§os perto de vocÃª..."
             className="flex-1 outline-none text-gray-700 bg-transparent text-sm min-w-0"
           />
           {searchTerm && (
@@ -259,7 +259,7 @@ export default function BuscaInteligente({
             className={`text-gray-400 mr-1 transition flex-shrink-0 ${
               localizacao ? "text-green-500" : "hover:text-green-500"
             }`}
-            title={localizacao ? `Local: ${localizacao.cidade}` : "Ativar localização"}
+            title={localizacao ? `Local: ${localizacao.cidade}` : "Ativar localizaÃ§Ã£o"}
           >
             {usandoGeolocalizacao ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -270,11 +270,11 @@ export default function BuscaInteligente({
         </div>
       </div>
       
-      {/* Indicador de localização ativa */}
+      {/* Indicador de localizaÃ§Ã£o ativa */}
       {localizacao && (
         <div className="mt-2 flex items-center gap-1 text-xs text-green-600">
           <MapPin className="w-3 h-3" />
-          <span>Buscando próximo a {localizacao.cidade}</span>
+          <span>Buscando prÃ³ximo a {localizacao.cidade}</span>
         </div>
       )}
       
@@ -282,7 +282,7 @@ export default function BuscaInteligente({
       {buscaPendente && !buscaPendente.notificado && (
         <div className="mt-2 flex items-center gap-1 text-xs text-yellow-600 bg-yellow-50 px-2 py-1 rounded-full inline-flex">
           <Bell className="w-3 h-3" />
-          <span>Vamos te avisar quando "{buscaPendente.termo}" estiver disponível</span>
+          <span>Vamos te avisar quando "{buscaPendente.termo}" estiver disponÃ­vel</span>
         </div>
       )}
       
@@ -304,7 +304,7 @@ export default function BuscaInteligente({
                     <p className="text-xs text-gray-500">{resultado.loja}</p>
                     {resultado.distancia && (
                       <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-                        <MapPin className="w-3 h-3" /> {resultado.distancia} km de você
+                        <MapPin className="w-3 h-3" /> {resultado.distancia} km de vocÃª
                       </p>
                     )}
                   </div>
@@ -313,7 +313,7 @@ export default function BuscaInteligente({
                       <p className="font-bold text-green-600">R$ {resultado.preco.toFixed(2)}</p>
                     )}
                     {resultado.avaliacao && (
-                      <p className="text-xs text-yellow-500">⭐ {resultado.avaliacao}</p>
+                      <p className="text-xs text-yellow-500">â­ {resultado.avaliacao}</p>
                     )}
                   </div>
                 </div>
@@ -325,3 +325,4 @@ export default function BuscaInteligente({
     </div>
   );
 }
+

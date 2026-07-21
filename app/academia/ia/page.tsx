@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 export const dynamic = 'force-dynamic';
 
@@ -116,7 +116,7 @@ export default function DashboardIAPage() {
       if (dadosPerfil.objetivo === 'emagrecer') {
         novasRecomendacoes.push({
           id: 1, 
-          titulo: "🎯 Foco no Emagrecimento", 
+          titulo: "?? Foco no Emagrecimento", 
           mensagem: `Priorize exercícios aeróbicos e mantenha déficit calórico moderado.`,
           prioridade: "alta", 
           tipo: "treino"
@@ -124,7 +124,7 @@ export default function DashboardIAPage() {
       } else if (dadosPerfil.objetivo === 'hipertrofia') {
         novasRecomendacoes.push({
           id: 1, 
-          titulo: "💪 Foco na Hipertrofia", 
+          titulo: "?? Foco na Hipertrofia", 
           mensagem: `Priorize treinos com pesos e ingestão adequada de proteínas.`,
           prioridade: "alta", 
           tipo: "treino"
@@ -132,7 +132,7 @@ export default function DashboardIAPage() {
       } else if (dadosPerfil.objetivo === 'condicionamento') {
         novasRecomendacoes.push({
           id: 1, 
-          titulo: "🏃 Foco no Condicionamento", 
+          titulo: "?? Foco no Condicionamento", 
           mensagem: `Trabalhe resistência cardiovascular e força funcional.`,
           prioridade: "alta", 
           tipo: "treino"
@@ -142,7 +142,7 @@ export default function DashboardIAPage() {
       if (dadosPerfil.freq_semanal < 3) {
         novasRecomendacoes.push({
           id: 2, 
-          titulo: "📈 Aumente sua frequência", 
+          titulo: "?? Aumente sua frequência", 
           mensagem: `Você treina apenas ${dadosPerfil.freq_semanal}x por semana. Tente aumentar para 4-5x para melhores resultados.`,
           prioridade: "media", 
           tipo: "treino"
@@ -188,10 +188,10 @@ export default function DashboardIAPage() {
     
     let sugestao_principal = `Hoje foque em ${foco_muscular.join(" e ")}.`;
     let sugestao_secundaria = "Mantenha a hidratação e respiração correta.";
-    let alertas: string[] = ["💧 Beba água antes, durante e depois do treino"];
+    let alertas: string[] = ["?? Beba água antes, durante e depois do treino"];
     
     if (perfil.condicoes_fisicas?.length > 0) {
-      alertas.push(`⚠️ Atenção: Consulte um médico regularmente.`);
+      alertas.push(`?? Atenção: Consulte um médico regularmente.`);
     }
     
     const novoPlano: PlanoTreino = {
@@ -267,9 +267,9 @@ export default function DashboardIAPage() {
             <div className="text-right">
               <p className="text-xs text-zinc-500">Objetivo</p>
               <p className="text-sm text-yellow-400 font-bold">
-                {perfil.objetivo === 'emagrecer' ? '🎯 Emagrecimento' :
-                 perfil.objetivo === 'hipertrofia' ? '💪 Hipertrofia' :
-                 perfil.objetivo === 'condicionamento' ? '🏃 Condicionamento' : '❤️ Saúde'}
+                {perfil.objetivo === 'emagrecer' ? '?? Emagrecimento' :
+                 perfil.objetivo === 'hipertrofia' ? '?? Hipertrofia' :
+                 perfil.objetivo === 'condicionamento' ? '?? Condicionamento' : '?? Saúde'}
               </p>
             </div>
           </div>
@@ -312,13 +312,13 @@ export default function DashboardIAPage() {
                 <div className="bg-zinc-800 rounded-xl p-2"><Zap className="w-4 h-4 text-yellow-400 mx-auto mb-1" /><p className="text-lg font-bold capitalize">{planoHoje.intensidade}</p><p className="text-[10px] text-zinc-500">Intensidade</p></div>
               </div>
               
-              <div><p className="text-xs text-zinc-500 mb-1">🎯 Foco muscular</p><div className="flex flex-wrap gap-2">{planoHoje.foco_muscular.map(f => (<span key={f} className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded-full text-xs">{f}</span>))}</div></div>
+              <div><p className="text-xs text-zinc-500 mb-1">?? Foco muscular</p><div className="flex flex-wrap gap-2">{planoHoje.foco_muscular.map(f => (<span key={f} className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded-full text-xs">{f}</span>))}</div></div>
               
-              {planoHoje.exercicios_sugeridos.length > 0 && (<div><p className="text-xs text-zinc-500 mb-1">🏋️ Exercícios sugeridos</p><div className="flex flex-wrap gap-2">{planoHoje.exercicios_sugeridos.map(ex => (<span key={ex} className="px-2 py-1 bg-green-500/20 text-green-300 rounded-full text-xs">{ex}</span>))}</div></div>)}
+              {planoHoje.exercicios_sugeridos.length > 0 && (<div><p className="text-xs text-zinc-500 mb-1">??? Exercícios sugeridos</p><div className="flex flex-wrap gap-2">{planoHoje.exercicios_sugeridos.map(ex => (<span key={ex} className="px-2 py-1 bg-green-500/20 text-green-300 rounded-full text-xs">{ex}</span>))}</div></div>)}
               
               <div className="p-3 bg-indigo-500/10 rounded-xl"><p className="text-sm text-white">{planoHoje.sugestao_principal}</p><p className="text-xs text-zinc-400 mt-1">{planoHoje.sugestao_secundaria}</p></div>
               
-              {planoHoje.alertas.length > 0 && (<div className="border border-yellow-500/30 bg-yellow-500/10 rounded-xl p-3"><p className="text-xs text-yellow-400 font-bold">⚠️ Alertas</p><ul className="mt-1 space-y-1">{planoHoje.alertas.map((a, i) => (<li key={i} className="text-xs text-yellow-300">• {a}</li>))}</ul></div>)}
+              {planoHoje.alertas.length > 0 && (<div className="border border-yellow-500/30 bg-yellow-500/10 rounded-xl p-3"><p className="text-xs text-yellow-400 font-bold">?? Alertas</p><ul className="mt-1 space-y-1">{planoHoje.alertas.map((a, i) => (<li key={i} className="text-xs text-yellow-300">• {a}</li>))}</ul></div>)}
               
               <button onClick={gerarPlanoTreino} className="w-full py-2 bg-zinc-800 rounded-xl text-sm font-bold hover:bg-zinc-700 transition">Gerar Novo Plano</button>
             </div>
@@ -345,3 +345,4 @@ export default function DashboardIAPage() {
     </div>
   );
 }
+

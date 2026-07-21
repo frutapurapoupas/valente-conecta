@@ -55,27 +55,27 @@ export default function PDVUnificadoPage() {
   const [caixaAberto, setCaixaAberto] = useState(true)
   const [saldoCaixa, setSaldoCaixa] = useState(1567.50)
 
-  // Dados mock para demonstração
+  // Dados mock para demonstraÃ§Ã£o
   useEffect(() => {
     // Mock de produtos
     setProdutos([
       { id: '1', nome: 'Arroz 5kg', preco: 25.90, estoque: 50, categoria: 'Alimentos', sku: 'ARROZ001' },
-      { id: '2', nome: 'Feijão 1kg', preco: 8.50, estoque: 100, categoria: 'Alimentos', sku: 'FEIJ001' },
-      { id: '3', nome: 'Óleo de Soja 900ml', preco: 12.90, estoque: 30, categoria: 'Alimentos', sku: 'OLEO001' },
+      { id: '2', nome: 'FeijÃ£o 1kg', preco: 8.50, estoque: 100, categoria: 'Alimentos', sku: 'FEIJ001' },
+      { id: '3', nome: 'Ã“leo de Soja 900ml', preco: 12.90, estoque: 30, categoria: 'Alimentos', sku: 'OLEO001' },
       { id: '4', nome: 'Refrigerante 2L', preco: 8.00, estoque: 25, categoria: 'Bebidas', sku: 'REFR001' },
-      { id: '5', nome: 'Sabão em Pó 1kg', preco: 15.90, estoque: 40, categoria: 'Limpeza', sku: 'SABA001' }
+      { id: '5', nome: 'SabÃ£o em PÃ³ 1kg', preco: 15.90, estoque: 40, categoria: 'Limpeza', sku: 'SABA001' }
     ])
 
     // Mock de vendas
     setVendas([
-      { id: '1', produtos: [{ id: '1', nome: 'Arroz 5kg', preco: 25.90, estoque: 50, categoria: 'Alimentos', sku: 'ARROZ001' }], total: 25.90, formaPagamento: 'PIX', cliente: 'João Silva', data: '2026-05-04', status: 'concluida' },
-      { id: '2', produtos: [{ id: '2', nome: 'Feijão 1kg', preco: 8.50, estoque: 100, categoria: 'Alimentos', sku: 'FEIJ001' }], total: 8.50, formaPagamento: 'Dinheiro', cliente: 'Maria Santos', data: '2026-05-04', status: 'concluida' }
+      { id: '1', produtos: [{ id: '1', nome: 'Arroz 5kg', preco: 25.90, estoque: 50, categoria: 'Alimentos', sku: 'ARROZ001' }], total: 25.90, formaPagamento: 'PIX', cliente: 'JoÃ£o Silva', data: '2026-05-04', status: 'concluida' },
+      { id: '2', produtos: [{ id: '2', nome: 'FeijÃ£o 1kg', preco: 8.50, estoque: 100, categoria: 'Alimentos', sku: 'FEIJ001' }], total: 8.50, formaPagamento: 'Dinheiro', cliente: 'Maria Santos', data: '2026-05-04', status: 'concluida' }
     ])
 
     // Mock de fiados
     setFiados([
-      { id: '1', cliente: 'Carlos Pereira', valor: 45.80, produtos: ['Arroz 5kg', 'Feijão 1kg'], dataVencimento: '2026-05-10', status: 'aberto' },
-      { id: '2', cliente: 'Ana Costa', valor: 28.90, produtos: ['Óleo de Soja', 'Sabão em Pó'], dataVencimento: '2026-05-08', status: 'vencido' }
+      { id: '1', cliente: 'Carlos Pereira', valor: 45.80, produtos: ['Arroz 5kg', 'FeijÃ£o 1kg'], dataVencimento: '2026-05-10', status: 'aberto' },
+      { id: '2', cliente: 'Ana Costa', valor: 28.90, produtos: ['Ã“leo de Soja', 'SabÃ£o em PÃ³'], dataVencimento: '2026-05-08', status: 'vencido' }
     ])
   }, [])
 
@@ -208,7 +208,7 @@ export default function PDVUnificadoPage() {
                     <th className="text-left py-3 px-4">Total</th>
                     <th className="text-left py-3 px-4">Pagamento</th>
                     <th className="text-left py-3 px-4">Status</th>
-                    <th className="text-left py-3 px-4">Ações</th>
+                    <th className="text-left py-3 px-4">AÃ§Ãµes</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -275,10 +275,10 @@ export default function PDVUnificadoPage() {
                     <th className="text-left py-3 px-4">SKU</th>
                     <th className="text-left py-3 px-4">Produto</th>
                     <th className="text-left py-3 px-4">Categoria</th>
-                    <th className="text-left py-3 px-4">Preço</th>
+                    <th className="text-left py-3 px-4">PreÃ§o</th>
                     <th className="text-left py-3 px-4">Estoque</th>
                     <th className="text-left py-3 px-4">Valor Total</th>
-                    <th className="text-left py-3 px-4">Ações</th>
+                    <th className="text-left py-3 px-4">AÃ§Ãµes</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -367,7 +367,7 @@ export default function PDVUnificadoPage() {
               </div>
 
               <div className="bg-gray-700 rounded-lg p-4">
-                <h3 className="font-bold mb-3 text-red-400">Saídas</h3>
+                <h3 className="font-bold mb-3 text-red-400">SaÃ­das</h3>
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-gray-400">Sangrias</span>
@@ -379,7 +379,7 @@ export default function PDVUnificadoPage() {
                   </div>
                   <div className="border-t border-gray-600 pt-2 mt-2">
                     <div className="flex justify-between font-bold">
-                      <span>Total Saídas</span>
+                      <span>Total SaÃ­das</span>
                       <span className="text-red-400">R$ 189.80</span>
                     </div>
                   </div>
@@ -398,7 +398,7 @@ export default function PDVUnificadoPage() {
                     <span className="text-green-400">+R$ 927.30</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Saídas</span>
+                    <span className="text-gray-400">SaÃ­das</span>
                     <span className="text-red-400">-R$ 189.80</span>
                   </div>
                   <div className="border-t border-gray-600 pt-2 mt-2">
@@ -437,7 +437,7 @@ export default function PDVUnificadoPage() {
                     <th className="text-left py-3 px-4">Valor</th>
                     <th className="text-left py-3 px-4">Vencimento</th>
                     <th className="text-left py-3 px-4">Status</th>
-                    <th className="text-left py-3 px-4">Ações</th>
+                    <th className="text-left py-3 px-4">AÃ§Ãµes</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -476,7 +476,7 @@ export default function PDVUnificadoPage() {
         )}
       </div>
 
-      {/* Modals (simplificados para demonstração) */}
+      {/* Modals (simplificados para demonstraÃ§Ã£o) */}
       {showAddProduct && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-gray-800 rounded-xl p-6 w-full max-w-md">
@@ -494,7 +494,7 @@ export default function PDVUnificadoPage() {
               />
               <input
                 type="number"
-                placeholder="Preço"
+                placeholder="PreÃ§o"
                 className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg"
               />
               <input
@@ -547,7 +547,7 @@ export default function PDVUnificadoPage() {
                 className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg"
               />
               <textarea
-                placeholder="Produtos (separados por vírgula)"
+                placeholder="Produtos (separados por vÃ­rgula)"
                 className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg h-24"
               />
             </div>
@@ -571,3 +571,4 @@ export default function PDVUnificadoPage() {
     </div>
   )
 }
+

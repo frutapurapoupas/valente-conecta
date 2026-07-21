@@ -1,0 +1,14 @@
+﻿========================================
+ARQUIVO: app\admin-master\cozinha-chef\page.tsx
+DATA: 07/20/2026 21:56:56
+========================================
+
+// app/admin-master/cozinha-chef/page.tsx
+// âš ï¸ APENAS INTEGRAÃ‡ÃƒO!
+
+import { DashboardContainer } from './containers/DashboardContainer'
+
+export default function DashboardPage() {
+  return <DashboardContainer />
+}
+

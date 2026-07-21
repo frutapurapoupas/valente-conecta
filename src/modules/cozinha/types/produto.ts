@@ -1,0 +1,23 @@
+// app/cozinha/types/produto.ts
+export interface Produto {
+  id: string;
+  nome: string;
+  descricao?: string;
+  preco: number;
+  categoria: string;
+  imagem?: string;
+  ativo: boolean;
+  estoque?: number;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface ProdutoInput {
+  nome: string;
+  descricao?: string;
+  preco: number;
+  categoria: string;
+  imagem?: string;
+  ativo: boolean;
+  estoque?: number;
+}

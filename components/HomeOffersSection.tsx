@@ -31,8 +31,8 @@ export default function HomeOffersSection() {
       <div className="bg-white/5 border border-white/10 rounded-3xl p-6 shadow-xl shadow-slate-950/20">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-white">Ofertas públicas agora</h2>
-            <p className="text-gray-300 mt-2">Veja alguns equipamentos e serviços que já estão disponíveis para o público.</p>
+            <h2 className="text-2xl font-bold text-white">Ofertas pÃºblicas agora</h2>
+            <p className="text-gray-300 mt-2">Veja alguns equipamentos e serviÃ§os que jÃ¡ estÃ£o disponÃ­veis para o pÃºblico.</p>
           </div>
           <Link href="/publico/maquinas" className="inline-flex items-center gap-2 rounded-full bg-cyan-500 px-5 py-3 text-sm font-semibold text-black hover:bg-cyan-400 transition">
             Ver todas as ofertas
@@ -47,11 +47,12 @@ export default function HomeOffersSection() {
           </div>
         ) : (
           <div className="rounded-3xl bg-slate-950/80 p-8 text-center text-gray-300">
-            <p className="text-lg font-semibold text-white mb-2">Ainda não há ofertas públicas no catálogo.</p>
-            <p>Quando um fornecedor cadastrar seu equipamento ou serviço, ele aparecerá aqui imediatamente.</p>
+            <p className="text-lg font-semibold text-white mb-2">Ainda nÃ£o hÃ¡ ofertas pÃºblicas no catÃ¡logo.</p>
+            <p>Quando um fornecedor cadastrar seu equipamento ou serviÃ§o, ele aparecerÃ¡ aqui imediatamente.</p>
           </div>
         )}
       </div>
     </section>
   );
 }
+

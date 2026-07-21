@@ -1,5 +1,5 @@
-﻿// components/financeiro/ModalTransacao.tsx
-// 🎨 DESIGN - Modal de criação/edição de transação
+// components/financeiro/ModalTransacao.tsx
+// ?? DESIGN - Modal de criaÃ§Ã£o/ediÃ§Ã£o de transaÃ§Ã£o
 
 "use client";
 
@@ -60,8 +60,8 @@ export default function ModalTransacao({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // ✅ LOG: Ver o que está sendo enviado
-    console.log('📤 Modal: Enviando dados:', formData);
+    // ? LOG: Ver o que estÃ¡ sendo enviado
+    console.log('?? Modal: Enviando dados:', formData);
     
     onSave(formData);
   };
@@ -70,7 +70,7 @@ export default function ModalTransacao({
 
   const getQuantidadeLabel = (recorrencia: string) => {
     switch (recorrencia) {
-      case 'diária': return 'dias';
+      case 'diÃ¡ria': return 'dias';
       case 'semanal': return 'semanas';
       case 'quinzenal': return 'quinzenas';
       case 'mensal': return 'meses';
@@ -85,7 +85,7 @@ export default function ModalTransacao({
         <div className="p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-white">
-              {editingId ? '✏️ Editar Transação' : '💰 Nova Transação'}
+              {editingId ? '?? Editar TransaÃ§Ã£o' : '?? Nova TransaÃ§Ã£o'}
             </h2>
             <button onClick={onClose} className="text-gray-400 hover:text-white transition">
               <X size={20} />
@@ -93,9 +93,9 @@ export default function ModalTransacao({
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Descrição */}
+            {/* DescriÃ§Ã£o */}
             <div>
-              <label className="block text-sm text-gray-400 mb-1">Descrição *</label>
+              <label className="block text-sm text-gray-400 mb-1">DescriÃ§Ã£o *</label>
               <input
                 type="text"
                 required
@@ -184,10 +184,10 @@ export default function ModalTransacao({
               </div>
             </div>
 
-            {/* Recorrência e Quantidade */}
+            {/* RecorrÃªncia e Quantidade */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm text-gray-400 mb-1">🔄 Recorrência</label>
+                <label className="block text-sm text-gray-400 mb-1">?? RecorrÃªncia</label>
                 <select
                   value={formData.recorrencia}
                   onChange={(e) => setFormData({ ...formData, recorrencia: e.target.value })}
@@ -222,9 +222,9 @@ export default function ModalTransacao({
                 />
                 {formData.recorrencia !== 'nenhuma' && (
                   <p className="text-xs text-gray-500 mt-1">
-                    💡 Ex: 12 = {formData.recorrencia === 'mensal' ? '12 meses' : 
+                    ?? Ex: 12 = {formData.recorrencia === 'mensal' ? '12 meses' : 
                                     formData.recorrencia === 'semanal' ? '12 semanas' :
-                                    formData.recorrencia === 'diária' ? '12 dias' :
+                                    formData.recorrencia === 'diÃ¡ria' ? '12 dias' :
                                     formData.recorrencia === 'anual' ? '12 anos' : 
                                     '12 vezes'}
                   </p>
@@ -232,19 +232,19 @@ export default function ModalTransacao({
               </div>
             </div>
 
-            {/* Observações */}
+            {/* ObservaÃ§Ãµes */}
             <div>
-              <label className="block text-sm text-gray-400 mb-1">Observações</label>
+              <label className="block text-sm text-gray-400 mb-1">ObservaÃ§Ãµes</label>
               <textarea
                 value={formData.observacoes}
                 onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
                 rows={2}
-                placeholder="Observações adicionais..."
+                placeholder="ObservaÃ§Ãµes adicionais..."
                 className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-green-500 focus:outline-none"
               />
             </div>
 
-            {/* Botões */}
+            {/* BotÃµes */}
             <div className="flex gap-3 pt-4">
               <button
                 type="button"
@@ -266,3 +266,4 @@ export default function ModalTransacao({
     </div>
   );
 }
+

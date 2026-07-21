@@ -9,7 +9,7 @@ interface Notificacao {
   data: string;
 }
 
-// Salvar notificações no localStorage (simulação)
+// Salvar notificaÃ§Ãµes no localStorage (simulaÃ§Ã£o)
 function getNotificacoes(): Notificacao[] {
   if (typeof localStorage === 'undefined') return [];
   const notificacoes = localStorage.getItem('notificacoes_usuario');
@@ -24,7 +24,7 @@ function salvarNotificacoes(notificacoes: Notificacao[]) {
 export async function GET() {
   try {
     const notificacoes = getNotificacoes();
-    // Retornar apenas as últimas 20 notificações
+    // Retornar apenas as Ãºltimas 20 notificaÃ§Ãµes
     const ultimasNotificacoes = notificacoes.slice(0, 20);
     return NextResponse.json({ success: true, notificacoes: ultimasNotificacoes });
   } catch (error) {
@@ -37,7 +37,7 @@ export async function PUT(request: Request) {
   const id = searchParams.get('id');
   
   if (!id) {
-    return NextResponse.json({ success: false, error: 'ID não informado' }, { status: 400 });
+    return NextResponse.json({ success: false, error: 'ID nÃ£o informado' }, { status: 400 });
   }
   
   try {
@@ -52,3 +52,4 @@ export async function PUT(request: Request) {
     return NextResponse.json({ success: false }, { status: 500 });
   }
 }
+

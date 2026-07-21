@@ -1,1 +1,2 @@
-﻿export { default } from "../usuarios/planos/page";
+export { default } from "../usuarios/planos/page";
+

@@ -1,0 +1,119 @@
+﻿========================================
+ARQUIVO: src\modules\cozinha\services\ProdutoService.ts
+DATA: 07/20/2026 21:56:58
+========================================
+
+// app/cozinha/services/ProdutoService.ts
+import { ProdutoRepository } from '../repositories/ProdutoRepository';
+import { Produto, ProdutoInput } from '../types/produto';
+
+export class ProdutoService {
+  private repository = new ProdutoRepository();
+
+  async listarTodos(): Promise<Produto[]> {
+    try {
+      const produtos = await this.repository.buscarTodos();
+      // Regra de negÃ³cio: Filtrar apenas ativos para exibiÃ§Ã£o pÃºblica
+      return produtos.filter(p => p.ativo !== false);
+    } catch (error) {
+      console.error('Erro no Service ao listar produtos:', error);
+      // Retorna array vazio em caso de erro para nÃ£o quebrar a UI
+      return [];
+    }
+  }
+
+  async listarPorCategoria(categoria: string): Promise<Produto[]> {
+    try {
+      if (!categoria) {
+        throw new Error('Categoria Ã© obrigatÃ³ria');
+      }
+      return await this.repository.buscarPorCategoria(categoria);
+    } catch (error) {
+      console.error('Erro no Service ao listar produtos por categoria:', error);
+      throw error;
+    }
+  }
+
+  async buscarPorId(id: string): Promise<Produto | null> {
+    try {
+      if (!id) {
+        throw new Error('ID do produto Ã© obrigatÃ³rio');
+      }
+      return await this.repository.buscarPorId(id);
+    } catch (error) {
+      console.error('Erro no Service ao buscar produto:', error);
+      throw error;
+    }
+  }
+
+  async criar(produto: ProdutoInput): Promise<Produto> {
+    try {
+      // Regra de negÃ³cio: Validar dados
+      this.validarProduto(produto);
+      
+      // Regra de negÃ³cio: PreÃ§o nÃ£o pode ser negativo
+      if (produto.preco < 0) {
+        throw new Error('PreÃ§o nÃ£o pode ser negativo');
+      }
+
+      // Regra de negÃ³cio: Estoque nÃ£o pode ser negativo
+      if (produto.estoque && produto.estoque < 0) {
+        throw new Error('Estoque nÃ£o pode ser negativo');
+      }
+
+      return await this.repository.criar(produto);
+    } catch (error) {
+      console.error('Erro no Service ao criar produto:', error);
+      throw error;
+    }
+  }
+
+  async atualizar(id: string, produto: Partial<ProdutoInput>): Promise<Produto> {
+    try {
+      if (!id) {
+        throw new Error('ID do produto Ã© obrigatÃ³rio');
+      }
+
+      // Validar apenas campos que estÃ£o sendo atualizados
+      if (produto.preco !== undefined && produto.preco < 0) {
+        throw new Error('PreÃ§o nÃ£o pode ser negativo');
+      }
+
+      if (produto.estoque !== undefined && produto.estoque < 0) {
+        throw new Error('Estoque nÃ£o pode ser negativo');
+      }
+
+      return await this.repository.atualizar(id, produto);
+    } catch (error) {
+      console.error('Erro no Service ao atualizar produto:', error);
+      throw error;
+    }
+  }
+
+  async deletar(id: string): Promise<void> {
+    try {
+      if (!id) {
+        throw new Error('ID do produto Ã© obrigatÃ³rio');
+      }
+      await this.repository.deletar(id);
+    } catch (error) {
+      console.error('Erro no Service ao deletar produto:', error);
+      throw error;
+    }
+  }
+
+  private validarProduto(produto: ProdutoInput): void {
+    if (!produto.nome || produto.nome.trim().length < 3) {
+      throw new Error('Nome do produto deve ter pelo menos 3 caracteres');
+    }
+
+    if (!produto.categoria || produto.categoria.trim().length < 2) {
+      throw new Error('Categoria Ã© obrigatÃ³ria');
+    }
+
+    if (produto.preco <= 0) {
+      throw new Error('PreÃ§o deve ser maior que zero');
+    }
+  }
+}
+

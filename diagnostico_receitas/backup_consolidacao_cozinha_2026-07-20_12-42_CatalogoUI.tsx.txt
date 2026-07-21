@@ -1,0 +1,120 @@
+﻿========================================
+ARQUIVO: backup_consolidacao_cozinha_2026-07-20_12-42\CatalogoUI.tsx
+DATA: 07/20/2026 21:56:57
+========================================
+
+// app/cozinha/components/CatalogoUI.tsx
+// ⚠️ DESIGN PURO - SEM LÓGICA!
+
+interface CatalogoUIProps {
+  receitas: Array<{
+    id: string
+    nome: string
+    descricao: string
+    preco: number
+    imagem?: string
+    categoria?: string
+  }>
+  loading: boolean
+  error?: string | null
+  onEditar: (id: string) => void
+  onExcluir: (id: string) => void
+  onCriar: () => void
+}
+
+export function CatalogoUI({ 
+  receitas, 
+  loading, 
+  error,
+  onEditar, 
+  onExcluir, 
+  onCriar 
+}: CatalogoUIProps) {
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Carregando receitas...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg">
+        <p className="font-semibold">Erro ao carregar</p>
+        <p className="text-sm">{error}</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">🍽️ Cardápio</h1>
+        <button 
+          onClick={onCriar}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+        >
+          <span>+</span> Nova Receita
+        </button>
+      </div>
+
+      {receitas.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-gray-500">Nenhuma receita cadastrada</p>
+          <button 
+            onClick={onCriar}
+            className="mt-4 text-blue-600 hover:text-blue-800"
+          >
+            Criar primeira receita
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {receitas.map((receita) => (
+            <div key={receita.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
+              {receita.imagem && (
+                <img 
+                  src={receita.imagem} 
+                  alt={receita.nome}
+                  className="w-full h-48 object-cover"
+                />
+              )}
+              <div className="p-4">
+                {receita.categoria && (
+                  <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+                    {receita.categoria}
+                  </span>
+                )}
+                <h3 className="text-lg font-semibold mt-2">{receita.nome}</h3>
+                <p className="text-gray-600 text-sm line-clamp-2">{receita.descricao}</p>
+                <p className="text-green-600 font-bold mt-2">
+                  R$ {receita.preco.toFixed(2)}
+                </p>
+                <div className="flex gap-2 mt-4 pt-4 border-t">
+                  <button 
+                    onClick={() => onEditar(receita.id)}
+                    className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
+                  >
+                    ✏️ Editar
+                  </button>
+                  <button 
+                    onClick={() => onExcluir(receita.id)}
+                    className="text-red-600 hover:text-red-800 text-sm flex items-center gap-1"
+                  >
+                    🗑️ Excluir
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+

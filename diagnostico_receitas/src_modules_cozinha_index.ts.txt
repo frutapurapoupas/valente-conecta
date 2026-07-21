@@ -1,0 +1,10 @@
+﻿========================================
+ARQUIVO: src\modules\cozinha\index.ts
+DATA: 07/20/2026 21:56:58
+========================================
+
+export * from "./components/CozinhaHeader";
+export * from "./components/ProdutoCard";
+export * from "./hooks/useProdutos";
+
+

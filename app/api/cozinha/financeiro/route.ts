@@ -1,106 +1,124 @@
-// app/api/cozinha/financeiro/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 
-// GET - Listar todas as transações
 export async function GET() {
   try {
+    const supabase = createClient();
     const { data, error } = await supabase
       .from('financeiro')
       .select('*')
       .order('data', { ascending: false });
 
     if (error) throw error;
-
-    return NextResponse.json({ success: true, data });
-  } catch (error: any) {
-    console.error('❌ Erro GET /financeiro:', error);
+    return NextResponse.json({ success: true, data: data || [] });
+  } catch (error) {
+    console.error('Erro ao buscar financeiro:', error);
     return NextResponse.json(
-      { success: false, error: error.message },
+      { success: false, error: 'Erro ao carregar dados financeiros' },
       { status: 500 }
     );
   }
 }
 
-// POST - Criar uma nova transação
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
-    // 1. LER O BODY COMO TEXTO PRIMEIRO
-    const rawBody = await request.text();
-    console.log('📥 Raw body recebido:', rawBody);
+    const supabase = createClient();
+    const body = await request.json();
 
-    // 2. SE O BODY ESTIVER VAZIO, RETORNAR ERRO
-    if (!rawBody || rawBody.trim() === '') {
-      return NextResponse.json(
-        { success: false, error: 'Corpo da requisição vazio' },
-        { status: 400 }
-      );
-    }
-
-    // 3. TENTAR FAZER O PARSE DO JSON
-    let body;
-    try {
-      body = JSON.parse(rawBody);
-    } catch (parseError) {
-      console.error('❌ Erro ao parsear JSON:', parseError);
-      return NextResponse.json(
-        { success: false, error: 'JSON inválido' },
-        { status: 400 }
-      );
-    }
-
-    console.log('📥 Body parseado:', body);
-
-    // 4. VALIDAÇÃO BÁSICA
-    if (!body.descricao || !body.valor || !body.tipo) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Campos obrigatórios: descricao, valor, tipo',
-          recebido: body 
-        },
-        { status: 400 }
-      );
-    }
-
-    // 5. PREPARAR DADOS - Garantir que os campos correspondam à tabela
-    const dados = {
-      descricao: body.descricao.trim(),
-      valor: parseFloat(body.valor) || 0,
-      tipo: body.tipo,
-      categoria: body.categoria || null,
-      data: body.data || new Date().toISOString().split('T')[0],
-      forma_pagamento: body.forma_pagamento || 'PIX',
-      status: body.status || 'pago',
-      recorrencia: body.recorrencia || 'nenhuma',
-      recorrencia_quantidade: body.recorrencia_quantidade || 0,
-      observacoes: body.observacoes || null,
-    };
-
-    console.log('📤 Inserindo no Supabase:', dados);
-
-    // 6. INSERIR NO SUPABASE
     const { data, error } = await supabase
       .from('financeiro')
-      .insert(dados)
+      .insert([{
+        descricao: body.descricao,
+        valor: body.valor,
+        tipo: body.tipo,
+        categoria: body.categoria,
+        data: body.data || new Date().toISOString(),
+        forma_pagamento: body.forma_pagamento || 'PIX',
+        status: body.status || 'pendente',
+        observacoes: body.observacoes || null,
+        recorrencia: body.recorrencia || 'nenhuma',
+        recorrencia_quantidade: body.recorrencia_quantidade || 0,
+        recorrencia_intervalo: body.recorrencia_intervalo || 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }])
       .select()
       .single();
 
-    if (error) {
-      console.error('❌ Erro Supabase:', error);
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 }
-      );
-    }
-
-    console.log('✅ Transação criada:', data);
+    if (error) throw error;
     return NextResponse.json({ success: true, data });
-  } catch (error: any) {
-    console.error('❌ Erro ao criar transação:', error);
+  } catch (error) {
+    console.error('Erro ao criar registro financeiro:', error);
     return NextResponse.json(
-      { success: false, error: error.message },
+      { success: false, error: 'Erro ao criar registro financeiro' },
       { status: 500 }
     );
   }
 }
+
+export async function PUT(request: Request) {
+  try {
+    const supabase = createClient();
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    const body = await request.json();
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: 'ID não informado' },
+        { status: 400 }
+      );
+    }
+
+    const { data, error } = await supabase
+      .from('financeiro')
+      .update({
+        ...body,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return NextResponse.json({ success: true, data });
+  } catch (error) {
+    console.error('Erro ao atualizar registro financeiro:', error);
+    return NextResponse.json(
+      { success: false, error: 'Erro ao atualizar registro financeiro' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const supabase = createClient();
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: 'ID não informado' },
+        { status: 400 }
+      );
+    }
+
+    const { error } = await supabase
+      .from('financeiro')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Erro ao excluir registro financeiro:', error);
+    return NextResponse.json(
+      { success: false, error: 'Erro ao excluir registro financeiro' },
+      { status: 500 }
+    );
+  }
+}
+
+
+

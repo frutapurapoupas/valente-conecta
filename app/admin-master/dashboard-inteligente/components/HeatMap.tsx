@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { Building, MapPin, Users } from "lucide-react";
 
@@ -55,3 +55,4 @@ export default function HeatMap({ cidades }: { cidades: Cidade[] }) {
     </div>
   );
 }
+

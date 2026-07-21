@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { PieChart } from "lucide-react";
 
@@ -49,3 +49,4 @@ export default function ChartsSection({ categorias }: { categorias: Categoria[] 
     </div>
   );
 }
+

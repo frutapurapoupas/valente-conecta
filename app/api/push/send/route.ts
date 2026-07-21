@@ -39,3 +39,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Erro ao enviar push' }, { status: 500 });
   }
 }
+

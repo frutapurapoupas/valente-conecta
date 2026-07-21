@@ -1,4 +1,4 @@
-﻿export interface Ingredient {
+export interface Ingredient {
   id: string;
   name: string;
   category: 'alimento' | 'tempero' | 'bebida';
@@ -35,3 +35,4 @@ export interface RecipeIngredient {
   quantity: number;
   unit: string;
 }
+

@@ -1,4 +1,4 @@
-﻿// Arquivo: components/home/SecaoEstatisticas.tsx
+// Arquivo: components/home/SecaoEstatisticas.tsx
 // Status: AGUARDANDO CÓDIGO
 // Este arquivo será preenchido na próxima etapa
 'use client';
@@ -25,3 +25,4 @@ export default function SecaoEstatisticas() {
     </div>
   );
 }
+

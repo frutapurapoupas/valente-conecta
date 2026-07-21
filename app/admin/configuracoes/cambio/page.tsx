@@ -1,6 +1,6 @@
 // ============================================================================
 // ARQUIVO: app/admin/configuracoes/cambio/page.tsx
-// Funcionalidade: Tela do Admin Master para ajustar câmbio por cidade
+// Funcionalidade: Tela do Admin Master para ajustar cÃ¢mbio por cidade
 // Rota: /admin/configuracoes/cambio
 // ============================================================================
 
@@ -60,13 +60,13 @@ export default function AdminCambioPage() {
   const carregarDados = async () => {
     setLoading(true);
     try {
-      // Carregar configurações de câmbio
+      // Carregar configuraÃ§Ãµes de cÃ¢mbio
       const response = await fetch('/api/cambio?todas=true');
       const data = await response.json();
       if (data.success) {
         setCambios(data.data);
         
-        // Calcular estatísticas
+        // Calcular estatÃ­sticas
         const taxas = data.data.map((c: CambioConfig) => c.taxa_cambio);
         setEstatisticas({
           totalCidades: data.data.length,
@@ -84,7 +84,7 @@ export default function AdminCambioPage() {
       }
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
-      toast.error("Erro ao carregar configurações");
+      toast.error("Erro ao carregar configuraÃ§Ãµes");
     } finally {
       setLoading(false);
     }
@@ -100,20 +100,20 @@ export default function AdminCambioPage() {
       
       const data = await response.json();
       if (data.success) {
-        toast.success(`Câmbio de ${cidade} atualizado!`);
+        toast.success(`CÃ¢mbio de ${cidade} atualizado!`);
         carregarDados();
       } else {
         toast.error(data.error || "Erro ao salvar");
       }
     } catch (error) {
-      toast.error("Erro ao salvar câmbio");
+      toast.error("Erro ao salvar cÃ¢mbio");
     }
     setEditandoId(null);
   };
 
   const adicionarCidade = async () => {
     if (!novaCidade.nome) {
-      toast.error("Nome da cidade é obrigatório");
+      toast.error("Nome da cidade Ã© obrigatÃ³rio");
       return;
     }
 
@@ -152,11 +152,11 @@ export default function AdminCambioPage() {
           <ArrowLeft className="w-6 h-6" />
         </button>
         <DollarSign className="w-6 h-6 text-white" />
-        <h1 className="text-white font-bold text-xl">💱 Câmbio da Moeda Conecta</h1>
+        <h1 className="text-white font-bold text-xl">ðŸ’± CÃ¢mbio da Moeda Conecta</h1>
       </header>
 
       <main className="max-w-4xl mx-auto p-6 space-y-6">
-        {/* Cards de Estatísticas */}
+        {/* Cards de EstatÃ­sticas */}
         <div className="grid grid-cols-4 gap-4">
           <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl p-4 text-white text-center">
             <p className="text-2xl font-bold">{estatisticas.totalCidades}</p>
@@ -164,38 +164,38 @@ export default function AdminCambioPage() {
           </div>
           <div className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl p-4 text-white text-center">
             <p className="text-2xl font-bold">{estatisticas.taxaMedia.toFixed(4)}</p>
-            <p className="text-sm opacity-90">Taxa Média</p>
+            <p className="text-sm opacity-90">Taxa MÃ©dia</p>
           </div>
           <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-2xl p-4 text-white text-center">
             <p className="text-2xl font-bold">{estatisticas.taxaMin.toFixed(4)}</p>
-            <p className="text-sm opacity-90">Taxa Mínima</p>
+            <p className="text-sm opacity-90">Taxa MÃ­nima</p>
           </div>
           <div className="bg-gradient-to-r from-red-500 to-rose-500 rounded-2xl p-4 text-white text-center">
             <p className="text-2xl font-bold">{estatisticas.taxaMax.toFixed(4)}</p>
-            <p className="text-sm opacity-90">Taxa Máxima</p>
+            <p className="text-sm opacity-90">Taxa MÃ¡xima</p>
           </div>
         </div>
 
-        {/* Informação */}
+        {/* InformaÃ§Ã£o */}
         <div className="bg-blue-50 rounded-2xl p-4 border border-blue-200">
           <div className="flex items-start gap-3">
             <Globe className="w-5 h-5 text-blue-500 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-gray-800">💱 Sobre o câmbio da Moeda Conecta:</p>
+              <p className="text-sm font-medium text-gray-800">ðŸ’± Sobre o cÃ¢mbio da Moeda Conecta:</p>
               <ul className="text-xs text-gray-600 mt-2 space-y-1">
-                <li>• <strong>1 MC (Moeda Conecta)</strong> = X Reais (configurável por cidade)</li>
-                <li>• O câmbio pode ser diferente para cada cidade base</li>
-                <li>• A conversão é aplicada automaticamente no extrato do usuário</li>
-                <li>• Transações internas (usuário → usuário) usam a taxa da cidade do pagador</li>
+                <li>â€¢ <strong>1 MC (Moeda Conecta)</strong> = X Reais (configurÃ¡vel por cidade)</li>
+                <li>â€¢ O cÃ¢mbio pode ser diferente para cada cidade base</li>
+                <li>â€¢ A conversÃ£o Ã© aplicada automaticamente no extrato do usuÃ¡rio</li>
+                <li>â€¢ TransaÃ§Ãµes internas (usuÃ¡rio â†’ usuÃ¡rio) usam a taxa da cidade do pagador</li>
               </ul>
             </div>
           </div>
         </div>
 
-        {/* Tabela de Câmbio por Cidade */}
+        {/* Tabela de CÃ¢mbio por Cidade */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="bg-gray-800 px-5 py-3 flex justify-between items-center">
-            <h2 className="text-white font-bold">🌍 Taxas de Câmbio por Cidade</h2>
+            <h2 className="text-white font-bold">ðŸŒ Taxas de CÃ¢mbio por Cidade</h2>
             <button
               onClick={() => setShowModalCidade(true)}
               className="bg-yellow-500 text-black px-3 py-1 rounded-lg text-sm font-bold flex items-center gap-1"
@@ -212,7 +212,7 @@ export default function AdminCambioPage() {
                   <th className="px-4 py-3 text-left text-gray-600">Estado</th>
                   <th className="px-4 py-3 text-left text-gray-600">1 MC = R$</th>
                   <th className="px-4 py-3 text-left text-gray-600">Atualizado em</th>
-                  <th className="px-4 py-3 text-left text-gray-600">Ações</th>
+                  <th className="px-4 py-3 text-left text-gray-600">AÃ§Ãµes</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -278,9 +278,9 @@ export default function AdminCambioPage() {
           </div>
         </div>
 
-        {/* Exemplo de conversão */}
+        {/* Exemplo de conversÃ£o */}
         <div className="bg-gradient-to-r from-gray-100 to-gray-200 rounded-2xl p-4">
-          <p className="text-sm font-medium text-gray-700 mb-3">📊 Exemplo de conversão:</p>
+          <p className="text-sm font-medium text-gray-700 mb-3">ðŸ“Š Exemplo de conversÃ£o:</p>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="bg-white rounded-xl p-3 text-center">
               <p className="text-gray-500">100 MC em Valente</p>
@@ -299,7 +299,7 @@ export default function AdminCambioPage() {
         <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-800">➕ Nova Cidade</h2>
+              <h2 className="text-xl font-bold text-gray-800">âž• Nova Cidade</h2>
               <button onClick={() => setShowModalCidade(false)} className="text-gray-400">
                 <X className="w-6 h-6" />
               </button>
@@ -325,7 +325,7 @@ export default function AdminCambioPage() {
                   className="w-full px-4 py-2 border border-gray-300 rounded-xl"
                 >
                   <option value="BA">BA - Bahia</option>
-                  <option value="SP">SP - São Paulo</option>
+                  <option value="SP">SP - SÃ£o Paulo</option>
                   <option value="RJ">RJ - Rio de Janeiro</option>
                   <option value="MG">MG - Minas Gerais</option>
                   <option value="PE">PE - Pernambuco</option>
@@ -333,7 +333,7 @@ export default function AdminCambioPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Região</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">RegiÃ£o</label>
                 <select
                   value={novaCidade.regiao}
                   onChange={(e) => setNovaCidade({ ...novaCidade, regiao: e.target.value })}
@@ -368,3 +368,4 @@ export default function AdminCambioPage() {
     </div>
   );
 }
+

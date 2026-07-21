@@ -53,3 +53,5 @@ export const CatalogStorage = {
     CatalogStorage.saveAll(all.filter(item => item.id !== id));
   }
 };
+
+

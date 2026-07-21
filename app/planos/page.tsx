@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, CheckCircle2, CreditCard, Shield, Star, Building2 } from "lucide-react";
@@ -185,3 +185,4 @@ export default function PlanosPage() {
     </div>
   );
 }
+

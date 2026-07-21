@@ -1,0 +1,34 @@
+﻿========================================
+ARQUIVO: backup_consolidacao_cozinha_2026-07-20_12-42\cozinha\QuickLink.tsx
+DATA: 07/20/2026 21:56:57
+========================================
+
+// components/cozinha/QuickLink.tsx
+// Ã°Å¸Å½Â¨ UI - Link RÃƒÂ¡pido
+
+"use client";
+
+import Link from 'next/link';
+import { ChevronRight } from 'lucide-react';
+
+interface QuickLinkProps {
+  href: string;
+  label: string;
+}
+
+// Ã¢Å“â€¦ EXPORTAÃƒâ€¡ÃƒÆ’O NOMEADA
+export function QuickLink({ href, label }: QuickLinkProps) {
+  return (
+    <Link href={href} className="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center gap-1">
+      {label}
+      <ChevronRight className="w-4 h-4" />
+    </Link>
+  );
+}
+
+// Ã¢Å“â€¦ EXPORTAÃƒâ€¡ÃƒÆ’O DEFAULT
+export default QuickLink;
+
+
+
+

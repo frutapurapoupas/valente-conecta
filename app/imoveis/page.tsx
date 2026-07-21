@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect } from 'react';
 import {
@@ -746,7 +746,7 @@ export default function ImoveisPage() {
 
                 <div className="bg-blue-50 p-3 rounded-lg">
                   <p className="text-sm text-blue-700">
-                    📢 Valor da publicação: 
+                    ?? Valor da publicação: 
                     {formImovel.operacao === 'venda' ? ' R$50,00' : ' R$20,00'}
                     {formImovel.destaque && ' + R$30,00 (destaque)'}
                   </p>
@@ -851,3 +851,4 @@ export default function ImoveisPage() {
     </div>
   );
 }
+

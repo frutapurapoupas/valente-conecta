@@ -35,7 +35,7 @@ export default function ConfigurarCardapioPage() {
   const [salvando, setSalvando] = useState(false);
   const [showResumo, setShowResumo] = useState(false);
 
-  const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+  const diasSemana = ["Segunda", "TerÃ§a", "Quarta", "Quinta", "Sexta", "SÃ¡bado"];
 
   useEffect(() => {
     // Carregar pratos
@@ -47,19 +47,19 @@ export default function ConfigurarCardapioPage() {
       // Dados iniciais
       const pratosIniciais: Prato[] = [
         { id: 1, nome: "Picadinho de Carne", categoria: "carne", descricao: "Picadinho de carne com arroz e legumes", precoVenda: 28.90, ativo: true },
-        { id: 2, nome: "Carne Moída", categoria: "carne", descricao: "Carne moída com arroz e brócolis/cenoura", precoVenda: 26.90, ativo: true },
-        { id: 3, nome: "Carne de Panela", categoria: "carne", descricao: "Carne de panela com arroz e purê de mandioca", precoVenda: 32.90, ativo: true },
-        { id: 4, nome: "Frango em Cubos", categoria: "frango", descricao: "Frango em cubos com arroz e purê", precoVenda: 24.90, ativo: true },
+        { id: 2, nome: "Carne MoÃ­da", categoria: "carne", descricao: "Carne moÃ­da com arroz e brÃ³colis/cenoura", precoVenda: 26.90, ativo: true },
+        { id: 3, nome: "Carne de Panela", categoria: "carne", descricao: "Carne de panela com arroz e purÃª de mandioca", precoVenda: 32.90, ativo: true },
+        { id: 4, nome: "Frango em Cubos", categoria: "frango", descricao: "Frango em cubos com arroz e purÃª", precoVenda: 24.90, ativo: true },
         { id: 5, nome: "Strogonoff de Frango", categoria: "frango", descricao: "Strogonoff de frango com arroz", precoVenda: 27.90, ativo: true },
-        { id: 6, nome: "Frango à Milanesa", categoria: "frango", descricao: "Frango à milanesa com arroz e legumes", precoVenda: 26.90, ativo: true },
-        { id: 7, nome: "Escondidinho de Frango", categoria: "frango", descricao: "Escondidinho de frango com purê de batata", precoVenda: 29.90, ativo: true },
+        { id: 6, nome: "Frango Ã  Milanesa", categoria: "frango", descricao: "Frango Ã  milanesa com arroz e legumes", precoVenda: 26.90, ativo: true },
+        { id: 7, nome: "Escondidinho de Frango", categoria: "frango", descricao: "Escondidinho de frango com purÃª de batata", precoVenda: 29.90, ativo: true },
         { id: 8, nome: "Frango em Cubos Colorido", categoria: "frango", descricao: "Frango em cubos com arroz colorido", precoVenda: 25.90, ativo: true }
       ];
       setPratos(pratosIniciais);
       localStorage.setItem("pratos_cardapio", JSON.stringify(pratosIniciais));
     }
 
-    // Carregar configuração do cardápio
+    // Carregar configuraÃ§Ã£o do cardÃ¡pio
     const storedConfig = localStorage.getItem("cardapio_config");
     if (storedConfig) {
       setConfiguracoes(JSON.parse(storedConfig));
@@ -72,7 +72,7 @@ export default function ConfigurarCardapioPage() {
       setConfiguracoes(configInicial);
     }
 
-    // Carregar previsão de vendas
+    // Carregar previsÃ£o de vendas
     const storedPrevisao = localStorage.getItem("previsao_vendas");
     if (storedPrevisao) {
       setPrevisaoVendas(JSON.parse(storedPrevisao));
@@ -96,11 +96,11 @@ export default function ConfigurarCardapioPage() {
   const salvarConfiguracoes = () => {
     setSalvando(true);
 
-    // Salvar configurações
+    // Salvar configuraÃ§Ãµes
     localStorage.setItem("cardapio_config", JSON.stringify(configuracoes));
     localStorage.setItem("previsao_vendas", JSON.stringify(previsaoVendas));
 
-    // Gerar cardápio para o cliente
+    // Gerar cardÃ¡pio para o cliente
     const cardapioCliente = diasSemana.map(dia => {
       const config = configuracoes.find(c => c.dia === dia);
       const pratoCarne = pratos.find(p => p.id === config?.pratoCarneId);
@@ -142,20 +142,20 @@ export default function ConfigurarCardapioPage() {
 
   const totalSemanal = Object.values(previsaoVendas).reduce((a, b) => a + b, 0);
   const mediaDiaria = Math.round(totalSemanal / 6);
-  const faturamentoEstimado = totalSemanal * 25; // Média de R$25 por marmita
+  const faturamentoEstimado = totalSemanal * 25; // MÃ©dia de R$25 por marmita
 
-  // Verificar se há pratos não configurados
+  // Verificar se hÃ¡ pratos nÃ£o configurados
   const configuracaoIncompleta = configuracoes.some(c => !c.pratoCarneId || !c.pratoFrangoId);
   const diasIncompletos = configuracoes.filter(c => !c.pratoCarneId || !c.pratoFrangoId).map(c => c.dia);
 
   return (
     <div className="min-h-screen bg-gray-100 p-4">
       <div className="max-w-6xl mx-auto">
-        {/* Cabeçalho */}
+        {/* CabeÃ§alho */}
         <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">📅 Configurar Cardápio Semanal</h1>
-            <p className="text-sm text-gray-500">Defina quais pratos serão servidos cada dia da semana</p>
+            <h1 className="text-2xl font-bold text-gray-800">ðŸ“… Configurar CardÃ¡pio Semanal</h1>
+            <p className="text-sm text-gray-500">Defina quais pratos serÃ£o servidos cada dia da semana</p>
           </div>
           <button
             onClick={salvarConfiguracoes}
@@ -167,16 +167,16 @@ export default function ConfigurarCardapioPage() {
             ) : (
               <Save size={18} />
             )}
-            {salvando ? "Salvando..." : "Salvar Configuração"}
+            {salvando ? "Salvando..." : "Salvar ConfiguraÃ§Ã£o"}
           </button>
         </div>
 
-        {/* Alerta de configuração incompleta */}
+        {/* Alerta de configuraÃ§Ã£o incompleta */}
         {configuracaoIncompleta && (
           <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-xl p-3 flex items-center gap-3">
             <AlertCircle size={20} className="text-yellow-600" />
             <div>
-              <p className="text-sm text-yellow-800 font-medium">Configuração incompleta</p>
+              <p className="text-sm text-yellow-800 font-medium">ConfiguraÃ§Ã£o incompleta</p>
               <p className="text-xs text-yellow-600">
                 Faltam pratos para os dias: {diasIncompletos.join(", ")}
               </p>
@@ -184,18 +184,18 @@ export default function ConfigurarCardapioPage() {
           </div>
         )}
 
-        {/* Notificação de sucesso */}
+        {/* NotificaÃ§Ã£o de sucesso */}
         {showResumo && (
           <div className="mb-4 bg-green-50 border border-green-200 rounded-xl p-3 flex items-center gap-3 animate-bounce">
             <CheckCircle size={20} className="text-green-600" />
             <div>
-              <p className="text-sm text-green-800 font-medium">Cardápio salvo com sucesso!</p>
-              <p className="text-xs text-green-600">O cardápio do cliente foi atualizado automaticamente</p>
+              <p className="text-sm text-green-800 font-medium">CardÃ¡pio salvo com sucesso!</p>
+              <p className="text-xs text-green-600">O cardÃ¡pio do cliente foi atualizado automaticamente</p>
             </div>
           </div>
         )}
 
-        {/* Tabela de Configuração */}
+        {/* Tabela de ConfiguraÃ§Ã£o */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -204,17 +204,17 @@ export default function ConfigurarCardapioPage() {
                   <th className="p-4 text-left font-semibold text-gray-700 w-24">Dia</th>
                   <th className="p-4 text-left font-semibold text-gray-700">
                     <span className="flex items-center gap-2">
-                      🥩 Prato de Carne
+                      ðŸ¥© Prato de Carne
                     </span>
                   </th>
                   <th className="p-4 text-left font-semibold text-gray-700">
                     <span className="flex items-center gap-2">
-                      🍗 Prato de Frango
+                      ðŸ— Prato de Frango
                     </span>
                   </th>
                   <th className="p-4 text-left font-semibold text-gray-700">
                     <span className="flex items-center gap-2">
-                      📊 Previsão de Vendas
+                      ðŸ“Š PrevisÃ£o de Vendas
                     </span>
                   </th>
                 </tr>
@@ -310,7 +310,7 @@ export default function ConfigurarCardapioPage() {
                 <p className="text-lg font-bold text-blue-600">{totalSemanal} marmitas</p>
               </div>
               <div className="bg-white rounded-lg p-2 text-center">
-                <p className="text-xs text-gray-500">Média Diária</p>
+                <p className="text-xs text-gray-500">MÃ©dia DiÃ¡ria</p>
                 <p className="text-lg font-bold text-green-600">{mediaDiaria} marmitas</p>
               </div>
               <div className="bg-white rounded-lg p-2 text-center">
@@ -323,7 +323,7 @@ export default function ConfigurarCardapioPage() {
           <div className="bg-orange-50 rounded-xl p-4 border border-orange-200">
             <div className="flex items-center gap-2 mb-3">
               <ChefHat size={20} className="text-orange-500" />
-              <h3 className="font-semibold text-orange-800">Dicas de Cardápio</h3>
+              <h3 className="font-semibold text-orange-800">Dicas de CardÃ¡pio</h3>
             </div>
             <ul className="text-sm text-orange-700 space-y-1 list-disc list-inside">
               <li>Varie os pratos entre dias da semana</li>
@@ -334,13 +334,13 @@ export default function ConfigurarCardapioPage() {
           </div>
         </div>
 
-        {/* Preview do Cardápio do Cliente */}
+        {/* Preview do CardÃ¡pio do Cliente */}
         <div className="mt-6 bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="p-4 bg-gray-50 border-b">
             <h3 className="font-semibold text-gray-800 flex items-center gap-2">
-              <Clock size={18} /> Preview do Cardápio do Cliente
+              <Clock size={18} /> Preview do CardÃ¡pio do Cliente
             </h3>
-            <p className="text-xs text-gray-500">Como ficará visível para o cliente</p>
+            <p className="text-xs text-gray-500">Como ficarÃ¡ visÃ­vel para o cliente</p>
           </div>
           <div className="p-4 overflow-x-auto">
             <div className="flex gap-4">
@@ -355,20 +355,20 @@ export default function ConfigurarCardapioPage() {
                     <div className="mt-2 space-y-2">
                       {pratoCarne ? (
                         <div className="text-xs p-2 bg-white rounded">
-                          <span className="text-red-500">🥩</span> {pratoCarne.nome}
+                          <span className="text-red-500">ðŸ¥©</span> {pratoCarne.nome}
                         </div>
                       ) : (
                         <div className="text-xs p-2 bg-gray-200 rounded text-gray-400 text-center">
-                          Aguardando configuração
+                          Aguardando configuraÃ§Ã£o
                         </div>
                       )}
                       {pratoFrango ? (
                         <div className="text-xs p-2 bg-white rounded">
-                          <span className="text-orange-500">🍗</span> {pratoFrango.nome}
+                          <span className="text-orange-500">ðŸ—</span> {pratoFrango.nome}
                         </div>
                       ) : (
                         <div className="text-xs p-2 bg-gray-200 rounded text-gray-400 text-center">
-                          Aguardando configuração
+                          Aguardando configuraÃ§Ã£o
                         </div>
                       )}
                     </div>
@@ -382,3 +382,4 @@ export default function ConfigurarCardapioPage() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { AlertTriangle, Bell, TrendingUp, Users } from "lucide-react";
 
@@ -31,8 +31,9 @@ export default function AlertsPanel() {
         })}
       </div>
       <button className="w-full mt-4 text-center text-xs text-indigo-600 hover:text-indigo-700">
-        Ver todos os alertas →
+        Ver todos os alertas ?
       </button>
     </div>
   );
 }
+

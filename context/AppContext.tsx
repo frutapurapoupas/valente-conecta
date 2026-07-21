@@ -1,4 +1,4 @@
-﻿import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode } from 'react';
 
 interface AppContextType {
   // definir estados globais aqui
@@ -21,3 +21,4 @@ export function useApp() {
   }
   return context;
 }
+

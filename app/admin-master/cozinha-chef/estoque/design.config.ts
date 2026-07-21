@@ -1,8 +1,8 @@
-// 🎨 DESIGN PURO - Cores, textos e classes do estoque
+// ðŸŽ¨ DESIGN PURO - Cores, textos e classes do estoque
 
 export const estoqueDesign = {
   titles: {
-    main: "📦 Gerenciar Estoque",
+    main: "ðŸ“¦ Gerenciar Estoque",
     subtitle: "Controle de ingredientes e insumos",
     newItem: "+ Novo Item",
     search: "Buscar item...",
@@ -32,7 +32,7 @@ export const estoqueDesign = {
     titleIcon: "text-blue-400",
     subtitle: "text-sm text-gray-400",
     
-    // Botões
+    // BotÃµes
     btnPrimary: "px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center gap-2 text-sm transition",
     btnSecondary: "p-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition",
     btnVoltar: "text-sm text-gray-400 hover:text-white flex items-center gap-1 transition",
@@ -56,7 +56,7 @@ export const estoqueDesign = {
     statusLow: "text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded-full flex items-center gap-1 w-fit",
     statusOk: "text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full flex items-center gap-1 w-fit",
     
-    // Ações
+    // AÃ§Ãµes
     actionsContainer: "flex gap-1",
     actionEdit: "p-1.5 hover:bg-blue-500/20 rounded text-blue-400 transition",
     actionDelete: "p-1.5 hover:bg-red-500/20 rounded text-red-400 transition",
@@ -73,3 +73,4 @@ export const estoqueDesign = {
 };
 
 export type EstoqueDesign = typeof estoqueDesign;
+

@@ -1,5 +1,5 @@
-﻿// services/cozinhaService.ts
-// 🔧 LÓGICA DE API - Comunicação com o backend
+// services/cozinhaService.ts
+// ?? LÓGICA DE API - Comunicação com o backend
 
 const API_BASE = '/api/cozinha';
 
@@ -140,6 +140,8 @@ export const cozinhaService = {
   }).then(res => res.json()),
 
   // ==================== FINANCEIRO ====================
-  // ✅ NOVA FUNÇÃO ADICIONADA
+  // ? NOVA FUNÇÃO ADICIONADA
   getFinanceiro: () => fetch(`${API_BASE}/financeiro`).then(res => res.json()),
 };
+
+

@@ -1,0 +1,122 @@
+﻿========================================
+ARQUIVO: _legacy\cozinha-chef-neide\backup_modulos_2026-07-16_09-43\app\admin\cozinha-novo\ingredientes\page.tsx
+DATA: 07/20/2026 21:57:00
+========================================
+
+'use client';
+
+import { useIngredients } from '@/hooks/cozinha-novo/useIngredients';
+import { useState } from 'react';
+
+// Design 100% separado (cores, textos, classes)
+const design = {
+  container: "p-6 bg-gray-50 min-h-screen",
+  card: "bg-white rounded-lg shadow-md p-6",
+  buttonPrimary: "bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg",
+  table: "min-w-full divide-y divide-gray-200",
+  th: "px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase",
+  td: "px-6 py-4 whitespace-nowrap text-sm text-gray-900",
+  modal: "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50",
+  modalContent: "bg-white rounded-lg p-6 w-96"
+};
+
+export default function IngredientsPage() {
+  const { ingredients, loading, create, update, delete: remove } = useIngredients();
+  const [showModal, setShowModal] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      name: formData.get('name') as string,
+      category: formData.get('category') as any,
+      unit: formData.get('unit') as string,
+      currentPrice: parseFloat(formData.get('currentPrice') as string),
+      stock: parseFloat(formData.get('stock') as string),
+      minStock: parseFloat(formData.get('minStock') as string)
+    };
+
+    if (editing) {
+      await update(editing.id, data);
+    } else {
+      await create(data);
+    }
+    setShowModal(false);
+    setEditing(null);
+  };
+
+  if (loading) {
+    return <div className={design.container}>Carregando...</div>;
+  }
+
+  return (
+    <div className={design.container}>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">?? Cozinha - Ingredientes</h1>
+        <p className="text-gray-600">Gerencie os insumos (100% separado do sistema original)</p>
+      </div>
+
+      <div className="flex justify-end mb-6">
+        <button onClick={() => { setEditing(null); setShowModal(true); }} className={design.buttonPrimary}>
+          + Novo Ingrediente
+        </button>
+      </div>
+
+      <div className={design.card}>
+        <table className={design.table}>
+          <thead className="bg-gray-50">
+            <tr>
+              <th className={design.th}>Nome</th>
+              <th className={design.th}>Categoria</th>
+              <th className={design.th}>Estoque</th>
+              <th className={design.th}>PreÃ§o</th>
+              <th className={design.th}>AÃ§Ãµes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ingredients.map(ing => (
+              <tr key={ing.id}>
+                <td className={design.td}>{ing.name}</td>
+                <td className={design.td}>{ing.category}</td>
+                <td className={design.td}>{ing.stock} {ing.unit}</td>
+                <td className={design.td}>R$ {ing.currentPrice}</td>
+                <td className={design.td}>
+                  <button onClick={() => { setEditing(ing); setShowModal(true); }} className="text-blue-600 mr-3">Editar</button>
+                  <button onClick={() => remove(ing.id)} className="text-red-600">Excluir</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {showModal && (
+        <div className={design.modal}>
+          <div className={design.modalContent}>
+            <h2 className="text-xl mb-4">{editing ? 'Editar' : 'Novo'} Ingrediente</h2>
+            <form onSubmit={handleSubmit}>
+              <input name="name" defaultValue={editing?.name} placeholder="Nome" className="w-full border rounded p-2 mb-2" required />
+              <select name="category" defaultValue={editing?.category} className="w-full border rounded p-2 mb-2">
+                <option value="alimento">Alimento</option>
+                <option value="tempero">Tempero</option>
+                <option value="bebida">Bebida</option>
+              </select>
+              <input name="unit" defaultValue={editing?.unit} placeholder="Unidade" className="w-full border rounded p-2 mb-2" required />
+              <input name="currentPrice" type="number" step="0.01" defaultValue={editing?.currentPrice} placeholder="PreÃ§o" className="w-full border rounded p-2 mb-2" required />
+              <input name="stock" type="number" defaultValue={editing?.stock} placeholder="Estoque" className="w-full border rounded p-2 mb-2" required />
+              <input name="minStock" type="number" defaultValue={editing?.minStock} placeholder="Estoque MÃ­nimo" className="w-full border rounded p-2 mb-4" required />
+              <div className="flex justify-end gap-2">
+                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border rounded">Cancelar</button>
+                <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded">Salvar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+

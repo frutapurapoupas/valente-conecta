@@ -1,0 +1,148 @@
+﻿========================================
+ARQUIVO: app\admin-master\cozinha-chef\hooks\useEstoque.ts
+DATA: 07/20/2026 21:56:55
+========================================
+
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/lib/supabase';
+import { estoqueService } from '../services/estoqueService';
+
+export interface EstoqueItem {
+  id: string;
+  produto: string;
+  categoria: string;
+  quantidade: number;
+  unidade: string;
+  estoque_minimo: number;
+  estoque_maximo: number;
+  localizacao: string;
+  ultima_atualizacao: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export function useEstoque() {
+  const [estoque, setEstoque] = useState<EstoqueItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchEstoque = useCallback(async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('estoque')
+        .select('*')
+        .order('produto', { ascending: true });
+
+      if (error) throw error;
+      setEstoque(data || []);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar estoque');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const createItem = useCallback(async (item: Omit<EstoqueItem, 'id' | 'created_at' | 'updated_at'>) => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('estoque')
+        .insert([item])
+        .select()
+        .single();
+
+      if (error) throw error;
+      await fetchEstoque();
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao criar item');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchEstoque]);
+
+  const updateItem = useCallback(async (id: string, updates: Partial<EstoqueItem>) => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('estoque')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      await fetchEstoque();
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao atualizar item');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchEstoque]);
+
+  const deleteItem = useCallback(async (id: string) => {
+    try {
+      setLoading(true);
+      const { error } = await supabase
+        .from('estoque')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      await fetchEstoque();
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao deletar item');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchEstoque]);
+
+  const getLowStock = useCallback(() => {
+    return estoque.filter(item => item.quantidade <= item.estoque_minimo);
+  }, [estoque]);
+
+  const getTotalValue = useCallback(() => {
+    return estoque.reduce((total, item) => total + (item.quantidade * 0), 0);
+  }, [estoque]);
+
+  useEffect(() => {
+    fetchEstoque();
+  }, [fetchEstoque]);
+
+  const items = (estoque || []).map((item) => ({
+    ...item,
+    nome: item.produto || '',
+  }));
+
+  const carregar = fetchEstoque;
+
+  const atualizar = useCallback(async (id: string, updates: Partial<EstoqueItem> & { quantidade?: number }) => {
+    return updateItem(id, updates);
+  }, [updateItem]);
+
+  return {
+    estoque,
+    items,
+    loading,
+    error,
+    fetchEstoque,
+    carregar,
+    createItem,
+    updateItem,
+    atualizar,
+    deleteItem,
+    getLowStock,
+    getTotalValue,
+  };
+}
+
+
+
+

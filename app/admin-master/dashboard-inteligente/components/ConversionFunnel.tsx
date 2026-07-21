@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { Award, CreditCard, Eye, UserCheck } from "lucide-react";
 
@@ -14,7 +14,7 @@ export default function ConversionFunnel() {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border p-4">
-      <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">📈 Funil de Conversão</h3>
+      <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">?? Funil de Conversão</h3>
       <div className="space-y-4">
         {etapas.map((etapa, idx) => {
           const Icon = etapa.icone;
@@ -35,7 +35,7 @@ export default function ConversionFunnel() {
               </div>
               {idx < etapas.length - 1 && (
                 <div className="text-center text-[10px] text-gray-400 mt-1">
-                  ↓ taxa de conversão: {idx === 0 ? "25.6%" : idx === 1 ? "27.8%" : "50.6%"}
+                  ? taxa de conversão: {idx === 0 ? "25.6%" : idx === 1 ? "27.8%" : "50.6%"}
                 </div>
               )}
             </div>
@@ -45,3 +45,4 @@ export default function ConversionFunnel() {
     </div>
   );
 }
+

@@ -42,14 +42,14 @@ export default function DetailView({
 
         {item.descricao && (
           <div>
-            <h2 className="text-sm uppercase tracking-wide text-gray-400 mb-2">Descrição</h2>
+            <h2 className="text-sm uppercase tracking-wide text-gray-400 mb-2">DescriÃ§Ã£o</h2>
             <p className="text-gray-300 leading-relaxed">{item.descricao}</p>
           </div>
         )}
 
         {item.preco !== undefined && (
           <div>
-            <h2 className="text-sm uppercase tracking-wide text-gray-400 mb-2">Preço</h2>
+            <h2 className="text-sm uppercase tracking-wide text-gray-400 mb-2">PreÃ§o</h2>
             <p className="text-3xl font-bold text-emerald-400">
               R$ {item.preco.toFixed(2)}
             </p>
@@ -98,3 +98,4 @@ export default function DetailView({
     </div>
   );
 }
+

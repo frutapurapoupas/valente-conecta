@@ -1,0 +1,27 @@
+// app/admin-master/cozinha/types/ingrediente.ts
+export interface Ingrediente {
+  id: string;
+  nome: string;
+  unidade: string;
+  precoMedio: number;
+  estoqueAtual: number;
+  estoqueMinimo: number;
+  categoria?: string;
+  fornecedorId?: string;
+  fornecedorNome?: string;
+  observacao?: string;
+  ativo: boolean;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface IngredienteInput {
+  nome: string;
+  unidade: string;
+  precoMedio: number;
+  estoqueAtual: number;
+  estoqueMinimo: number;
+  categoria?: string;
+  fornecedorId?: string;
+  observacao?: string;
+}

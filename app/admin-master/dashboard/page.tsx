@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -209,3 +209,4 @@ function MetricCard({ label, value }: { label: string; value: string | number })
     </div>
   );
 }
+

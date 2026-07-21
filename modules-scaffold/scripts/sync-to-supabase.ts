@@ -2,7 +2,7 @@
  * Script: Sincronizar dados de localStorage para Supabase
  * Uso: npx ts-node modules-scaffold/scripts/sync-to-supabase.ts
  * 
- * Este script lê dados do localStorage (em JSON) e insere em tabelas Supabase
+ * Este script lÃª dados do localStorage (em JSON) e insere em tabelas Supabase
  * correspondentes, criando um backup e evitando duplicatas.
  */
 
@@ -27,7 +27,7 @@ const SYNC_CONFIGS: SyncConfig[] = [
 
 export async function syncLocalStorageToSupabase() {
   if (!SUPABASE_URL || !SUPABASE_KEY) {
-    console.error('❌ Erro: Configure SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY');
+    console.error('âŒ Erro: Configure SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY');
     process.exit(1);
   }
 
@@ -39,24 +39,24 @@ export async function syncLocalStorageToSupabase() {
     fs.mkdirSync(backupDir, { recursive: true });
   }
 
-  console.log('🔄 Iniciando sincronização localStorage → Supabase...\n');
+  console.log('ðŸ”„ Iniciando sincronizaÃ§Ã£o localStorage â†’ Supabase...\n');
 
   for (const config of SYNC_CONFIGS) {
     try {
       // 1. Ler dados do localStorage (em arquivo JSON para testes)
       const dataPath = path.join(process.cwd(), `data/${config.localKey}.json`);
       if (!fs.existsSync(dataPath)) {
-        console.log(`⏭️  Pulando ${config.localKey} (arquivo não encontrado)`);
+        console.log(`â­ï¸  Pulando ${config.localKey} (arquivo nÃ£o encontrado)`);
         continue;
       }
 
       const localData = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
-      console.log(`📦 Carregado: ${localData.length} registros de ${config.localKey}`);
+      console.log(`ðŸ“¦ Carregado: ${localData.length} registros de ${config.localKey}`);
 
       // 2. Criar backup
       const backupPath = path.join(backupDir, `${config.table}-backup-${timestamp}.json`);
       fs.writeFileSync(backupPath, JSON.stringify(localData, null, 2));
-      console.log(`💾 Backup criado: ${backupPath}`);
+      console.log(`ðŸ’¾ Backup criado: ${backupPath}`);
 
       // 3. Sincronizar em lotes
       let synced = 0;
@@ -85,23 +85,23 @@ export async function syncLocalStorageToSupabase() {
           .insert(toInsert);
 
         if (error) {
-          console.error(`❌ Erro ao inserir em ${config.table}:`, error.message);
+          console.error(`âŒ Erro ao inserir em ${config.table}:`, error.message);
         } else {
           synced += toInsert.length;
           skipped += batch.length - toInsert.length;
-          console.log(`✅ ${config.table}: ${toInsert.length} novos registros`);
+          console.log(`âœ… ${config.table}: ${toInsert.length} novos registros`);
         }
       }
 
       console.log(
-        `📊 ${config.table}: ${synced} sincronizados, ${skipped} duplicatas puladas\n`
+        `ðŸ“Š ${config.table}: ${synced} sincronizados, ${skipped} duplicatas puladas\n`
       );
     } catch (error: any) {
-      console.error(`❌ Erro ao sincronizar ${config.localKey}:`, error.message);
+      console.error(`âŒ Erro ao sincronizar ${config.localKey}:`, error.message);
     }
   }
 
-  console.log('✨ Sincronização concluída!');
+  console.log('âœ¨ SincronizaÃ§Ã£o concluÃ­da!');
 }
 
 // Executar se chamado diretamente
@@ -110,3 +110,4 @@ if (require.main === module) {
 }
 
 export default syncLocalStorageToSupabase;
+

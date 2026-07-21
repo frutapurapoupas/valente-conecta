@@ -6,7 +6,7 @@ export const EstoqueService = {
     return estoque ? JSON.parse(estoque) : [];
   },
 
-  // Identifica itens abaixo do mínimo e gera a lista automaticamente
+  // Identifica itens abaixo do mÃ­nimo e gera a lista automaticamente
   gerarListaComprasAutomatica: () => {
     const estoque = EstoqueService.getEstoque();
     return estoque.filter((item: any) => item.quantidade <= item.minimo)
@@ -16,7 +16,7 @@ export const EstoqueService = {
                   }));
   },
 
-  // Atualiza um item após compra
+  // Atualiza um item apÃ³s compra
   atualizarEstoque: (nomeItem: string, novaQuantidade: number) => {
     const estoque = EstoqueService.getEstoque();
     const index = estoque.findIndex((i: any) => i.nome === nomeItem);
@@ -26,3 +26,5 @@ export const EstoqueService = {
     }
   }
 };
+
+

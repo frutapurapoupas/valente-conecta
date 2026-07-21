@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 export default function CatalogoPage() {
   return (
@@ -10,3 +10,4 @@ export default function CatalogoPage() {
     </div>
   );
 }
+

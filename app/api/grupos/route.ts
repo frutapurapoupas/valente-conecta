@@ -1,20 +1,20 @@
 // ============================================================================
 // ARQUIVO 4: app/api/grupos/route.ts
-// Funcionalidade: API para gerenciar grupos de usuários
+// Funcionalidade: API para gerenciar grupos de usuÃ¡rios
 // Rotas:
 //   GET /api/grupos - Listar todos os grupos
-//   GET /api/grupos?usuarioId=xxx - Buscar grupos de um usuário
+//   GET /api/grupos?usuarioId=xxx - Buscar grupos de um usuÃ¡rio
 //   POST /api/grupos - Criar novo grupo
 //   PUT /api/grupos - Atualizar grupo
 //   DELETE /api/grupos?id=xxx - Deletar grupo
-//   POST /api/grupos/usuario - Adicionar usuário a grupo
-//   DELETE /api/grupos/usuario - Remover usuário de grupo
+//   POST /api/grupos/usuario - Adicionar usuÃ¡rio a grupo
+//   DELETE /api/grupos/usuario - Remover usuÃ¡rio de grupo
 // ============================================================================
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
-// Verificar se o usuário é Admin
+// Verificar se o usuÃ¡rio Ã© Admin
 async function isAdmin(request: NextRequest): Promise<boolean> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
@@ -39,14 +39,14 @@ async function isAdmin(request: NextRequest): Promise<boolean> {
 export async function GET(request: NextRequest) {
   const admin = await isAdmin(request);
   if (!admin) {
-    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    return NextResponse.json({ error: 'NÃ£o autorizado' }, { status: 401 });
   }
 
   const searchParams = request.nextUrl.searchParams;
   const usuarioId = searchParams.get('usuarioId');
   const grupoId = searchParams.get('grupoId');
 
-  // Buscar grupos de um usuário específico
+  // Buscar grupos de um usuÃ¡rio especÃ­fico
   if (usuarioId) {
     try {
       const { data, error } = await supabase
@@ -60,12 +60,12 @@ export async function GET(request: NextRequest) {
       const grupos = data?.map(item => item.grupos_dinamicos) || [];
       return NextResponse.json({ success: true, data: grupos });
     } catch (error) {
-      console.error('Erro ao buscar grupos do usuário:', error);
+      console.error('Erro ao buscar grupos do usuÃ¡rio:', error);
       return NextResponse.json({ error: 'Erro ao buscar grupos' }, { status: 500 });
     }
   }
 
-  // Buscar usuários de um grupo específico
+  // Buscar usuÃ¡rios de um grupo especÃ­fico
   if (grupoId) {
     try {
       const { data, error } = await supabase
@@ -79,8 +79,8 @@ export async function GET(request: NextRequest) {
       const usuarios = data?.map(item => item.usuarios) || [];
       return NextResponse.json({ success: true, data: usuarios });
     } catch (error) {
-      console.error('Erro ao buscar usuários do grupo:', error);
-      return NextResponse.json({ error: 'Erro ao buscar usuários' }, { status: 500 });
+      console.error('Erro ao buscar usuÃ¡rios do grupo:', error);
+      return NextResponse.json({ error: 'Erro ao buscar usuÃ¡rios' }, { status: 500 });
     }
   }
 
@@ -101,27 +101,27 @@ export async function GET(request: NextRequest) {
 }
 
 // ============================================================================
-// POST - Criar grupo ou adicionar usuário a grupo
+// POST - Criar grupo ou adicionar usuÃ¡rio a grupo
 // ============================================================================
 export async function POST(request: NextRequest) {
   const admin = await isAdmin(request);
   if (!admin) {
-    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    return NextResponse.json({ error: 'NÃ£o autorizado' }, { status: 401 });
   }
 
   try {
     const body = await request.json();
     const { tipo, ...dados } = body;
 
-    // Adicionar usuário a grupo
+    // Adicionar usuÃ¡rio a grupo
     if (tipo === 'usuario') {
       const { usuarioId, grupoId } = dados;
       
       if (!usuarioId || !grupoId) {
-        return NextResponse.json({ error: 'Usuário e grupo são obrigatórios' }, { status: 400 });
+        return NextResponse.json({ error: 'UsuÃ¡rio e grupo sÃ£o obrigatÃ³rios' }, { status: 400 });
       }
 
-      // Verificar se já existe
+      // Verificar se jÃ¡ existe
       const { data: existente } = await supabase
         .from('usuarios_grupos')
         .select('id')
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
         
         if (error) throw error;
       } else {
-        // Criar nova associação
+        // Criar nova associaÃ§Ã£o
         const { error } = await supabase
           .from('usuarios_grupos')
           .insert({
@@ -153,14 +153,14 @@ export async function POST(request: NextRequest) {
         if (error) throw error;
       }
 
-      return NextResponse.json({ success: true, message: 'Usuário adicionado ao grupo' });
+      return NextResponse.json({ success: true, message: 'UsuÃ¡rio adicionado ao grupo' });
     }
 
     // Criar novo grupo
     const { nome, descricao, icone, cor, telegram_chat_id } = dados;
     
     if (!nome) {
-      return NextResponse.json({ error: 'Nome do grupo é obrigatório' }, { status: 400 });
+      return NextResponse.json({ error: 'Nome do grupo Ã© obrigatÃ³rio' }, { status: 400 });
     }
 
     const { data, error } = await supabase
@@ -183,7 +183,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, data, message: 'Grupo criado com sucesso' });
     
   } catch (error) {
-    console.error('Erro na operação:', error);
+    console.error('Erro na operaÃ§Ã£o:', error);
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 }
@@ -194,7 +194,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   const admin = await isAdmin(request);
   if (!admin) {
-    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    return NextResponse.json({ error: 'NÃ£o autorizado' }, { status: 401 });
   }
 
   try {
@@ -202,7 +202,7 @@ export async function PUT(request: NextRequest) {
     const { id, nome, descricao, icone, cor, telegram_chat_id, ativo } = body;
 
     if (!id) {
-      return NextResponse.json({ error: 'ID do grupo é obrigatório' }, { status: 400 });
+      return NextResponse.json({ error: 'ID do grupo Ã© obrigatÃ³rio' }, { status: 400 });
     }
 
     const { error } = await supabase
@@ -229,12 +229,12 @@ export async function PUT(request: NextRequest) {
 }
 
 // ============================================================================
-// DELETE - Remover grupo ou remover usuário de grupo
+// DELETE - Remover grupo ou remover usuÃ¡rio de grupo
 // ============================================================================
 export async function DELETE(request: NextRequest) {
   const admin = await isAdmin(request);
   if (!admin) {
-    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    return NextResponse.json({ error: 'NÃ£o autorizado' }, { status: 401 });
   }
 
   const searchParams = request.nextUrl.searchParams;
@@ -244,10 +244,10 @@ export async function DELETE(request: NextRequest) {
   const grupoId = searchParams.get('grupoId');
 
   try {
-    // Remover usuário de grupo
+    // Remover usuÃ¡rio de grupo
     if (tipo === 'usuario') {
       if (!usuarioId || !grupoId) {
-        return NextResponse.json({ error: 'Usuário e grupo são obrigatórios' }, { status: 400 });
+        return NextResponse.json({ error: 'UsuÃ¡rio e grupo sÃ£o obrigatÃ³rios' }, { status: 400 });
       }
 
       const { error } = await supabase
@@ -258,7 +258,7 @@ export async function DELETE(request: NextRequest) {
 
       if (error) throw error;
       
-      return NextResponse.json({ success: true, message: 'Usuário removido do grupo' });
+      return NextResponse.json({ success: true, message: 'UsuÃ¡rio removido do grupo' });
     }
 
     // Deletar grupo (soft delete)
@@ -273,10 +273,11 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ success: true, message: 'Grupo removido com sucesso' });
     }
 
-    return NextResponse.json({ error: 'ID do grupo é obrigatório' }, { status: 400 });
+    return NextResponse.json({ error: 'ID do grupo Ã© obrigatÃ³rio' }, { status: 400 });
     
   } catch (error) {
     console.error('Erro ao remover:', error);
     return NextResponse.json({ error: 'Erro ao remover' }, { status: 500 });
   }
 }
+

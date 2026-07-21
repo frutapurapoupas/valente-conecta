@@ -7,10 +7,10 @@ export async function GET(request: NextRequest) {
   const token = authHeader?.replace('Bearer ', '');
   
   if (!token) {
-    return NextResponse.json({ error: 'Token não fornecido' }, { status: 401 });
+    return NextResponse.json({ error: 'Token nÃ£o fornecido' }, { status: 401 });
   }
   
-  // Buscar sessão no Supabase
+  // Buscar sessÃ£o no Supabase
   const { data: session, error } = await supabase
     .from('sessions')
     .select('user_id')
@@ -18,8 +18,9 @@ export async function GET(request: NextRequest) {
     .single();
   
   if (error || !session) {
-    return NextResponse.json({ error: 'Sessão inválida' }, { status: 401 });
+    return NextResponse.json({ error: 'SessÃ£o invÃ¡lida' }, { status: 401 });
   }
   
   return NextResponse.json({ userId: session.user_id });
 }
+

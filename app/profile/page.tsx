@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -105,7 +105,7 @@ export default function ProfilePage() {
     
     setPerfil(formData);
     setEditando(false);
-    toast.success("✅ Perfil atualizado com sucesso!");
+    toast.success("? Perfil atualizado com sucesso!");
   };
 
   const cancelarEdicao = () => {
@@ -116,7 +116,7 @@ export default function ProfilePage() {
   const handleLogout = () => {
     logout();
     localStorage.removeItem("valente_user");
-    toast.success("👋 Logout realizado com sucesso!");
+    toast.success("?? Logout realizado com sucesso!");
     router.push("/login");
   };
 
@@ -284,7 +284,7 @@ export default function ProfilePage() {
           className="w-full py-4 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-3 hover:from-blue-700 hover:to-cyan-700 transition-all duration-300"
         >
           <History className="w-5 h-5" />
-          📊 Meu Extrato e Transações
+          ?? Meu Extrato e Transações
         </button>
 
         <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl overflow-hidden">
@@ -317,7 +317,7 @@ export default function ProfilePage() {
           className="w-full py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-3 hover:from-purple-700 hover:to-indigo-700 transition-all duration-300"
         >
           <Gift className="w-5 h-5" />
-          💰 Minhas Indicações e Ganhos
+          ?? Minhas Indicações e Ganhos
         </button>
 
         <button
@@ -331,10 +331,10 @@ export default function ProfilePage() {
         {isAdmin && (
           <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-3 text-center">
             <p className="text-yellow-400 text-sm">
-              👑 Você está logado como Administrador Master
+              ?? Você está logado como Administrador Master
             </p>
             <p className="text-yellow-400/70 text-xs mt-1">
-              Clique no ícone 👑 no topo da tela para acessar o painel administrativo
+              Clique no ícone ?? no topo da tela para acessar o painel administrativo
             </p>
           </div>
         )}
@@ -342,3 +342,4 @@ export default function ProfilePage() {
     </div>
   );
 }
+

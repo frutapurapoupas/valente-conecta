@@ -1,13 +1,13 @@
 // ============================================================================
 // ARQUIVO: app/api/admin/cambio/route.ts
-// Funcionalidade: API para Admin Master gerenciar taxas de câmbio
+// Funcionalidade: API para Admin Master gerenciar taxas de cÃ¢mbio
 // Rotas: GET, POST, PUT, DELETE
 // ============================================================================
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
-// Verificar se o usuário é Admin
+// Verificar se o usuÃ¡rio Ã© Admin
 async function isAdmin(request: NextRequest): Promise<boolean> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
@@ -26,12 +26,12 @@ async function isAdmin(request: NextRequest): Promise<boolean> {
 }
 
 // ============================================================================
-// GET - Listar todas as configurações de câmbio
+// GET - Listar todas as configuraÃ§Ãµes de cÃ¢mbio
 // ============================================================================
 export async function GET(request: NextRequest) {
   const admin = await isAdmin(request);
   if (!admin) {
-    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    return NextResponse.json({ error: 'NÃ£o autorizado' }, { status: 401 });
   }
 
   const searchParams = request.nextUrl.searchParams;
@@ -55,25 +55,25 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ success: true, data });
   } catch (error) {
-    console.error('Erro ao buscar configurações de câmbio:', error);
-    return NextResponse.json({ error: 'Erro ao buscar configurações' }, { status: 500 });
+    console.error('Erro ao buscar configuraÃ§Ãµes de cÃ¢mbio:', error);
+    return NextResponse.json({ error: 'Erro ao buscar configuraÃ§Ãµes' }, { status: 500 });
   }
 }
 
 // ============================================================================
-// POST - Atualizar taxa de câmbio
+// POST - Atualizar taxa de cÃ¢mbio
 // ============================================================================
 export async function POST(request: NextRequest) {
   const admin = await isAdmin(request);
   if (!admin) {
-    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    return NextResponse.json({ error: 'NÃ£o autorizado' }, { status: 401 });
   }
 
   try {
     const { cidade, taxa_cambio, taxa_compra, taxa_venda } = await request.json();
 
     if (!cidade || !taxa_cambio || taxa_cambio <= 0) {
-      return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 });
+      return NextResponse.json({ error: 'Dados invÃ¡lidos' }, { status: 400 });
     }
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -99,34 +99,34 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data,
-      message: `Taxa de câmbio para ${cidade} atualizada para 1 MC = R$ ${taxa_cambio}`
+      message: `Taxa de cÃ¢mbio para ${cidade} atualizada para 1 MC = R$ ${taxa_cambio}`
     });
   } catch (error) {
-    console.error('Erro ao atualizar câmbio:', error);
-    return NextResponse.json({ error: 'Erro ao atualizar câmbio' }, { status: 500 });
+    console.error('Erro ao atualizar cÃ¢mbio:', error);
+    return NextResponse.json({ error: 'Erro ao atualizar cÃ¢mbio' }, { status: 500 });
   }
 }
 
 // ============================================================================
-// PUT - Criar/Atualizar configuração de câmbio para nova cidade
+// PUT - Criar/Atualizar configuraÃ§Ã£o de cÃ¢mbio para nova cidade
 // ============================================================================
 export async function PUT(request: NextRequest) {
   const admin = await isAdmin(request);
   if (!admin) {
-    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    return NextResponse.json({ error: 'NÃ£o autorizado' }, { status: 401 });
   }
 
   try {
     const { cidade, estado, taxa_cambio } = await request.json();
 
     if (!cidade || !estado) {
-      return NextResponse.json({ error: 'Cidade e estado são obrigatórios' }, { status: 400 });
+      return NextResponse.json({ error: 'Cidade e estado sÃ£o obrigatÃ³rios' }, { status: 400 });
     }
 
     const { data: { user } } = await supabase.auth.getUser();
     const taxa = taxa_cambio || 1.0;
 
-    // Verificar se já existe
+    // Verificar se jÃ¡ existe
     const { data: existing } = await supabase
       .from('configuracoes_cambio')
       .select('id')
@@ -175,28 +175,28 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: result,
-      message: `Configuração de câmbio para ${cidade} salva com sucesso!`
+      message: `ConfiguraÃ§Ã£o de cÃ¢mbio para ${cidade} salva com sucesso!`
     });
   } catch (error) {
-    console.error('Erro ao salvar configuração:', error);
-    return NextResponse.json({ error: 'Erro ao salvar configuração' }, { status: 500 });
+    console.error('Erro ao salvar configuraÃ§Ã£o:', error);
+    return NextResponse.json({ error: 'Erro ao salvar configuraÃ§Ã£o' }, { status: 500 });
   }
 }
 
 // ============================================================================
-// DELETE - Remover configuração de câmbio
+// DELETE - Remover configuraÃ§Ã£o de cÃ¢mbio
 // ============================================================================
 export async function DELETE(request: NextRequest) {
   const admin = await isAdmin(request);
   if (!admin) {
-    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    return NextResponse.json({ error: 'NÃ£o autorizado' }, { status: 401 });
   }
 
   const searchParams = request.nextUrl.searchParams;
   const cidade = searchParams.get('cidade');
 
   if (!cidade) {
-    return NextResponse.json({ error: 'Nome da cidade é obrigatório' }, { status: 400 });
+    return NextResponse.json({ error: 'Nome da cidade Ã© obrigatÃ³rio' }, { status: 400 });
   }
 
   try {
@@ -209,10 +209,11 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `Configuração de câmbio para ${cidade} removida`
+      message: `ConfiguraÃ§Ã£o de cÃ¢mbio para ${cidade} removida`
     });
   } catch (error) {
-    console.error('Erro ao remover configuração:', error);
-    return NextResponse.json({ error: 'Erro ao remover configuração' }, { status: 500 });
+    console.error('Erro ao remover configuraÃ§Ã£o:', error);
+    return NextResponse.json({ error: 'Erro ao remover configuraÃ§Ã£o' }, { status: 500 });
   }
 }
+

@@ -5,7 +5,7 @@ import { syncService } from '@/services/syncService';
 import { supabase } from '@/lib/supabase';
 
 export function useSync() {
-  // Inicializar com valores padrão para SSR
+  // Inicializar com valores padrÃ£o para SSR
   const [syncStatus, setSyncStatus] = useState(() => {
     if (typeof window === 'undefined') {
       return {
@@ -21,7 +21,7 @@ export function useSync() {
   const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
-    // Configurar Supabase no serviço
+    // Configurar Supabase no serviÃ§o
     if (supabase) {
       syncService.setSupabase(supabase);
     }
@@ -88,3 +88,4 @@ export function useSync() {
     pendingCount: syncStatus.pendingCount
   };
 }
+

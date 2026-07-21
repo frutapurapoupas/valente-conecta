@@ -60,7 +60,7 @@ export default function ResultadoBuscaModal({
     setExpandedLocations(nova);
   };
 
-  // Se é apenas uma localização, mostrar expandido por padrão
+  // Se Ã© apenas uma localizaÃ§Ã£o, mostrar expandido por padrÃ£o
   const mostrarTodosExpandidos = !produto.isGrouped;
 
   return (
@@ -75,11 +75,11 @@ export default function ResultadoBuscaModal({
             </p>
           </div>
           <button onClick={onFechar} className="text-2xl hover:bg-blue-800 p-2 rounded-full">
-            ×
+            Ã—
           </button>
         </div>
 
-        {/* Preço destaque */}
+        {/* PreÃ§o destaque */}
         <div className="bg-gradient-to-r from-emerald-50 to-green-50 border-b border-emerald-200 p-4">
           <p className="text-sm text-gray-600">A partir de</p>
           <p className="text-3xl font-bold text-emerald-600">
@@ -101,7 +101,7 @@ export default function ResultadoBuscaModal({
           </div>
         )}
 
-        {/* Lista de localizações */}
+        {/* Lista de localizaÃ§Ãµes */}
         <div className="p-4 space-y-3">
           {produto.locations.map((loc, idx) => {
             const isExpanded = mostrarTodosExpandidos || expandedLocations.has(loc.id);
@@ -123,7 +123,7 @@ export default function ResultadoBuscaModal({
                     <div className="flex items-center gap-1 text-sm text-gray-600 mt-1">
                       <MapPin className="w-4 h-4" />
                       {precisaBloquear ? (
-                        <span className="text-amber-600">*** Desbloqueie para ver endereço ***</span>
+                        <span className="text-amber-600">*** Desbloqueie para ver endereÃ§o ***</span>
                       ) : (
                         <span>{loc.usuarioEndereco}</span>
                       )}
@@ -161,7 +161,7 @@ export default function ResultadoBuscaModal({
                       )}
                     </div>
 
-                    {/* Localização + Mapa */}
+                    {/* LocalizaÃ§Ã£o + Mapa */}
                     {loc.usuarioLocalizacao && !precisaBloquear && (
                       <div className="space-y-2">
                         <div className="flex items-start gap-3">
@@ -200,11 +200,11 @@ export default function ResultadoBuscaModal({
                     {/* Plano do vendedor */}
                     {loc.usuarioPlano === 'gratis' && (
                       <div className="bg-amber-50 border border-amber-200 rounded-lg p-2 text-xs text-amber-800">
-                        Este vendedor não possui plano pago. Alguns dados podem estar limitados.
+                        Este vendedor nÃ£o possui plano pago. Alguns dados podem estar limitados.
                       </div>
                     )}
 
-                    {/* Ações */}
+                    {/* AÃ§Ãµes */}
                     <div className="pt-2 border-t border-gray-100 flex gap-2">
                       <a
                         href={`https://wa.me/55${loc.usuarioTelefone.replace(/\D/g, '')}`}
@@ -239,3 +239,4 @@ export default function ResultadoBuscaModal({
     </div>
   );
 }
+

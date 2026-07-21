@@ -15,3 +15,4 @@ export async function GET() {
   const beneficios = data.map(b => b.valor);
   return NextResponse.json({ beneficios });
 }
+

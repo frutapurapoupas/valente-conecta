@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 export const dynamic = 'force-dynamic';
 
@@ -10,7 +10,7 @@ import {
   Activity, CheckCircle, AlertCircle, WifiOff
 } from 'lucide-react';
 
-// Interface estendida para suportar a propriedade 'vibrate' que não existe no tipo base do TS
+// Interface estendida para suportar a propriedade 'vibrate' que nÃ£o existe no tipo base do TS
 interface NotificationOptionsCustom extends NotificationOptions {
   vibrate?: number[];
 }
@@ -30,26 +30,26 @@ interface AtividadeEsportiva {
 }
 
 const ESPORTES_PREDEFINIDOS = [
-  { nome: "⚽ Futebol", icone: "⚽", cor: "from-green-600 to-green-800" },
-  { nome: "🏃 Corrida", icone: "🏃", cor: "from-red-600 to-red-800" },
-  { nome: "🚴 Ciclismo", icone: "🚴", cor: "from-blue-600 to-blue-800" },
-  { nome: "🏊 Natação", icone: "🏊", cor: "from-cyan-600 to-cyan-800" },
-  { nome: "🏐 Vôlei", icone: "🏐", cor: "from-yellow-600 to-yellow-800" },
-  { nome: "🏀 Basquete", icone: "🏀", cor: "from-orange-600 to-orange-800" },
-  { nome: "🎾 Tênis", icone: "🎾", cor: "from-lime-600 to-lime-800" },
-  { nome: "🥊 Boxe", icone: "🥊", cor: "from-red-700 to-red-900" },
-  { nome: "🧘 Yoga", icone: "🧘", cor: "from-purple-600 to-purple-800" },
-  { nome: "🏋️ Musculação", icone: "🏋️", cor: "from-gray-600 to-gray-800" },
-  { nome: "🚶 Caminhada", icone: "🚶", cor: "from-emerald-600 to-emerald-800" },
-  { nome: "🤸 Crossfit", icone: "🤸", cor: "from-amber-600 to-amber-800" },
-  { nome: "🥋 Jiu-Jitsu", icone: "🥋", cor: "from-indigo-600 to-indigo-800" },
-  { nome: "🏸 Beach Tennis", icone: "🏸", cor: "from-teal-600 to-teal-800" },
-  { nome: "⛰️ Trilha", icone: "⛰️", cor: "from-stone-600 to-stone-800" }
+  { nome: "? Futebol", icone: "?", cor: "from-green-600 to-green-800" },
+  { nome: "?? Corrida", icone: "??", cor: "from-red-600 to-red-800" },
+  { nome: "?? Ciclismo", icone: "??", cor: "from-blue-600 to-blue-800" },
+  { nome: "?? NataÃ§Ã£o", icone: "??", cor: "from-cyan-600 to-cyan-800" },
+  { nome: "?? VÃ´lei", icone: "??", cor: "from-yellow-600 to-yellow-800" },
+  { nome: "?? Basquete", icone: "??", cor: "from-orange-600 to-orange-800" },
+  { nome: "?? TÃªnis", icone: "??", cor: "from-lime-600 to-lime-800" },
+  { nome: "?? Boxe", icone: "??", cor: "from-red-700 to-red-900" },
+  { nome: "?? Yoga", icone: "??", cor: "from-purple-600 to-purple-800" },
+  { nome: "??? MusculaÃ§Ã£o", icone: "???", cor: "from-gray-600 to-gray-800" },
+  { nome: "?? Caminhada", icone: "??", cor: "from-emerald-600 to-emerald-800" },
+  { nome: "?? Crossfit", icone: "??", cor: "from-amber-600 to-amber-800" },
+  { nome: "?? Jiu-Jitsu", icone: "??", cor: "from-indigo-600 to-indigo-800" },
+  { nome: "?? Beach Tennis", icone: "??", cor: "from-teal-600 to-teal-800" },
+  { nome: "?? Trilha", icone: "??", cor: "from-stone-600 to-stone-800" }
 ];
 
 const DIAS_SEMANA = [
-  'Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 
-  'Quinta-feira', 'Sexta-feira', 'Sábado'
+  'Domingo', 'Segunda-feira', 'TerÃ§a-feira', 'Quarta-feira', 
+  'Quinta-feira', 'Sexta-feira', 'SÃ¡bado'
 ];
 
 export default function EsportesPage() {
@@ -104,13 +104,13 @@ export default function EsportesPage() {
       atividades.forEach(atividade => {
         if (atividade.alertaAtivo && atividade.diaSemana === diaAtual && atividade.horario === horaAtual) {
           if ('Notification' in window && Notification.permission === 'granted') {
-            // CORREÇÃO: Criar um objeto options explicitamente tipado
+            // CORREÃ‡ÃƒO: Criar um objeto options explicitamente tipado
             const options: NotificationOptionsCustom = {
-              body: `Hoje é dia de ${atividade.tipo} às ${atividade.horario} em ${atividade.local}`,
+              body: `Hoje Ã© dia de ${atividade.tipo} Ã s ${atividade.horario} em ${atividade.local}`,
               icon: '/icon.png',
               vibrate: [200, 100, 200]
             };
-            new Notification('⚽ Hora do Esporte!', options);
+            new Notification('? Hora do Esporte!', options);
           }
         }
       });
@@ -124,10 +124,10 @@ export default function EsportesPage() {
     e.nome.toLowerCase().includes(buscaEsporte.toLowerCase())
   );
 
-  // Capturar localização
+  // Capturar localizaÃ§Ã£o
   const capturarLocalizacao = () => {
     if (!navigator.geolocation) {
-      setMensagemStatus({ texto: 'Geolocalização não suportada', tipo: 'erro' });
+      setMensagemStatus({ texto: 'GeolocalizaÃ§Ã£o nÃ£o suportada', tipo: 'erro' });
       return;
     }
 
@@ -140,16 +140,16 @@ export default function EsportesPage() {
           localizadorCapturado: true
         }));
         setCapturandoLocal(false);
-        setMensagemStatus({ texto: '📍 Localização capturada com sucesso!', tipo: 'sucesso' });
+        setMensagemStatus({ texto: '?? LocalizaÃ§Ã£o capturada com sucesso!', tipo: 'sucesso' });
       },
       (err) => {
         setCapturandoLocal(false);
-        let mensagem = 'Erro ao capturar localização';
+        let mensagem = 'Erro ao capturar localizaÃ§Ã£o';
         if (err.code === 1) {
-          mensagem = 'Permissão de localização negada. Ative no navegador.';
+          mensagem = 'PermissÃ£o de localizaÃ§Ã£o negada. Ative no navegador.';
           setGpsPermissao('denied');
         } else if (err.code === 2) {
-          mensagem = 'Sinal de GPS indisponível. Tente novamente.';
+          mensagem = 'Sinal de GPS indisponÃ­vel. Tente novamente.';
         } else if (err.code === 3) {
           mensagem = 'Tempo de busca excedido. Tente novamente.';
         }
@@ -162,7 +162,7 @@ export default function EsportesPage() {
   // Adicionar atividade
   const adicionarAtividade = () => {
     if (!novaAtividade.tipo || !novaAtividade.local || !novaAtividade.diaSemana || !novaAtividade.horario) {
-      setMensagemStatus({ texto: 'Preencha todos os campos obrigatórios', tipo: 'erro' });
+      setMensagemStatus({ texto: 'Preencha todos os campos obrigatÃ³rios', tipo: 'erro' });
       return;
     }
 
@@ -184,10 +184,10 @@ export default function EsportesPage() {
     let novasAtividades;
     if (editandoId) {
       novasAtividades = atividades.map(a => a.id === editandoId ? nova : a);
-      setMensagemStatus({ texto: '✅ Atividade atualizada com sucesso!', tipo: 'sucesso' });
+      setMensagemStatus({ texto: '? Atividade atualizada com sucesso!', tipo: 'sucesso' });
     } else {
       novasAtividades = [...atividades, nova];
-      setMensagemStatus({ texto: '✅ Atividade adicionada com sucesso!', tipo: 'sucesso' });
+      setMensagemStatus({ texto: '? Atividade adicionada com sucesso!', tipo: 'sucesso' });
     }
 
     setAtividades(novasAtividades);
@@ -222,11 +222,11 @@ export default function EsportesPage() {
       const novas = atividades.filter(a => a.id !== id);
       setAtividades(novas);
       localStorage.setItem('academia_esportes', JSON.stringify(novas));
-      setMensagemStatus({ texto: '🗑️ Atividade removida', tipo: 'info' });
+      setMensagemStatus({ texto: '??? Atividade removida', tipo: 'info' });
     }
   };
 
-  // Resetar formulário
+  // Resetar formulÃ¡rio
   const resetarFormulario = () => {
     setNovaAtividade({
       tipo: '',
@@ -259,14 +259,14 @@ export default function EsportesPage() {
     localStorage.setItem('academia_esportes', JSON.stringify(atividadesAtualizadas));
   };
 
-  // Solicitar permissão de notificação
+  // Solicitar permissÃ£o de notificaÃ§Ã£o
   const solicitarPermissaoNotificacao = async () => {
     if ('Notification' in window) {
       const permissao = await Notification.requestPermission();
       if (permissao === 'granted') {
-        setMensagemStatus({ texto: '🔔 Notificações ativadas!', tipo: 'sucesso' });
+        setMensagemStatus({ texto: '?? NotificaÃ§Ãµes ativadas!', tipo: 'sucesso' });
       } else {
-        setMensagemStatus({ texto: '❌ Notificações bloqueadas', tipo: 'erro' });
+        setMensagemStatus({ texto: '? NotificaÃ§Ãµes bloqueadas', tipo: 'erro' });
       }
     }
   };
@@ -284,12 +284,12 @@ export default function EsportesPage() {
               <Trophy className="w-6 h-6" />
               Esportes & Atividades
             </h1>
-            <p className="text-sm text-white/80">Organize suas atividades físicas</p>
+            <p className="text-sm text-white/80">Organize suas atividades fÃ­sicas</p>
           </div>
           <button
             onClick={solicitarPermissaoNotificacao}
             className="p-2 hover:bg-white/20 rounded-lg transition"
-            title="Ativar notificações"
+            title="Ativar notificaÃ§Ãµes"
           >
             <Bell className="w-6 h-6" />
           </button>
@@ -314,7 +314,7 @@ export default function EsportesPage() {
       )}
 
       <div className="max-w-md mx-auto p-4 space-y-4">
-        {/* Botão Adicionar */}
+        {/* BotÃ£o Adicionar */}
         <button
           onClick={() => {
             resetarFormulario();
@@ -326,11 +326,11 @@ export default function EsportesPage() {
           Nova Atividade
         </button>
 
-        {/* Formulário */}
+        {/* FormulÃ¡rio */}
         {mostrarFormulario && (
           <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/10 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold">{editandoId ? '✏️ Editar' : '➕ Nova'} Atividade</h3>
+              <h3 className="font-semibold">{editandoId ? '?? Editar' : '? Nova'} Atividade</h3>
               <button onClick={resetarFormulario} className="p-1 hover:bg-white/10 rounded">
                 <X className="w-5 h-5" />
               </button>
@@ -381,12 +381,12 @@ export default function EsportesPage() {
                     capturandoLocal ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                 >
-                  {capturandoLocal ? '⏳' : '📍'}
+                  {capturandoLocal ? '?' : '??'}
                 </button>
               </div>
               {novaAtividade.localizadorCapturado && (
                 <p className="text-xs text-green-400 mt-1 flex items-center gap-1">
-                  <CheckCircle className="w-3 h-3" /> Localização capturada
+                  <CheckCircle className="w-3 h-3" /> LocalizaÃ§Ã£o capturada
                 </p>
               )}
             </div>
@@ -410,7 +410,7 @@ export default function EsportesPage() {
                 type="text"
                 value={novaAtividade.local}
                 onChange={(e) => setNovaAtividade(prev => ({ ...prev, local: e.target.value }))}
-                placeholder="Ex: Praça do Mocó, Academia X"
+                placeholder="Ex: PraÃ§a do MocÃ³, Academia X"
                 className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
@@ -430,10 +430,10 @@ export default function EsportesPage() {
               </select>
             </div>
 
-            {/* Horário e Duração */}
+            {/* HorÃ¡rio e DuraÃ§Ã£o */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm text-white/70 block mb-1">Horário *</label>
+                <label className="text-sm text-white/70 block mb-1">HorÃ¡rio *</label>
                 <input
                   type="time"
                   value={novaAtividade.horario}
@@ -442,7 +442,7 @@ export default function EsportesPage() {
                 />
               </div>
               <div>
-                <label className="text-sm text-white/70 block mb-1">Duração (min)</label>
+                <label className="text-sm text-white/70 block mb-1">DuraÃ§Ã£o (min)</label>
                 <input
                   type="number"
                   value={novaAtividade.duracao}
@@ -454,9 +454,9 @@ export default function EsportesPage() {
               </div>
             </div>
 
-            {/* Tempo de Permanência */}
+            {/* Tempo de PermanÃªncia */}
             <div>
-              <label className="text-sm text-white/70 block mb-1">Tempo de permanência (min)</label>
+              <label className="text-sm text-white/70 block mb-1">Tempo de permanÃªncia (min)</label>
               <input
                 type="number"
                 value={novaAtividade.tempoPermanencia}
@@ -478,7 +478,7 @@ export default function EsportesPage() {
               <label className="text-sm text-white/70">Ativar alerta para este evento</label>
             </div>
 
-            {/* Botões Formulário */}
+            {/* BotÃµes FormulÃ¡rio */}
             <div className="flex gap-2 pt-2">
               <button
                 onClick={adicionarAtividade}
@@ -503,7 +503,7 @@ export default function EsportesPage() {
             <div className="text-center py-12 text-white/50">
               <Activity className="w-12 h-12 mx-auto mb-2 opacity-30" />
               <p>Nenhuma atividade cadastrada</p>
-              <p className="text-sm">Adicione suas atividades físicas</p>
+              <p className="text-sm">Adicione suas atividades fÃ­sicas</p>
             </div>
           ) : (
             atividades.map((atividade) => (
@@ -522,17 +522,17 @@ export default function EsportesPage() {
                         <MapPin className="w-4 h-4" />
                         <span>{atividade.local}</span>
                         {atividade.localizadorCapturado && (
-                          <span className="text-xs text-green-400">📍 GPS</span>
+                          <span className="text-xs text-green-400">?? GPS</span>
                         )}
                       </div>
                       <div className="flex items-center gap-2">
                         <Clock className="w-4 h-4" />
-                        <span>{atividade.diaSemana} às {atividade.horario}</span>
+                        <span>{atividade.diaSemana} Ã s {atividade.horario}</span>
                       </div>
                       <div className="flex items-center gap-2 text-xs">
-                        <span>⏱️ {atividade.duracao}min</span>
-                        <span>•</span>
-                        <span>⏳ {atividade.tempoPermanencia}min</span>
+                        <span>?? {atividade.duracao}min</span>
+                        <span>â€¢</span>
+                        <span>? {atividade.tempoPermanencia}min</span>
                       </div>
                     </div>
                   </div>
@@ -572,10 +572,11 @@ export default function EsportesPage() {
           ) : gpsPermissao === 'denied' ? (
             <><AlertCircle className="w-3 h-3 text-red-400" /> GPS bloqueado</>
           ) : (
-            <><WifiOff className="w-3 h-3" /> GPS disponível</>
+            <><WifiOff className="w-3 h-3" /> GPS disponÃ­vel</>
           )}
         </div>
       </div>
     </div>
   );
 }
+

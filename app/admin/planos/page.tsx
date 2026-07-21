@@ -1,6 +1,6 @@
 "use client";
 
-export const dynamic = 'force-dynamic';  // ← ÚNICA LINHA ADICIONADA
+export const dynamic = 'force-dynamic';  // â† ÃšNICA LINHA ADICIONADA
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -17,10 +17,10 @@ export default function AdminPlanosPage() {
   }
 
   const [planos, setPlanos] = useState([
-    { id: 1, nome: "Grátis", preco: 0, descricao: "Acesso básico", recursos: ["Perfil público", "Busca limitada"], cor: "gray", ativo: true },
-    { id: 2, nome: "Básico", preco: 15, descricao: "Para profissionais", recursos: ["Destaque na busca", "Contato visível"], cor: "blue", ativo: true },
+    { id: 1, nome: "GrÃ¡tis", preco: 0, descricao: "Acesso bÃ¡sico", recursos: ["Perfil pÃºblico", "Busca limitada"], cor: "gray", ativo: true },
+    { id: 2, nome: "BÃ¡sico", preco: 15, descricao: "Para profissionais", recursos: ["Destaque na busca", "Contato visÃ­vel"], cor: "blue", ativo: true },
     { id: 3, nome: "Premium", preco: 49.90, descricao: "Para empresas", recursos: ["Destaque VIP", "Produtos ilimitados"], cor: "yellow", ativo: true },
-    { id: 4, nome: "Fisco", preco: 99.90, descricao: "Módulo fiscal completo", recursos: ["Nota fiscal", "Relatórios"], cor: "purple", ativo: true },
+    { id: 4, nome: "Fisco", preco: 99.90, descricao: "MÃ³dulo fiscal completo", recursos: ["Nota fiscal", "RelatÃ³rios"], cor: "purple", ativo: true },
   ]);
 
   const toggleAtivo = (id: number) => {
@@ -32,7 +32,7 @@ export default function AdminPlanosPage() {
     <div className="min-h-screen bg-gray-900 pb-20">
       <header className="bg-gradient-to-r from-green-400 to-green-700 p-4 flex items-center gap-3 sticky top-0 z-40">
         <button onClick={() => router.push("/admin")}><i className="fas fa-arrow-left text-white text-xl"></i></button>
-        <h1 className="text-white font-bold text-xl">💰 Gerenciar Planos</h1>
+        <h1 className="text-white font-bold text-xl">ðŸ’° Gerenciar Planos</h1>
       </header>
 
       <div className="p-4">
@@ -58,30 +58,30 @@ export default function AdminPlanosPage() {
                   plano.ativo ? "bg-green-500 text-black" : "bg-gray-700 text-gray-400"
                 }`}
               >
-                {plano.ativo ? "✅ Ativo" : "❌ Inativo"}
+                {plano.ativo ? "âœ… Ativo" : "âŒ Inativo"}
               </button>
             </div>
           ))}
         </div>
 
         <div className="mt-6 bg-gray-800 rounded-2xl p-4">
-          <h3 className="text-white font-bold mb-3">📊 Assinaturas Ativas</h3>
+          <h3 className="text-white font-bold mb-3">ðŸ“Š Assinaturas Ativas</h3>
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-gray-400">Plano Grátis</span>
-              <span className="text-white">1.234 usuários</span>
+              <span className="text-gray-400">Plano GrÃ¡tis</span>
+              <span className="text-white">1.234 usuÃ¡rios</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-400">Plano Básico</span>
-              <span className="text-white">456 usuários</span>
+              <span className="text-gray-400">Plano BÃ¡sico</span>
+              <span className="text-white">456 usuÃ¡rios</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-400">Plano Premium</span>
-              <span className="text-white">234 usuários</span>
+              <span className="text-white">234 usuÃ¡rios</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-400">Plano Fisco</span>
-              <span className="text-white">12 usuários</span>
+              <span className="text-white">12 usuÃ¡rios</span>
             </div>
           </div>
         </div>
@@ -89,3 +89,4 @@ export default function AdminPlanosPage() {
     </div>
   );
 }
+

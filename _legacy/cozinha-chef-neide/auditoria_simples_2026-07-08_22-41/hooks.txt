@@ -1,0 +1,48 @@
+﻿========================================
+RELATÓRIO DE HOOKS - cozinha-chef
+========================================
+Gerado em: 2026-07-08 22:41:02
+Total: 20
+
+--------------------------------------------------------------------------------
+🟢 OK - hooks\cozinha\useCardapio.ts
+   Linhas: 46
+🔴 GIGANTE - hooks\cozinha\useCatalogo.ts
+   Linhas: 257
+🟢 OK - hooks\cozinha\useCompras.ts
+   Linhas: 111
+🟢 OK - hooks\cozinha\useComprasRequests.ts
+   Linhas: 35
+🟢 OK - hooks\cozinha\useDashboard.ts
+   Linhas: 81
+🟢 OK - hooks\cozinha\useEditarReceita.ts
+   Linhas: 58
+🟢 OK - hooks\cozinha\useEstoque.ts
+   Linhas: 102
+🟢 OK - hooks\cozinha\useFinanceiro.ts
+   Linhas: 100
+🟢 OK - hooks\cozinha\useFinanceiroPessoal.ts
+   Linhas: 49
+🟢 OK - hooks\cozinha\useHybridData.ts
+   Linhas: 61
+🟢 OK - hooks\cozinha\useIngredients.ts
+   Linhas: 44
+🟢 OK - hooks\cozinha\useMovimentacoes.ts
+   Linhas: 31
+🟢 OK - hooks\cozinha\usePedidos.ts
+   Linhas: 49
+🟢 OK - hooks\cozinha\usePerfilCozinha.ts
+   Linhas: 90
+🔴 GIGANTE - hooks\cozinha\usePratoForm.ts
+   Linhas: 204
+🟢 OK - hooks\cozinha\usePratos.ts
+   Linhas: 136
+🟢 OK - hooks\cozinha\useProducao.ts
+   Linhas: 63
+🔴 GIGANTE - hooks\cozinha\useReceita.ts
+   Linhas: 270
+🟢 OK - hooks\cozinha\useReceitas.ts
+   Linhas: 90
+🟢 OK - app\admin-master\cozinha-chef\useDashboardCozinha.ts
+   Linhas: 48
+

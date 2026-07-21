@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 
@@ -29,11 +29,11 @@ export default function DiagnosticoPage() {
 
   return (
     <div className="min-h-screen bg-gray-900 p-6 text-white">
-      <h1 className="text-2xl font-bold mb-6">🔍 Diagnóstico do Sistema</h1>
+      <h1 className="text-2xl font-bold mb-6">?? Diagnóstico do Sistema</h1>
       
       <div className="space-y-6">
         <div className="bg-gray-800 rounded-2xl p-4">
-          <h2 className="text-lg font-bold text-yellow-400 mb-3">📊 Perfil IA</h2>
+          <h2 className="text-lg font-bold text-yellow-400 mb-3">?? Perfil IA</h2>
           {dados.perfilIA ? (
             <pre className="text-xs text-gray-300 overflow-auto">
               {JSON.stringify(dados.perfilIA, null, 2)}
@@ -42,7 +42,7 @@ export default function DiagnosticoPage() {
         </div>
 
         <div className="bg-gray-800 rounded-2xl p-4">
-          <h2 className="text-lg font-bold text-yellow-400 mb-3">📝 Perfil Inicial</h2>
+          <h2 className="text-lg font-bold text-yellow-400 mb-3">?? Perfil Inicial</h2>
           {dados.perfilInicial ? (
             <pre className="text-xs text-gray-300 overflow-auto">
               {JSON.stringify(dados.perfilInicial, null, 2)}
@@ -51,7 +51,7 @@ export default function DiagnosticoPage() {
         </div>
 
         <div className="bg-gray-800 rounded-2xl p-4">
-          <h2 className="text-lg font-bold text-green-400 mb-3">✅ Cálculo do IMC Correto</h2>
+          <h2 className="text-lg font-bold text-green-400 mb-3">? Cálculo do IMC Correto</h2>
           {dados.perfilIA && (
             <div className="space-y-2">
               <p>Peso: {dados.perfilIA.peso_atual} kg</p>
@@ -65,3 +65,4 @@ export default function DiagnosticoPage() {
     </div>
   );
 }
+

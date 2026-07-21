@@ -6,7 +6,7 @@ import { calculateReferralWallet, type ReferralConfig, type ReferralCounts, type
 
 const defaultConfig: ReferralConfig = {
   rules: [
-    { id: 'usuarios_gerais', nome: 'Usuários Gerais', bonus: 10, meta: 30, ativo: true },
+    { id: 'usuarios_gerais', nome: 'UsuÃ¡rios Gerais', bonus: 10, meta: 30, ativo: true },
     { id: 'empresas_lojas', nome: 'Empresas / Lojas', bonus: 5, meta: 3, ativo: true },
     { id: 'profissionais_liberais', nome: 'Profissionais Liberais', bonus: 4, meta: 5, ativo: true }
   ],
@@ -69,3 +69,4 @@ export function useReferralBonusSummary(userId?: string) {
 
   return { wallet, loading };
 }
+

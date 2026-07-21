@@ -1,0 +1,55 @@
+'use client';
+
+import { textosIngredientes, categoriasList } from '@/constants/ingredientesConstants';
+
+interface FiltrosIngredientesProps {
+  searchTerm: string;
+  setSearchTerm: (value: string) => void;
+  selectedCategory: string;
+  setSelectedCategory: (value: string) => void;
+  showLowStock: boolean;
+  setShowLowStock: (value: boolean) => void;
+}
+
+export default function FiltrosIngredientes({
+  searchTerm,
+  setSearchTerm,
+  selectedCategory,
+  setSelectedCategory,
+  showLowStock,
+  setShowLowStock
+}: FiltrosIngredientesProps) {
+  return (
+    <div className="filtros-grid">
+      <input
+        type="text"
+        placeholder={textosIngredientes.placeholders.buscar}
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="filtro-input"
+      />
+      <select
+        value={selectedCategory}
+        onChange={(e) => setSelectedCategory(e.target.value)}
+        className="filtro-input"
+      >
+        <option value="">Todas as categorias</option>
+        {categoriasList.map(cat => (
+          <option key={cat.value} value={cat.value}>{cat.label}</option>
+        ))}
+      </select>
+      <label className="filtro-checkbox">
+        <input
+          type="checkbox"
+          checked={showLowStock}
+          onChange={(e) => setShowLowStock(e.target.checked)}
+          className="w-4 h-4"
+        />
+        <span className="text-gray-700">{textosIngredientes.checkbox.apenasEstoqueBaixo}</span>
+      </label>
+    </div>
+  );
+}
+
+
+

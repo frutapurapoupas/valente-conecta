@@ -1,5 +1,5 @@
 // components/admin/automacao/services/monitorService.ts
-// 🆕 SERVIÇO DE MONITORAMENTO
+// ðŸ†• SERVIÃ‡O DE MONITORAMENTO
 
 import { Lojista, MonitorMetrics, Notificacao } from '../../menu/types';
 
@@ -26,7 +26,7 @@ export async function obterMetricasMonitor(): Promise<MonitorMetrics> {
 }
 
 // ============================================================
-// LISTAR ITENS QUE PRECISAM DE ATENÇÃO
+// LISTAR ITENS QUE PRECISAM DE ATENÃ‡ÃƒO
 // ============================================================
 
 export async function listarItensParaAtencao(): Promise<{
@@ -46,7 +46,7 @@ export async function listarItensParaAtencao(): Promise<{
 }
 
 // ============================================================
-// AÇÕES EM MASSA
+// AÃ‡Ã•ES EM MASSA
 // ============================================================
 
 export async function aprovarTodosPendentes(): Promise<number> {
@@ -79,7 +79,7 @@ export async function suspenderLojistasComDenuncia(limite: number = 3): Promise<
 }
 
 // ============================================================
-// FUNÇÕES AUXILIARES (SIMULADAS)
+// FUNÃ‡Ã•ES AUXILIARES (SIMULADAS)
 // ============================================================
 
 async function buscarTodosLojistas(): Promise<Lojista[]> {
@@ -98,5 +98,6 @@ async function buscarLojasComDenuncia(limite: number): Promise<Lojista[]> {
 }
 
 async function salvarLojista(lojista: Lojista): Promise<void> {
-  console.log('💾 Lojista atualizado:', lojista);
+  console.log('ðŸ’¾ Lojista atualizado:', lojista);
 }
+

@@ -1,5 +1,5 @@
 // ============================================
-// UTILITÁRIO: CALCULAR CUSTO DE INGREDIENTES
+// UTILITÃRIO: CALCULAR CUSTO DE INGREDIENTES
 // ============================================
 
 interface Ingredient {
@@ -49,3 +49,4 @@ export const calcularCustoItem = (
 export const calcularCustoTotal = (items: RecipeItem[]): number => {
   return items.reduce((sum, item) => sum + (item.cost || 0), 0);
 };
+

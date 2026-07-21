@@ -1,0 +1,27 @@
+﻿// ==================================================
+// APPCONTEXT - COMPATIBILIDADE COM CÓDIGO EXISTENTE
+// ==================================================
+// Este arquivo re-exporta o módulo context para 
+// manter compatibilidade com imports existentes.
+// ==================================================
+
+"use client";
+
+export { 
+  AppProvider, 
+  useAppContext, 
+  useUser, 
+  useAuth, 
+  useTheme, 
+  useNotifications, 
+  useSettings 
+} from "@/modules/context";
+
+// Re-exportar tipos
+export type { 
+  AppContextData, 
+  User, 
+  Notification, 
+  AppSettings,
+  ContextState 
+} from "@/modules/context/types/context";

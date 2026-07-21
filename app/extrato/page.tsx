@@ -178,7 +178,7 @@ export default function ExtratoPage() {
                 <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">Banco Conecta Digital</p>
               </div>
               <p className="font-bold text-slate-800 text-lg">{titular}</p>
-              <p className="text-xs text-slate-500">Conta MC · {actorId.slice(0, 16)}...</p>
+              <p className="text-xs text-slate-500">Conta MC Â· {actorId.slice(0, 16)}...</p>
               <p className="text-xs text-slate-400">Cidade: {cidadeBase}</p>
             </div>
             <div className="text-right">
@@ -301,7 +301,7 @@ export default function ExtratoPage() {
                     <div className="mt-0.5">{TIPO_ICON[line.tipo]}</div>
                     <div className="flex-1 min-w-0">
                       <p className="text-slate-700 text-sm font-medium truncate">{line.descricao}</p>
-                      <p className="text-xs text-slate-400 mt-0.5">{TIPO_LABEL[line.tipo]} · {line.origem}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">{TIPO_LABEL[line.tipo]} Â· {line.origem}</p>
                       <p className="text-[10px] text-slate-400">{formatDate(line.createdAt)}</p>
                     </div>
                     <div className="text-right shrink-0">
@@ -329,3 +329,4 @@ export default function ExtratoPage() {
     </div>
   );
 }
+

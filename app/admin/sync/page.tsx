@@ -1,124 +1,128 @@
-'use client';
+﻿"use client";
 
-import { useState } from 'react';
-import { useSync } from '@/hooks/useSync';
+import { useSync } from "@/modules/admin";
+import { useState, useEffect } from "react";
 
 export default function SyncPage() {
-  const { syncStatus, syncFromSQLite, pendingCount } = useSync();
-  const [importing, setImporting] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const { status, loading, error, getStatus, runSync } = useSync();
+  const [isRunning, setIsRunning] = useState(false);
 
-  // Função para exportar dados do SQLite (simulada - será implementada depois)
-  const exportData = async () => {
-    // Esta função será implementada quando o prisma estiver disponível no cliente
-    // Por enquanto, retorna dados vazios
-    return {
-      suppliers: [],
-      ingredients: [],
-      recipes: [],
-      purchases: [],
-      stockMovements: []
-    };
-  };
+  useEffect(() => {
+    getStatus();
+  }, []);
 
-  const handleImport = async () => {
-    setImporting(true);
+  const handleRunSync = async () => {
+    setIsRunning(true);
     try {
-      const data = await exportData();
-      // Por enquanto, apenas simula
-      setResult({ 
-        success: true, 
-        results: {
-          suppliers: 0,
-          ingredients: 0,
-          recipes: 0,
-          purchases: 0,
-          stockMovements: 0,
-          errors: []
-        }
-      });
-    } catch (error) {
-      console.error('Erro na importação:', error);
-      setResult({ success: false, error: String(error) });
+      await runSync();
+      await getStatus();
     } finally {
-      setImporting(false);
+      setIsRunning(false);
     }
   };
 
+  if (loading && !status) {
+    return (
+      <div className="p-6 flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+          <p className="text-red-600 font-medium">Erro ao carregar status</p>
+          <p className="text-red-400 text-sm">{error.message}</p>
+          <button
+            onClick={getStatus}
+            className="mt-3 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const isIdle = status?.status === "idle" || !status;
+  const isRunning_ = status?.status === "running";
+  const isCompleted = status?.status === "completed";
+  const isError = status?.status === "error";
+
+  const statusColors = {
+    idle: "bg-gray-100 text-gray-700",
+    running: "bg-blue-100 text-blue-700 animate-pulse",
+    completed: "bg-green-100 text-green-700",
+    error: "bg-red-100 text-red-700"
+  };
+
+  const statusLabels = {
+    idle: "⚠️ Aguardando",
+    running: "🔄 Sincronizando...",
+    completed: "✅ Concluído",
+    error: "❌ Erro"
+  };
+
+  const currentStatus = status?.status || "idle";
+  const statusColor = statusColors[currentStatus as keyof typeof statusColors] || statusColors.idle;
+  const statusLabel = statusLabels[currentStatus as keyof typeof statusLabels] || statusLabels.idle;
+
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Sincronização de Dados</h1>
-      
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
-        <h2 className="text-lg font-semibold mb-4">Status da Sincronização</h2>
-        
-        <div className="space-y-2">
-          <div className="flex justify-between">
-            <span>Conexão com internet:</span>
-            <span className={syncStatus.isOnline ? 'text-green-600' : 'text-red-600'}>
-              {syncStatus.isOnline ? 'Online' : 'Offline'}
-            </span>
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">Sincronização</h1>
+          <p className="text-gray-600 text-sm">Gerencie a sincronização de dados</p>
+        </div>
+        <button
+          onClick={handleRunSync}
+          disabled={isRunning || isRunning_}
+          className={`
+            px-6 py-2 rounded-lg font-medium transition-colors
+            ${(isRunning || isRunning_) 
+              ? "bg-gray-300 cursor-not-allowed text-gray-500" 
+              : "bg-blue-600 hover:bg-blue-700 text-white"}
+          `}
+        >
+          {isRunning || isRunning_ ? "Sincronizando..." : "Executar Sync"}
+        </button>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-sm font-medium text-gray-500 mb-2">Status</h3>
+          <div className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${statusColor}`}>
+            {statusLabel}
           </div>
-          <div className="flex justify-between">
-            <span>Supabase configurado:</span>
-            <span className={syncStatus.hasSupabase ? 'text-green-600' : 'text-yellow-600'}>
-              {syncStatus.hasSupabase ? 'Sim' : 'Não'}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span>Itens pendentes:</span>
-            <span className={pendingCount > 0 ? 'text-blue-600 font-bold' : 'text-green-600'}>
-              {pendingCount}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span>Última sincronização:</span>
-            <span>{syncStatus.lastSync === 'never' ? 'Nunca' : new Date(syncStatus.lastSync).toLocaleString()}</span>
-          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-sm font-medium text-gray-500 mb-2">Última Sincronização</h3>
+          <p className="text-lg font-medium">
+            {status?.lastSync 
+              ? new Date(status.lastSync).toLocaleString("pt-BR")
+              : "Nunca sincronizado"}
+          </p>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold mb-4">Importar Dados Locais para Supabase</h2>
-        <p className="text-gray-600 mb-4">
-          Esta ação irá exportar todos os dados do seu banco local (SQLite) 
-          e importar para o Supabase. Os dados existentes no Supabase serão 
-          atualizados se houver conflito.
-        </p>
-        
-        <button
-          onClick={handleImport}
-          disabled={importing || !syncStatus.isOnline || !syncStatus.hasSupabase}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
-        >
-          {importing ? 'Importando...' : 'Importar dados locais para Supabase'}
-        </button>
-        
-        {result && (
-          <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-            <h3 className="font-semibold mb-2">Resultado da Importação:</h3>
-            {result.success ? (
-              <div>
-                <p className="text-green-600">✅ Importação concluída!</p>
-                <ul className="mt-2 text-sm">
-                  <li>Fornecedores: {result.results.suppliers}</li>
-                  <li>Ingredientes: {result.results.ingredients}</li>
-                  <li>Receitas: {result.results.recipes}</li>
-                  <li>Compras: {result.results.purchases}</li>
-                  <li>Movimentações: {result.results.stockMovements}</li>
-                </ul>
-                {result.results.errors?.length > 0 && (
-                  <div className="mt-2 text-red-600">
-                    <p>Erros: {result.results.errors.length}</p>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <p className="text-red-600">❌ Erro: {result.error}</p>
-            )}
-          </div>
-        )}
-      </div>
+      {isCompleted && (
+        <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
+          <p className="text-green-700 text-sm">
+            ✅ Sincronização concluída com sucesso!
+          </p>
+        </div>
+      )}
+
+      {isError && (
+        <div className="mt-6 bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-700 text-sm">
+            ❌ Erro durante a sincronização. Tente novamente.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

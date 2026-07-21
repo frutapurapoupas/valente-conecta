@@ -67,7 +67,7 @@ export default function ExtratoComprasPage() {
   }, [dataInicio, dataFim, pratos, pedidos]);
 
   const calcularExtrato = () => {
-    // Filtrar pedidos por período
+    // Filtrar pedidos por perÃ­odo
     const inicio = new Date(dataInicio);
     const fim = new Date(dataFim);
     fim.setHours(23, 59, 59);
@@ -123,7 +123,7 @@ export default function ExtratoComprasPage() {
   const gerarPDF = () => {
     setGerandoPDF(true);
 
-    // Criar conteúdo HTML para impressão
+    // Criar conteÃºdo HTML para impressÃ£o
     const conteudo = `
       <!DOCTYPE html>
       <html>
@@ -144,11 +144,11 @@ export default function ExtratoComprasPage() {
       </head>
       <body>
         <div class="header">
-          <h1>🍽️ Valente Conecta</h1>
+          <h1>ðŸ½ï¸ Valente Conecta</h1>
           <h2>Extrato de Compras</h2>
         </div>
         <div class="periodo">
-          Período: ${new Date(dataInicio).toLocaleDateString()} a ${new Date(dataFim).toLocaleDateString()}
+          PerÃ­odo: ${new Date(dataInicio).toLocaleDateString()} a ${new Date(dataFim).toLocaleDateString()}
         </div>
         <table>
           <thead>
@@ -156,7 +156,7 @@ export default function ExtratoComprasPage() {
               <th>Ingrediente</th>
               <th>Quantidade</th>
               <th>Unidade</th>
-              <th>Custo Unitário</th>
+              <th>Custo UnitÃ¡rio</th>
               <th>Custo Total</th>
              </tr>
           </thead>
@@ -176,7 +176,7 @@ export default function ExtratoComprasPage() {
           Total de Compras: R$ ${totalGeral.toFixed(2)}
         </div>
         <div class="footer">
-          Relatório gerado em ${new Date().toLocaleString()}
+          RelatÃ³rio gerado em ${new Date().toLocaleString()}
         </div>
       </body>
       </html>
@@ -193,11 +193,11 @@ export default function ExtratoComprasPage() {
   return (
     <div className="min-h-screen bg-gray-100 p-4">
       <div className="max-w-7xl mx-auto">
-        {/* Cabeçalho */}
+        {/* CabeÃ§alho */}
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">📊 Extrato de Compras</h1>
-            <p className="text-sm text-gray-500">Lista de compras baseada nos pedidos do período</p>
+            <h1 className="text-2xl font-bold text-gray-800">ðŸ“Š Extrato de Compras</h1>
+            <p className="text-sm text-gray-500">Lista de compras baseada nos pedidos do perÃ­odo</p>
           </div>
           <div className="flex gap-2">
             <button onClick={gerarPDF} disabled={gerandoPDF} className="bg-red-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-red-600">
@@ -209,15 +209,15 @@ export default function ExtratoComprasPage() {
           </div>
         </div>
 
-        {/* Filtro de Período */}
+        {/* Filtro de PerÃ­odo */}
         <div className="bg-white rounded-xl p-4 shadow-sm mb-6">
           <div className="flex items-center gap-4 flex-wrap">
             <div className="flex items-center gap-2">
               <Calendar size={18} className="text-gray-400" />
-              <span className="text-sm font-medium">Período:</span>
+              <span className="text-sm font-medium">PerÃ­odo:</span>
             </div>
             <div>
-              <label className="text-xs text-gray-500 block">Data Início</label>
+              <label className="text-xs text-gray-500 block">Data InÃ­cio</label>
               <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} className="p-2 border rounded-lg" />
             </div>
             <div>
@@ -255,7 +255,7 @@ export default function ExtratoComprasPage() {
                   <th className="p-3 text-left text-xs font-medium text-gray-700">Ingrediente</th>
                   <th className="p-3 text-left text-xs font-medium text-gray-700">Quantidade</th>
                   <th className="p-3 text-left text-xs font-medium text-gray-700">Unidade</th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-700">Custo Unitário</th>
+                  <th className="p-3 text-left text-xs font-medium text-gray-700">Custo UnitÃ¡rio</th>
                   <th className="p-3 text-left text-xs font-medium text-gray-700">Custo Total</th>
                 </tr>
               </thead>
@@ -272,7 +272,7 @@ export default function ExtratoComprasPage() {
                 {extrato.length === 0 && (
                   <tr>
                     <td colSpan={5} className="p-8 text-center text-gray-500">
-                      Nenhum dado encontrado no período selecionado
+                      Nenhum dado encontrado no perÃ­odo selecionado
                     </td>
                   </tr>
                 )}
@@ -290,3 +290,4 @@ export default function ExtratoComprasPage() {
     </div>
   );
 }
+

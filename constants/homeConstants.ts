@@ -1,4 +1,4 @@
-﻿// ============================================
+// ============================================
 // CONSTANTES - HOME PRINCIPAL
 // ============================================
 
@@ -33,7 +33,7 @@ export const homeConstants: HomeConstants = {
       preco: 18.90,
       original: 25.90,
       link: '/cozinha',
-      emoji: '🍽️',
+      emoji: '???',
       badge: 'COZINHA CHEF NEIDE'
     },
     {
@@ -43,7 +43,7 @@ export const homeConstants: HomeConstants = {
       preco: 49.90,
       original: 69.90,
       link: '/academia',
-      emoji: '💪',
+      emoji: '??',
       badge: 'ACADEMIA'
     },
     {
@@ -53,7 +53,7 @@ export const homeConstants: HomeConstants = {
       preco: 24.90,
       original: 32.90,
       link: '/cozinha',
-      emoji: '🥩',
+      emoji: '??',
       badge: 'PROMOÇÃO'
     },
     {
@@ -63,7 +63,7 @@ export const homeConstants: HomeConstants = {
       preco: 21.90,
       original: 28.90,
       link: '/cozinha',
-      emoji: '🍛',
+      emoji: '??',
       badge: 'ESPECIAL'
     }
   ],
@@ -95,16 +95,16 @@ export const homeConstants: HomeConstants = {
 
   // ABAS ROTATIVAS DO CARD INDIQUE
   abasIndique: [
-    { texto: '🏆 Indique um amigo e ganhe R$10!', cor: 'text-yellow-600' },
-    { texto: '🎁 Indique uma loja e ganhe bônus!', cor: 'text-green-600' },
-    { texto: '💰 Indique um motorista e ganhe desconto!', cor: 'text-blue-600' },
-    { texto: '⭐ Indique um profissional e ganhe créditos!', cor: 'text-purple-600' },
-    { texto: '🏪 Indique um comerciante e ganhe comissão!', cor: 'text-orange-600' },
-    { texto: '💪 Indique a academia e ganhe mês grátis!', cor: 'text-red-600' },
-    { texto: '🚚 Indique o moto táxi e ganhe corrida!', cor: 'text-yellow-700' },
-    { texto: '🏠 Indique um imóvel e ganhe % da venda!', cor: 'text-pink-600' },
-    { texto: '📚 Indique um curso e ganhe desconto!', cor: 'text-indigo-600' },
-    { texto: '🎉 Indique um evento e ganhe ingresso!', cor: 'text-amber-600' }
+    { texto: '?? Indique um amigo e ganhe R$10!', cor: 'text-yellow-600' },
+    { texto: '?? Indique uma loja e ganhe bônus!', cor: 'text-green-600' },
+    { texto: '?? Indique um motorista e ganhe desconto!', cor: 'text-blue-600' },
+    { texto: '? Indique um profissional e ganhe créditos!', cor: 'text-purple-600' },
+    { texto: '?? Indique um comerciante e ganhe comissão!', cor: 'text-orange-600' },
+    { texto: '?? Indique a academia e ganhe mês grátis!', cor: 'text-red-600' },
+    { texto: '?? Indique o moto táxi e ganhe corrida!', cor: 'text-yellow-700' },
+    { texto: '?? Indique um imóvel e ganhe % da venda!', cor: 'text-pink-600' },
+    { texto: '?? Indique um curso e ganhe desconto!', cor: 'text-indigo-600' },
+    { texto: '?? Indique um evento e ganhe ingresso!', cor: 'text-amber-600' }
   ],
 
   // PLANOS
@@ -155,4 +155,5 @@ export const homeConstants: HomeConstants = {
     { valor: '5000+', label: 'Pedidos Realizados' }
   ]
 };
+
 

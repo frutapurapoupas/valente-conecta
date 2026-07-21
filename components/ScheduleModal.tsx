@@ -36,7 +36,7 @@ export default function ScheduleModal({ product, onClose }: { product: any; onCl
     notas.unshift({ id: novo.id, title: 'Novo agendamento', body: `Agendamento: ${novo.produtoNome} - ${novo.data} ${novo.hora}`, createdAt: novo.criadoEm });
     localStorage.setItem('admin_notificacoes_agendamentos', JSON.stringify(notas));
 
-    window.alert('Agendamento salvo. O admin será notificado.');
+    window.alert('Agendamento salvo. O admin serÃ¡ notificado.');
     onClose();
   };
 
@@ -54,7 +54,7 @@ export default function ScheduleModal({ product, onClose }: { product: any; onCl
             <input type="date" value={data} onChange={(e)=>setData(e.target.value)} className="flex-1 p-2 rounded-lg bg-white/5" />
             <input type="time" value={hora} onChange={(e)=>setHora(e.target.value)} className="w-32 p-2 rounded-lg bg-white/5" />
           </div>
-          <textarea value={observacao} onChange={(e)=>setObservacao(e.target.value)} placeholder="Observações (opcional)" className="w-full p-2 rounded-lg bg-white/5 h-24" />
+          <textarea value={observacao} onChange={(e)=>setObservacao(e.target.value)} placeholder="ObservaÃ§Ãµes (opcional)" className="w-full p-2 rounded-lg bg-white/5 h-24" />
         </div>
 
         <div className="mt-4 flex gap-2">
@@ -65,3 +65,4 @@ export default function ScheduleModal({ product, onClose }: { product: any; onCl
     </div>
   );
 }
+

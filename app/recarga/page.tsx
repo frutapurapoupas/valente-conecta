@@ -1,137 +1,154 @@
-// app/recarga/page.tsx
-'use client';
+﻿"use client";
 
-export const dynamic = 'force-dynamic';
+import { useRecarga } from "@/modules/recarga";
+import { useState } from "react";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useApp } from '@/app/context/AppContext';
-import { supabase } from '@/lib/supabase';
-import { ArrowLeft, QrCode, Copy, CheckCircle } from 'lucide-react';
-import toast from 'react-hot-toast';
+// TODO: Obter userId do contexto de autenticação
+const USER_ID = "current-user-id";
 
 export default function RecargaPage() {
-  const router = useRouter();
-  const { user } = useApp();
-  const [valor, setValor] = useState<number>(10);
-  const [valorPersonalizado, setValorPersonalizado] = useState('');
-  const [copied, setCopied] = useState(false);
+  const { recargas, stats, loading, error, criar, confirmar, cancelar } = useRecarga(USER_ID);
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({ valor: "", metodo: "pix" as const });
 
-  const valoresSugeridos = [10, 20, 50, 100];
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await criar({
+        usuario_id: USER_ID,
+        valor: parseFloat(formData.valor),
+        metodo: formData.metodo,
+        status: "pendente"
+      });
+      setShowForm(false);
+      setFormData({ valor: "", metodo: "pix" });
+    } catch (err) {}
+  };
 
-  const handleRecarga = async () => {
-    const valorRecarga = valorPersonalizado ? parseFloat(valorPersonalizado) : valor;
-    
-    if (isNaN(valorRecarga) || valorRecarga <= 0) {
-      toast.error('Valor inválido');
-      return;
-    }
-    
-    // Gerar QR Code PIX
-    const chavePix = 'df79fd53-2ce0-4013-b906-44f8076e28a1';
-    const nome = 'VALENTE CONECTA';
-    const cidade = 'VALENTE';
-    const valorStr = valorRecarga.toFixed(2);
-    
-    // Gerar payload PIX
-    const payload = `00020101021126330014BR.GOV.BCB.PIX0111${chavePix}5204000053039865404${valorStr}5802BR5913${nome}6007${cidade}62070503***6304`;
-    
-    // Abrir aplicativo de pagamento
-    window.open(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(payload)}`, '_blank');
-    
-    toast.success('QR Code gerado! Após o pagamento, o saldo será creditado automaticamente');
+  if (loading && recargas.length === 0) {
+    return <div className="p-6 text-center">Carregando...</div>;
+  }
+
+  if (error) {
+    return <div className="p-6 text-red-600">Erro: {error.message}</div>;
+  }
+
+  const statusColors: Record<string, string> = {
+    pendente: "bg-yellow-100 text-yellow-800",
+    confirmado: "bg-green-100 text-green-800",
+    cancelado: "bg-red-100 text-red-800",
+    falha: "bg-gray-100 text-gray-800"
+  };
+
+  const metodoLabels: Record<string, string> = {
+    pix: "PIX",
+    cartao: "Cartão",
+    boleto: "Boleto",
+    transferencia: "Transferência"
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 pb-20">
-      <header className="bg-gradient-to-r from-green-400 to-green-700 p-4 sticky top-0 z-40">
-        <div className="flex items-center gap-3">
-          <button onClick={() => router.back()} className="text-white">
-            <ArrowLeft className="w-6 h-6" />
-          </button>
-          <h1 className="text-white font-bold text-lg">💰 Adicionar Saldo</h1>
-        </div>
-      </header>
+    <div className="max-w-7xl mx-auto p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Recargas</h1>
+        <button onClick={() => setShowForm(true)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+          + Nova Recarga
+        </button>
+      </div>
 
-      <main className="max-w-md mx-auto p-6 space-y-6">
-        <div className="bg-yellow-500/10 border border-yellow-500 rounded-2xl p-4">
-          <p className="text-yellow-400 text-sm text-center">
-            💡 O valor carregado pode ser usado para desbloquear contatos, serviços e muito mais!
-          </p>
+      {stats && (
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+          <div className="bg-white p-4 rounded-lg shadow"><p className="text-sm text-gray-600">Total</p><p className="text-2xl font-bold">{stats.total}</p></div>
+          <div className="bg-white p-4 rounded-lg shadow"><p className="text-sm text-gray-600">Total R$</p><p className="text-2xl font-bold text-blue-600">R$ {stats.totalValor.toFixed(2)}</p></div>
+          <div className="bg-white p-4 rounded-lg shadow"><p className="text-sm text-gray-600">Pendentes</p><p className="text-2xl font-bold text-yellow-600">{stats.pendentes}</p></div>
+          <div className="bg-white p-4 rounded-lg shadow"><p className="text-sm text-gray-600">Confirmados</p><p className="text-2xl font-bold text-green-600">{stats.confirmados}</p></div>
+          <div className="bg-white p-4 rounded-lg shadow"><p className="text-sm text-gray-600">Cancelados</p><p className="text-2xl font-bold text-red-600">{stats.cancelados}</p></div>
         </div>
+      )}
 
-        {/* Valores sugeridos */}
-        <div className="grid grid-cols-4 gap-3">
-          {valoresSugeridos.map((v) => (
-            <button
-              key={v}
-              onClick={() => {
-                setValor(v);
-                setValorPersonalizado('');
-              }}
-              className={`py-3 rounded-xl font-bold transition-all ${
-                valor === v && !valorPersonalizado
-                  ? 'bg-green-500 text-white'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-              }`}
-            >
-              R$ {v}
-            </button>
-          ))}
-        </div>
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-gray-50"><tr>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valor</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Método</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>
+          </tr></thead>
+          <tbody className="divide-y divide-gray-200">
+            {recargas.length === 0 ? (
+              <tr><td colSpan={5} className="px-6 py-4 text-center text-gray-500">Nenhuma recarga</td></tr>
+            ) : (
+              recargas.map((r) => (
+                <tr key={r.id}>
+                  <td className="px-6 py-4 font-bold">R$ {r.valor.toFixed(2)}</td>
+                  <td className="px-6 py-4">{metodoLabels[r.metodo] || r.metodo}</td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2 py-1 rounded-full text-xs ${statusColors[r.status] || "bg-gray-100"}`}>
+                      {r.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-sm">
+                    {r.created_at ? new Date(r.created_at).toLocaleDateString("pt-BR") : "-"}
+                  </td>
+                  <td className="px-6 py-4">
+                    {r.status === "pendente" && (
+                      <div className="flex gap-2">
+                        <button onClick={() => confirmar(r.id)} className="text-green-600 hover:text-green-800 text-sm">Confirmar</button>
+                        <button onClick={() => cancelar(r.id)} className="text-red-600 hover:text-red-800 text-sm">Cancelar</button>
+                      </div>
+                    )}
+                    {r.status === "confirmado" && (
+                      <span className="text-sm text-green-600">✓ Confirmado</span>
+                    )}
+                    {r.status === "cancelado" && (
+                      <span className="text-sm text-red-600">✗ Cancelado</span>
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
 
-        {/* Valor personalizado */}
-        <div className="bg-gray-800 rounded-2xl p-4">
-          <label className="text-gray-400 text-sm mb-2 block">Valor personalizado (R$)</label>
-          <input
-            type="number"
-            step="0.01"
-            min="1"
-            value={valorPersonalizado}
-            onChange={(e) => {
-              setValorPersonalizado(e.target.value);
-              setValor(0);
-            }}
-            placeholder="Digite o valor desejado"
-            className="w-full px-4 py-3 bg-gray-700 rounded-xl text-white"
-          />
-        </div>
-
-        {/* Chave PIX */}
-        <div className="bg-gray-800 rounded-2xl p-4">
-          <p className="text-gray-400 text-sm mb-2">Chave PIX (copie e cole no seu app bancário)</p>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value="df79fd53-2ce0-4013-b906-44f8076e28a1"
-              readOnly
-              className="flex-1 px-3 py-2 bg-gray-700 rounded-xl text-white text-sm"
-            />
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText('df79fd53-2ce0-4013-b906-44f8076e28a1');
-                setCopied(true);
-                toast.success('Chave PIX copiada!');
-                setTimeout(() => setCopied(false), 3000);
-              }}
-              className="px-4 py-2 bg-blue-600 text-white rounded-xl font-bold"
-            >
-              {copied ? <CheckCircle className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
-            </button>
+      {showForm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-96 max-w-full">
+            <h2 className="text-xl font-bold mb-4">Nova Recarga</h2>
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <input
+                type="number"
+                step="0.01"
+                min="1"
+                value={formData.valor}
+                onChange={(e) => setFormData({...formData, valor: e.target.value})}
+                placeholder="Valor (R$)"
+                className="w-full p-2 border rounded"
+                required
+              />
+              <select
+                value={formData.metodo}
+                onChange={(e) => setFormData({...formData, metodo: e.target.value as any})}
+                className="w-full p-2 border rounded"
+              >
+                <option value="pix">PIX</option>
+                <option value="cartao">Cartão</option>
+                <option value="boleto">Boleto</option>
+                <option value="transferencia">Transferência</option>
+              </select>
+              <div className="flex gap-2 mt-4">
+                <button type="submit" className="flex-1 bg-blue-600 text-white p-2 rounded hover:bg-blue-700">
+                  Solicitar Recarga
+                </button>
+                <button type="button" onClick={() => setShowForm(false)} className="flex-1 bg-gray-300 p-2 rounded hover:bg-gray-400">
+                  Cancelar
+                </button>
+              </div>
+            </form>
           </div>
         </div>
-
-        <button
-          onClick={handleRecarga}
-          className="w-full py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-2xl font-bold text-lg"
-        >
-          Gerar QR Code PIX
-        </button>
-
-        <p className="text-gray-500 text-xs text-center">
-          ⚡ O saldo será creditado automaticamente após a confirmação do pagamento
-        </p>
-      </main>
+      )}
     </div>
   );
 }

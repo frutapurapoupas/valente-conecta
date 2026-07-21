@@ -14,5 +14,14 @@
     "periodo": "almoco",
     "precoCustomizado": 27.9,
     "isAvailable": true
+  },
+  {
+    "id": "1782856205393",
+    "receitaId": "1782063021418",
+    "diaSemana": 2,
+    "periodo": "almoco",
+    "precoCustomizado": null,
+    "usarPrecoDaReceita": true,
+    "isAvailable": true
   }
 ]

@@ -1,0 +1,26 @@
+﻿========================================
+RESUMO DA AUDITORIA - cozinha-chef
+========================================
+Gerado em: 2026-07-08 22:41:04
+
+📊 ESTATÍSTICAS GERAIS
+
+| Categoria | Total | Gigantes | Limite |
+|-----------|-------|----------|--------|
+| Páginas   | 16 | page.tsx page.tsx page.tsx page.tsx page.tsx.Count | 300 |
+| Componentes | 20 | CatalogoUI.tsx DashboardUI.tsx PratoForm.tsx ReceitaForm.tsx.Count | 200 |
+| Hooks     | 20 | useCatalogo.ts usePratoForm.ts useReceita.ts.Count | 150 |
+| APIs      | 18 | N/A | N/A |
+| Services  | 4 | N/A | N/A |
+
+--------------------------------------------------------------------------------
+
+📁 RELATÓRIOS GERADOS:
+  ✅ paginas.txt
+  ✅ componentes.txt
+  ✅ hooks.txt
+  ✅ apis.txt
+  ✅ services.txt
+
+📁 LOCAL: C:\valente_conecta\auditoria_simples_2026-07-08_22-41
+

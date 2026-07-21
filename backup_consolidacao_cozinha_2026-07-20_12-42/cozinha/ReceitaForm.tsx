@@ -1,0 +1,543 @@
+// components/cozinha/ReceitaForm.tsx
+// ðŸŽ¨ DESIGN - FormulÃ¡rio de ediÃ§Ã£o de receita
+
+"use client";
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { 
+  ArrowLeft, Save, Plus, Trash2, Calculator, 
+  ShoppingCart, History, AlertCircle, CheckCircle,
+  TrendingUp, TrendingDown
+} from 'lucide-react';
+import { 
+  Receita, 
+  IngredienteReceita,
+  calcularProgressoPeso,
+  TotaisReceita,
+  formatarMoeda,
+  formatarData
+} from '@/utils/cozinhaUtils';
+
+interface ReceitaFormProps {
+  receita: Receita;
+  totais: TotaisReceita | null;
+  ingredientesDisponiveis: any[];
+  pesoMeta: Record<string, number>;
+  loading: boolean;
+  salvando: boolean;
+  mostrarHistorico: boolean;
+  selectedIngrediente: string;
+  selectedQuantidade: number;
+  selectedUnidade: string;
+  quantidadePorcoes: number;
+  calculoPorcoes: any;
+  onSetSelectedIngrediente: (value: string) => void;
+  onSetSelectedQuantidade: (value: number) => void;
+  onSetSelectedUnidade: (value: string) => void;
+  onAdicionarIngrediente: (ingrediente: IngredienteReceita) => void;
+  onRemoverIngrediente: (index: number) => void;
+  onAtualizarQuantidade: (index: number, quantidade: number) => void;
+  onSetReceita: (receita: Receita) => void;
+  onSetQuantidadePorcoes: (value: number) => void;
+  onSalvar: () => void;
+  onEnviarParaCompras: () => void;
+  onToggleHistorico: () => void;
+}
+
+export default function ReceitaForm({
+  receita,
+  totais,
+  ingredientesDisponiveis = [],
+  pesoMeta = {},
+  loading,
+  salvando,
+  mostrarHistorico,
+  selectedIngrediente,
+  selectedQuantidade,
+  selectedUnidade,
+  quantidadePorcoes,
+  calculoPorcoes,
+  onSetSelectedIngrediente,
+  onSetSelectedQuantidade,
+  onSetSelectedUnidade,
+  onAdicionarIngrediente,
+  onRemoverIngrediente,
+  onAtualizarQuantidade,
+  onSetReceita,
+  onSetQuantidadePorcoes,
+  onSalvar,
+  onEnviarParaCompras,
+  onToggleHistorico,
+}: ReceitaFormProps) {
+  
+  // Estado local para seleÃ§Ã£o de ingrediente
+  const [localSelectedIngrediente, setLocalSelectedIngrediente] = useState('');
+  const [localSelectedQuantidade, setLocalSelectedQuantidade] = useState(0);
+  const [localSelectedUnidade, setLocalSelectedUnidade] = useState('g');
+
+  // Usar props ou estado local
+  const currentIngrediente = selectedIngrediente || localSelectedIngrediente;
+  const currentQuantidade = selectedQuantidade || localSelectedQuantidade;
+  const currentUnidade = selectedUnidade || localSelectedUnidade;
+
+  // FunÃ§Ã£o para adicionar ingrediente com validaÃ§Ã£o
+  const handleAdicionarIngrediente = () => {
+    if (!currentIngrediente) {
+      alert('Selecione um ingrediente');
+      return;
+    }
+    
+    const ingredienteEncontrado = ingredientesDisponiveis.find(
+      (i) => i.id === currentIngrediente
+    );
+    
+    if (!ingredienteEncontrado) {
+      alert('Ingrediente nÃ£o encontrado');
+      return;
+    }
+    
+    if (!currentQuantidade || currentQuantidade <= 0) {
+      alert('Informe uma quantidade vÃ¡lida');
+      return;
+    }
+    
+    const novoIngrediente: IngredienteReceita = {
+      ingrediente_nome: ingredienteEncontrado.nome,
+      ingrediente_id: currentIngrediente,
+      quantidade: currentQuantidade,
+      unidade: currentUnidade,
+      custo_total: currentQuantidade * (ingredienteEncontrado.preco_unitario || 0)
+    };
+    
+    onAdicionarIngrediente(novoIngrediente);
+    
+    // Limpar seleÃ§Ã£o
+    setLocalSelectedIngrediente('');
+    setLocalSelectedQuantidade(0);
+    setLocalSelectedUnidade('g');
+    onSetSelectedIngrediente('');
+    onSetSelectedQuantidade(0);
+    onSetSelectedUnidade('g');
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh] bg-gray-900">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-gray-400 mt-4">Carregando receita...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!receita) {
+    return (
+      <div className="min-h-screen bg-gray-900 text-white p-6">
+        <div className="max-w-4xl mx-auto text-center py-12">
+          <h1 className="text-2xl font-bold text-red-400">âŒ Receita nÃ£o encontrada</h1>
+          <Link href="/admin-master/cozinha-chef/receitas" className="text-orange-400 hover:text-orange-300 mt-4 inline-block">
+            Voltar para lista de receitas
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const margem = totais?.margem || 0;
+  const metaPesos = pesoMeta || {};
+
+  // Ordenar ingredientes disponÃ­veis em ordem alfabÃ©tica
+  const ingredientesOrdenados = [...ingredientesDisponiveis].sort((a, b) =>
+    a.nome.localeCompare(b.nome)
+  );
+
+  return (
+    <div className="min-h-screen bg-gray-900 text-white p-6">
+      <div className="max-w-5xl mx-auto">
+        {/* CabeÃ§alho */}
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+          <div>
+            <Link href="/admin-master/cozinha-chef/receitas" className="text-sm text-gray-400 hover:text-white flex items-center gap-1 transition">
+              <ArrowLeft size={16} /> Voltar
+            </Link>
+            <h1 className="text-2xl font-bold flex items-center gap-2 mt-1">
+              <Calculator className="text-orange-400" />
+              Editar: {receita.nome}
+            </h1>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={onToggleHistorico}
+              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg flex items-center gap-2 text-sm transition"
+            >
+              <History size={16} /> HistÃ³rico
+            </button>
+            <button
+              onClick={onEnviarParaCompras}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center gap-2 text-sm transition"
+            >
+              <ShoppingCart size={16} /> Enviar para Compras
+            </button>
+            <button
+              onClick={onSalvar}
+              disabled={salvando}
+              className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg flex items-center gap-2 text-sm transition disabled:opacity-50"
+            >
+              <Save size={16} /> {salvando ? 'Salvando...' : 'Salvar'}
+            </button>
+          </div>
+        </div>
+
+        {/* HistÃ³rico */}
+        {mostrarHistorico && receita?.historico && receita.historico.length > 0 && (
+          <div className="bg-gray-800/30 rounded-xl border border-gray-700 p-4 mb-6">
+            <h3 className="text-sm font-semibold text-gray-400 mb-3">ðŸ“œ HistÃ³rico de VersÃµes</h3>
+            <div className="space-y-2 max-h-40 overflow-y-auto">
+              {receita.historico.slice().reverse().map((h: any, idx: number) => (
+                <div key={h.id || idx} className="flex justify-between text-sm bg-gray-800/50 p-2 rounded-lg flex-wrap gap-2">
+                  <span className="text-gray-400">{formatarData(h.data)}</span>
+                  <span className="text-gray-300">{h.porcoes} porÃ§Ãµes</span>
+                  <span className="text-red-400">Custo: {formatarMoeda(h.custo_total)}</span>
+                  <span className="text-green-400">PreÃ§o: {formatarMoeda(h.preco_sugerido)}</span>
+                  <span className="text-yellow-400">{h.ingredientes?.length || 0} ingredientes</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Dados da Receita */}
+        <div className="bg-gray-800/30 rounded-xl border border-gray-700 p-6 mb-6">
+          <h2 className="text-lg font-semibold mb-4 text-white">ðŸ“‹ Dados da Receita</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-gray-400 mb-1">Nome</label>
+              <input
+                type="text"
+                value={receita.nome}
+                onChange={(e) => onSetReceita({ ...receita, nome: e.target.value })}
+                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-orange-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-400 mb-1">Categoria</label>
+              <select
+                value={receita.categoria}
+                onChange={(e) => onSetReceita({ ...receita, categoria: e.target.value })}
+                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-orange-500 focus:outline-none"
+              >
+                <option value="Prato Principal">Prato Principal</option>
+                <option value="Bolo">Bolo</option>
+                <option value="Sobremesa">Sobremesa</option>
+                <option value="Salgado">Salgado</option>
+              </select>
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm text-gray-400 mb-1">DescriÃ§Ã£o</label>
+              <textarea
+                value={receita.descricao}
+                onChange={(e) => onSetReceita({ ...receita, descricao: e.target.value })}
+                rows={2}
+                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-orange-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-400 mb-1">PorÃ§Ãµes</label>
+              <input
+                type="number"
+                value={receita.porcoes}
+                onChange={(e) => onSetReceita({ ...receita, porcoes: parseInt(e.target.value) || 1 })}
+                min="1"
+                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-orange-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-400 mb-1">PreÃ§o Sugerido (R$)</label>
+              <input
+                type="number"
+                step="0.01"
+                value={receita.preco_sugerido}
+                onChange={(e) => onSetReceita({ ...receita, preco_sugerido: parseFloat(e.target.value) || 0 })}
+                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-orange-500 focus:outline-none"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Ingredientes */}
+        <div className="bg-gray-800/30 rounded-xl border border-gray-700 p-6 mb-6">
+          <h2 className="text-lg font-semibold mb-4 text-white">ðŸ§ª Ingredientes</h2>
+
+          <div className="flex flex-wrap gap-3 mb-4">
+            <select
+              value={currentIngrediente}
+              onChange={(e) => {
+                const value = e.target.value;
+                setLocalSelectedIngrediente(value);
+                onSetSelectedIngrediente(value);
+              }}
+              className="flex-1 min-w-[150px] px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-orange-500 focus:outline-none"
+            >
+              <option value="">Selecione um ingrediente...</option>
+              {ingredientesOrdenados.length > 0 ? (
+                ingredientesOrdenados.map((ing) => (
+                  <option key={ing.id} value={ing.id}>
+                    {ing.nome} ({formatarMoeda(ing.preco_unitario)}/{ing.unidade})
+                  </option>
+                ))
+              ) : (
+                <option value="" disabled>Nenhum ingrediente disponÃ­vel</option>
+              )}
+            </select>
+            <input
+              type="number"
+              value={currentQuantidade}
+              onChange={(e) => {
+                const value = parseFloat(e.target.value) || 0;
+                setLocalSelectedQuantidade(value);
+                onSetSelectedQuantidade(value);
+              }}
+              className="w-24 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-orange-500 focus:outline-none"
+              placeholder="Qtd"
+            />
+            <select
+              value={currentUnidade}
+              onChange={(e) => {
+                const value = e.target.value;
+                setLocalSelectedUnidade(value);
+                onSetSelectedUnidade(value);
+              }}
+              className="w-20 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-orange-500 focus:outline-none"
+            >
+              <option value="g">g</option>
+              <option value="kg">kg</option>
+              <option value="ml">ml</option>
+              <option value="L">L</option>
+              <option value="un">un</option>
+            </select>
+            <button
+              onClick={handleAdicionarIngrediente}
+              disabled={!currentIngrediente || !currentQuantidade}
+              className="px-4 py-2 bg-orange-600 hover:bg-orange-700 rounded-lg flex items-center gap-2 transition disabled:opacity-50 text-white"
+            >
+              <Plus size={16} /> Adicionar
+            </button>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-800/50">
+                <tr>
+                  <th className="px-3 py-2 text-left text-gray-400">Ingrediente</th>
+                  <th className="px-3 py-2 text-left text-gray-400">Quantidade</th>
+                  <th className="px-3 py-2 text-left text-gray-400">Meta</th>
+                  <th className="px-3 py-2 text-left text-gray-400">Progresso</th>
+                  <th className="px-3 py-2 text-left text-gray-400">Custo</th>
+                  <th className="px-3 py-2 text-center text-gray-400">AÃ§Ã£o</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-700">
+                {receita.ingredientes && receita.ingredientes.length > 0 ? (
+                  receita.ingredientes.map((ing, index) => {
+                    const meta = metaPesos[ing.ingrediente_nome] || ing.quantidade || 0;
+                    const progresso = calcularProgressoPeso(ing.quantidade || 0, meta);
+                    return (
+                      <tr key={index}>
+                        <td className="px-3 py-2 text-white">{ing.ingrediente_nome}</td>
+                        <td className="px-3 py-2">
+                          <input
+                            type="number"
+                            value={ing.quantidade || 0}
+                            onChange={(e) => onAtualizarQuantidade(index, parseFloat(e.target.value) || 0)}
+                            className="w-20 px-2 py-1 bg-gray-800 border border-gray-700 rounded text-white text-center focus:border-orange-500 focus:outline-none"
+                            step="any"
+                          />
+                          <span className="ml-1 text-gray-400">{ing.unidade || 'g'}</span>
+                        </td>
+                        <td className="px-3 py-2 text-gray-400">
+                          {meta} {ing.unidade || 'g'}
+                        </td>
+                        <td className="px-3 py-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-24 h-2 bg-gray-700 rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full rounded-full transition-all ${
+                                  progresso.percentual >= 95 ? 'bg-green-500' :
+                                  progresso.percentual >= 70 ? 'bg-yellow-500' :
+                                  'bg-orange-500'
+                                }`}
+                                style={{ width: `${Math.min(progresso.percentual, 100)}%` }}
+                              />
+                            </div>
+                            <span className="text-xs text-gray-400">
+                              {progresso.percentual.toFixed(0)}%
+                            </span>
+                            {progresso.falta > 0 && (
+                              <span className="text-xs text-yellow-400">
+                                faltam {progresso.falta.toFixed(0)} {ing.unidade || 'g'}
+                              </span>
+                            )}
+                            {progresso.percentual >= 100 && (
+                              <CheckCircle size={14} className="text-green-500" />
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-3 py-2 text-orange-400">{formatarMoeda(ing.custo_total || 0)}</td>
+                        <td className="px-3 py-2 text-center">
+                          <button
+                            onClick={() => onRemoverIngrediente(index)}
+                            className="p-1 hover:bg-red-500/20 rounded text-red-400 transition"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="text-center py-4 text-gray-400">
+                      Nenhum ingrediente adicionado
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+              <tfoot className="bg-gray-800/30 border-t border-gray-700">
+                <tr>
+                  <td colSpan={4} className="px-3 py-2 font-bold text-white">Custo Total</td>
+                  <td className="px-3 py-2 font-bold text-orange-400">{formatarMoeda(receita.custo_total || 0)}</td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        {/* CÃ¡lculo em X Quantidades */}
+        <div className="bg-gray-800/30 rounded-xl border border-gray-700 p-6 mb-6">
+          <h3 className="text-lg font-semibold mb-4 text-white flex items-center gap-2">
+            <Calculator className="text-orange-400" />
+            Calcular em X Quantidades
+          </h3>
+          
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex-1 min-w-[150px]">
+              <label className="block text-sm text-gray-400 mb-1">Quantas porÃ§Ãµes?</label>
+              <input
+                type="number"
+                min="1"
+                value={quantidadePorcoes}
+                onChange={(e) => onSetQuantidadePorcoes(parseInt(e.target.value) || 1)}
+                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-lg focus:border-orange-500 focus:outline-none"
+              />
+            </div>
+            <div className="flex-1 min-w-[120px]">
+              <label className="block text-sm text-gray-400 mb-1">Custo Total</label>
+              <p className="text-2xl font-bold text-orange-400">
+                R$ {calculoPorcoes ? calculoPorcoes.custoTotal.toFixed(2) : '0.00'}
+              </p>
+            </div>
+            <div className="flex-1 min-w-[120px]">
+              <label className="block text-sm text-gray-400 mb-1">Custo por PorÃ§Ã£o</label>
+              <p className="text-2xl font-bold text-yellow-400">
+                R$ {calculoPorcoes ? calculoPorcoes.custoPorPorcao.toFixed(2) : '0.00'}
+              </p>
+            </div>
+            <div className="flex-1 min-w-[120px]">
+              <label className="block text-sm text-gray-400 mb-1">Lucro Estimado</label>
+              <p className={`text-2xl font-bold ${(totais?.precoTotal || 0) > (calculoPorcoes?.custoTotal || 0) ? 'text-green-400' : 'text-red-400'}`}>
+                R$ {calculoPorcoes ? ((totais?.precoTotal || 0) - calculoPorcoes.custoTotal).toFixed(2) : '0.00'}
+              </p>
+            </div>
+            <button
+              onClick={onEnviarParaCompras}
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-medium transition flex items-center gap-2"
+            >
+              <ShoppingCart size={18} /> Enviar para Compras
+            </button>
+          </div>
+
+          {calculoPorcoes && calculoPorcoes.ingredientes && calculoPorcoes.ingredientes.length > 0 && (
+            <div className="mt-4 p-4 bg-gray-800/50 rounded-lg">
+              <p className="text-sm text-gray-400 mb-2">
+                ðŸ“¦ Ingredientes necessÃ¡rios para <span className="text-white font-medium">{quantidadePorcoes}</span> porÃ§Ãµes:
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-40 overflow-y-auto">
+                {calculoPorcoes.ingredientes.map((ing: any, idx: number) => (
+                  <div key={idx} className="bg-gray-700/30 p-2 rounded-lg text-sm flex justify-between items-center">
+                    <span className="text-gray-300">{ing.nome}</span>
+                    <span className="text-orange-400 font-medium">
+                      {ing.quantidade.toFixed(1)} {ing.unidade}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Resumo Financeiro */}
+        <div className="bg-gray-800/30 rounded-xl border border-gray-700 p-6">
+          <h2 className="text-lg font-semibold mb-4 text-white">ðŸ’° Resumo Financeiro</h2>
+          
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="bg-gray-800/50 rounded-lg p-3 text-center border border-gray-700">
+              <p className="text-sm text-gray-400">Custo Total</p>
+              <p className="text-xl font-bold text-red-400">{formatarMoeda(totais?.custoTotal || 0)}</p>
+            </div>
+            <div className="bg-gray-800/50 rounded-lg p-3 text-center border border-gray-700">
+              <p className="text-sm text-gray-400">Custo por PorÃ§Ã£o</p>
+              <p className="text-xl font-bold text-yellow-400">{formatarMoeda(totais?.custoPorPorcao || 0)}</p>
+            </div>
+            <div className="bg-gray-800/50 rounded-lg p-3 text-center border border-gray-700">
+              <p className="text-sm text-gray-400">PreÃ§o Total</p>
+              <p className="text-xl font-bold text-blue-400">{formatarMoeda(totais?.precoTotal || 0)}</p>
+            </div>
+            <div className="bg-gray-800/50 rounded-lg p-3 text-center border border-gray-700">
+              <p className="text-sm text-gray-400">Lucro LÃ­quido</p>
+              <p className={`text-xl font-bold ${(totais?.lucroTotal || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                {formatarMoeda(totais?.lucroTotal || 0)}
+              </p>
+            </div>
+            <div className={`rounded-lg p-3 text-center border ${
+              margem >= 50 ? 'bg-green-500/20 border-green-500/30' : 
+              margem >= 30 ? 'bg-yellow-500/20 border-yellow-500/30' : 
+              'bg-red-500/20 border-red-500/30'
+            }`}>
+              <p className="text-sm text-gray-400">Margem</p>
+              <p className={`text-xl font-bold ${
+                margem >= 50 ? 'text-green-400' : 
+                margem >= 30 ? 'text-yellow-400' : 
+                'text-red-400'
+              }`}>
+                {margem.toFixed(1)}%
+              </p>
+            </div>
+          </div>
+
+          {margem < 30 && receita.ingredientes && receita.ingredientes.length > 0 && (
+            <div className="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-start gap-2 text-yellow-400 text-sm">
+              <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
+              <span>âš ï¸ Margem baixa! Considere ajustar o preÃ§o ou reduzir custos.</span>
+            </div>
+          )}
+        </div>
+
+        {/* Dicas */}
+        <div className="mt-6 bg-gray-800/20 rounded-lg border border-gray-700 p-4">
+          <h3 className="text-sm font-semibold text-gray-400 mb-2">ðŸ’¡ Dicas de OtimizaÃ§Ã£o</h3>
+          <ul className="text-sm text-gray-500 space-y-1">
+            <li>â€¢ ðŸŽ¯ A rÃ©gua de progresso mostra quanto falta para atingir a meta de peso de cada ingrediente</li>
+            <li>â€¢ ðŸ“Š O lucro lÃ­quido Ã© calculado automaticamente com base no preÃ§o sugerido</li>
+            <li>â€¢ ðŸ›’ Ingredientes podem ser enviados diretamente para a lista de compras</li>
+            <li>â€¢ ðŸ“œ O histÃ³rico mantÃ©m todas as versÃµes da receita para consulta</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+

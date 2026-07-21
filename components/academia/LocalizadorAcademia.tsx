@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
 import { Navigation, CheckCircle, AlertCircle } from "lucide-react";
 
@@ -51,7 +51,7 @@ export default function LocalizadorAcademia() {
         className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl font-bold text-sm flex items-center justify-center gap-2"
       >
         <Navigation className="w-4 h-4" />
-        {capturando ? "Capturando..." : "Verificar presença"}
+        {capturando ? "Capturando..." : "Verificar presenÃ§a"}
       </button>
       {localizacao && (
         <div className="mt-3 p-3 bg-white/5 rounded-xl">
@@ -59,12 +59,12 @@ export default function LocalizadorAcademia() {
             {dentroAcademia ? (
               <>
                 <CheckCircle className="w-4 h-4 text-green-400" />
-                <span className="text-green-400 text-sm">Você está na academia!</span>
+                <span className="text-green-400 text-sm">VocÃª estÃ¡ na academia!</span>
               </>
             ) : (
               <>
                 <AlertCircle className="w-4 h-4 text-yellow-400" />
-                <span className="text-yellow-400 text-sm">Fora da área da academia</span>
+                <span className="text-yellow-400 text-sm">Fora da Ã¡rea da academia</span>
               </>
             )}
           </div>
@@ -73,3 +73,4 @@ export default function LocalizadorAcademia() {
     </div>
   );
 }
+

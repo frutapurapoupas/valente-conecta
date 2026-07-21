@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     const file = formData.get('image') as File;
     const recipeId = formData.get('recipeId') as string;
 
-    // Criar diretório se não existir
+    // Criar diretÃ³rio se nÃ£o existir
     const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'recipes');
     if (!existsSync(uploadDir)) {
       await mkdir(uploadDir, { recursive: true });
@@ -32,3 +32,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Erro ao fazer upload' }, { status: 500 });
   }
 }
+

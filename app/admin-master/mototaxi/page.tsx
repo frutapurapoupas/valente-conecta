@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { BarChart3, Bell, CheckCircle2, CreditCard, Megaphone, Plus, Save, UserCheck, XCircle } from "lucide-react";
@@ -311,3 +311,4 @@ function CardMetric({ icon, label, value }: { icon: React.ReactNode; label: stri
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 // ============================================
 // BUSCA INTELIGENTE - CÉREBRO
@@ -267,7 +267,7 @@ export default function BuscaInteligente({
       return;
     }
 
-    // Item da internet sem link → Google
+    // Item da internet sem link ? Google
     if (produto.categoria === 'internet') {
       const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(
         produto.nome + ' preço'
@@ -276,7 +276,7 @@ export default function BuscaInteligente({
       return;
     }
 
-    // Item local → callback
+    // Item local ? callback
     if (onResultadoClick) {
       onResultadoClick(produto);
     }
@@ -322,3 +322,4 @@ export default function BuscaInteligente({
     />
   );
 }
+

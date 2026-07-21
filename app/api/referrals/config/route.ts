@@ -6,16 +6,16 @@ const dataPath = path.join(process.cwd(), 'data', 'referral_config.json');
 
 const defaultConfig = {
   rules: [
-    { id: 'usuarios_gerais', nome: 'Usuários Gerais', bonus: 10, meta: 30, ativo: true, descricao: 'R$10 por cada lote de 30 usuários novos validados' },
+    { id: 'usuarios_gerais', nome: 'UsuÃ¡rios Gerais', bonus: 10, meta: 30, ativo: true, descricao: 'R$10 por cada lote de 30 usuÃ¡rios novos validados' },
     { id: 'empresas_lojas', nome: 'Empresas / Lojas', bonus: 5, meta: 3, ativo: true, descricao: 'R$5 por cada lote de 3 empresas ou lojas validadas' },
     { id: 'profissionais_liberais', nome: 'Profissionais Liberais', bonus: 4, meta: 5, ativo: true, descricao: 'R$4 por cada lote de 5 profissionais liberais validados' }
   ],
   content: {
     publicHeadline: 'Ganhe dinheiro indicando!',
-    publicSubtitle: 'Receba bônus por lotes de indicações validadas.',
-    explanationTitle: 'Como funcionam as bonificações',
-    explanationText: 'Cada bônus é liberado por lote validado: usuários gerais, empresas/lojas e profissionais liberais. Quando um lote fecha, o valor fica disponível para solicitação via PIX.',
-    shareTemplate: 'Use meu código {codigo}. Bônus por lotes validados no Valente Conecta. Link: {link}'
+    publicSubtitle: 'Receba bÃ´nus por lotes de indicaÃ§Ãµes validadas.',
+    explanationTitle: 'Como funcionam as bonificaÃ§Ãµes',
+    explanationText: 'Cada bÃ´nus Ã© liberado por lote validado: usuÃ¡rios gerais, empresas/lojas e profissionais liberais. Quando um lote fecha, o valor fica disponÃ­vel para solicitaÃ§Ã£o via PIX.',
+    shareTemplate: 'Use meu cÃ³digo {codigo}. BÃ´nus por lotes validados no Valente Conecta. Link: {link}'
   },
   pixMinimo: 1,
   updatedAt: new Date().toISOString()
@@ -56,6 +56,7 @@ export async function PUT(request: NextRequest) {
     writeData(next);
     return NextResponse.json({ success: true, data: next });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message || 'Erro ao salvar configuração' }, { status: 500 });
+    return NextResponse.json({ success: false, error: error.message || 'Erro ao salvar configuraÃ§Ã£o' }, { status: 500 });
   }
 }
+

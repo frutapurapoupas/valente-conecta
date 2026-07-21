@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -110,9 +110,9 @@ export default function AcademiaPage() {
   const cards = [
     {
       id: "cadastro",
-      titulo: "📝 Cadastro Inicial",
-      descricao: perfilCompleto ? "✅ Perfil completo e IA configurada" : "Complete seu perfil físico e de saúde",
-      status: perfilCompleto ? "✅ Completo" : "⏳ Pendente",
+      titulo: "?? Cadastro Inicial",
+      descricao: perfilCompleto ? "? Perfil completo e IA configurada" : "Complete seu perfil físico e de saúde",
+      status: perfilCompleto ? "? Completo" : "? Pendente",
       statusCor: perfilCompleto ? "text-green-400" : "text-yellow-400",
       href: perfilCompleto ? "/academia/perfil" : "/academia/cadastro-inicial",
       icon: <User className="w-6 h-6" />,
@@ -121,9 +121,9 @@ export default function AcademiaPage() {
     },
     {
       id: "academia",
-      titulo: "🏋️ Academia Local",
-      descricao: academiaCadastrada ? "✅ Academia cadastrada e configurada" : "Cadastre onde você treina e suas atividades",
-      status: academiaCadastrada ? "✅ Cadastrada" : "⏳ Pendente",
+      titulo: "??? Academia Local",
+      descricao: academiaCadastrada ? "? Academia cadastrada e configurada" : "Cadastre onde você treina e suas atividades",
+      status: academiaCadastrada ? "? Cadastrada" : "? Pendente",
       statusCor: academiaCadastrada ? "text-green-400" : "text-yellow-400",
       href: "/academia/academia-local",
       icon: <Dumbbell className="w-6 h-6" />,
@@ -132,9 +132,9 @@ export default function AcademiaPage() {
     },
     {
       id: "esportes",
-      titulo: "⚽ Esportes",
-      descricao: esportesCadastrados ? "✅ Atividades esportivas configuradas" : "Cadastre outras atividades físicas",
-      status: esportesCadastrados ? "✅ Ativo" : "⏳ Pendente",
+      titulo: "? Esportes",
+      descricao: esportesCadastrados ? "? Atividades esportivas configuradas" : "Cadastre outras atividades físicas",
+      status: esportesCadastrados ? "? Ativo" : "? Pendente",
       statusCor: esportesCadastrados ? "text-green-400" : "text-yellow-400",
       href: "/academia/esportes",
       icon: <Trophy className="w-6 h-6" />,
@@ -143,9 +143,9 @@ export default function AcademiaPage() {
     },
     {
       id: "biblioteca",
-      titulo: "📚 Biblioteca de Exercícios",
+      titulo: "?? Biblioteca de Exercícios",
       descricao: "Exercícios, técnicas e instruções completas",
-      status: "📖 Disponível",
+      status: "?? Disponível",
       statusCor: "text-indigo-400",
       href: "/academia/biblioteca",
       icon: <BookOpen className="w-6 h-6" />,
@@ -154,9 +154,9 @@ export default function AcademiaPage() {
     },
     {
       id: "historico",
-      titulo: "📊 Histórico de Cargas",
+      titulo: "?? Histórico de Cargas",
       descricao: "Acompanhe sua evolução de pesos",
-      status: "📈 Ativo",
+      status: "?? Ativo",
       statusCor: "text-emerald-400",
       href: "/academia/historico-carga",
       icon: <TrendingUp className="w-6 h-6" />,
@@ -165,9 +165,9 @@ export default function AcademiaPage() {
     },
     {
       id: "ia",
-      titulo: "🤖 Inteligência Fitness",
+      titulo: "?? Inteligência Fitness",
       descricao: perfilCompleto ? "IA personalizada para seus treinos" : "Complete o cadastro para ativar a IA",
-      status: perfilCompleto ? "🧠 Ativo" : "🔒 Pendente",
+      status: perfilCompleto ? "?? Ativo" : "?? Pendente",
       statusCor: perfilCompleto ? "text-pink-400" : "text-gray-400",
       href: perfilCompleto ? "/academia/ia" : "/academia/cadastro-inicial",
       icon: <Brain className="w-6 h-6" />,
@@ -200,7 +200,7 @@ export default function AcademiaPage() {
           </h1>
           <p className="text-zinc-400 text-sm">
             {perfilCompleto 
-              ? `🎯 Foco em ${perfilData?.objetivo || "saúde"} • ${perfilData?.peso}kg • ${treinosSemana} treinos/semana`
+              ? `?? Foco em ${perfilData?.objetivo || "saúde"} • ${perfilData?.peso}kg • ${treinosSemana} treinos/semana`
               : "Complete seu cadastro para começar"}
           </p>
         </div>
@@ -224,7 +224,7 @@ export default function AcademiaPage() {
                     </div>
                     <p className="text-white/70 text-sm mt-0.5 line-clamp-2">{card.descricao}</p>
                     <p className="text-white/40 text-xs mt-1 flex items-center gap-1">
-                      <span className="text-[10px]">📌</span> 
+                      <span className="text-[10px]">??</span> 
                       <span className="truncate">{card.complemento}</span>
                     </p>
                   </div>
@@ -255,19 +255,19 @@ export default function AcademiaPage() {
             {!perfilCompleto && (
               <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
                 <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
-                <p className="text-sm text-white">📝 Complete seu cadastro inicial para ativar a IA!</p>
+                <p className="text-sm text-white">?? Complete seu cadastro inicial para ativar a IA!</p>
               </div>
             )}
             {!academiaCadastrada && perfilCompleto && (
               <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
                 <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
-                <p className="text-sm text-white">🏋️ Cadastre sua academia para começar a treinar!</p>
+                <p className="text-sm text-white">??? Cadastre sua academia para começar a treinar!</p>
               </div>
             )}
             {perfilCompleto && academiaCadastrada && (
               <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                <p className="text-sm text-white">🎯 Você está a {5 - treinosSemana} treinos de bater sua meta semanal!</p>
+                <p className="text-sm text-white">?? Você está a {5 - treinosSemana} treinos de bater sua meta semanal!</p>
               </div>
             )}
           </div>
@@ -276,3 +276,4 @@ export default function AcademiaPage() {
     </div>
   );
 }
+

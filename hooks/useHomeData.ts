@@ -1,4 +1,4 @@
-﻿// Arquivo: hooks/useHomeData.ts
+// Arquivo: hooks/useHomeData.ts
 // Status: AGUARDANDO CÓDIGO
 // Este arquivo será preenchido na próxima etapa
 'use client';
@@ -55,3 +55,4 @@ export function useHomeData(): HomeData {
     user
   };
 }
+

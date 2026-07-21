@@ -1,12 +1,12 @@
 /**
- * TEMPLATE: Como implementar um novo módulo
+ * TEMPLATE: Como implementar um novo mÃ³dulo
  * 
- * Este arquivo contém exemplos de código para criar um módulo novo
+ * Este arquivo contÃ©m exemplos de cÃ³digo para criar um mÃ³dulo novo
  * (substitua "MEUMODULO" pelo nome real: saude, transporte, etc.)
  */
 
 // ============================================================================
-// 1. TIPOS ESPECÍFICOS DO MÓDULO (em types/MEUMODULO.ts)
+// 1. TIPOS ESPECÃFICOS DO MÃ“DULO (em types/MEUMODULO.ts)
 // ============================================================================
 
 import { Item, Demand, Schedule, QueueEntry } from '@/modules-scaffold/types/modules';
@@ -26,7 +26,7 @@ export interface ScheduleSaude extends Schedule {
 }
 
 // ============================================================================
-// 2. PÁGINA PÚBLICA (app/MEUMODULO/public/page.tsx)
+// 2. PÃGINA PÃšBLICA (app/MEUMODULO/public/page.tsx)
 // ============================================================================
 
 /*
@@ -53,7 +53,7 @@ export default function MeuModuloPublic() {
 
   return (
     <div className="min-h-screen bg-slate-950 p-6">
-      <h1 className="text-3xl font-bold text-white mb-6">Meu Módulo</h1>
+      <h1 className="text-3xl font-bold text-white mb-6">Meu MÃ³dulo</h1>
       
       <div className="space-y-4">
         {items.map((item) => (
@@ -62,7 +62,7 @@ export default function MeuModuloPublic() {
       </div>
 
       <button onClick={() => setModalOpen(true)} className="mt-6 px-6 py-3 bg-emerald-400 text-black rounded-full font-bold">
-        Fazer Solicitação
+        Fazer SolicitaÃ§Ã£o
       </button>
 
       <DemandModal
@@ -84,7 +84,7 @@ export default function MeuModuloPublic() {
 */
 
 // ============================================================================
-// 3. PÁGINA DE FORNECEDOR (app/MEUMODULO/supplier/catalog/page.tsx)
+// 3. PÃGINA DE FORNECEDOR (app/MEUMODULO/supplier/catalog/page.tsx)
 // ============================================================================
 
 /*
@@ -113,7 +113,7 @@ export default function MeuModuloSupplier() {
 
   const handleSave = () => {
     if (!form.nome || !form.descricao) {
-      toast.error('Preencha todos os campos obrigatórios');
+      toast.error('Preencha todos os campos obrigatÃ³rios');
       return;
     }
 
@@ -143,7 +143,7 @@ export default function MeuModuloSupplier() {
 
   return (
     <div className="min-h-screen bg-slate-950 p-6">
-      <h1 className="text-2xl font-bold text-white">Gerenciar Meu Catálogo</h1>
+      <h1 className="text-2xl font-bold text-white">Gerenciar Meu CatÃ¡logo</h1>
 
       <EditorForm
         item={form}
@@ -177,7 +177,7 @@ export default function MeuModuloSupplier() {
 */
 
 // ============================================================================
-// 4. PÁGINA ADMIN MASTER (app/admin-master/MEUMODULO/page.tsx)
+// 4. PÃGINA ADMIN MASTER (app/admin-master/MEUMODULO/page.tsx)
 // ============================================================================
 
 /*
@@ -200,7 +200,7 @@ export default function MeuModuloAdmin() {
 
   return (
     <div className="min-h-screen bg-slate-950 p-6">
-      <h1 className="text-2xl font-bold text-white mb-6">Admin - Meu Módulo</h1>
+      <h1 className="text-2xl font-bold text-white mb-6">Admin - Meu MÃ³dulo</h1>
 
       <div className="flex gap-4 mb-6">
         <button
@@ -310,3 +310,4 @@ export default function ItemSaudeCard({ item }: { item: ItemSaude }) {
 export default function Template() {
   return null;
 }
+

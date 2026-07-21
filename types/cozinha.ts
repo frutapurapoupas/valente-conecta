@@ -1,5 +1,12 @@
 // types/cozinha.ts
 
+import type {
+  CanonicalRecipe,
+  CanonicalRecipeIngredient,
+  ReceitaCanonica,
+  ReceitaCanonicaCompat,
+} from './receita-canonica';
+
 // ============================================================
 // INTERFACE: COMPRA ITEM
 // ============================================================
@@ -149,3 +156,12 @@ export const IMAGENS_PLACEHOLDER: Record<string, string> = {
   'Bolo': 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=300&fit=crop',
   'default': 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop'
 };
+
+// ============================================================
+// CONTRATO CANONICO DE RECEITA (FASE 2B.1)
+// ============================================================
+
+export type { ReceitaCanonica, CanonicalRecipe, ReceitaCanonicaCompat };
+export type ReceitaIngredienteCanonica = CanonicalRecipeIngredient;
+
+

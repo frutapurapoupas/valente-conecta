@@ -1,0 +1,11 @@
+export default function ReceitaUI({ data, handlers }: { data: any, handlers: any }) {
+  return (
+    <div className="mx-auto max-w-4xl p-6">
+       {/* Aqui entra todo o seu JSX de design que criamos, 
+           usando data.receita e handlers.adicionarIngrediente */}
+       <h1 className="text-2xl font-bold">{data.receita.nome}</h1>
+       {/* ... restante do seu design ... */}
+    </div>
+  );
+}
+

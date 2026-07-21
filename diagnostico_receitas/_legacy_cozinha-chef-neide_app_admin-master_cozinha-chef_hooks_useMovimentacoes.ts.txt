@@ -1,0 +1,44 @@
+﻿========================================
+ARQUIVO: _legacy\cozinha-chef-neide\app\admin-master\cozinha-chef\hooks\useMovimentacoes.ts
+DATA: 07/20/2026 21:56:58
+========================================
+
+// hooks/cozinha/useMovimentacoes.ts
+// Ã°Å¸â€Â§ Hook para gerenciar movimentaÃƒÂ§ÃƒÂµes de estoque
+
+import { useState, useEffect, useCallback } from 'react';
+import { cozinhaService } from '@/services/cozinhaService';
+import { Movement } from '@/types/cozinha';
+import { toast } from 'react-hot-toast';
+
+export const useMovimentacoes = () => {
+  const [movements, setMovements] = useState<Movement[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const carregarMovimentacoes = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await cozinhaService.getStockMovements();
+      setMovements(data.success ? data.data : (Array.isArray(data) ? data : []));
+    } catch (error) {
+      console.error('Erro ao carregar movimentaÃƒÂ§ÃƒÂµes:', error);
+      toast.error('Erro ao carregar movimentaÃƒÂ§ÃƒÂµes');
+      setMovements([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    carregarMovimentacoes();
+  }, [carregarMovimentacoes]);
+
+  return {
+    movements,
+    loading,
+    carregarMovimentacoes
+  };
+};
+
+
+

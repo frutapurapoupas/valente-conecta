@@ -15,3 +15,5 @@ export const AutoPubService = {
     return { ...fornecedor, status: "pendente" }; // Requer supervisão do Admin Master
   }
 };
+
+

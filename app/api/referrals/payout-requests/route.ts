@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     const filtered = userId ? items.filter((item: any) => item.userId === userId) : items;
     return NextResponse.json({ success: true, data: filtered });
   } catch {
-    return NextResponse.json({ success: false, error: 'Erro ao carregar solicitações PIX' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Erro ao carregar solicitaÃ§Ãµes PIX' }, { status: 500 });
   }
 }
 
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     const newItem = {
       id: `${Date.now()}-${Math.floor(Math.random() * 100000)}`,
       userId: body.userId,
-      userName: body.userName || 'Usuário',
+      userName: body.userName || 'UsuÃ¡rio',
       userWhatsapp: body.userWhatsapp || '',
       pixKey: body.pixKey,
       amount: Number(body.amount || 0),
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     writeData(items);
     return NextResponse.json({ success: true, data: newItem });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message || 'Erro ao registrar solicitação PIX' }, { status: 500 });
+    return NextResponse.json({ success: false, error: error.message || 'Erro ao registrar solicitaÃ§Ã£o PIX' }, { status: 500 });
   }
 }
 
@@ -59,13 +59,13 @@ export async function PUT(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     if (!id) {
-      return NextResponse.json({ success: false, error: 'ID não informado' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'ID nÃ£o informado' }, { status: 400 });
     }
     const body = await request.json();
     const items = readData();
     const index = items.findIndex((item: any) => item.id === id);
     if (index === -1) {
-      return NextResponse.json({ success: false, error: 'Solicitação não encontrada' }, { status: 404 });
+      return NextResponse.json({ success: false, error: 'SolicitaÃ§Ã£o nÃ£o encontrada' }, { status: 404 });
     }
     items[index] = {
       ...items[index],
@@ -75,6 +75,7 @@ export async function PUT(request: NextRequest) {
     writeData(items);
     return NextResponse.json({ success: true, data: items[index] });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message || 'Erro ao atualizar solicitação PIX' }, { status: 500 });
+    return NextResponse.json({ success: false, error: error.message || 'Erro ao atualizar solicitaÃ§Ã£o PIX' }, { status: 500 });
   }
 }
+

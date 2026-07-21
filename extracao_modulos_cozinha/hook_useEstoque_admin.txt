@@ -1,0 +1,99 @@
+﻿========================================
+ARQUIVO: app/admin-master/cozinha/hooks/useEstoque.ts
+MÓDULO: hook
+DATA: 2026-07-20 22:08:01
+========================================
+// app/admin-master/cozinha/hooks/useEstoque.ts
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { EstoqueService } from '../services/EstoqueService';
+import { MovimentacaoEstoque, EstoqueResumo } from '../types/estoque';
+
+export function useEstoque() {
+  const [movimentacoes, setMovimentacoes] = useState<MovimentacaoEstoque[]>([]);
+  const [resumo, setResumo] = useState<EstoqueResumo[]>([]);
+  const [alertas, setAlertas] = useState<EstoqueResumo[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const service = useMemo(() => new EstoqueService(), []);
+
+  const carregarDados = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const [movs, res, alerts] = await Promise.all([
+        service.listarMovimentacoes(),
+        service.buscarResumo(),
+        service.alertasEstoqueBaixo()
+      ]);
+      setMovimentacoes(movs);
+      setResumo(res);
+      setAlertas(alerts);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro ao carregar dados do estoque';
+      setError(message);
+      console.error('useEstoque - Erro:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [service]);
+
+  const registrarEntrada = useCallback(async (
+    ingredienteId: string,
+    quantidade: number,
+    motivo: string,
+    usuarioId: string
+  ) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const mov = await service.registrarEntrada(ingredienteId, quantidade, motivo, usuarioId);
+      await carregarDados();
+      return mov;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro ao registrar entrada';
+      setError(message);
+      console.error('useEstoque - Erro ao registrar entrada:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [service, carregarDados]);
+
+  const registrarSaida = useCallback(async (
+    ingredienteId: string,
+    quantidade: number,
+    motivo: string,
+    usuarioId: string
+  ) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const mov = await service.registrarSaida(ingredienteId, quantidade, motivo, usuarioId);
+      await carregarDados();
+      return mov;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro ao registrar saÃ­da';
+      setError(message);
+      console.error('useEstoque - Erro ao registrar saÃ­da:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [service, carregarDados]);
+
+  useEffect(() => {
+    carregarDados();
+  }, [carregarDados]);
+
+  return {
+    movimentacoes,
+    resumo,
+    alertas,
+    loading,
+    error,
+    carregarDados,
+    registrarEntrada,
+    registrarSaida
+  };
+}

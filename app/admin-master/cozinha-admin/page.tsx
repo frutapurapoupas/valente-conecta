@@ -1,6 +1,8 @@
 ﻿"use client";
-import { DemandView } from './components/DemandView';
+import { DemandView } from '@/components/DemandView';
 
 export default function Page() {
-  return <DemandView category="COZINHA-ADMIN" title="Solicitação: cozinha-admin" />;
+  return <DemandView category="COZINHA-ADMIN" title="SolicitaÃ§Ã£o: cozinha-admin" />;
 }
+
+

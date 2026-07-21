@@ -1,0 +1,56 @@
+=================================================================================
+  AUDITOR DE ARQUITETURA - VALENTE CONECTA
+  Data: 20/07/2026 16:56:30
+=================================================================================
+
+[1] VERIFICANDO ARQUIVOS CRITICOS
+--------
+  OK - Layout Principal - EXISTS (1883 bytes)
+  OK - Home Principal - EXISTS (19531 bytes)
+  OK - Home Admin Master - EXISTS (47 bytes)
+  OK - App Context - EXISTS (1697 bytes)
+
+[2] ANALISANDO HOME ADMIN MASTER
+--------
+  OK - Nenhuma flag visivel de layout truncado
+  Imports encontrados: 0
+
+[3] ANALISANDO HOME PRINCIPAL
+--------
+  Tamanho: 19531 caracteres
+  OK - Sem fetch/API calls diretos
+  Hooks encontrados: 18
+  OK - Usando Context corretamente
+  OK - Sem async/await
+
+[4] VERIFICANDO SEPARACAO ARQUITETURAL
+--------
+  OK - APIs : 48 arquivos
+  OK - Hooks : 19 arquivos
+  OK - Components : 67 arquivos
+  OK - Services : 25 arquivos
+  OK - Types : 10 arquivos
+
+[5] BUSCANDO VIOLACOES DE ARQUITETURA
+--------
+  AVISO - Violacoes encontradas: 5
+    - fetch em: AdminDemandasBusca.tsx
+    - fetch em: BuscaInteligente.tsx
+    - fetch em: BuscaInteligente.tsx
+    - fetch em: NotificacaoSininho.tsx
+    - DB em: page.tsx
+
+[6] ANALISE DE DEPENDENCIAS
+--------
+  Dependencias: 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+  DevDependencias: 1 1 1 1 1 1 1 1
+
+=================================================================================
+  RESUMO
+=================================================================================
+Problemas de Arquivo: 0
+Violacoes de Arquitetura: 5
+
+Relatorio salvo em: C:\valente_conecta\auditoria_arquitetura_geral\RELATORIO_ARQUITETURA_2026-07-20_16-56.txt
+
+Proximo passo: Analisar relatorio e investigar raizes

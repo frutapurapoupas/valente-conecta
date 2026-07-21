@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -882,7 +882,7 @@ export default function MotoTaxiPage() {
             {myRides.length === 0 && <p className="text-sm text-slate-400">Nenhuma corrida registrada.</p>}
             {myRides.map((ride) => (
               <div key={ride.id} className="text-sm rounded-lg bg-slate-800 px-3 py-2 flex items-center justify-between">
-                <span>{ride.origin} → {ride.destination}</span>
+                <span>{ride.origin} ? {ride.destination}</span>
                 <span className="text-green-300">R$ {Number(ride.price).toFixed(2)}</span>
               </div>
             ))}
@@ -1004,3 +1004,4 @@ export default function MotoTaxiPage() {
     </div>
   );
 }
+

@@ -38,7 +38,7 @@ export const pizzaOptions = {
   }
 };
 
-// Funções com valores padrão para evitar erros
+// FunÃ§Ãµes com valores padrÃ£o para evitar erros
 export const getPizzaData = (stats: DashboardStats) => ({
   labels: ['Ativos', 'Inativos'],
   datasets: [{
@@ -53,9 +53,9 @@ export const getPizzaData = (stats: DashboardStats) => ({
 });
 
 export const getBarData = (stats: DashboardStats) => ({
-  labels: ['Pendentes', 'Concluídos'],
+  labels: ['Pendentes', 'ConcluÃ­dos'],
   datasets: [{
-    label: 'Produção',
+    label: 'ProduÃ§Ã£o',
     data: [
       stats?.producaoPendente || 0, 
       stats?.producaoConcluida || 0
@@ -86,3 +86,4 @@ export const getLineData = (stats: DashboardStats) => ({
     fill: true,
   }]
 });
+

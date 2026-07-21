@@ -1,15 +1,15 @@
 // ============================================
-// CONSTANTES - MÓDULO INGREDIENTES
+// CONSTANTES - MÃ“DULO INGREDIENTES
 // ============================================
 
 export const textosIngredientes = {
-  // Títulos da página
+  // TÃ­tulos da pÃ¡gina
   pagina: {
     titulo: 'Ingredientes',
     subtitulo: 'Gerencie os insumos da cozinha'
   },
   
-  // Botões
+  // BotÃµes
   botoes: {
     novo: 'Novo Ingrediente',
     editar: 'Editar Ingrediente',
@@ -38,7 +38,7 @@ export const textosIngredientes = {
     estoqueMinimoAjuda: 'Quando atingir este valor, sera sugerida compra'
   },
   
-  // Cabeçalhos da tabela
+  // CabeÃ§alhos da tabela
   tabela: {
     nome: 'Nome',
     categoria: 'Categoria',
@@ -49,7 +49,7 @@ export const textosIngredientes = {
     acoes: 'Acoes'
   },
   
-  // Categorias disponíveis
+  // Categorias disponÃ­veis
   categorias: {
     alimento: 'Alimento',
     bebida: 'Bebida',
@@ -111,3 +111,4 @@ export const unidadesList = [
   { value: 'L', label: textosIngredientes.unidades.L },
   { value: 'unidade', label: textosIngredientes.unidades.unidade }
 ];
+

@@ -1,0 +1,107 @@
+﻿========================================
+ARQUIVO: src\modules\cozinha\repositories\PedidoRepository.ts
+DATA: 07/20/2026 21:56:58
+========================================
+
+// app/cozinha/repositories/PedidoRepository.ts
+import { supabase } from '@/lib/supabase';
+import { Pedido, PedidoInput, PedidoStatus } from '../types/pedido';
+
+export class PedidoRepository {
+  async buscarTodos(): Promise<Pedido[]> {
+    const { data, error } = await supabase
+      .from('cozinha_pedidos')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Erro ao buscar pedidos:', error);
+      throw new Error('Falha ao carregar pedidos');
+    }
+
+    return data || [];
+  }
+
+  async buscarPorStatus(status: PedidoStatus): Promise<Pedido[]> {
+    const { data, error } = await supabase
+      .from('cozinha_pedidos')
+      .select('*')
+      .eq('status', status)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Erro ao buscar pedidos por status:', error);
+      throw new Error('Falha ao carregar pedidos');
+    }
+
+    return data || [];
+  }
+
+  async buscarPorUsuario(usuarioId: string): Promise<Pedido[]> {
+    const { data, error } = await supabase
+      .from('cozinha_pedidos')
+      .select('*')
+      .eq('usuarioId', usuarioId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Erro ao buscar pedidos do usuÃ¡rio:', error);
+      throw new Error('Falha ao carregar pedidos do usuÃ¡rio');
+    }
+
+    return data || [];
+  }
+
+  async criar(pedido: PedidoInput): Promise<Pedido> {
+    const itemsWithSubtotal = pedido.items.map(item => ({
+      ...item,
+      subtotal: item.quantidade * item.precoUnitario
+    }));
+
+    const total = itemsWithSubtotal.reduce((sum, item) => sum + item.subtotal, 0);
+
+    const { data, error } = await supabase
+      .from('cozinha_pedidos')
+      .insert({
+        usuarioId: pedido.usuarioId,
+        items: itemsWithSubtotal,
+        total,
+        status: 'pendente',
+        observacao: pedido.observacao,
+        created_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Erro ao criar pedido:', error);
+      throw new Error('Falha ao criar pedido');
+    }
+
+    return data;
+  }
+
+  async atualizarStatus(id: string, status: PedidoStatus): Promise<Pedido> {
+    const { data, error } = await supabase
+      .from('cozinha_pedidos')
+      .update({
+        status,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Erro ao atualizar status do pedido:', error);
+      throw new Error('Falha ao atualizar status do pedido');
+    }
+
+    return data;
+  }
+
+  async cancelar(id: string): Promise<Pedido> {
+    return this.atualizarStatus(id, 'cancelado');
+  }
+}
+

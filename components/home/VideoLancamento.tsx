@@ -1,5 +1,5 @@
-﻿// components/home/VideoLancamento.tsx
-// 🎨 UI PURA - Vídeo de Lançamento
+// components/home/VideoLancamento.tsx
+// ?? UI PURA - Vídeo de Lançamento
 
 "use client";
 
@@ -13,7 +13,7 @@ interface VideoLancamentoProps {
 
 export default function VideoLancamento({ 
   videoId = 'dQw4w9WgXcQ',
-  titulo = '🚀 Conheça o Valente Conecta' 
+  titulo = '?? Conheça o Valente Conecta' 
 }: VideoLancamentoProps) {
   const [modalAberto, setModalAberto] = useState(false);
 
@@ -62,3 +62,4 @@ export default function VideoLancamento({
     </>
   );
 }
+

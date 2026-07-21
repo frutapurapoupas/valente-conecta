@@ -1,5 +1,5 @@
-﻿// services/financeiroService.ts
-// 🔧 LÓGICA DE API - Comunicação com o backend
+// services/financeiroService.ts
+// ?? LÓGICA DE API - Comunicação com o backend
 
 export interface Transacao {
   id: string;
@@ -28,9 +28,9 @@ export const financeiroService = {
     return response.json();
   },
 
-  // ✅ Criar com LOGS
+  // ? Criar com LOGS
   criar: async (data: Omit<Transacao, 'id'>): Promise<{ success: boolean; data: Transacao }> => {
-    console.log('📡 financeiroService.criar - Enviando:', data);
+    console.log('?? financeiroService.criar - Enviando:', data);
     
     const response = await fetch(API_URL, {
       method: 'POST',
@@ -39,7 +39,7 @@ export const financeiroService = {
     });
     
     const result = await response.json();
-    console.log('📡 financeiroService.criar - Resposta:', result);
+    console.log('?? financeiroService.criar - Resposta:', result);
     
     return result;
   },
@@ -60,3 +60,5 @@ export const financeiroService = {
     return response.json();
   },
 };
+
+

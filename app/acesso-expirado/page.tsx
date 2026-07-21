@@ -21,14 +21,15 @@ export default function ConviteExpiradoPage() {
           
           <div className="bg-white/5 rounded-xl p-4 mb-6 border border-white/10">
             <p className="text-white text-3xl font-bold">0 / 50</p>
-            <p className="text-gray-400 text-sm">usuários indicados</p>
+            <p className="text-gray-400 text-sm">usuÃ¡rios indicados</p>
           </div>
 
           <Link href="/convite" className="w-full py-4 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition block">
-            Gerar Meu Código de Convite
+            Gerar Meu CÃ³digo de Convite
           </Link>
         </div>
       </div>
     </div>
   );
 }
+

@@ -1,0 +1,30 @@
+import { useState } from 'react';
+
+export function useReceita() {
+  const [receita, setReceita] = useState({
+    nome: '', descricao: '', preco_venda: 0, quantidade_produzida: 1,
+    meta_custo_percentual: 40, ingredientes: [] as any[]
+  });
+
+  const [novoIng, setNovoIng] = useState({ nome: '', qtd: 0, und: 'g' });
+  const [modoCadastro, setModoCadastro] = useState(false);
+
+  // CÃ¡lculos centralizados
+  const custoTotal = receita.ingredientes.reduce((acc, ing) => acc + ((ing.preco_unitario || 0) * ing.quantidade), 0);
+  const custoUnitario = receita.quantidade_produzida > 0 ? (custoTotal / receita.quantidade_produzida) : 0;
+  const lucroBruto = receita.preco_venda - custoTotal;
+  const margemLucro = receita.preco_venda > 0 ? (lucroBruto / receita.preco_venda) * 100 : 0;
+  const percentualAtual = receita.preco_venda > 0 ? (custoTotal / receita.preco_venda) * 100 : 0;
+
+  const adicionarIngrediente = () => {
+    // LÃ³gica pura aqui
+    const novoItem = { id: Date.now().toString(), ...novoIng, preco_unitario: 0.05 };
+    setReceita(prev => ({ ...prev, ingredientes: [...prev.ingredientes, novoItem] }));
+    setModoCadastro(false);
+    setNovoIng({ nome: '', qtd: 0, und: 'g' });
+  };
+
+  return { receita, setReceita, novoIng, setNovoIng, modoCadastro, setModoCadastro, 
+           custoTotal, custoUnitario, lucroBruto, margemLucro, percentualAtual, adicionarIngrediente };
+}
+

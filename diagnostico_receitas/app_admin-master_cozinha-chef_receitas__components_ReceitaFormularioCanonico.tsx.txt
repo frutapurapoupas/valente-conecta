@@ -1,0 +1,240 @@
+﻿========================================
+ARQUIVO: app\admin-master\cozinha-chef\receitas\_components\ReceitaFormularioCanonico.tsx
+DATA: 07/20/2026 21:56:56
+========================================
+
+'use client';
+
+import Link from 'next/link';
+import { ReceitaCanonicaCompat } from '@/types/receita-canonica';
+
+type IngredienteDisponivel = {
+  id: string;
+  nome: string;
+  unidade: string;
+  preco_unitario: number;
+};
+
+type NovoIngrediente = {
+  ingrediente_id: string;
+  quantidade: number;
+  unidade: string;
+};
+
+type Props = {
+  titulo: string;
+  receita: ReceitaCanonicaCompat;
+  ingredientesDisponiveis: IngredienteDisponivel[];
+  salvando: boolean;
+  onChange: (next: ReceitaCanonicaCompat) => void;
+  onAdicionarIngrediente: (item: NovoIngrediente) => void;
+  onRemoverIngrediente: (index: number) => void;
+  onSalvar: () => Promise<void>;
+};
+
+function toNumber(value: unknown, fallback = 0): number {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+export default function ReceitaFormularioCanonico({
+  titulo,
+  receita,
+  ingredientesDisponiveis,
+  salvando,
+  onChange,
+  onAdicionarIngrediente,
+  onRemoverIngrediente,
+  onSalvar,
+}: Props) {
+  const custoReceita = toNumber(receita.custo_receita, 0);
+  const custoPorUnidade = toNumber(receita.custo_por_unidade, 0);
+  const margem = toNumber(receita.margem_percentual, 0);
+  const lucro = toNumber(receita.lucro, 0);
+
+  return (
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">{titulo}</h1>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/admin-master/cozinha-chef/receitas"
+            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+          >
+            Voltar
+          </Link>
+          <button
+            onClick={() => void onSalvar()}
+            disabled={salvando}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-60"
+          >
+            {salvando ? 'Salvando...' : 'Salvar Receita'}
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-4">
+          <h2 className="font-semibold">Dados Basicos</h2>
+
+          <label className="block text-sm">
+            Nome
+            <input
+              className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
+              value={receita.nome}
+              onChange={(e) => onChange({ ...receita, nome: e.target.value })}
+            />
+          </label>
+
+          <label className="block text-sm">
+            Categoria
+            <input
+              className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
+              value={receita.categoria}
+              onChange={(e) => onChange({ ...receita, categoria: e.target.value })}
+            />
+          </label>
+
+          <label className="block text-sm">
+            Descricao
+            <textarea
+              className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
+              rows={3}
+              value={receita.descricao}
+              onChange={(e) => onChange({ ...receita, descricao: e.target.value })}
+            />
+          </label>
+
+          <label className="block text-sm">
+            Imagem (URL)
+            <input
+              className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
+              value={receita.imagem || ''}
+              onChange={(e) => onChange({ ...receita, imagem: e.target.value || null })}
+            />
+          </label>
+
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block text-sm">
+              Porcoes
+              <input
+                type="number"
+                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
+                value={toNumber(receita.porcoes, 0)}
+                onChange={(e) => onChange({ ...receita, porcoes: toNumber(e.target.value, 0), rendimento: toNumber(e.target.value, 0) })}
+              />
+            </label>
+
+            <label className="block text-sm">
+              Status
+              <select
+                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
+                value={receita.status}
+                onChange={(e) => onChange({ ...receita, status: e.target.value as 'ativo' | 'inativo' })}
+              >
+                <option value="ativo">ativo</option>
+                <option value="inativo">inativo</option>
+              </select>
+            </label>
+
+            <label className="block text-sm">
+              Preco venda
+              <input
+                type="number"
+                step="0.01"
+                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
+                value={toNumber(receita.preco_venda, 0)}
+                onChange={(e) => onChange({ ...receita, preco_venda: toNumber(e.target.value, 0), preco_sugerido: toNumber(e.target.value, 0) })}
+              />
+            </label>
+
+            <label className="block text-sm">
+              Preco sugerido
+              <input
+                type="number"
+                step="0.01"
+                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
+                value={toNumber(receita.preco_sugerido, 0)}
+                onChange={(e) => onChange({ ...receita, preco_sugerido: toNumber(e.target.value, 0) })}
+              />
+            </label>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <h2 className="font-semibold mb-3">Indicadores Financeiros</h2>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between"><span>Custo receita</span><span>R$ {custoReceita.toFixed(2)}</span></div>
+            <div className="flex justify-between"><span>Custo por unidade</span><span>R$ {custoPorUnidade.toFixed(2)}</span></div>
+            <div className="flex justify-between"><span>Margem percentual</span><span>{margem.toFixed(2)}%</span></div>
+            <div className="flex justify-between"><span>Lucro</span><span>R$ {lucro.toFixed(2)}</span></div>
+            <div className="flex justify-between"><span>Preco sugerido</span><span>R$ {toNumber(receita.preco_sugerido, 0).toFixed(2)}</span></div>
+            <div className="flex justify-between"><span>Preco venda</span><span>R$ {toNumber(receita.preco_venda, 0).toFixed(2)}</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-lg border border-gray-200 p-4 mt-6">
+        <h2 className="font-semibold mb-3">Ingredientes</h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+          <select id="ingredienteId" className="border border-gray-300 rounded-lg px-3 py-2">
+            <option value="">Selecione ingrediente</option>
+            {ingredientesDisponiveis.map((ing) => (
+              <option key={ing.id} value={ing.id}>
+                {ing.nome} (R$ {toNumber(ing.preco_unitario, 0).toFixed(2)}/{ing.unidade})
+              </option>
+            ))}
+          </select>
+          <input id="ingredienteQtd" type="number" step="0.01" placeholder="Quantidade" className="border border-gray-300 rounded-lg px-3 py-2" />
+          <input id="ingredienteUn" placeholder="Unidade" className="border border-gray-300 rounded-lg px-3 py-2" />
+          <button
+            className="bg-green-600 text-white rounded-lg px-3 py-2 hover:bg-green-700"
+            onClick={() => {
+              const idInput = document.getElementById('ingredienteId') as HTMLSelectElement | null;
+              const qtdInput = document.getElementById('ingredienteQtd') as HTMLInputElement | null;
+              const unInput = document.getElementById('ingredienteUn') as HTMLInputElement | null;
+
+              const ingredienteId = idInput?.value || '';
+              if (!ingredienteId) return;
+
+              const ingrediente = ingredientesDisponiveis.find((i) => i.id === ingredienteId);
+              if (!ingrediente) return;
+
+              onAdicionarIngrediente({
+                ingrediente_id: ingrediente.id,
+                quantidade: toNumber(qtdInput?.value, 0),
+                unidade: (unInput?.value || ingrediente.unidade || 'un').trim(),
+              });
+
+              if (idInput) idInput.value = '';
+              if (qtdInput) qtdInput.value = '';
+              if (unInput) unInput.value = '';
+            }}
+          >
+            Adicionar
+          </button>
+        </div>
+
+        <div className="space-y-2">
+          {(receita.ingredientes || []).map((ing, index) => (
+            <div key={`${ing.ingrediente_id}-${index}`} className="flex justify-between items-center border border-gray-100 rounded-lg p-3">
+              <div className="text-sm">
+                <div className="font-medium">{ing.ingrediente_nome}</div>
+                <div className="text-gray-600">{toNumber(ing.quantidade, 0)} {ing.unidade} â€¢ R$ {toNumber(ing.custo_unitario, 0).toFixed(2)} un â€¢ R$ {toNumber(ing.custo_total, 0).toFixed(2)} total</div>
+              </div>
+              <button
+                onClick={() => onRemoverIngrediente(index)}
+                className="text-red-600 hover:text-red-800 text-sm"
+              >
+                Remover
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+

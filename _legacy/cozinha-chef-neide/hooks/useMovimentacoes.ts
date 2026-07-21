@@ -1,0 +1,25 @@
+// Caminho: hooks/useMovimentacoes.ts
+import { useState, useEffect } from 'react';
+import { cozinhaService } from '@/services/cozinhaService';
+import { toast } from 'react-hot-toast';
+
+export const useMovimentacoes = () => {
+  const [movements, setMovements] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const carregar = async () => {
+    setLoading(true);
+    try {
+      const data = await cozinhaService.getStockMovements();
+      setMovements(data.success ? data.data : (Array.isArray(data) ? data : []));
+    } catch {
+      toast.error('Erro ao carregar movimentaÃ§Ãµes');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { carregar(); }, []);
+  return { movements, loading, carregar };
+};
+

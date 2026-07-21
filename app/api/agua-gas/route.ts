@@ -16,7 +16,7 @@ function write(p: string, data: any[]) {
   fs.writeFileSync(p, JSON.stringify(data, null, 2));
 }
 
-// ── Fornecedores ─────────────────────────────────────────────────────────────
+// â”€â”€ Fornecedores â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const recurso = searchParams.get('recurso') || 'fornecedores';
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 
   if (recurso === 'pedidos') {
     if (!body.fornecedorId || !body.clienteNome?.trim() || !body.clienteTelefone?.trim() || !body.produto?.trim()) {
-      return NextResponse.json({ success: false, error: 'fornecedorId, clienteNome, clienteTelefone e produto são obrigatórios.' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'fornecedorId, clienteNome, clienteTelefone e produto sÃ£o obrigatÃ³rios.' }, { status: 400 });
     }
     const items = read(PEDIDOS_PATH);
     const novo = {
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
 
   // fornecedor
   if (!body.nome?.trim() || !body.telefone?.trim()) {
-    return NextResponse.json({ success: false, error: 'Nome e telefone são obrigatórios.' }, { status: 400 });
+    return NextResponse.json({ success: false, error: 'Nome e telefone sÃ£o obrigatÃ³rios.' }, { status: 400 });
   }
   const items = read(FORNECEDORES_PATH);
   const novo = {
@@ -107,13 +107,13 @@ export async function PUT(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const recurso = searchParams.get('recurso') || 'fornecedores';
   const id = searchParams.get('id');
-  if (!id) return NextResponse.json({ success: false, error: 'ID não informado.' }, { status: 400 });
+  if (!id) return NextResponse.json({ success: false, error: 'ID nÃ£o informado.' }, { status: 400 });
 
   const filePath = recurso === 'pedidos' ? PEDIDOS_PATH : FORNECEDORES_PATH;
   const body = await request.json();
   const items = read(filePath);
   const idx = items.findIndex((i) => i.id === id);
-  if (idx === -1) return NextResponse.json({ success: false, error: 'Registro não encontrado.' }, { status: 404 });
+  if (idx === -1) return NextResponse.json({ success: false, error: 'Registro nÃ£o encontrado.' }, { status: 404 });
 
   items[idx] = { ...items[idx], ...body, id, updatedAt: new Date().toISOString() };
   write(filePath, items);
@@ -124,12 +124,13 @@ export async function DELETE(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const recurso = searchParams.get('recurso') || 'fornecedores';
   const id = searchParams.get('id');
-  if (!id) return NextResponse.json({ success: false, error: 'ID não informado.' }, { status: 400 });
+  if (!id) return NextResponse.json({ success: false, error: 'ID nÃ£o informado.' }, { status: 400 });
 
   const filePath = recurso === 'pedidos' ? PEDIDOS_PATH : FORNECEDORES_PATH;
   const items = read(filePath);
   const filtered = items.filter((i) => i.id !== id);
-  if (filtered.length === items.length) return NextResponse.json({ success: false, error: 'Não encontrado.' }, { status: 404 });
+  if (filtered.length === items.length) return NextResponse.json({ success: false, error: 'NÃ£o encontrado.' }, { status: 404 });
   write(filePath, filtered);
   return NextResponse.json({ success: true });
 }
+

@@ -21,7 +21,7 @@ interface Ingrediente {
   nome: string;
   quantidade: number;  // quantidade por prato (em gramas ou ml)
   unidade: "kg" | "g" | "l" | "ml" | "unidade";
-  custoUnitario: number; // preço por kg ou unidade
+  custoUnitario: number; // preÃ§o por kg ou unidade
 }
 
 interface Prato {
@@ -38,31 +38,31 @@ interface Prato {
   ativo: boolean;
 }
 
-// Preços de referência para cálculo automático
+// PreÃ§os de referÃªncia para cÃ¡lculo automÃ¡tico
 const precosReferencia: { [key: string]: number } = {
-  "carne": 32.00,      // preço médio por kg
-  "acém": 32.00,
-  "músculo": 30.00,
-  "moída": 28.00,
+  "carne": 32.00,      // preÃ§o mÃ©dio por kg
+  "acÃ©m": 32.00,
+  "mÃºsculo": 30.00,
+  "moÃ­da": 28.00,
   "frango": 18.00,
   "peito frango": 18.00,
   "arroz": 8.00,
-  "feijão": 10.00,
+  "feijÃ£o": 10.00,
   "batata": 5.00,
   "cenoura": 4.00,
   "cebola": 5.00,
   "tomate": 6.00,
   "farinha": 6.00,
-  "açúcar": 4.50,
+  "aÃ§Ãºcar": 4.50,
   "acucar": 4.50,
   "leite": 5.00,
   "ovos": 1.20,
   "chocolate": 25.00,
   "creme leite": 8.00,
   "queijo": 35.00,
-  "pão": 12.00,
+  "pÃ£o": 12.00,
   "manteiga": 20.00,
-  "óleo": 7.00,
+  "Ã³leo": 7.00,
   "sal": 2.00,
   "alho": 15.00,
   "pimenta": 30.00,
@@ -89,7 +89,7 @@ export default function AdminPratosPage() {
   });
   const [precoVendaManual, setPrecoVendaManual] = useState<number | null>(null);
   const [calculandoPreco, setCalculandoPreco] = useState(false);
-  const [margemDesejada, setMargemDesejada] = useState(50); // 50% de margem padrão
+  const [margemDesejada, setMargemDesejada] = useState(50); // 50% de margem padrÃ£o
   const [mostrarCalculo, setMostrarCalculo] = useState(false);
 
   const unidades = [
@@ -126,7 +126,7 @@ export default function AdminPratosPage() {
   };
 
   const calcularPrecoSugerido = (custoTotal: number, margem: number): number => {
-    // Preço = Custo / (1 - Margem%)
+    // PreÃ§o = Custo / (1 - Margem%)
     if (margem >= 100) return custoTotal * 2;
     return custoTotal / (1 - (margem / 100));
   };
@@ -138,7 +138,7 @@ export default function AdminPratosPage() {
         return valor;
       }
     }
-    return 15.00; // preço padrão
+    return 15.00; // preÃ§o padrÃ£o
   };
 
   const calcularCustoIngrediente = (ing: Ingrediente): number => {
@@ -158,7 +158,7 @@ export default function AdminPratosPage() {
       return;
     }
 
-    // Sugerir preço automaticamente baseado no nome
+    // Sugerir preÃ§o automaticamente baseado no nome
     const precoSugerido = sugerirPrecoPorIngrediente(novoIngrediente.nome);
 
     setIngredientes([
@@ -237,7 +237,7 @@ export default function AdminPratosPage() {
     // Salvar nos dois locais
     localStorage.setItem("pratos_cardapio_completo", JSON.stringify(novosPratos));
 
-    // Salvar versão simplificada para cardápios (sem ingredientes)
+    // Salvar versÃ£o simplificada para cardÃ¡pios (sem ingredientes)
     const pratosSimples = novosPratos.map(p => ({
       id: p.id,
       nome: p.nome,
@@ -251,7 +251,7 @@ export default function AdminPratosPage() {
 
     setPratos(novosPratos);
     closeModal();
-    alert(`✅ Prato "${formPrato.nome}" salvo com sucesso!\n\nCusto: R$ ${custoTotal.toFixed(2)}\nPreço Venda: R$ ${precoVenda.toFixed(2)}\nMargem: ${margemLucro.toFixed(0)}%`);
+    alert(`âœ… Prato "${formPrato.nome}" salvo com sucesso!\n\nCusto: R$ ${custoTotal.toFixed(2)}\nPreÃ§o Venda: R$ ${precoVenda.toFixed(2)}\nMargem: ${margemLucro.toFixed(0)}%`);
   };
 
   const closeModal = () => {
@@ -312,7 +312,7 @@ export default function AdminPratosPage() {
       }));
       localStorage.setItem("pratos_cardapio", JSON.stringify(pratosSimples));
       setPratos(novosPratos);
-      alert("✅ Prato excluído com sucesso!");
+      alert("âœ… Prato excluÃ­do com sucesso!");
     }
   };
 
@@ -328,11 +328,11 @@ export default function AdminPratosPage() {
 
   const getCategoriaIcone = (categoria: string) => {
     switch (categoria) {
-      case "carne": return "🥩";
-      case "frango": return "🍗";
-      case "doce": return "🍰";
-      case "bebida": return "🥤";
-      default: return "🍽️";
+      case "carne": return "ðŸ¥©";
+      case "frango": return "ðŸ—";
+      case "doce": return "ðŸ°";
+      case "bebida": return "ðŸ¥¤";
+      default: return "ðŸ½ï¸";
     }
   };
 
@@ -342,7 +342,7 @@ export default function AdminPratosPage() {
   return (
     <div className="min-h-screen bg-gray-100 p-4">
       <div className="max-w-7xl mx-auto">
-        {/* Botão Voltar */}
+        {/* BotÃ£o Voltar */}
         <button
           onClick={() => router.back()}
           className="bg-gray-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-600 transition mb-4"
@@ -350,11 +350,11 @@ export default function AdminPratosPage() {
           <ArrowLeft size={18} /> Voltar
         </button>
 
-        {/* Cabeçalho */}
+        {/* CabeÃ§alho */}
         <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">🍽️ Gerenciar Pratos</h1>
-            <p className="text-sm text-gray-500">Cadastre pratos com ingredientes e custos para cálculo automático</p>
+            <h1 className="text-2xl font-bold text-gray-800">ðŸ½ï¸ Gerenciar Pratos</h1>
+            <p className="text-sm text-gray-500">Cadastre pratos com ingredientes e custos para cÃ¡lculo automÃ¡tico</p>
           </div>
           <button
             onClick={() => setShowModal(true)}
@@ -369,7 +369,7 @@ export default function AdminPratosPage() {
           <div className="bg-white rounded-xl p-12 text-center shadow-sm">
             <ChefHat size={64} className="mx-auto text-gray-300 mb-4" />
             <h3 className="text-lg font-medium text-gray-700 mb-2">Nenhum prato cadastrado</h3>
-            <p className="text-gray-500 mb-4">Clique em "Novo Prato" para começar a cadastrar</p>
+            <p className="text-gray-500 mb-4">Clique em "Novo Prato" para comeÃ§ar a cadastrar</p>
             <button
               onClick={() => setShowModal(true)}
               className="bg-orange-500 text-white px-4 py-2 rounded-lg inline-flex items-center gap-2"
@@ -400,9 +400,9 @@ export default function AdminPratosPage() {
                       <Power size={16} />
                     </button>
                   </div>
-                  <p className="text-sm text-gray-500 mt-2 line-clamp-2">{prato.descricao || "Sem descrição"}</p>
+                  <p className="text-sm text-gray-500 mt-2 line-clamp-2">{prato.descricao || "Sem descriÃ§Ã£o"}</p>
 
-                  {/* Custos e Preços */}
+                  {/* Custos e PreÃ§os */}
                   <div className="mt-3 p-3 bg-gray-50 rounded-lg">
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div>
@@ -446,13 +446,13 @@ export default function AdminPratosPage() {
         )}
       </div>
 
-      {/* Modal de Cadastro/Edição de Prato */}
+      {/* Modal de Cadastro/EdiÃ§Ã£o de Prato */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
               <h3 className="text-xl font-bold">
-                {editandoPrato ? "✏️ Editar Prato" : "➕ Novo Prato"}
+                {editandoPrato ? "âœï¸ Editar Prato" : "âž• Novo Prato"}
               </h3>
               <button onClick={closeModal} className="text-gray-400 hover:text-gray-600">
                 <X size={20} />
@@ -460,7 +460,7 @@ export default function AdminPratosPage() {
             </div>
 
             <div className="p-4 space-y-4">
-              {/* Informações Básicas */}
+              {/* InformaÃ§Ãµes BÃ¡sicas */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -483,17 +483,17 @@ export default function AdminPratosPage() {
                     onChange={(e) => setFormPrato({ ...formPrato, categoria: e.target.value as any })}
                     className="w-full p-2 border rounded-lg"
                   >
-                    <option value="carne">🥩 Carne</option>
-                    <option value="frango">🍗 Frango</option>
-                    <option value="doce">🍰 Doce</option>
-                    <option value="bebida">🥤 Bebida</option>
+                    <option value="carne">ðŸ¥© Carne</option>
+                    <option value="frango">ðŸ— Frango</option>
+                    <option value="doce">ðŸ° Doce</option>
+                    <option value="bebida">ðŸ¥¤ Bebida</option>
                   </select>
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Descrição
+                  DescriÃ§Ã£o
                 </label>
                 <textarea
                   value={formPrato.descricao}
@@ -510,13 +510,13 @@ export default function AdminPratosPage() {
                   onChange={(e) => setFormPrato({ ...formPrato, ativo: e.target.checked })}
                   className="w-4 h-4"
                 />
-                <label className="text-sm text-gray-700">Prato disponível no cardápio</label>
+                <label className="text-sm text-gray-700">Prato disponÃ­vel no cardÃ¡pio</label>
               </div>
 
               {/* Ingredientes */}
               <div className="border rounded-lg p-4">
                 <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                  <Scale size={18} /> Ingredientes (porção individual)
+                  <Scale size={18} /> Ingredientes (porÃ§Ã£o individual)
                 </h4>
 
                 {/* Lista de ingredientes cadastrados */}
@@ -558,7 +558,7 @@ export default function AdminPratosPage() {
                   )}
                 </div>
 
-                {/* Formulário para novo ingrediente */}
+                {/* FormulÃ¡rio para novo ingrediente */}
                 <div className="border-t pt-3">
                   <p className="text-sm font-medium text-gray-700 mb-2">+ Adicionar Ingrediente</p>
                   <div className="grid grid-cols-6 gap-2">
@@ -604,15 +604,15 @@ export default function AdminPratosPage() {
                     </button>
                   </div>
                   <p className="text-xs text-gray-400 mt-2">
-                    * Deixe o preço em branco para sugestão automática baseada no nome
+                    * Deixe o preÃ§o em branco para sugestÃ£o automÃ¡tica baseada no nome
                   </p>
                 </div>
               </div>
 
-              {/* Cálculo de Preço */}
+              {/* CÃ¡lculo de PreÃ§o */}
               <div className="border rounded-lg p-4 bg-gray-50">
                 <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                  <Calculator size={18} /> Cálculo de Preço
+                  <Calculator size={18} /> CÃ¡lculo de PreÃ§o
                 </h4>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -643,7 +643,7 @@ export default function AdminPratosPage() {
                       ) : (
                         <Calculator size={18} />
                       )}
-                      Calcular Preço
+                      Calcular PreÃ§o
                     </button>
                   </div>
                 </div>
@@ -651,7 +651,7 @@ export default function AdminPratosPage() {
                 {mostrarCalculo && (
                   <div className="mt-3 p-3 bg-green-50 rounded-lg animate-pulse">
                     <p className="text-sm text-green-800">
-                      💰 Preço sugerido: <strong>R$ {precoSugeridoAtual.toFixed(2)}</strong>
+                      ðŸ’° PreÃ§o sugerido: <strong>R$ {precoSugeridoAtual.toFixed(2)}</strong>
                       <br />
                       <span className="text-xs">(Custo: R$ {custoTotalAtual.toFixed(2)} + Margem: {margemDesejada}%)</span>
                     </p>
@@ -660,7 +660,7 @@ export default function AdminPratosPage() {
 
                 <div className="mt-3">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Preço de Venda (R$) - pode editar manualmente
+                    PreÃ§o de Venda (R$) - pode editar manualmente
                   </label>
                   <input
                     type="number"
@@ -675,12 +675,12 @@ export default function AdminPratosPage() {
                 </div>
               </div>
 
-              {/* Botão Salvar */}
+              {/* BotÃ£o Salvar */}
               <button
                 onClick={salvarPrato}
                 className="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-orange-600 transition"
               >
-                <Save size={18} /> {editandoPrato ? "Salvar Alterações" : "Cadastrar Prato"}
+                <Save size={18} /> {editandoPrato ? "Salvar AlteraÃ§Ãµes" : "Cadastrar Prato"}
               </button>
             </div>
           </div>
@@ -689,3 +689,4 @@ export default function AdminPratosPage() {
     </div>
   );
 }
+

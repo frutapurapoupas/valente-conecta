@@ -1,0 +1,45 @@
+'use client';
+
+import { useCardapio } from '@/hooks/useCardapio';
+
+export default function CardapioPage() {
+  const { cardapio, loading, error } = useCardapio();
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+          {error}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Cardápio</h1>
+      {cardapio.length === 0 ? (
+        <p className="text-gray-500">Nenhum item no cardápio</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {cardapio.map((item) => (
+            <div key={item.id} className="bg-white rounded-lg shadow p-4">
+              <h3 className="font-semibold">{item.nome || item.receitaId}</h3>
+              <p className="text-sm text-gray-500">{item.diaSemana} - {item.periodo}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+

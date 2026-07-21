@@ -1,4 +1,4 @@
-﻿// Arquivo: components/home/BuscaHome.tsx
+// Arquivo: components/home/BuscaHome.tsx
 // Status: AGUARDANDO CÓDIGO
 // Este arquivo será preenchido na próxima etapa
 'use client';
@@ -19,9 +19,10 @@ export default function BuscaHome({ onSearchResult }: BuscaHomeProps) {
       <div className="container mx-auto px-4">
         <BuscaInteligente 
           onResultadoClick={onSearchResult}
-          placeholder="🔍 Buscar produtos, serviços, profissionais..."
+          placeholder="?? Buscar produtos, serviços, profissionais..."
         />
       </div>
     </div>
   );
 }
+

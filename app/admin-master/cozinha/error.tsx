@@ -1,0 +1,27 @@
+// app/admin-master/cozinha/error.tsx
+"use client";
+
+export default function AdminCozinhaError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  return (
+    <div className="p-6">
+      <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+        <h2 className="text-xl font-semibold text-red-700 mb-2">
+          Erro ao carregar o painel da cozinha
+        </h2>
+        <p className="text-red-600 mb-4">{error.message || 'Ocorreu um erro inesperado'}</p>
+        <button
+          onClick={reset}
+          className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+        >
+          Tentar novamente
+        </button>
+      </div>
+    </div>
+  );
+}

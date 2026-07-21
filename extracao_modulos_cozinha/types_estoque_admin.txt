@@ -1,0 +1,28 @@
+﻿========================================
+ARQUIVO: app/admin-master/cozinha/types/estoque.ts
+MÓDULO: types
+DATA: 2026-07-20 22:08:00
+========================================
+// app/admin-master/cozinha/types/estoque.ts
+export interface MovimentacaoEstoque {
+  id: string;
+  ingredienteId: string;
+  ingredienteNome?: string;
+  tipo: 'entrada' | 'saida' | 'ajuste';
+  quantidade: number;
+  quantidadeAnterior: number;
+  quantidadeNova: number;
+  motivo: string;
+  usuarioId: string;
+  usuarioNome?: string;
+  created_at: string;
+}
+
+export interface EstoqueResumo {
+  ingredienteId: string;
+  ingredienteNome: string;
+  quantidadeAtual: number;
+  estoqueMinimo: number;
+  status: 'ok' | 'baixo' | 'critico';
+  valorTotal: number;
+}

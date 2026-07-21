@@ -153,7 +153,7 @@ export const adminMenuFull: MenuGroup[] = [
       { name: "Receitas", path: "/admin-master/cozinha-chef/receitas", icon: ChefHat, status: 'active' },
       // ✅ 5º - ESTOQUE
       { name: "Estoque", path: "/admin-master/cozinha-chef/estoque", icon: Package, status: 'active' },
-      { name: "Movimentação Estoque", path: "/admin-master/cozinha-chef/estoque/movimentacao", icon: TrendingUp, status: 'active' },
+      { name: "Movimentação Estoque", path: "/admin-master/cozinha-chef/movimentacoes", icon: TrendingUp, status: 'active' },
       // ✅ 6º - PRODUÇÃO
       { name: "Produção", path: "/admin-master/cozinha-chef/producao", icon: Factory, status: 'active' },
       // ✅ 7º - LISTA DE COMPRAS
@@ -518,3 +518,5 @@ export const adminMenuFull: MenuGroup[] = [
 ];
 
 export default adminMenuFull;
+
+
