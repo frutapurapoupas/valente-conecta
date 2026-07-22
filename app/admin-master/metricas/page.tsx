@@ -1,4 +1,4 @@
-"use client";
+ï»¿"use client";
 
 interface DemandViewProps {
   category: string;
@@ -6,7 +6,7 @@ interface DemandViewProps {
   children?: React.ReactNode;
 }
 
-function DemandView({ category, title, children }: DemandViewProps) {
+export function DemandView({ category, title, children }: DemandViewProps) {
   return (
     <div className="p-6">
       <div className="mb-6">
@@ -16,7 +16,7 @@ function DemandView({ category, title, children }: DemandViewProps) {
       
       <div className="bg-white rounded-lg shadow p-6">
         <div className="border-b border-gray-200 pb-4 mb-4">
-          <h2 className="text-lg font-semibold text-gray-800">Solicitação</h2>
+          <h2 className="text-lg font-semibold text-gray-800">SolicitaÃ§Ã£o</h2>
         </div>
         
         <div className="space-y-4">
@@ -27,14 +27,14 @@ function DemandView({ category, title, children }: DemandViewProps) {
             </div>
             <div className="bg-gray-50 p-4 rounded-lg">
               <p className="text-sm text-gray-500">Prioridade</p>
-              <p className="font-medium text-orange-600">Média</p>
+              <p className="font-medium text-orange-600">MÃ©dia</p>
             </div>
           </div>
           
           <div className="bg-gray-50 p-4 rounded-lg">
-            <p className="text-sm text-gray-500">Descrição</p>
+            <p className="text-sm text-gray-500">DescriÃ§Ã£o</p>
             <p className="font-medium text-gray-800 mt-1">
-              Solicitação para {category.toLowerCase()}
+              SolicitaÃ§Ã£o para {category.toLowerCase()}
             </p>
           </div>
           
@@ -56,4 +56,3 @@ function DemandView({ category, title, children }: DemandViewProps) {
     </div>
   );
 }
-
