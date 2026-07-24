@@ -1,4 +1,5 @@
 import { Ingredient, Recipe, MediaFile, SyncResult } from '@/lib/cozinha/types';
+export type { Ingredient, Recipe, MediaFile, SyncResult };
 
 export interface IStorageAdapter {
   getIngredients(): Promise<Ingredient[]>;

@@ -613,7 +613,7 @@ export default function MotoTaxiPage() {
     try {
       const payload = {
         recurso: "rides",
-        passengerName: user?.nome || user?.name || "Passageiro",
+        passengerName: user?.nome || "Passageiro",
         passengerId: String(user?.id || "anonimo"),
         passengerPlan,
         driverId: driver.id,

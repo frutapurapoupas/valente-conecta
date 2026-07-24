@@ -7,11 +7,13 @@ const vapidKeys = {
   privateKey: process.env.VAPID_PRIVATE_KEY || ''
 };
 
-webpush.setVapidDetails(
-  'mailto:suporte@valenteconecta.com.br',
-  vapidKeys.publicKey,
-  vapidKeys.privateKey
-);
+if (vapidKeys.publicKey && vapidKeys.privateKey) {
+  webpush.setVapidDetails(
+    'mailto:suporte@valenteconecta.com.br',
+    vapidKeys.publicKey,
+    vapidKeys.privateKey
+  );
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,4 +41,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Erro ao enviar push' }, { status: 500 });
   }
 }
-

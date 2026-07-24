@@ -64,13 +64,12 @@ export default function AcademiaLocalPage() {
   const [capturandoLocal, setCapturandoLocal] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const academiaSalva = localStorage.getItem('academia_local_dados');
-      if (academiaSalva) {
-        const dados = JSON.parse(academiaSalva);
-        setAcademia(dados);
-        setSalvo(true);
-      }
+    if (typeof window === 'undefined') return;
+    const academiaSalva = window.localStorage.getItem('academia_local_dados');
+    if (academiaSalva) {
+      const dados = JSON.parse(academiaSalva);
+      setAcademia(dados);
+      setSalvo(true);
     }
   }, []);
 

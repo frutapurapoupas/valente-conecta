@@ -1,5 +1,3 @@
-// app/admin-master/cozinha-chef/compras/page.tsx
-
 "use client";
 
 import { useMemo, useState } from 'react';
@@ -49,7 +47,7 @@ export default function ListaCompras() {
       await Promise.all([carregar(), reloadRequests()]);
       window.dispatchEvent(new CustomEvent('cozinha_data_updated'));
     } else {
-      alert('Erro ao aprovar solicitaÃƒÂ§ÃƒÂ£o');
+      alert('Erro ao aprovar solicitação');
     }
   };
 
@@ -67,7 +65,7 @@ export default function ListaCompras() {
     const success = results.every((r: any) => r?.success);
 
     if (!success) {
-      alert('Uma ou mais remessas falharam na aprovaÃƒÂ§ÃƒÂ£o.');
+      alert('Uma ou mais remessas falharam na aprovação.');
     }
 
     setSelectedRequestIds({});
@@ -77,7 +75,7 @@ export default function ListaCompras() {
 
   const handleAprovarTodas = async () => {
     if (pendentes.length === 0) {
-      alert('NÃƒÂ£o hÃƒÂ¡ remessas pendentes para aprovar.');
+      alert('Não há remessas pendentes para aprovar.');
       return;
     }
 
@@ -89,7 +87,7 @@ export default function ListaCompras() {
     const success = results.every((r: any) => r?.success);
 
     if (!success) {
-      alert('Uma ou mais remessas falharam na aprovaÃƒÂ§ÃƒÂ£o.');
+      alert('Uma ou mais remessas falharam na aprovação.');
     }
 
     setSelectedRequestIds({});
@@ -160,7 +158,7 @@ export default function ListaCompras() {
               <th>Quantidade</th>
               <th>Unidade</th>
               <th>Fornecedor</th>
-              <th>Valor UnitÃƒÂ¡rio</th>
+              <th>Valor Unitário</th>
               <th>Total</th>
             </tr>
           </thead>
@@ -178,7 +176,7 @@ export default function ListaCompras() {
     w.print();
   };
 
-  // FunÃƒÂ§ÃƒÂ£o para obter cor da prioridade
+  // Função para obter cor da prioridade
   const getPrioridadeColor = (prioridade?: string) => {
     switch (prioridade) {
       case 'alta': return 'text-red-400 bg-red-500/20';
@@ -188,13 +186,13 @@ export default function ListaCompras() {
     }
   };
 
-  // FunÃƒÂ§ÃƒÂ£o para obter label da prioridade
+  // Função para obter label da prioridade
   const getPrioridadeLabel = (prioridade?: string) => {
     switch (prioridade) {
-      case 'alta': return 'Ã°Å¸â€Â´ Alta';
-      case 'media': return 'Ã°Å¸Å¸Â¡ MÃƒÂ©dia';
-      case 'baixa': return 'Ã°Å¸Å¸Â¢ Baixa';
-      default: return 'Ã¢Å¡Âª N/A';
+      case 'alta': return '🔴 Alta';
+      case 'media': return '🟡 Média';
+      case 'baixa': return '🟢 Baixa';
+      default: return '⚪ N/A';
     }
   };
 
@@ -209,7 +207,7 @@ export default function ListaCompras() {
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6">
       <div className="max-w-4xl mx-auto">
-        {/* CabeÃƒÂ§alho */}
+        {/* Cabeçalho */}
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div>
             <Link href="/admin-master/cozinha-chef" className="text-sm text-gray-400 hover:text-white flex items-center gap-1 transition">
@@ -239,7 +237,7 @@ export default function ListaCompras() {
               href="/admin-master/cozinha-chef/compras/ajuste"
               className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg flex items-center gap-2 text-sm transition"
             >
-              <CheckCircle size={16} /> Ajuste PÃƒÂ³s-Compra
+              <CheckCircle size={16} /> Ajuste Pós-Compra
             </Link>
           </div>
         </div>
@@ -247,7 +245,7 @@ export default function ListaCompras() {
         {/* Lista de Itens */}
         <div className="bg-gray-800/30 rounded-xl border border-gray-700 p-4 mb-6">
           <div className="flex items-center justify-between gap-2">
-            <h2 className="text-lg font-semibold">SolicitaÃƒÂ§ÃƒÂµes de Compra Pendentes ({pendentes.length})</h2>
+            <h2 className="text-lg font-semibold">Solicitações de Compra Pendentes ({pendentes.length})</h2>
             <button
               onClick={() => setRequestsCollapsed((v) => !v)}
               className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-lg text-xs flex items-center gap-1"
@@ -258,9 +256,9 @@ export default function ListaCompras() {
           </div>
 
           {loadingRequests ? (
-            <p className="text-gray-400 text-sm">Carregando solicitaÃƒÂ§ÃƒÂµes...</p>
+            <p className="text-gray-400 text-sm">Carregando solicitações...</p>
           ) : pendentes.length === 0 ? (
-            <p className="text-gray-400 text-sm">Nenhuma solicitaÃƒÂ§ÃƒÂ£o pendente</p>
+            <p className="text-gray-400 text-sm">Nenhuma solicitação pendente</p>
           ) : requestsCollapsed ? (
             <p className="text-gray-400 text-sm mt-2">
               Card recolhido. Abra para aprovar remessas individuais ou em lote.
@@ -282,68 +280,75 @@ export default function ListaCompras() {
                 </button>
               </div>
 
-              {pendentes.map((req) => (
-                <div key={req.id} className="bg-gray-900/60 border border-gray-700 rounded-lg p-3">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex items-start gap-3">
-                      <input
-                        type="checkbox"
-                        checked={Boolean(selectedRequestIds[req.id])}
-                        onChange={() => toggleRequestSelect(req.id)}
-                        className="mt-1"
-                      />
-                      <div>
-                        <p className="font-medium text-white">{req.receitaNome}</p>
-                        <p className="text-xs text-gray-400">
-                          {new Date(req.createdAt).toLocaleString('pt-BR')} Ã¢â‚¬Â¢ ProduÃƒÂ§ÃƒÂ£o: {req.quantidadeProduzir}x Ã¢â‚¬Â¢ Itens: {req.ingredientes.length}
-                        </p>
-                        <p className="text-xs text-amber-300 mt-1">
-                          ExcluÃƒÂ­dos da soma: {getExcludedIndexes(req.id).length}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => toggleRequestExpand(req.id)}
-                        className="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm font-medium"
-                      >
-                        {expandedRequestIds[req.id] ? 'Ocultar Itens' : 'Ver Itens'}
-                      </button>
-                      <button
-                        onClick={() => handleAprovar(req.id)}
-                        className="px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium"
-                      >
-                        Aprovar Isolado
-                      </button>
-                    </div>
-                  </div>
+              {pendentes.map((req) => {
+                // Garantir que created_at existe antes de criar a data
+                const dataCriacao = req.created_at ? new Date(req.created_at) : new Date();
+                // Lista de ingredientes com fallback para array vazio
+                const ingredientes = req.ingredientes || [];
 
-                  {expandedRequestIds[req.id] && (
-                    <div className="mt-3 border-t border-gray-700 pt-3">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {req.ingredientes.map((ing: any, index: number) => (
-                          <div key={`${req.id}-${index}`} className="text-xs text-gray-300 bg-gray-800/70 rounded p-2">
-                            <div className="flex items-center justify-between gap-2">
-                              <div>
-                                <span className="font-medium text-white">{ing.ingredientName}</span>
-                                <span> Ã¢â‚¬Â¢ {Number(ing.quantidade || ing.quantity || 0).toFixed(2)} {ing.unit}</span>
-                              </div>
-                              <label className="inline-flex items-center gap-1 text-[11px] text-amber-300">
-                                <input
-                                  type="checkbox"
-                                  checked={Boolean(excludedIngredientIndexesByRequest[req.id]?.[index])}
-                                  onChange={() => toggleIngredientExclude(req.id, index)}
-                                />
-                                NÃƒÂ£o somar
-                              </label>
-                            </div>
-                          </div>
-                        ))}
+                return (
+                  <div key={req.id} className="bg-gray-900/60 border border-gray-700 rounded-lg p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex items-start gap-3">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(selectedRequestIds[req.id])}
+                          onChange={() => toggleRequestSelect(req.id)}
+                          className="mt-1"
+                        />
+                        <div>
+                          <p className="font-medium text-white">{req.receitaNome}</p>
+                          <p className="text-xs text-gray-400">
+                            {dataCriacao.toLocaleString('pt-BR')} • Produção: {req.quantidade || 1}x • Itens: {ingredientes.length}
+                          </p>
+                          <p className="text-xs text-amber-300 mt-1">
+                            Excluídos da soma: {getExcludedIndexes(req.id).length}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => toggleRequestExpand(req.id)}
+                          className="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm font-medium"
+                        >
+                          {expandedRequestIds[req.id] ? 'Ocultar Itens' : 'Ver Itens'}
+                        </button>
+                        <button
+                          onClick={() => handleAprovar(req.id)}
+                          className="px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium"
+                        >
+                          Aprovar Isolado
+                        </button>
                       </div>
                     </div>
-                  )}
-                </div>
-              ))}
+
+                    {expandedRequestIds[req.id] && (
+                      <div className="mt-3 border-t border-gray-700 pt-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {ingredientes.map((ing: any, index: number) => (
+                            <div key={`${req.id}-${index}`} className="text-xs text-gray-300 bg-gray-800/70 rounded p-2">
+                              <div className="flex items-center justify-between gap-2">
+                                <div>
+                                  <span className="font-medium text-white">{ing.ingredientName}</span>
+                                  <span> • {Number(ing.quantidade || ing.quantity || 0).toFixed(2)} {ing.unit}</span>
+                                </div>
+                                <label className="inline-flex items-center gap-1 text-[11px] text-amber-300">
+                                  <input
+                                    type="checkbox"
+                                    checked={Boolean(excludedIngredientIndexesByRequest[req.id]?.[index])}
+                                    onChange={() => toggleIngredientExclude(req.id, index)}
+                                  />
+                                  Não somar
+                                </label>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
@@ -356,11 +361,11 @@ export default function ListaCompras() {
                   <th className="px-4 py-3 text-left text-gray-400">Item</th>
                   <th className="px-4 py-3 text-left text-gray-400">Qtd</th>
                   <th className="px-4 py-3 text-left text-gray-400">Unidade</th>
-                  <th className="px-4 py-3 text-left text-gray-400">PreÃƒÂ§o Est.</th>
+                  <th className="px-4 py-3 text-left text-gray-400">Preço Est.</th>
                   <th className="px-4 py-3 text-left text-gray-400">Fornecedor</th>
                   <th className="px-4 py-3 text-left text-gray-400">Prioridade</th>
                   <th className="px-4 py-3 text-left text-gray-400">Status</th>
-                  <th className="px-4 py-3 text-center text-gray-400">AÃƒÂ§ÃƒÂµes</th>
+                  <th className="px-4 py-3 text-center text-gray-400">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700">
@@ -456,6 +461,3 @@ export default function ListaCompras() {
     </div>
   );
 }
-
-
-

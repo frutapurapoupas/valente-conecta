@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 import { useState, useEffect } from "react";
 import { ArrowLeft, Copy, Share2, Download, CheckCircle, Wallet, BellRing, Building2, Briefcase, Users, Info, X } from "lucide-react";
 import { getStableReferralCode } from '@/utils/referral';
-import { calculateReferralWallet, type ReferralConfig } from '@/utils/referralBonus';
+import { calculateReferralWallet, type ReferralConfig, type ReferralWalletSummary } from '@/utils/referralBonus';
 import { supabase } from '@/lib/supabase';
 
 export default function QRCodePage() {
@@ -22,7 +22,7 @@ export default function QRCodePage() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [baseUrl, setBaseUrl] = useState("");
   const [config, setConfig] = useState<ReferralConfig | null>(null);
-  const [wallet, setWallet] = useState({ disponivel: 0, bloqueado: 0, pago: 0, totalLiberado: 0, lotes: { usuarios_gerais: 0, empresas_lojas: 0, profissionais_liberais: 0 } });
+  const [wallet, setWallet] = useState<ReferralWalletSummary>({ disponivel: 0, bloqueado: 0, pago: 0, totalLiberado: 0, lotes: { usuarios_gerais: 0, empresas_lojas: 0, profissionais_liberais: 0 } });
   const [pixKey, setPixKey] = useState("");
   const [solicitandoPix, setSolicitandoPix] = useState(false);
   const [indicadosUsuarios, setIndicadosUsuarios] = useState<any[]>([]);
@@ -132,7 +132,7 @@ export default function QRCodePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: user.id,
-          userName: user.nome || user.name || 'Usuário',
+          userName: user.nome || 'Usuário',
           userWhatsapp: user.whatsapp || '',
           pixKey,
           amount: wallet.disponivel

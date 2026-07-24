@@ -299,7 +299,7 @@ export default function ImoveisPage() {
     return true;
   });
 
-  const bairrosUnicos = [...new Set(imoveis.map(i => i.bairro))];
+  const bairrosUnicos = Array.from(new Set(imoveis.map(i => i.bairro)));
 
   if (loading) {
     return (

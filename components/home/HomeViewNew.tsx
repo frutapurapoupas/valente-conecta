@@ -14,6 +14,7 @@ import SecaoEstatisticas from './SecaoEstatisticas';
 import SecaoPlanos from './SecaoPlanos';
 import VideoLancamento from './VideoLancamento';
 import BotaoAdmin from './BotaoAdmin';
+import { useApp } from '@/app/context/AppContext';
 
 interface HomeViewNewProps {
   dados: HomeData | null;
@@ -33,6 +34,7 @@ export default function HomeViewNew({
   onBuscar,
 }: HomeViewNewProps) {
   const router = useRouter();
+  const { isAdmin } = useApp();
 
   if (loading) {
     return (
@@ -48,12 +50,12 @@ export default function HomeViewNew({
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-600 to-indigo-600">
       {/* Header */}
-      <HeaderHome />
+      <HeaderHome isAdmin={isAdmin} />
 
       {/* ConteÃºdo Principal */}
       <main className="container mx-auto px-4 pb-8 pt-4">
         {/* Barra de Busca */}
-        <BuscaHome onBuscar={onBuscar} />
+        <BuscaHome onSearchResult={() => {}} />
 
         {/* Card de Ofertas */}
         <div 

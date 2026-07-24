@@ -23,13 +23,13 @@ export const financeiroService = {
     return response.json();
   },
 
-  buscar: async (id: string): Promise<{ success: boolean; data: Transacao }> => {
+  buscar: async (id: string): Promise<{ success: boolean; data: Transacao; error?: string }> => {
     const response = await fetch(`${API_URL}/${id}`);
     return response.json();
   },
 
   // ? Criar com LOGS
-  criar: async (data: Omit<Transacao, 'id'>): Promise<{ success: boolean; data: Transacao }> => {
+  criar: async (data: Omit<Transacao, 'id'>): Promise<{ success: boolean; data: Transacao; error?: string }> => {
     console.log('?? financeiroService.criar - Enviando:', data);
     
     const response = await fetch(API_URL, {
@@ -44,7 +44,7 @@ export const financeiroService = {
     return result;
   },
 
-  atualizar: async (id: string, data: Partial<Transacao>): Promise<{ success: boolean; data: Transacao }> => {
+  atualizar: async (id: string, data: Partial<Transacao>): Promise<{ success: boolean; data: Transacao; error?: string }> => {
     const response = await fetch(`${API_URL}/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -53,7 +53,7 @@ export const financeiroService = {
     return response.json();
   },
 
-  excluir: async (id: string): Promise<{ success: boolean }> => {
+  excluir: async (id: string): Promise<{ success: boolean; error?: string }> => {
     const response = await fetch(`${API_URL}/${id}`, {
       method: 'DELETE',
     });

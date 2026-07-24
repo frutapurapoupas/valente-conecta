@@ -53,7 +53,7 @@ export default function ConvitePage() {
     setIsClient(true);
     setBaseUrl(window.location.origin);
     
-    const codigoExtraido = params.codigo as string;
+    const codigoExtraido = (params?.codigo as string) || "";
     setCodigo(codigoExtraido || "");
     
     if (codigoExtraido === "ADMIN_VALENTE_2026") {
@@ -74,7 +74,7 @@ export default function ConvitePage() {
       e.preventDefault();
       setDeferredPrompt(e);
     });
-  }, [params.codigo]);
+  }, [params?.codigo]);
 
   const handleInstalar = async () => {
     if (deferredPrompt) {

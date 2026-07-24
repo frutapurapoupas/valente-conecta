@@ -1,3 +1,11 @@
+interface NotificacaoAdmin {
+  id: string;
+  mensagem: string;
+  importancia: 'alta' | 'media' | 'info';
+  data: string;
+  status?: string;
+}
+
 // services/homeService.ts
 // 🔧 LÓGICA DE API - Home
 

@@ -36,7 +36,7 @@ export default function ProfilePage() {
     let wallet = 0;
     
     if (user) {
-      nome = user.name || "";
+      nome = user.nome || "";
       email = user.email || "";
       wallet = user.wallet || 0;
     }

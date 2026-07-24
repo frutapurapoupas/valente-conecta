@@ -5,7 +5,6 @@
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Header } from '@/components/ui/Header'
-import { Table } from '@/components/ui/Table'
 
 interface DashboardUIProps {
   stats: {

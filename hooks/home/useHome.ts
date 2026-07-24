@@ -134,7 +134,7 @@ export const useHome = () => {
 
   const carregarSaldo = useCallback(async () => {
     if (user?.id) {
-      walletService.setUsuarioId(user.id, user.nome || user.name);
+      walletService.setUsuarioId(user.id, user.nome);
       const saldo = await walletService.getSaldo();
       setSaldoUsuario(saldo.disponivel);
     } else {

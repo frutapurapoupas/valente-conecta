@@ -1,5 +1,5 @@
 // lib/middleware-viral.ts
-import { supabase } from './supabase';
+import { supabase } from '@/lib/supabase';
 
 export interface AccessStatus {
   hasAccess: boolean;

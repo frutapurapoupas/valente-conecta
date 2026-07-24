@@ -12,12 +12,16 @@ interface Supplier {
   price?: number;
   imagem?: string;
   image?: string;
+  fornecedorNome?: string;
+  fornecedorEndereco?: string;
+  fornecedorTelefone?: string;
 }
 
 export default function MachineCard({ supplier }: { supplier: Supplier }) {
   const nome = supplier.nomeEmpresa || supplier.fornecedorNome || (supplier as any).nome || 'Fornecedor';
   const endereco = supplier.endereco || supplier.fornecedorEndereco || (supplier as any).address || 'EndereÃ§o nÃ£o informado';
-  const preco = (supplier.preco ?? supplier.price) ? `R$ ${(supplier.preco ?? supplier.price).toString()}` : null;
+  const precoValor = supplier.preco ?? supplier.price;
+  const preco = precoValor ? "R$ " + precoValor.toString() : null;
   const imagem = supplier.imagem || supplier.image || '/images/placeholder-machine.png';
   const telefone = supplier.telefone || supplier.fornecedorTelefone || '';
 
@@ -41,4 +45,3 @@ export default function MachineCard({ supplier }: { supplier: Supplier }) {
     </div>
   );
 }
-

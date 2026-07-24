@@ -150,7 +150,7 @@ export default function Sidebar() {
               group={group}
               isOpen={isOpen}
               onToggle={() => toggleGroup(group.name)}
-              activePath={pathname}
+              activePath={pathname || ''}
             />
           );
         })}

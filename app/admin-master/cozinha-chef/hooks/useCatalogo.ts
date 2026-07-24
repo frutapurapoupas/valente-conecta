@@ -67,7 +67,7 @@ export const useCatalogo = () => {
           }))
           .filter((r: any) => r.id && r.name && r.status !== 'inativo');
 
-        const receitaById = new Map(receitasValidas.map((r: any) => [r.id, r]));
+        const receitaById = new Map<string, any>(receitasValidas.map((r: any) => [r.id, r] as [string, any]));
 
         const pratosDaPreview: ItemCardapio[] = cardapioData
           .filter((item: any) => item?.isAvailable ?? item?.is_available ?? item?.disponivel ?? true)

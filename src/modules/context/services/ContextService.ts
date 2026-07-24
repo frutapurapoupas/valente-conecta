@@ -1,4 +1,4 @@
-﻿// ==================================================
+// ==================================================
 // CONTEXT MODULE - SERVICE
 // ==================================================
 
@@ -8,8 +8,8 @@ import type { User, AppSettings, Notification, AppContextData } from "../types/c
 export class ContextService {
   static async getInitialState(): Promise<Partial<AppContextData>> {
     const user = await ContextRepository.getCurrentUser();
-    let settings = null;
-    let notifications = [];
+    let settings: AppSettings | null = null;
+    let notifications: Notification[] = [];
 
     if (user) {
       settings = await ContextRepository.getSettings(user.id);

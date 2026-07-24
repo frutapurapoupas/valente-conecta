@@ -1,3 +1,6 @@
+$arquivo = "C:\valente_conecta\app\context\AppContext.tsx"
+
+$novoConteudo = @'
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
@@ -9,7 +12,6 @@ interface User {
   role: string;
   telefone?: string;
   whatsapp?: string;
-  wallet?: number;
 }
 
 interface AppContextData {
@@ -18,8 +20,6 @@ interface AppContextData {
   loading: boolean;
   isAdmin: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
-  updateWallet: (novoSaldo: number) => void;
 }
 
 const AppContext = createContext<AppContextData | undefined>(undefined);
@@ -41,16 +41,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return false;
   };
 
-  const logout = () => {
-    setState(prev => ({ ...prev, user: null, isAuthenticated: false, isAdmin: false }));
-  };
-
-  const updateWallet = (novoSaldo: number) => {
-    console.warn("updateWallet() ainda nao implementado - integracao de carteira pendente");
-  };
-
   return (
-    <AppContext.Provider value={{ ...state, login, logout, updateWallet }}>
+    <AppContext.Provider value={{ ...state, login }}>
       {children}
     </AppContext.Provider>
   );
@@ -89,3 +81,7 @@ export function useNotifications() {
 export function useSettings() {
   return { settings: { language: "pt-BR", notificationsEnabled: true, theme: "light" }, updateSettings: () => {} };
 }
+'@
+
+[System.IO.File]::WriteAllText($arquivo, $novoConteudo, (New-Object System.Text.UTF8Encoding($false)))
+Write-Host "Arquivo atualizado com sucesso."

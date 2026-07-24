@@ -10,6 +10,14 @@ export interface ReferralRule {
 export interface ReferralConfig {
   rules: ReferralRule[];
   pixMinimo?: number;
+  content?: {
+    shareTemplate?: string;
+    publicHeadline?: string;
+    publicDescription?: string;
+    publicSubtitle?: string;
+    explanationTitle?: string;
+    explanationText?: string;
+  };
 }
 
 export interface ReferralCounts {

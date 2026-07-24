@@ -8,12 +8,12 @@ interface Props {
 }
 
 export const DemandView = ({ category, title }: Props) => {
-  const { handleCapture, loading } = useDemandCapture(category);
+  const { captureDemand, loading } = useDemandCapture();
   const [formData, setFormData] = useState({ name: '', whatsapp: '', description: '' });
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    await handleCapture(formData);
+    await captureDemand({ ...formData, category });
   };
 
   return (

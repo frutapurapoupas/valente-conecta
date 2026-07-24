@@ -83,7 +83,7 @@ export async function enviarPushJob(data: JobData): Promise<boolean> {
     
     // Processar em lotes para não sobrecarregar
     const BATCH_SIZE = 100;
-    const batches = [];
+    const batches: any[][] = [];
     
     for (let i = 0; i < subscriptions.length; i += BATCH_SIZE) {
       batches.push(subscriptions.slice(i, i + BATCH_SIZE));

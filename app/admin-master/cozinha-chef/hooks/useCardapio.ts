@@ -5,11 +5,9 @@ export const useCardapio = () => {
   const [menuItems, setMenuItems] = useState<any[]>([]);
   const [recipes, setRecipes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const carregarDados = async () => {
     setLoading(true);
-    setError(null);
     try {
       const [menuRes, recipesRes] = await Promise.all([
         fetch('/api/cozinha/cardapio'),
@@ -30,7 +28,6 @@ export const useCardapio = () => {
       setRecipes(Array.isArray(recipesData.success ? recipesData.data : []) ? (recipesData.success ? recipesData.data : []) : []);
     } catch (error) {
       toast.error('Erro ao carregar dados');
-      setError('Erro ao carregar dados');
       setMenuItems([]);
       setRecipes([]);
     } finally {
@@ -92,7 +89,6 @@ export const useCardapio = () => {
     cardapio: menuItems,
     recipes,
     loading,
-    error,
     carregarDados,
     create,
     delete: remove,

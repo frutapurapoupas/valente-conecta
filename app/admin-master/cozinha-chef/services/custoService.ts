@@ -128,7 +128,7 @@ export function normalizarReceitaCanonica(item: any): ReceitaCanonicaCompat {
     preco: financeiro.preco_venda,
     custo_total: financeiro.custo_receita,
     margem: financeiro.margem_percentual,
-    ativo: (item?.ativo ?? item?.status === 'ativo' ?? true) as boolean,
+    ativo: (item?.ativo ?? (item?.status ? item.status === 'ativo' : true)) as boolean,
     images: Array.isArray(item?.images)
       ? item.images
       : item?.imagem
@@ -142,7 +142,7 @@ export function normalizarReceitaCanonica(item: any): ReceitaCanonicaCompat {
         ? item.ingredientes
         : [],
     servings: financeiro.porcoes,
-    isAvailable: item?.isAvailable ?? item?.status === 'ativo' ?? true,
+    isAvailable: item?.isAvailable ?? (item?.status ? item.status === 'ativo' : true),
   };
 }
 

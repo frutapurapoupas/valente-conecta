@@ -72,7 +72,7 @@ export default function ExtratoPage() {
     return String((user as any)?.cidade || localStorage.getItem('usuario_cidade_base') || 'VALENTE').toUpperCase();
   }, [user]);
 
-  const titular = useMemo(() => String(user?.nome || user?.name || 'Conta Conecta Visitante'), [user]);
+  const titular = useMemo(() => String(user?.nome || 'Conta Conecta Visitante'), [user]);
 
   const carregarExtrato = async () => {
     if (!actorId) return;

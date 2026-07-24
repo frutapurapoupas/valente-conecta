@@ -60,7 +60,7 @@ import { enviarTelegramJob, enviarPushJob } from './notificationWorkers';
 
 notificationQueue.process(async (job) => {
   const data = job.data;
-  const results = [];
+  const results: Array<{ canal: string; success: boolean; error?: string }> = [];
   
   console.log(`📨 Processando notificação: ${data.id} - ${data.titulo}`);
   

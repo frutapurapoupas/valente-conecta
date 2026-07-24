@@ -91,7 +91,7 @@ export function PedidoItem({ pedido, onStatusChange, onCancel }: PedidoItemProps
               <option value="entregue">📦 Entregue</option>
             </select>
           )}
-          {onCancel && pedido.status !== 'entregue' && (
+          {onCancel && (
             <button
               onClick={() => onCancel(pedido.id)}
               className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors text-sm"

@@ -16,3 +16,18 @@ if (!supabaseUrl || !supabaseAnonKey) {
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 export default supabase
 
+
+export interface Usuario {
+  id: string;
+  nome: string;
+  whatsapp: string;
+  email?: string;
+  codigo_indicacao?: string;
+  convidado_por_id?: string | null;
+  trial_started_at?: string;
+  trial_end_at?: string;
+  is_viral_active?: boolean;
+  viral_end_at?: string;
+  total_earned?: number;
+  role: string;
+}

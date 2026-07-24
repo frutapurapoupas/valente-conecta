@@ -196,7 +196,7 @@ export default function AcademiaPage() {
             <Dumbbell className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-2xl font-black text-white mb-2">
-            {getSaudacao()}, {perfilData?.nome || (user?.name || "Atleta")}!
+            {getSaudacao()}, {perfilData?.nome || (user?.nome || "Atleta")}!
           </h1>
           <p className="text-zinc-400 text-sm">
             {perfilCompleto 

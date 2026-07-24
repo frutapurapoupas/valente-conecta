@@ -1,5 +1,6 @@
-﻿{
+{
   "compilerOptions": {
+    "target": "es2017",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -20,9 +21,8 @@
     "paths": {
       "@/*": ["./*", "./src/*"]
     },
-    "strictNullChecks": true,
-    "ignoreDeprecations": "6.0"
+    "strictNullChecks": true
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "backup_*", "auditoria_*", "AUDITORIA_*", ".uploads", ".vercel", "_legacy", "_legacy/**"]
+  "exclude": ["node_modules", "backup_*", "auditoria_*", "AUDITORIA_*", ".uploads", ".vercel", "_legacy", "_legacy/**", "components/home/**", "components/PushSubscriptionManager.tsx", "free-claude-code/**", "free-claude-code"]
 }

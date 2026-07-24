@@ -8,7 +8,7 @@ import { isUserLoggedIn } from '@/lib/auth';
 
 function CadastroPopupContent() {
   const searchParams = useSearchParams();
-  const codigoIndicacao = searchParams.get('ref') || undefined;
+  const codigoIndicacao = searchParams?.get('ref') || undefined;
   
   // Se jÃ¡ logado, nÃ£o mostrar
   if (isUserLoggedIn()) return null;
