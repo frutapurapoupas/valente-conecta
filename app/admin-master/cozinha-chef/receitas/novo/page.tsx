@@ -10,7 +10,7 @@ import ReceitaFormularioCanonico from '../_components/ReceitaFormularioCanonico'
 function baseReceita(): ReceitaCanonicaCompat {
   const now = new Date().toISOString();
   return {
-    id: '',
+    id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'tmp-' + Date.now(),
     nome: '',
     descricao: '',
     categoria: 'Geral',

@@ -1,6 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
 import { ReceitaCanonicaCompat } from '@/types/receita-canonica';
 
 type IngredienteDisponivel = {
@@ -46,6 +48,38 @@ export default function ReceitaFormularioCanonico({
   const custoPorUnidade = toNumber(receita.custo_por_unidade, 0);
   const margem = toNumber(receita.margem_percentual, 0);
   const lucro = toNumber(receita.lucro, 0);
+
+  const [enviandoImagem, setEnviandoImagem] = useState(false);
+
+  const handleImagemSelecionada = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!receita.id) {
+      toast.error('Nao foi possivel identificar a receita para anexar a imagem.');
+      return;
+    }
+    setEnviandoImagem(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('recipeId', receita.id);
+      const response = await fetch('/api/upload/recipe', {
+        method: 'POST',
+        body: formData,
+      });
+      const result = await response.json();
+      if (result.success && result.imageUrl) {
+        onChange({ ...receita, imagem: result.imageUrl, images: [result.imageUrl] });
+        toast.success('Imagem enviada com sucesso!');
+      } else {
+        toast.error('Erro ao enviar imagem.');
+      }
+    } catch (error) {
+      toast.error('Erro ao enviar imagem.');
+    } finally {
+      setEnviandoImagem(false);
+    }
+  };
 
   return (
     <div className="p-6">
@@ -100,14 +134,35 @@ export default function ReceitaFormularioCanonico({
             />
           </label>
 
-          <label className="block text-sm">
-            Imagem (URL)
-            <input
-              className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
-              value={receita.imagem || ''}
-              onChange={(e) => onChange({ ...receita, imagem: e.target.value || null })}
-            />
-          </label>
+          <div className="block text-sm">
+            <span>Imagem</span>
+            <div className="mt-1 flex items-center gap-3">
+              <div className="w-24 h-24 rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden shrink-0">
+                {receita.imagem ? (
+                  <img src={receita.imagem} alt="Preview" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-xs text-gray-400">Sem imagem</span>
+                )}
+              </div>
+              <div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  id="imagemReceitaInput"
+                  className="hidden"
+                  onChange={handleImagemSelecionada}
+                />
+                <button
+                  type="button"
+                  onClick={() => document.getElementById('imagemReceitaInput')?.click()}
+                  disabled={enviandoImagem}
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-60"
+                >
+                  {enviandoImagem ? 'Enviando...' : 'Localizar imagem'}
+                </button>
+              </div>
+            </div>
+          </div>
 
           <div className="grid grid-cols-2 gap-3">
             <label className="block text-sm">
