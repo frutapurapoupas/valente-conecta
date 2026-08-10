@@ -4,11 +4,11 @@
 // TIPOS PRINCIPAIS
 // ============================================================================
 
-export type TipoVaga = "CLT" | "PJ" | "Freelancer" | "EstÃ¡gio" | "TemporÃ¡rio";
-export type Modalidade = "Presencial" | "Remoto" | "HÃ­brido";
+export type TipoVaga = "CLT" | "PJ" | "Freelancer" | "Estágio" | "Temporário";
+export type Modalidade = "Presencial" | "Remoto" | "Híbrido";
 export type StatusVaga = "aberta" | "fechada" | "em_andamento";
 export type StatusCandidatura = "pendente" | "analise" | "aprovada" | "rejeitada";
-export type NivelExperiencia = "EstagiÃ¡rio" | "JÃºnior" | "Pleno" | "SÃªnior" | "Especialista";
+export type NivelExperiencia = "Estagiário" | "Júnior" | "Pleno" | "Sênior" | "Especialista";
 
 // ============================================================================
 // VAGA
@@ -38,7 +38,7 @@ export interface Vaga {
 }
 
 // ============================================================================
-// CURRÃCULO
+// CURRÍCULO
 // ============================================================================
 
 export interface Curriculo {

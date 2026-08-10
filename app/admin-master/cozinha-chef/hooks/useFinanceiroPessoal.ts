@@ -1,5 +1,5 @@
 // hooks/cozinha/useFinanceiroPessoal.ts
-// Ã°Å¸ÂªÂ LÃƒÂ³gica de estado - Financeiro Pessoal (TODAS as transaÃƒÂ§ÃƒÂµes)
+// 🪝 Lógica de estado - Financeiro Pessoal (TODAS as transações)
 
 import { useState, useEffect, useMemo } from 'react';
 import { useFinanceiro } from './useFinanceiro';
@@ -7,9 +7,9 @@ import { useFinanceiro } from './useFinanceiro';
 export const useFinanceiroPessoal = () => {
   const { transacoes, loading, carregar, criar, atualizar, excluir } = useFinanceiro();
   
-  // Ã¢Å“â€¦ REMOVER FILTRO DE CATEGORIA - MOSTRAR TODAS AS TRANSAÃƒâ€¡Ãƒâ€¢ES
+  // ✅ REMOVER FILTRO DE CATEGORIA - MOSTRAR TODAS AS TRANSAÇÕES
   const transacoesPessoais = useMemo(() => {
-    return transacoes; // Ã¢Å“â€¦ TODAS as transaÃƒÂ§ÃƒÂµes, sem filtro de categoria
+    return transacoes; // ✅ TODAS as transações, sem filtro de categoria
   }, [transacoes]);
 
   // Calcular totais
@@ -29,7 +29,7 @@ export const useFinanceiroPessoal = () => {
     return grupos;
   }, [transacoesPessoais]);
 
-  // Agrupar por mÃƒÂªs
+  // Agrupar por mês
   const porMes = useMemo(() => {
     const meses: Record<string, { receitas: number; despesas: number }> = {};
     transacoesPessoais.forEach(t => {

@@ -45,9 +45,9 @@ export default function FinanceiroPessoalDashboard() {
       setSaldoTotal(receitas - despesas);
     } else {
       const mockTransacoes: Transacao[] = [
-        { id: '1', tipo: 'receita', categoria: 'SalÃ¡rio', descricao: 'SalÃ¡rio Mensal', valor: 5000, data: new Date().toISOString().split('T')[0], status: 'pago', recorrente: true, recorrencia: 'mensal' },
-        { id: '2', tipo: 'despesa', categoria: 'AlimentaÃ§Ã£o', descricao: 'Supermercado', valor: 350, data: new Date().toISOString().split('T')[0], status: 'pago', recorrente: false },
-        { id: '3', tipo: 'despesa', categoria: 'Contas', descricao: 'Energia ElÃ©trica', valor: 180, data: new Date().toISOString().split('T')[0], status: 'pendente', recorrente: true, recorrencia: 'mensal' }
+        { id: '1', tipo: 'receita', categoria: 'Salário', descricao: 'Salário Mensal', valor: 5000, data: new Date().toISOString().split('T')[0], status: 'pago', recorrente: true, recorrencia: 'mensal' },
+        { id: '2', tipo: 'despesa', categoria: 'Alimentação', descricao: 'Supermercado', valor: 350, data: new Date().toISOString().split('T')[0], status: 'pago', recorrente: false },
+        { id: '3', tipo: 'despesa', categoria: 'Contas', descricao: 'Energia Elétrica', valor: 180, data: new Date().toISOString().split('T')[0], status: 'pendente', recorrente: true, recorrencia: 'mensal' }
       ];
       setTransacoes(mockTransacoes);
       setTotalReceitas(5000);
@@ -68,14 +68,14 @@ export default function FinanceiroPessoalDashboard() {
 
   const transacoesRecentes = [...transacoes].sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime()).slice(0, 5);
 
-  if (loading) return <div className="text-center py-8 text-gray-900 dark:text-gray-100">ðŸ”„ Carregando dados financeiros...</div>;
+  if (loading) return <div className="text-center py-8 text-gray-900 dark:text-gray-100">🔄 Carregando dados financeiros...</div>;
 
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">ðŸ’° Financeiro Pessoal</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Controle total das suas finanÃ§as pessoais</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">💰 Financeiro Pessoal</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Controle total das suas finanças pessoais</p>
         </div>
         <div className="flex gap-3 print:hidden">
           <button onClick={() => window.print()} className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 flex items-center gap-2">
@@ -113,7 +113,7 @@ export default function FinanceiroPessoalDashboard() {
           <p className="text-xl font-bold text-blue-600">{transacoes.filter(t => t.recorrente).length}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow">
-          <p className="text-gray-500 dark:text-gray-400 text-xs">MÃªs Atual</p>
+          <p className="text-gray-500 dark:text-gray-400 text-xs">Mês Atual</p>
           <p className="text-xl font-bold text-purple-600">{new Date().toLocaleString('pt-BR', { month: 'long' })}</p>
         </div>
       </div>
@@ -121,8 +121,8 @@ export default function FinanceiroPessoalDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">ðŸ“‹ Ãšltimas TransaÃ§Ãµes</h2>
-            <Link href="/admin/financeiro-pessoal/transacoes" className="text-blue-600 text-sm hover:underline">Ver todas â†’</Link>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">📋 Últimas Transações</h2>
+            <Link href="/admin/financeiro-pessoal/transacoes" className="text-blue-600 text-sm hover:underline">Ver todas →</Link>
           </div>
           <div className="divide-y divide-gray-200 dark:divide-gray-700">
             {transacoesRecentes.map((transacao) => (
@@ -131,7 +131,7 @@ export default function FinanceiroPessoalDashboard() {
                   {transacao.tipo === 'receita' ? <ArrowUpCircle className="w-8 h-8 text-green-500" /> : <ArrowDownCircle className="w-8 h-8 text-red-500" />}
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white">{transacao.descricao}</p>
-                    <p className="text-xs text-gray-500">{transacao.categoria} â€¢ {formatDate(transacao.data)}</p>
+                    <p className="text-xs text-gray-500">{transacao.categoria} • {formatDate(transacao.data)}</p>
                   </div>
                 </div>
                 <div className="text-right">
@@ -149,12 +149,12 @@ export default function FinanceiroPessoalDashboard() {
 
         <div className="space-y-6">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">âš¡ AÃ§Ãµes RÃ¡pidas</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">⚡ Ações Rápidas</h2>
             <div className="grid grid-cols-2 gap-3">
-              <Link href="/admin/financeiro-pessoal/transacoes" className="bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 text-center">âž• Nova Receita</Link>
-              <Link href="/admin/financeiro-pessoal/transacoes" className="bg-red-600 text-white p-3 rounded-lg hover:bg-red-700 text-center">âž– Nova Despesa</Link>
-              <Link href="/admin/financeiro-pessoal/extrato" className="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 text-center">ðŸ“„ Ver Extrato</Link>
-              <Link href="/admin/financeiro-pessoal/relatorios" className="bg-purple-600 text-white p-3 rounded-lg hover:bg-purple-700 text-center">ðŸ“Š RelatÃ³rios</Link>
+              <Link href="/admin/financeiro-pessoal/transacoes" className="bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 text-center">➕ Nova Receita</Link>
+              <Link href="/admin/financeiro-pessoal/transacoes" className="bg-red-600 text-white p-3 rounded-lg hover:bg-red-700 text-center">➖ Nova Despesa</Link>
+              <Link href="/admin/financeiro-pessoal/extrato" className="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 text-center">📄 Ver Extrato</Link>
+              <Link href="/admin/financeiro-pessoal/relatorios" className="bg-purple-600 text-white p-3 rounded-lg hover:bg-purple-700 text-center">📊 Relatórios</Link>
             </div>
           </div>
 
@@ -164,7 +164,7 @@ export default function FinanceiroPessoalDashboard() {
               <div>
                 <h3 className="font-semibold text-yellow-800 dark:text-yellow-400">âš ï¸ Contas a Vencer</h3>
                 <p className="text-sm text-yellow-700 dark:text-yellow-500">
-                  VocÃª tem {transacoes.filter(t => t.tipo === 'despesa' && t.status === 'pendente').length} contas pendentes este mÃªs.
+                  Você tem {transacoes.filter(t => t.tipo === 'despesa' && t.status === 'pendente').length} contas pendentes este mês.
                 </p>
               </div>
             </div>
@@ -176,7 +176,7 @@ export default function FinanceiroPessoalDashboard() {
         <div className="flex items-center gap-3">
           <Calendar className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           <p className="text-sm text-gray-700 dark:text-gray-300">
-            ðŸ’¡ Dica: Configure contas recorrentes para automatizar suas despesas mensais!
+            💡 Dica: Configure contas recorrentes para automatizar suas despesas mensais!
           </p>
         </div>
       </div>

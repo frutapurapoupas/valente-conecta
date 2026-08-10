@@ -33,13 +33,13 @@ export function useNotificacoes() {
         setUsuarios(data.data || []);
       } else {
         setUsuarios([
-          { id: "1", nome: "UsuÃ¡rio Teste", email: "teste@email.com", plano: "premium", whatsapp: "11999999999" },
-          { id: "2", nome: "JoÃ£o Silva", email: "joao@email.com", plano: "basico", whatsapp: "11988888888" },
+          { id: "1", nome: "Usuário Teste", email: "teste@email.com", plano: "premium", whatsapp: "11999999999" },
+          { id: "2", nome: "João Silva", email: "joao@email.com", plano: "basico", whatsapp: "11988888888" },
           { id: "3", nome: "Maria Santos", email: "maria@email.com", plano: "premium", whatsapp: "11977777777" }
         ]);
       }
     } catch (error) {
-      console.error("Erro ao carregar usuÃ¡rios:", error);
+      console.error("Erro ao carregar usuários:", error);
     } finally {
       setCarregandoUsuarios(false);
     }
@@ -54,11 +54,11 @@ export function useNotificacoes() {
         setGrupos(data.data);
       } else {
         setGrupos([
-          { id: "premium", nome: "â­ UsuÃ¡rios Premium", descricao: "UsuÃ¡rios com plano Premium", icone: "Award", cor: "#f59e0b", telegram_chat_id: "@valenteconecta_premium", ativo: true },
-          { id: "academia", nome: "ðŸ’ª Academia", descricao: "Alunos da academia", icone: "Dumbbell", cor: "#10b981", telegram_chat_id: "@valenteconecta_academia", ativo: true },
-          { id: "mototaxi", nome: "ðŸï¸ Moto TÃ¡xi", descricao: "Motoristas parceiros", icone: "Bike", cor: "#ef4444", telegram_chat_id: "@valenteconecta_mototaxi", ativo: true },
-          { id: "comercio", nome: "ðŸª ComÃ©rcio Local", descricao: "Lojistas e comerciantes", icone: "Store", cor: "#8b5cf6", telegram_chat_id: "@valenteconecta_comercio", ativo: true },
-          { id: "teste", nome: "ðŸ§ª Grupo de Teste", descricao: "Para testar notificaÃ§Ãµes", icone: "TestTube", cor: "#06b6d4", telegram_chat_id: "@valenteconecta_teste", ativo: true }
+          { id: "premium", nome: "⭐ Usuários Premium", descricao: "Usuários com plano Premium", icone: "Award", cor: "#f59e0b", telegram_chat_id: "@valenteconecta_premium", ativo: true },
+          { id: "academia", nome: "💪 Academia", descricao: "Alunos da academia", icone: "Dumbbell", cor: "#10b981", telegram_chat_id: "@valenteconecta_academia", ativo: true },
+          { id: "mototaxi", nome: "🏍️ Moto Táxi", descricao: "Motoristas parceiros", icone: "Bike", cor: "#ef4444", telegram_chat_id: "@valenteconecta_mototaxi", ativo: true },
+          { id: "comercio", nome: "🏪 Comércio Local", descricao: "Lojistas e comerciantes", icone: "Store", cor: "#8b5cf6", telegram_chat_id: "@valenteconecta_comercio", ativo: true },
+          { id: "teste", nome: "🧪 Grupo de Teste", descricao: "Para testar notificações", icone: "TestTube", cor: "#06b6d4", telegram_chat_id: "@valenteconecta_teste", ativo: true }
         ]);
       }
     } catch (error) {
@@ -76,8 +76,8 @@ export function useNotificacoes() {
     const notificacoesPadrao: Notificacao[] = [
       { 
         id: 1, 
-        titulo: "ðŸŽ‰ Novas funcionalidades!", 
-        mensagem: "Confira o novo cardÃ¡pio da Cozinha com opÃ§Ãµes fitness.", 
+        titulo: "🎉 Novas funcionalidades!", 
+        mensagem: "Confira o novo cardápio da Cozinha com opções fitness.", 
         importancia: "alta", 
         tipo: "aviso",
         data: new Date().toLocaleDateString(), 
@@ -91,8 +91,8 @@ export function useNotificacoes() {
       },
       { 
         id: 2, 
-        titulo: "ðŸ’° Campanha de IndicaÃ§Ã£o", 
-        mensagem: "Indique um amigo e ganhe R$5 de bÃ´nus!", 
+        titulo: "💰 Campanha de Indicação", 
+        mensagem: "Indique um amigo e ganhe R$5 de bônus!", 
         importancia: "media", 
         tipo: "promocao",
         data: new Date().toLocaleDateString(), 
@@ -106,8 +106,8 @@ export function useNotificacoes() {
       },
       { 
         id: 3, 
-        titulo: "ðŸ’ª Academia Atualizada", 
-        mensagem: "Nova funcionalidade de geolocalizaÃ§Ã£o disponÃ­vel para alunos!", 
+        titulo: "💪 Academia Atualizada", 
+        mensagem: "Nova funcionalidade de geolocalização disponível para alunos!", 
         importancia: "alta", 
         tipo: "aviso",
         data: new Date().toLocaleDateString(), 
@@ -149,7 +149,7 @@ export function useNotificacoes() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           chatId: chatId,
-          message: `ðŸ“¢ *${notificacao.titulo}*\n\n${notificacao.mensagem}\n\n${modoTeste ? 'ðŸ§ª *MODO TESTE* - Esta notificaÃ§Ã£o nÃ£o foi enviada para todos\n\n' : ''}ðŸ“Œ *Grupo:* ${notificacao.para_grupo === 'todos' ? 'Todos' : notificacao.para_grupo}\n\nðŸ”— Acesse o app: valenteconecta.clic.com.br`,
+          message: `📢 *${notificacao.titulo}*\n\n${notificacao.mensagem}\n\n${modoTeste ? '🧪 *MODO TESTE* - Esta notificação não foi enviada para todos\n\n' : ''}📌 *Grupo:* ${notificacao.para_grupo === 'todos' ? 'Todos' : notificacao.para_grupo}\n\n🔗 Acesse o app: valenteconecta.clic.com.br`,
           parseMode: 'Markdown'
         })
       });
@@ -167,7 +167,7 @@ export function useNotificacoes() {
       }
       const registration = await navigator.serviceWorker.ready;
       await registration.showNotification(notificacao.titulo, {
-        body: `${notificacao.mensagem}${modoTeste ? ' ðŸ§ª MODO TESTE' : ''}${notificacao.para_grupo ? `\nðŸ“Œ Para: ${notificacao.para_grupo}` : ''}`,
+        body: `${notificacao.mensagem}${modoTeste ? ' 🧪 MODO TESTE' : ''}${notificacao.para_grupo ? `\n📌 Para: ${notificacao.para_grupo}` : ''}`,
         icon: '/icons/icon-192x192.png',
         badge: '/icons/badge-72x72.png',
         data: { url: notificacao.link_url || '/' }

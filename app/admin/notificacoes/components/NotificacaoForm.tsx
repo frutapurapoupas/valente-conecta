@@ -36,7 +36,7 @@ export function NotificacaoForm({
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-gray-800">
-          {editandoId ? "âœï¸ Editar NotificaÃ§Ã£o" : "âž• Nova NotificaÃ§Ã£o"}
+          {editandoId ? "✏️ Editar Notificação" : "➕ Nova Notificação"}
         </h2>
         <button onClick={onCancelar} className="text-gray-400">
           <X className="w-5 h-5" />
@@ -45,12 +45,12 @@ export function NotificacaoForm({
       
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">TÃ­tulo *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Título *</label>
           <input
             type="text"
             value={novaNotificacao.titulo}
             onChange={(e) => setNovaNotificacao({ ...novaNotificacao, titulo: e.target.value })}
-            placeholder="Ex: Novas funcionalidades disponÃ­veis!"
+            placeholder="Ex: Novas funcionalidades disponíveis!"
             className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
           />
         </div>
@@ -61,7 +61,7 @@ export function NotificacaoForm({
             value={novaNotificacao.mensagem}
             onChange={(e) => setNovaNotificacao({ ...novaNotificacao, mensagem: e.target.value })}
             rows={3}
-            placeholder="Digite o conteÃºdo da notificaÃ§Ã£o..."
+            placeholder="Digite o conteúdo da notificação..."
             className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 resize-none"
           />
         </div>
@@ -77,16 +77,16 @@ export function NotificacaoForm({
               })}
               className="w-full px-4 py-2 border border-gray-300 rounded-xl"
             >
-              <option value="aviso">ðŸ“¢ Aviso</option>
-              <option value="alerta">âš ï¸ Alerta</option>
-              <option value="info">â„¹ï¸ InformaÃ§Ã£o</option>
-              <option value="sucesso">âœ… Sucesso</option>
-              <option value="promocao">ðŸŽ PromoÃ§Ã£o</option>
+              <option value="aviso">📢 Aviso</option>
+              <option value="alerta">⚠️ Alerta</option>
+              <option value="info">ℹ️ Informação</option>
+              <option value="sucesso">✅ Sucesso</option>
+              <option value="promocao">🎁 Promoção</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">ImportÃ¢ncia</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Importância</label>
             <select
               value={novaNotificacao.importancia}
               onChange={(e) => setNovaNotificacao({ 
@@ -95,9 +95,9 @@ export function NotificacaoForm({
               })}
               className="w-full px-4 py-2 border border-gray-300 rounded-xl"
             >
-              <option value="baixa">ðŸ”µ Informativa</option>
-              <option value="media">ðŸŸ¡ Importante</option>
-              <option value="alta">ðŸ”´ Urgente</option>
+              <option value="baixa">🔵 Informativa</option>
+              <option value="media">🟡 Importante</option>
+              <option value="alta">🔴 Urgente</option>
             </select>
           </div>
         </div>
@@ -123,9 +123,9 @@ export function NotificacaoForm({
           />
         </div>
 
-        {/* SEÃ‡ÃƒO DE PÃšBLICO ALVO */}
+        {/* SEÇÃO DE PÚBLICO ALVO */}
         <div className="border-t border-gray-200 pt-4">
-          <p className="text-sm font-medium text-gray-700 mb-3">ðŸŽ¯ PÃºblico alvo:</p>
+          <p className="text-sm font-medium text-gray-700 mb-3">🎯 Público alvo:</p>
           
           <div className="flex gap-4 mb-4">
             <label className="flex items-center gap-2 cursor-pointer">
@@ -148,7 +148,7 @@ export function NotificacaoForm({
                 className="w-4 h-4 text-indigo-600"
               />
               <Users className="w-4 h-4 text-gray-500" />
-              <span className="text-sm">Grupo especÃ­fico</span>
+              <span className="text-sm">Grupo específico</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -159,7 +159,7 @@ export function NotificacaoForm({
                 className="w-4 h-4 text-indigo-600"
               />
               <User className="w-4 h-4 text-gray-500" />
-              <span className="text-sm">UsuÃ¡rio especÃ­fico</span>
+              <span className="text-sm">Usuário específico</span>
             </label>
           </div>
 
@@ -197,15 +197,15 @@ export function NotificacaoForm({
 
           {novaNotificacao.tipoAlvo === 'usuario' && (
             <div className="mt-3">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Selecione o usuÃ¡rio:</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Selecione o usuário:</label>
               <select
                 value={novaNotificacao.usuarioAlvo}
                 onChange={(e) => setNovaNotificacao({ ...novaNotificacao, usuarioAlvo: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
               >
-                <option value="">Selecione um usuÃ¡rio...</option>
+                <option value="">Selecione um usuário...</option>
                 {carregandoUsuarios ? (
-                  <option disabled>Carregando usuÃ¡rios...</option>
+                  <option disabled>Carregando usuários...</option>
                 ) : (
                   usuarios.map((usuario) => (
                     <option key={usuario.id} value={usuario.id}>
@@ -216,7 +216,7 @@ export function NotificacaoForm({
               </select>
               {novaNotificacao.usuarioAlvo && (
                 <p className="text-xs text-green-600 mt-1">
-                  âœ… NotificaÃ§Ã£o serÃ¡ enviada apenas para este usuÃ¡rio
+                  ✅ Notificação será enviada apenas para este usuário
                 </p>
               )}
             </div>
@@ -225,7 +225,7 @@ export function NotificacaoForm({
         
         {/* Canais de envio */}
         <div className="border-t border-gray-200 pt-4">
-          <p className="text-sm font-medium text-gray-700 mb-3">ðŸ“¡ Canais de envio:</p>
+          <p className="text-sm font-medium text-gray-700 mb-3">📡 Canais de envio:</p>
           <div className="flex flex-wrap gap-4">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -257,7 +257,7 @@ export function NotificacaoForm({
                 className="w-4 h-4 text-indigo-600"
               />
               <Globe className="w-4 h-4 text-purple-500" />
-              <span className="text-sm text-gray-700">Popup Ãºnica vez</span>
+              <span className="text-sm text-gray-700">Popup única vez</span>
             </label>
           </div>
         </div>
@@ -266,7 +266,7 @@ export function NotificacaoForm({
           <div className="bg-yellow-50 rounded-xl p-3 border border-yellow-200">
             <p className="text-xs text-yellow-700 flex items-center gap-2">
               <TestTube className="w-4 h-4" />
-              <strong>Modo Teste ativado!</strong> As notificaÃ§Ãµes serÃ£o enviadas apenas para o grupo de teste.
+              <strong>Modo Teste ativado!</strong> As notificações serão enviadas apenas para o grupo de teste.
             </p>
           </div>
         )}
@@ -281,7 +281,7 @@ export function NotificacaoForm({
           ) : (
             <Send className="w-4 h-4" />
           )}
-          {editandoId ? "Salvar AlteraÃ§Ãµes" : "Publicar NotificaÃ§Ã£o"}
+          {editandoId ? "Salvar Alterações" : "Publicar Notificação"}
         </button>
       </div>
     </div>

@@ -16,8 +16,8 @@ export function WizardCategoria({ categorias, selected, onSelect }: WizardCatego
   return (
     <div className="space-y-4">
       <div className="text-center">
-        <h2 className="text-2xl font-bold">ðŸ“¦ O que vocÃª quer publicar?</h2>
-        <p className="text-gray-500">Escolha a categoria do seu produto ou serviÃ§o</p>
+        <h2 className="text-2xl font-bold">📦 O que você quer publicar?</h2>
+        <p className="text-gray-500">Escolha a categoria do seu produto ou serviço</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

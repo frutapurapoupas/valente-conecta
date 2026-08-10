@@ -15,9 +15,9 @@ export default function AutenticacaoCompletaPage() {
   const [loading, setLoading] = useState(false);
   
   const [formData, setFormData] = useState({
-    // Pessoa FÃ­sica
+    // Pessoa Física
     cpf: "",
-    // Pessoa JurÃ­dica
+    // Pessoa Jurídica
     cnpj: "",
     razaoSocial: "",
     nomeFantasia: "",
@@ -36,7 +36,7 @@ export default function AutenticacaoCompletaPage() {
     }
     
     if (formData.senha !== formData.confirmarSenha) {
-      toast.error("As senhas nÃ£o coincidem");
+      toast.error("As senhas não coincidem");
       return;
     }
     
@@ -46,13 +46,13 @@ export default function AutenticacaoCompletaPage() {
     }
     
     if (tipoPessoa === "juridica" && (!formData.cnpj || !formData.razaoSocial)) {
-      toast.error("Informe CNPJ e RazÃ£o Social");
+      toast.error("Informe CNPJ e Razão Social");
       return;
     }
     
     setLoading(true);
     
-    // Salvar dados completos do usuÃ¡rio
+    // Salvar dados completos do usuário
     const userCompleto = {
       ...user,
       email: formData.email,
@@ -67,7 +67,7 @@ export default function AutenticacaoCompletaPage() {
     
     localStorage.setItem("valente_user", JSON.stringify(userCompleto));
     
-    toast.success("âœ… Cadastro completo! Agora vocÃª tem acesso total.");
+    toast.success("✅ Cadastro completo! Agora você tem acesso total.");
     
     setTimeout(() => {
       router.push("/planos");
@@ -86,7 +86,7 @@ export default function AutenticacaoCompletaPage() {
         <div className="bg-white/10 rounded-2xl p-6 mb-6">
           <h3 className="text-white font-bold text-lg mb-4">Bem-vindo, {user?.nome}!</h3>
           <p className="text-gray-400 text-sm">
-            Para assinar um plano e ter acesso completo, precisamos de mais algumas informaÃ§Ãµes.
+            Para assinar um plano e ter acesso completo, precisamos de mais algumas informações.
           </p>
         </div>
 
@@ -101,7 +101,7 @@ export default function AutenticacaoCompletaPage() {
             }`}
           >
             <User className="w-5 h-5 inline mr-2" />
-            Pessoa FÃ­sica
+            Pessoa Física
           </button>
           <button
             onClick={() => setTipoPessoa("juridica")}
@@ -112,12 +112,12 @@ export default function AutenticacaoCompletaPage() {
             }`}
           >
             <Briefcase className="w-5 h-5 inline mr-2" />
-            Pessoa JurÃ­dica
+            Pessoa Jurídica
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Campos para Pessoa FÃ­sica */}
+          {/* Campos para Pessoa Física */}
           {tipoPessoa === "fisica" && (
             <div>
               <label className="text-gray-300 text-sm font-medium mb-1 block">CPF *</label>
@@ -134,7 +134,7 @@ export default function AutenticacaoCompletaPage() {
             </div>
           )}
 
-          {/* Campos para Pessoa JurÃ­dica */}
+          {/* Campos para Pessoa Jurídica */}
           {tipoPessoa === "juridica" && (
             <>
               <div>
@@ -151,7 +151,7 @@ export default function AutenticacaoCompletaPage() {
                 </div>
               </div>
               <div>
-                <label className="text-gray-300 text-sm font-medium mb-1 block">RazÃ£o Social *</label>
+                <label className="text-gray-300 text-sm font-medium mb-1 block">Razão Social *</label>
                 <input
                   type="text"
                   placeholder="Nome oficial da empresa"
@@ -195,7 +195,7 @@ export default function AutenticacaoCompletaPage() {
               <Lock className="w-5 h-5 text-gray-400" />
               <input
                 type="password"
-                placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                placeholder="••••••••"
                 value={formData.senha}
                 onChange={(e) => setFormData({ ...formData, senha: e.target.value })}
                 className="flex-1 bg-transparent outline-none text-white"
@@ -210,7 +210,7 @@ export default function AutenticacaoCompletaPage() {
               <Lock className="w-5 h-5 text-gray-400" />
               <input
                 type="password"
-                placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                placeholder="••••••••"
                 value={formData.confirmarSenha}
                 onChange={(e) => setFormData({ ...formData, confirmarSenha: e.target.value })}
                 className="flex-1 bg-transparent outline-none text-white"

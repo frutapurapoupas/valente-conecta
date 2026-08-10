@@ -31,24 +31,24 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  { titulo: "Dashboard", icone: "LayoutDashboard", href: "/admin-master/dashboard", descricao: "VisÃ£o geral do sistema", categoria: "principal" },
-  { titulo: "Central de Controle", icone: "Settings", href: "/admin-master/central", descricao: "ConfiguraÃ§Ãµes gerais", categoria: "principal" },
-  { titulo: "UsuÃ¡rios", icone: "Users", href: "/admin-master/usuarios", descricao: "Gerenciar usuÃ¡rios", categoria: "comercio" },
-  { titulo: "ComÃ©rcio Local", icone: "Store", href: "/admin-master/comercio", descricao: "Lojas e produtos", categoria: "comercio" },
+  { titulo: "Dashboard", icone: "LayoutDashboard", href: "/admin-master/dashboard", descricao: "Visão geral do sistema", categoria: "principal" },
+  { titulo: "Central de Controle", icone: "Settings", href: "/admin-master/central", descricao: "Configurações gerais", categoria: "principal" },
+  { titulo: "Usuários", icone: "Users", href: "/admin-master/usuarios", descricao: "Gerenciar usuários", categoria: "comercio" },
+  { titulo: "Comércio Local", icone: "Store", href: "/admin-master/comercio", descricao: "Lojas e produtos", categoria: "comercio" },
   { titulo: "PDV Colaborativo", icone: "ShoppingBag", href: "/admin-master/pdv", descricao: "Ponto de venda", categoria: "comercio" },
   { titulo: "Profissionais", icone: "Briefcase", href: "/admin-master/profissionais", descricao: "Profissionais liberais", categoria: "servicos" },
   { titulo: "Academia", icone: "Dumbbell", href: "/admin-master/academia", descricao: "Atletas e treinos", categoria: "servicos" },
   { titulo: "Transporte", icone: "Car", href: "/admin-master/transporte", descricao: "Motoristas e entregas", categoria: "servicos" },
-  { titulo: "ImÃ³veis", icone: "Home", href: "/admin-master/imoveis", descricao: "AnÃºncios imobiliÃ¡rios", categoria: "servicos" },
-  { titulo: "Empregos", icone: "Briefcase", href: "/admin-master/empregos", descricao: "Vagas e currÃ­culos", categoria: "servicos" },
-  { titulo: "FÃ¡brica de VÃ­deos", icone: "Video", href: "/admin-master/ferramentas/fabrica-videos", descricao: "Criar vÃ­deos com IA", categoria: "ferramentas" },
-  { titulo: "Cozinha Chef Neide", icone: "ChefHat", href: "/admin-master/cozinha-admin", descricao: "Gerenciar cardÃ¡pio", categoria: "ferramentas" },
+  { titulo: "Imóveis", icone: "Home", href: "/admin-master/imoveis", descricao: "Anúncios imobiliários", categoria: "servicos" },
+  { titulo: "Empregos", icone: "Briefcase", href: "/admin-master/empregos", descricao: "Vagas e currículos", categoria: "servicos" },
+  { titulo: "Fábrica de Vídeos", icone: "Video", href: "/admin-master/ferramentas/fabrica-videos", descricao: "Criar vídeos com IA", categoria: "ferramentas" },
+  { titulo: "Cozinha Chef Neide", icone: "ChefHat", href: "/admin-master/cozinha-admin", descricao: "Gerenciar cardápio", categoria: "ferramentas" },
   { titulo: "QR Code", icone: "QrCode", href: "/admin-master/ferramentas/qrcode", descricao: "Gerar QR codes", categoria: "ferramentas" },
   { titulo: "Conta Pessoal", icone: "User", href: "/admin-master/conta", descricao: "Minha conta", categoria: "pessoal" },
-  { titulo: "Financeiro", icone: "CreditCard", href: "/admin-master/financeiro", descricao: "Carteira e transaÃ§Ãµes", categoria: "pessoal" },
-  { titulo: "Produtos", icone: "Package", href: "/admin-master/produtos", descricao: "Gerenciar catÃ¡logo", categoria: "pessoal" },
+  { titulo: "Financeiro", icone: "CreditCard", href: "/admin-master/financeiro", descricao: "Carteira e transações", categoria: "pessoal" },
+  { titulo: "Produtos", icone: "Package", href: "/admin-master/produtos", descricao: "Gerenciar catálogo", categoria: "pessoal" },
   { titulo: "Cardapio Semanal", icone: "ClipboardList", href: "/admin-master/cardapio", descricao: "Configurar pratos por dia", categoria: "pessoal" },
-  { titulo: "Mensagens", icone: "MessageSquare", href: "/admin-master/comunicacao", descricao: "ComunicaÃ§Ãµes", categoria: "comercio" },
+  { titulo: "Mensagens", icone: "MessageSquare", href: "/admin-master/comunicacao", descricao: "Comunicações", categoria: "comercio" },
   { titulo: "Ajuda", icone: "HelpCircle", href: "/admin-master/ajuda", descricao: "Suporte", categoria: "principal" }
 ];
 

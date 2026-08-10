@@ -3,7 +3,7 @@
 import { Categoria, Pergunta } from './types';
 
 // ============================================================================
-// GERADOR DE SKU BASEADO NO QUESTIONÃRIO
+// GERADOR DE SKU BASEADO NO QUESTIONÁRIO
 // ============================================================================
 
 export function gerarSKU(
@@ -17,7 +17,7 @@ export function gerarSKU(
     .substring(0, 3)
     .toUpperCase();
 
-  // 2. Construir cÃ³digo com base nas respostas
+  // 2. Construir código com base nas respostas
   let codigo = prefixoCategoria;
 
   // Pegar as perguntas da categoria na ordem correta
@@ -29,12 +29,12 @@ export function gerarSKU(
     const resposta = respostas[pergunta.id];
     if (!resposta) continue;
 
-    // Converter resposta para cÃ³digo
+    // Converter resposta para código
     let codigoResposta = '';
     
     switch (pergunta.tipo) {
       case 'select':
-        // Pegar as primeiras letras da opÃ§Ã£o selecionada
+        // Pegar as primeiras letras da opção selecionada
         const opcao = pergunta.opcoes?.find(o => o === resposta);
         if (opcao) {
           codigoResposta = opcao
@@ -46,7 +46,7 @@ export function gerarSKU(
         break;
       
       case 'texto':
-        // Pegar as primeiras letras ou abreviaÃ§Ã£o
+        // Pegar as primeiras letras ou abreviação
         codigoResposta = resposta
           .normalize('NFD')
           .replace(/[\u0300-\u036f]/g, '')
@@ -55,7 +55,7 @@ export function gerarSKU(
         break;
       
       case 'numero':
-        // Formatar nÃºmero com zeros Ã  esquerda
+        // Formatar número com zeros à esquerda
         codigoResposta = String(resposta).padStart(2, '0');
         break;
       
@@ -77,7 +77,7 @@ export function gerarSKU(
     codigo += `-${codigoResposta}`;
   }
 
-  // 3. Gerar nÃºmero sequencial (3 dÃ­gitos)
+  // 3. Gerar número sequencial (3 dígitos)
   const sequencial = String(Math.floor(Math.random() * 900) + 100);
   codigo += `-${sequencial}`;
 
@@ -99,16 +99,16 @@ export function validarSKU(sku: string): boolean {
 // ============================================================================
 
 export function formatarSKU(sku: string): string {
-  // Adicionar espaÃ§os para melhor legibilidade
+  // Adicionar espaços para melhor legibilidade
   return sku.replace(/-/g, ' Â· ');
 }
 
 // ============================================================================
-// GERAR SKU AMIGÃVEL (para humanos)
+// GERAR SKU AMIGÁVEL (para humanos)
 // ============================================================================
 
 export function gerarSKUAmigavel(sku: string): string {
-  // Converter para formato mais legÃ­vel
+  // Converter para formato mais legível
   return sku
     .replace(/-/g, ' ')
     .toLowerCase()

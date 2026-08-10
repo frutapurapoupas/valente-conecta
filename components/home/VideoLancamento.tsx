@@ -13,7 +13,7 @@ interface VideoLancamentoProps {
 
 export default function VideoLancamento({ 
   videoId = 'dQw4w9WgXcQ',
-  titulo = '?? Conheça o Valente Conecta' 
+  titulo = '🚀 Conheça o Valente Conecta' 
 }: VideoLancamentoProps) {
   const [modalAberto, setModalAberto] = useState(false);
 

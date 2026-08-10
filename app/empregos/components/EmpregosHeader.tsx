@@ -49,7 +49,7 @@ export function EmpregosHeader({ isAdmin, onNovaVaga, onNovoCurriculo }: Emprego
             className="bg-white/20 text-white px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-white/30 transition"
           >
             <FileText className="w-4 h-4" />
-            Meu CurrÃ­culo
+            Meu Currículo
           </button>
         </div>
       </div>

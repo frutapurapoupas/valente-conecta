@@ -3,11 +3,15 @@
 // ============================================================================
 import { NextRequest, NextResponse } from 'next/server';
 
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '7596732182:AAH_oZ3cQ_v8lRKWCLU2_5MOM2j_7hxvPKA';
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '@valenteconecta';
 
 export async function POST(request: NextRequest) {
   try {
+    if (!TELEGRAM_BOT_TOKEN) {
+      return NextResponse.json({ error: 'TELEGRAM_BOT_TOKEN nao configurado no ambiente.' }, { status: 500 });
+    }
+
     const { chatId, message, parseMode = 'Markdown' } = await request.json();
 
     const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;

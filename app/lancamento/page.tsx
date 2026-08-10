@@ -22,11 +22,11 @@ export default function LancamentoPage() {
     <div className="min-h-screen bg-gray-900 pb-20">
       <header className="gradient-primary p-4 flex items-center gap-3 sticky top-0 z-40">
         <button onClick={() => router.back()}><i className="fas fa-arrow-left text-white text-xl"></i></button>
-        <h1 className="text-white font-bold text-lg">?? Lançamento</h1>
+        <h1 className="text-white font-bold text-lg">🎉 Lançamento</h1>
       </header>
 
       <div className="p-6 pt-8">
-        <h1 className="text-3xl font-bold text-center mb-8">?? Lançamento Valente Conecta</h1>
+        <h1 className="text-3xl font-bold text-center mb-8">🎉 Lançamento Valente Conecta</h1>
         
         <div className="bg-white/10 rounded-3xl p-6 mb-8">
           <h2 className="text-xl font-semibold mb-4">Vídeo de Apresentação</h2>
@@ -36,7 +36,7 @@ export default function LancamentoPage() {
         </div>
 
         <div className="bg-gradient-to-r from-green-600/20 to-blue-600/20 border border-green-500 rounded-3xl p-8 text-center">
-          <div className="text-6xl mb-4">??</div>
+          <div className="text-6xl mb-4">🚀</div>
           <h2 className="text-3xl font-bold text-white mb-4">LANÇAMENTO</h2>
           <p className="text-green-300 text-lg font-semibold mb-3">
             Começa agora em Valente a revolução no comércio digital!

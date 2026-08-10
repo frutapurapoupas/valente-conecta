@@ -19,7 +19,7 @@ export const DemandView = ({ category, title }: Props) => {
   return (
     <div className="w-full max-w-2xl rounded-3xl border border-white/10 bg-slate-950/80 backdrop-blur-2xl p-8 shadow-2xl shadow-slate-950/40">
       <div className="mb-6 rounded-3xl bg-gradient-to-r from-cyan-500 via-blue-600 to-violet-700 px-6 py-5 text-white shadow-lg shadow-cyan-500/20">
-        <h2 className="text-3xl font-extrabold tracking-tight">{title ?? 'SolicitaÃ§Ã£o de Aluguel de MÃ¡quina'}</h2>
+        <h2 className="text-3xl font-extrabold tracking-tight">{title ?? 'Solicitação de Aluguel de Máquina'}</h2>
         <p className="mt-2 text-sm text-white/80">Informe os dados abaixo para capturar sua demanda.</p>
       </div>
 
@@ -45,7 +45,7 @@ export const DemandView = ({ category, title }: Props) => {
         </label>
 
         <label className="block text-sm font-medium text-white/80">
-          DescriÃ§Ã£o
+          Descrição
           <textarea
             value={formData.description}
             onChange={(event) => setFormData({ ...formData, description: event.target.value })}
@@ -60,7 +60,7 @@ export const DemandView = ({ category, title }: Props) => {
           disabled={loading}
           className="w-full rounded-3xl bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-4 text-base font-bold text-white shadow-lg shadow-cyan-500/20 transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {loading ? 'Enviando...' : 'Enviar SolicitaÃ§Ã£o'}
+          {loading ? 'Enviando...' : 'Enviar Solicitação'}
         </button>
       </form>
     </div>

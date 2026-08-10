@@ -20,7 +20,7 @@ export default function ContasReceberPage() {
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
     descricao: '',
-    categoria: 'SalÃ¡rio',
+    categoria: 'Salário',
     valor: 0,
     data: new Date().toISOString().split('T')[0],
     recorrente: false
@@ -60,7 +60,7 @@ export default function ContasReceberPage() {
     localStorage.setItem('financeiro_pessoal', JSON.stringify(dados));
     carregarContas();
     setShowModal(false);
-    setFormData({ descricao: '', categoria: 'SalÃ¡rio', valor: 0, data: new Date().toISOString().split('T')[0], recorrente: false });
+    setFormData({ descricao: '', categoria: 'Salário', valor: 0, data: new Date().toISOString().split('T')[0], recorrente: false });
   };
 
   const marcarComoRecebido = (id: string) => {
@@ -136,9 +136,9 @@ export default function ContasReceberPage() {
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
             <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Nova Conta a Receber</h2>
             <form onSubmit={salvarConta} className="space-y-4">
-              <input type="text" placeholder="DescriÃ§Ã£o" value={formData.descricao} onChange={(e) => setFormData({...formData, descricao: e.target.value})} className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder-gray-400 dark:placeholder-gray-500" required />
+              <input type="text" placeholder="Descrição" value={formData.descricao} onChange={(e) => setFormData({...formData, descricao: e.target.value})} className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder-gray-400 dark:placeholder-gray-500" required />
               <select value={formData.categoria} onChange={(e) => setFormData({...formData, categoria: e.target.value})} className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700">
-                <option>SalÃ¡rio</option><option>Freelance</option><option>Investimentos</option><option>Presentes</option>
+                <option>Salário</option><option>Freelance</option><option>Investimentos</option><option>Presentes</option>
               </select>
               <input type="number" step="0.01" placeholder="Valor" value={formData.valor} onChange={(e) => setFormData({...formData, valor: parseFloat(e.target.value) || 0})} className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder-gray-400 dark:placeholder-gray-500" required />
               <input type="date" value={formData.data} onChange={(e) => setFormData({...formData, data: e.target.value})} className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700" required />

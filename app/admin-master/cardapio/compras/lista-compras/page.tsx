@@ -83,7 +83,7 @@ export default function ListaComprasPage() {
   const [editandoFornecedor, setEditandoFornecedor] = useState<Fornecedor | null>(null);
   const [novoFornecedor, setNovoFornecedor] = useState({ nome: "", contato: "", produtos: [] as string[] });
 
-  const diasSemana = ["Segunda", "TerÃ§a", "Quarta", "Quinta", "Sexta", "SÃ¡bado"];
+  const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 
   useEffect(() => {
     carregarDados();
@@ -102,13 +102,13 @@ export default function ListaComprasPage() {
       setPratos(JSON.parse(storedPratos));
     }
 
-    // Carregar configuraÃ§Ãµes do cardÃ¡pio
+    // Carregar configurações do cardápio
     const storedConfig = localStorage.getItem("cardapio_config");
     if (storedConfig) {
       setConfiguracoes(JSON.parse(storedConfig));
     }
 
-    // Carregar previsÃ£o de vendas
+    // Carregar previsão de vendas
     const storedPrevisao = localStorage.getItem("previsao_vendas");
     if (storedPrevisao) {
       setPrevisaoVendas(JSON.parse(storedPrevisao));
@@ -133,10 +133,10 @@ export default function ListaComprasPage() {
       setFornecedores(JSON.parse(storedFornecedores));
     } else {
       const fornecedoresIniciais: Fornecedor[] = [
-        { id: 1, nome: "AÃ§ougue do ZÃ©", contato: "(75) 99999-1111", produtos: ["Carne", "Frango", "Carne moÃ­da"] },
-        { id: 2, nome: "Mercearia do JoÃ£o", contato: "(75) 99999-2222", produtos: ["Arroz", "FeijÃ£o", "Farinha", "AÃ§Ãºcar"] },
-        { id: 3, nome: "Hortifruti da Ana", contato: "(75) 99999-3333", produtos: ["Cenoura", "BrÃ³colis", "Tomate", "Cebola"] },
-        { id: 4, nome: "LaticÃ­nios SÃ£o JosÃ©", contato: "(75) 99999-4444", produtos: ["Leite", "Queijo", "Creme de leite"] }
+        { id: 1, nome: "Açougue do Zé", contato: "(75) 99999-1111", produtos: ["Carne", "Frango", "Carne moída"] },
+        { id: 2, nome: "Mercearia do João", contato: "(75) 99999-2222", produtos: ["Arroz", "Feijão", "Farinha", "Açúcar"] },
+        { id: 3, nome: "Hortifruti da Ana", contato: "(75) 99999-3333", produtos: ["Cenoura", "Brócolis", "Tomate", "Cebola"] },
+        { id: 4, nome: "Laticínios São José", contato: "(75) 99999-4444", produtos: ["Leite", "Queijo", "Creme de leite"] }
       ];
       setFornecedores(fornecedoresIniciais);
       localStorage.setItem("fornecedores", JSON.stringify(fornecedoresIniciais));
@@ -162,7 +162,7 @@ export default function ListaComprasPage() {
     diasSemana.forEach(dia => {
       const config = configuracoes.find(c => c.dia === dia);
       let qtdVendas = previsaoVendas[dia] || 0;
-      qtdVendas = qtdVendas * multiplicador; // Multiplicar pelo perÃ­odo
+      qtdVendas = qtdVendas * multiplicador; // Multiplicar pelo período
 
       if (qtdVendas === 0) return;
 
@@ -171,7 +171,7 @@ export default function ListaComprasPage() {
         const pratoCarne = pratos.find(p => p.id === config.pratoCarneId);
         if (pratoCarne) {
           pratoCarne.ingredientes.forEach(ing => {
-            const totalNecessario = (ing.quantidade / 1000) * qtdVendas; // Converter para kg quando necessÃ¡rio
+            const totalNecessario = (ing.quantidade / 1000) * qtdVendas; // Converter para kg quando necessário
             if (!necessidades[ing.nome]) {
               necessidades[ing.nome] = {
                 quantidade: totalNecessario,
@@ -205,7 +205,7 @@ export default function ListaComprasPage() {
       }
     });
 
-    // Aplicar margem de seguranÃ§a
+    // Aplicar margem de segurança
     Object.keys(necessidades).forEach(key => {
       necessidades[key].quantidade *= (1 + margemSeguranca / 100);
     });
@@ -300,7 +300,7 @@ export default function ListaComprasPage() {
   };
 
   const gerarRelatorioCSV = () => {
-    const headers = ["Ingrediente", "NecessÃ¡rio", "Unidade", "Estoque", "Comprar", "Custo Estimado", "Fornecedor"];
+    const headers = ["Ingrediente", "Necessário", "Unidade", "Estoque", "Comprar", "Custo Estimado", "Fornecedor"];
     const rows = itensCompra.filter(i => i.quantidadeComprar > 0).map(i => [
       i.ingrediente,
       formatarQuantidade(i.quantidadeNecessaria, i.unidade),
@@ -332,12 +332,12 @@ export default function ListaComprasPage() {
   return (
     <div className="min-h-screen bg-gray-100 p-4">
       <div className="max-w-7xl mx-auto">
-        {/* CabeÃ§alho */}
+        {/* Cabeçalho */}
         <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">ðŸ“‹ Lista de Compras Inteligente</h1>
+            <h1 className="text-2xl font-bold text-gray-800">📋 Lista de Compras Inteligente</h1>
             <p className="text-sm text-gray-500">
-              Baseado no cardÃ¡pio configurado e previsÃ£o de vendas
+              Baseado no cardápio configurado e previsão de vendas
             </p>
           </div>
           <div className="flex gap-2">
@@ -368,11 +368,11 @@ export default function ListaComprasPage() {
           </div>
         </div>
 
-        {/* ConfiguraÃ§Ãµes */}
+        {/* Configurações */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="bg-white rounded-xl p-4 shadow-sm">
             <label className="text-sm text-gray-600 flex items-center gap-2 mb-2">
-              <Calendar size={16} /> PerÃ­odo de Compra
+              <Calendar size={16} /> Período de Compra
             </label>
             <select
               value={periodoSelecionado}
@@ -386,7 +386,7 @@ export default function ListaComprasPage() {
           </div>
           <div className="bg-white rounded-xl p-4 shadow-sm">
             <label className="text-sm text-gray-600 flex items-center gap-2 mb-2">
-              <AlertTriangle size={16} /> Margem de SeguranÃ§a
+              <AlertTriangle size={16} /> Margem de Segurança
             </label>
             <div className="flex items-center gap-2">
               <input
@@ -407,7 +407,7 @@ export default function ListaComprasPage() {
             </label>
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
-                <p className="text-gray-400">NecessÃ¡rio</p>
+                <p className="text-gray-400">Necessário</p>
                 <p className="font-bold text-blue-600">{formatarQuantidade(totalNecessario, "kg")}</p>
               </div>
               <div>
@@ -438,13 +438,13 @@ export default function ListaComprasPage() {
               <thead className="bg-gray-50 border-b">
                 <tr>
                   <th className="p-3 text-left text-xs font-medium text-gray-500">Ingrediente</th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500">NecessÃ¡rio</th>
+                  <th className="p-3 text-left text-xs font-medium text-gray-500">Necessário</th>
                   <th className="p-3 text-left text-xs font-medium text-gray-500">Em Estoque</th>
                   <th className="p-3 text-left text-xs font-medium text-gray-500">Status</th>
                   <th className="p-3 text-left text-xs font-medium text-gray-500">Comprar</th>
                   <th className="p-3 text-left text-xs font-medium text-gray-500">Custo Est.</th>
                   <th className="p-3 text-left text-xs font-medium text-gray-500">Fornecedor</th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500">AÃ§Ãµes</th>
+                  <th className="p-3 text-left text-xs font-medium text-gray-500">Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -477,7 +477,7 @@ export default function ListaComprasPage() {
                       <td className="p-3">
                         <span className={`font-bold ${item.quantidadeComprar === 0 ? "text-green-600" : "text-orange-600"
                           }`}>
-                          {item.quantidadeComprar === 0 ? "âœ… Suficiente" : formatarQuantidade(item.quantidadeComprar, item.unidade)}
+                          {item.quantidadeComprar === 0 ? "✅ Suficiente" : formatarQuantidade(item.quantidadeComprar, item.unidade)}
                         </span>
                       </td>
                       <td className="p-3">R$ {item.custoEstimado.toFixed(2)}</td>
@@ -505,7 +505,7 @@ export default function ListaComprasPage() {
                 {itensCompra.length === 0 && (
                   <tr>
                     <td colSpan={8} className="p-8 text-center text-gray-500">
-                      Nenhum ingrediente necessÃ¡rio. Configure o cardÃ¡pio e a previsÃ£o de vendas.
+                      Nenhum ingrediente necessário. Configure o cardápio e a previsão de vendas.
                     </td>
                   </tr>
                 )}
@@ -514,7 +514,7 @@ export default function ListaComprasPage() {
           </div>
         </div>
 
-        {/* SeÃ§Ã£o de SugestÃµes */}
+        {/* Seção de Sugestões */}
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-green-50 rounded-xl p-4 border border-green-200">
             <div className="flex items-center gap-2 mb-3">
@@ -568,8 +568,8 @@ export default function ListaComprasPage() {
                     <th className="p-2 text-left text-xs font-medium">Ingrediente</th>
                     <th className="p-2 text-left text-xs font-medium">Estoque</th>
                     <th className="p-2 text-left text-xs font-medium">Unidade</th>
-                    <th className="p-2 text-left text-xs font-medium">Ãšltima AtualizaÃ§Ã£o</th>
-                    <th className="p-2 text-left text-xs font-medium">AÃ§Ãµes</th>
+                    <th className="p-2 text-left text-xs font-medium">Última Atualização</th>
+                    <th className="p-2 text-left text-xs font-medium">Ações</th>
                   </tr>
                 </thead>
                 <tbody>

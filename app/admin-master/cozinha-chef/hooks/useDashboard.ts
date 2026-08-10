@@ -40,7 +40,7 @@ export function useDashboard() {
       try {
         setLoading(true);
 
-        // Buscar estatÃ­sticas
+        // Buscar estatísticas
         const [vendasRes, comprasRes, estoqueRes, pedidosRes, financeiroRes] = await Promise.all([
           supabase.from('vendas').select('*'),
           supabase.from('compras').select('*'),
@@ -49,7 +49,7 @@ export function useDashboard() {
           supabase.from('financeiro').select('*'),
         ]);
 
-        // Calcular estatÃ­sticas
+        // Calcular estatísticas
         const totalVendas = vendasRes.data?.reduce((acc, v) => acc + (v.valor || 0), 0) || 0;
         const totalCompras = comprasRes.data?.reduce((acc, c) => acc + (c.valor || 0), 0) || 0;
         const totalEstoque = estoqueRes.data?.length || 0;
@@ -77,14 +77,14 @@ export function useDashboard() {
           .eq('ativo', true)
           .limit(5);
 
-        // Buscar movimentaÃ§Ãµes recentes
+        // Buscar movimentações recentes
         const movRes = await supabase
           .from('movimentacoes')
           .select('*')
           .order('data', { ascending: false })
           .limit(5);
 
-        // Buscar Ãºltimos pedidos
+        // Buscar últimos pedidos
         const ultimosPedidosRes = await supabase
           .from('pedidos')
           .select('*')

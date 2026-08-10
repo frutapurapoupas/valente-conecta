@@ -188,7 +188,7 @@ export default function DashboardGraficos() {
       {/* Cabeçalho */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">?? Dashboard de Gráficos</h1>
+          <h1 className="text-2xl font-bold text-gray-800">📊 Dashboard de Gráficos</h1>
           <p className="text-sm text-gray-500">Visualização avançada de métricas e indicadores</p>
         </div>
         <div className="flex gap-2">
@@ -272,22 +272,22 @@ export default function DashboardGraficos() {
       {/* Cards de KPIs adicionais */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
-          <div className="text-2xl mb-2">??</div>
+          <div className="text-2xl mb-2">👥</div>
           <p className="text-2xl font-bold text-gray-800">1,280</p>
           <p className="text-xs text-gray-500">Usuários Ativos</p>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
-          <div className="text-2xl mb-2">??</div>
+          <div className="text-2xl mb-2">🏪</div>
           <p className="text-2xl font-bold text-gray-800">156</p>
           <p className="text-xs text-gray-500">Lojas Parceiras</p>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
-          <div className="text-2xl mb-2">?</div>
+          <div className="text-2xl mb-2">⭐</div>
           <p className="text-2xl font-bold text-gray-800">4.8</p>
           <p className="text-xs text-gray-500">Avaliação Média</p>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
-          <div className="text-2xl mb-2">??</div>
+          <div className="text-2xl mb-2">😊</div>
           <p className="text-2xl font-bold text-gray-800">89%</p>
           <p className="text-xs text-gray-500">Satisfação</p>
         </div>

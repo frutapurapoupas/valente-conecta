@@ -46,7 +46,7 @@ export default function AdminUsuariosCidadesPage() {
       empresasPorCidade.set(cidade, (empresasPorCidade.get(cidade) || 0) + 1);
     });
 
-    // Combinar com cidades jÃ¡ cadastradas
+    // Combinar com cidades já cadastradas
     const todasCidades = new Map<string, Cidade>();
 
     storedCidades.forEach((c: any) => {
@@ -61,7 +61,7 @@ export default function AdminUsuariosCidadesPage() {
       });
     });
 
-    // Adicionar cidades que tÃªm usuÃ¡rios mas nÃ£o estÃ£o cadastradas
+    // Adicionar cidades que têm usuários mas não estão cadastradas
     usuariosPorCidade.forEach((qtde, cidade) => {
       if (!todasCidades.has(cidade)) {
         todasCidades.set(cidade, {
@@ -104,7 +104,7 @@ export default function AdminUsuariosCidadesPage() {
 
     setShowAddModal(false);
     setNovaCidade({ nome: "", estado: "BA" });
-    alert(`âœ… Cidade "${nova.nome}" adicionada com sucesso!`);
+    alert(`✅ Cidade "${nova.nome}" adicionada com sucesso!`);
   };
 
   const stats = {
@@ -135,14 +135,14 @@ export default function AdminUsuariosCidadesPage() {
 
       {/* Header */}
       <div className="flex justify-between items-center">
-        <div><h1 className="text-2xl font-bold text-gray-800">ðŸ“ UsuÃ¡rios por Cidade</h1><p className="text-gray-500 text-sm">DistribuiÃ§Ã£o geogrÃ¡fica dos usuÃ¡rios</p></div>
+        <div><h1 className="text-2xl font-bold text-gray-800">📍 Usuários por Cidade</h1><p className="text-gray-500 text-sm">Distribuição geográfica dos usuários</p></div>
         <button onClick={() => setShowAddModal(true)} className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2"><Plus size={16} /> Nova Cidade</button>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-white rounded-xl p-3 shadow-sm text-center"><div className="text-2xl font-bold text-indigo-600">{stats.totalCidades}</div><div className="text-xs text-gray-500">Cidades</div></div>
-        <div className="bg-white rounded-xl p-3 shadow-sm text-center"><div className="text-2xl font-bold text-blue-600">{stats.totalUsuarios}</div><div className="text-xs text-gray-500">UsuÃ¡rios</div></div>
+        <div className="bg-white rounded-xl p-3 shadow-sm text-center"><div className="text-2xl font-bold text-blue-600">{stats.totalUsuarios}</div><div className="text-xs text-gray-500">Usuários</div></div>
         <div className="bg-white rounded-xl p-3 shadow-sm text-center"><div className="text-2xl font-bold text-purple-600">{stats.totalEmpresas}</div><div className="text-xs text-gray-500">Empresas</div></div>
         <div className="bg-white rounded-xl p-3 shadow-sm text-center"><div className="text-2xl font-bold text-green-600">{stats.cidadesComUsuarios}</div><div className="text-xs text-gray-500">Cidades ativas</div></div>
       </div>
@@ -166,7 +166,7 @@ export default function AdminUsuariosCidadesPage() {
                 <div className="text-center p-2 bg-gray-50 rounded-lg">
                   <Users size={20} className="mx-auto text-blue-500 mb-1" />
                   <p className="text-2xl font-bold text-gray-800">{cidade.usuarios}</p>
-                  <p className="text-xs text-gray-500">UsuÃ¡rios</p>
+                  <p className="text-xs text-gray-500">Usuários</p>
                 </div>
                 <div className="text-center p-2 bg-gray-50 rounded-lg">
                   <Building size={20} className="mx-auto text-purple-500 mb-1" />

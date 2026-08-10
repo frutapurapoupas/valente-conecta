@@ -1,5 +1,5 @@
 // hooks/cozinha/useFinanceiro.ts
-// ?? LÃ“GICA DE ESTADO - Gerenciamento de transaÃ§Ãµes
+// 🪝 LÓGICA DE ESTADO - Gerenciamento de transações
 
 import { useState, useEffect, useCallback } from 'react';
 import { financeiroService, Transacao } from '@/services/financeiroService';
@@ -9,7 +9,7 @@ export const useFinanceiro = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Carregar transaÃ§Ãµes
+  // Carregar transações
   const carregar = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -18,10 +18,10 @@ export const useFinanceiro = () => {
       if (result.success) {
         setTransacoes(result.data);
       } else {
-        setError('Erro ao carregar transaÃ§Ãµes');
+        setError('Erro ao carregar transações');
       }
     } catch (err) {
-      setError('Erro ao carregar transaÃ§Ãµes');
+      setError('Erro ao carregar transações');
       console.error(err);
     } finally {
       setLoading(false);
@@ -33,26 +33,26 @@ export const useFinanceiro = () => {
     carregar();
   }, [carregar]);
 
-  // ? Criar transaÃ§Ã£o com LOGS
+  // ✅ Criar transação com LOGS
   const criar = useCallback(async (dados: Omit<Transacao, 'id'>) => {
-    console.log('?? useFinanceiro.criar - Dados recebidos:', dados);
+    console.log('🪝 useFinanceiro.criar - Dados recebidos:', dados);
     
     try {
       const result = await financeiroService.criar(dados);
-      console.log('?? useFinanceiro.criar - Resultado:', result);
+      console.log('🪝 useFinanceiro.criar - Resultado:', result);
       
       if (result.success) {
         await carregar();
         return { success: true, data: result.data };
       }
-      return { success: false, error: result.error || 'Erro ao criar transaÃ§Ã£o' };
+      return { success: false, error: result.error || 'Erro ao criar transação' };
     } catch (err) {
-      console.error('? Erro no criar:', err);
-      return { success: false, error: 'Erro ao criar transaÃ§Ã£o' };
+      console.error('❌ Erro no criar:', err);
+      return { success: false, error: 'Erro ao criar transação' };
     }
   }, [carregar]);
 
-  // Atualizar transaÃ§Ã£o
+  // Atualizar transação
   const atualizar = useCallback(async (id: string, dados: Partial<Transacao>) => {
     try {
       const result = await financeiroService.atualizar(id, dados);
@@ -60,14 +60,14 @@ export const useFinanceiro = () => {
         await carregar();
         return { success: true, data: result.data };
       }
-      return { success: false, error: 'Erro ao atualizar transaÃ§Ã£o' };
+      return { success: false, error: 'Erro ao atualizar transação' };
     } catch (err) {
       console.error(err);
-      return { success: false, error: 'Erro ao atualizar transaÃ§Ã£o' };
+      return { success: false, error: 'Erro ao atualizar transação' };
     }
   }, [carregar]);
 
-  // Excluir transaÃ§Ã£o
+  // Excluir transação
   const excluir = useCallback(async (id: string) => {
     try {
       const result = await financeiroService.excluir(id);
@@ -75,24 +75,24 @@ export const useFinanceiro = () => {
         await carregar();
         return { success: true };
       }
-      return { success: false, error: 'Erro ao excluir transaÃ§Ã£o' };
+      return { success: false, error: 'Erro ao excluir transação' };
     } catch (err) {
       console.error(err);
-      return { success: false, error: 'Erro ao excluir transaÃ§Ã£o' };
+      return { success: false, error: 'Erro ao excluir transação' };
     }
   }, [carregar]);
 
-  // Buscar uma transaÃ§Ã£o especÃ­fica
+  // Buscar uma transação específica
   const buscar = useCallback(async (id: string) => {
     try {
       const result = await financeiroService.buscar(id);
       if (result.success) {
         return { success: true, data: result.data };
       }
-      return { success: false, error: 'TransaÃ§Ã£o nÃ£o encontrada' };
+      return { success: false, error: 'Transação não encontrada' };
     } catch (err) {
       console.error(err);
-      return { success: false, error: 'Erro ao buscar transaÃ§Ã£o' };
+      return { success: false, error: 'Erro ao buscar transação' };
     }
   }, []);
 

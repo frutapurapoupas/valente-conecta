@@ -136,7 +136,7 @@ export default function DashboardMetricas() {
         {/* Cabeçalho */}
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">?? Dashboard de Métricas</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">📊 Dashboard de Métricas</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">Análise de desempenho da cozinha</p>
           </div>
           <button
@@ -208,7 +208,7 @@ export default function DashboardMetricas() {
         {/* Faturamento do Mês + Top Produtos */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm lg:col-span-2">
-            <h2 className="text-lg font-bold mb-4">?? Faturamento do Mês</h2>
+            <h2 className="text-lg font-bold mb-4">💰 Faturamento do Mês</h2>
             <div className="text-center">
               <p className="text-4xl font-bold text-green-600">{formatCurrency(metricas.faturamentoMes)}</p>
               <p className="text-sm text-gray-500 mt-1">Total de {metricas.totalPedidosMes} pedidos</p>
@@ -223,7 +223,7 @@ export default function DashboardMetricas() {
           
           {/* Top Produtos */}
           <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm">
-            <h2 className="text-lg font-bold mb-4">?? Mais Vendidos</h2>
+            <h2 className="text-lg font-bold mb-4">🏆 Mais Vendidos</h2>
             <div className="space-y-3">
               {metricas.topProdutos.length > 0 ? (
                 metricas.topProdutos.map((produto, idx) => (
@@ -247,7 +247,7 @@ export default function DashboardMetricas() {
         
         {/* Vendas por Dia da Semana */}
         <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm">
-          <h2 className="text-lg font-bold mb-4">?? Vendas por Dia da Semana</h2>
+          <h2 className="text-lg font-bold mb-4">📅 Vendas por Dia da Semana</h2>
           <div className="space-y-3">
             {metricas.vendasPorDia.map((dia) => {
               const maxTotal = Math.max(...metricas.vendasPorDia.map(d => d.total));

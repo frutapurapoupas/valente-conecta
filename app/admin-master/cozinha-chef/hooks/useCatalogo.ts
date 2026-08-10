@@ -19,16 +19,16 @@ export interface ItemCardapio {
 const DIA_SEMANA_LABEL: Record<number, string> = {
   0: 'Domingo',
   1: 'Segunda',
-  2: 'TerÃ§a',
+  2: 'Terça',
   3: 'Quarta',
   4: 'Quinta',
   5: 'Sexta',
-  6: 'SÃ¡bado'
+  6: 'Sábado'
 };
 
 export const useCatalogo = () => {
   const searchParams = useSearchParams();
-  // ðŸ”¥ CORREÃ‡ÃƒO: Verificar se searchParams Ã© null
+  // 🔥 CORREÇÃO: Verificar se searchParams é null
   const perfil = searchParams?.get('perfil') || 'publico';
   
   const [pratos, setPratos] = useState<ItemCardapio[]>([]);
@@ -90,7 +90,7 @@ export const useCatalogo = () => {
               id: item.id,
               dia: diaLabel,
               titulo: receita.name,
-              descricao: receita.description || 'Deliciosa opÃ§Ã£o do dia',
+              descricao: receita.description || 'Deliciosa opção do dia',
               preco: parseFloat(precoComDesconto.toFixed(2)),
               precoOriginal: descontoAtual > 0 ? precoBase : undefined,
               imagem: receita.images?.[0] || '',
@@ -130,7 +130,7 @@ export const useCatalogo = () => {
       setPratos([]);
       setSobremesas([]);
     } catch (error) {
-      console.error('Erro ao carregar cardÃ¡pio:', error);
+      console.error('Erro ao carregar cardápio:', error);
       setPratos([]);
       setSobremesas([]);
     } finally {
@@ -141,7 +141,7 @@ export const useCatalogo = () => {
   useEffect(() => {
     carregarCardapio();
 
-    // MantÃ©m catÃ¡logo pÃºblico sincronizado em tempo real com publicaÃ§Ãµes do admin.
+    // Mantém catálogo público sincronizado em tempo real com publicações do admin.
     window.addEventListener('catalogo_itens_updated', carregarCardapio);
     return () => window.removeEventListener('catalogo_itens_updated', carregarCardapio);
   }, [carregarCardapio]);

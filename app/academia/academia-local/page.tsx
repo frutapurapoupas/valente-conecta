@@ -40,17 +40,17 @@ interface AcademiaLocal {
   exercicios: ExercicioUsuario[];
 }
 
-// ExercÃ­cios prÃ©-definidos
+// Exercícios pré-definidos
 const EXERCICIOS_PADRAO: ExercicioUsuario[] = [
   { id: "supino_reto", nome: "Supino Reto", grupoMuscular: "Peito", intensidade: "media", tempoPrevisto: 15, cargaAtual: 40, cargaMeta: 60, concluido: false, caloriasEstimadas: 80, series: 4, repeticoes: "12" },
   { id: "agachamento", nome: "Agachamento Livre", grupoMuscular: "Pernas", intensidade: "alta", tempoPrevisto: 20, cargaAtual: 60, cargaMeta: 100, concluido: false, caloriasEstimadas: 120, series: 4, repeticoes: "10" },
   { id: "puxada_frontal", nome: "Puxada Frontal", grupoMuscular: "Costas", intensidade: "media", tempoPrevisto: 15, cargaAtual: 45, cargaMeta: 70, concluido: false, caloriasEstimadas: 70, series: 4, repeticoes: "12" },
   { id: "desenvolvimento", nome: "Desenvolvimento", grupoMuscular: "Ombros", intensidade: "media", tempoPrevisto: 15, cargaAtual: 30, cargaMeta: 50, concluido: false, caloriasEstimadas: 65, series: 3, repeticoes: "12" },
-  { id: "rosca_direta", nome: "Rosca Direta", grupoMuscular: "BÃ­ceps", intensidade: "baixa", tempoPrevisto: 12, cargaAtual: 20, cargaMeta: 35, concluido: false, caloriasEstimadas: 45, series: 3, repeticoes: "12" },
-  { id: "triceps_pulley", nome: "TrÃ­ceps Polia", grupoMuscular: "TrÃ­ceps", intensidade: "baixa", tempoPrevisto: 12, cargaAtual: 25, cargaMeta: 40, concluido: false, caloriasEstimadas: 45, series: 3, repeticoes: "15" },
+  { id: "rosca_direta", nome: "Rosca Direta", grupoMuscular: "Bíceps", intensidade: "baixa", tempoPrevisto: 12, cargaAtual: 20, cargaMeta: 35, concluido: false, caloriasEstimadas: 45, series: 3, repeticoes: "12" },
+  { id: "triceps_pulley", nome: "Tríceps Polia", grupoMuscular: "Tríceps", intensidade: "baixa", tempoPrevisto: 12, cargaAtual: 25, cargaMeta: 40, concluido: false, caloriasEstimadas: 45, series: 3, repeticoes: "15" },
   { id: "leg_press", nome: "Leg Press", grupoMuscular: "Pernas", intensidade: "alta", tempoPrevisto: 15, cargaAtual: 100, cargaMeta: 150, concluido: false, caloriasEstimadas: 100, series: 4, repeticoes: "12" },
   { id: "remada_curvada", nome: "Remada Curvada", grupoMuscular: "Costas", intensidade: "media", tempoPrevisto: 15, cargaAtual: 35, cargaMeta: 55, concluido: false, caloriasEstimadas: 75, series: 4, repeticoes: "10" },
-  { id: "prancha", nome: "Prancha Abdominal", grupoMuscular: "AbdÃ´men", intensidade: "baixa", tempoPrevisto: 10, cargaAtual: 0, cargaMeta: 0, concluido: false, caloriasEstimadas: 30, series: 3, repeticoes: "45s" }
+  { id: "prancha", nome: "Prancha Abdominal", grupoMuscular: "Abdômen", intensidade: "baixa", tempoPrevisto: 10, cargaAtual: 0, cargaMeta: 0, concluido: false, caloriasEstimadas: 30, series: 3, repeticoes: "45s" }
 ];
 
 export default function AcademiaLocalPage() {
@@ -84,11 +84,11 @@ export default function AcademiaLocalPage() {
             localizadorCapturado: true
           });
           setCapturandoLocal(false);
-          toast.success('?? LocalizaÃ§Ã£o capturada!');
+          toast.success('📍 Localização capturada!');
         },
-        () => { setCapturandoLocal(false); toast.error('? Erro ao capturar localizaÃ§Ã£o.'); }
+        () => { setCapturandoLocal(false); toast.error('? Erro ao capturar localização.'); }
       );
-    } else { setCapturandoLocal(false); toast.error('? GeolocalizaÃ§Ã£o nÃ£o suportada.'); }
+    } else { setCapturandoLocal(false); toast.error('? Geolocalização não suportada.'); }
   };
 
   const handleSalvar = () => {
@@ -106,7 +106,7 @@ export default function AcademiaLocalPage() {
     setAcademia(novaAcademia);
     localStorage.setItem('academia_local_dados', JSON.stringify(novaAcademia));
     
-    // Atualizar tambÃ©m no histÃ³rico de cargas
+    // Atualizar também no histórico de cargas
     const cargasParaHistorico = exerciciosAtualizados.map(ex => ({
       id: ex.id,
       nome: ex.nome,
@@ -129,7 +129,7 @@ export default function AcademiaLocalPage() {
     localStorage.setItem('academia_local_dados', JSON.stringify(novaAcademia));
     
     if (!exercicio?.concluido) {
-      toast.success(`? ${exercicio?.nome} concluÃ­do! Carga: ${exercicio?.cargaAtual}kg`);
+      toast.success(`? ${exercicio?.nome} concluído! Carga: ${exercicio?.cargaAtual}kg`);
     }
   };
 
@@ -154,12 +154,12 @@ export default function AcademiaLocalPage() {
       <main className="max-w-2xl mx-auto px-4 pt-8 space-y-6">
         {salvo && !editando ? (
           <div className="space-y-6">
-            {/* InformaÃ§Ãµes da Academia */}
+            {/* Informações da Academia */}
             <div className="bg-white/10 rounded-3xl p-6">
-              <div className="flex items-center gap-3 mb-4"><Dumbbell className="w-6 h-6 text-emerald-400" /><h3 className="font-bold text-white">InformaÃ§Ãµes</h3></div>
+              <div className="flex items-center gap-3 mb-4"><Dumbbell className="w-6 h-6 text-emerald-400" /><h3 className="font-bold text-white">Informações</h3></div>
               <div className="space-y-2">
-                <div><p className="text-xs text-zinc-400">Nome</p><p className="font-bold text-white">{academia.nome || "NÃ£o cadastrada"}</p></div>
-                <div><p className="text-xs text-zinc-400">EndereÃ§o</p><p className="font-bold text-white">{academia.endereco || "NÃ£o cadastrado"}</p></div>
+                <div><p className="text-xs text-zinc-400">Nome</p><p className="font-bold text-white">{academia.nome || "Não cadastrada"}</p></div>
+                <div><p className="text-xs text-zinc-400">Endereço</p><p className="font-bold text-white">{academia.endereco || "Não cadastrado"}</p></div>
                 <div><p className="text-xs text-zinc-400">Mensalidade</p><p className="font-bold text-white">R$ {academia.mensalidade || "0"}</p></div>
               </div>
             </div>
@@ -174,16 +174,16 @@ export default function AcademiaLocalPage() {
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 h-2 rounded-full transition-all duration-500" style={{ width: `${progresso}%` }} />
               </div>
               <div className="grid grid-cols-2 gap-2 text-center text-xs text-zinc-400">
-                <span>?? {tempoTotal} min</span>
-                <span>?? {caloriasTotais} kcal</span>
+                <span>⏱️ {tempoTotal} min</span>
+                <span>🔥 {caloriasTotais} kcal</span>
               </div>
             </div>
 
-            {/* LISTA DE EXERCÃCIOS */}
+            {/* LISTA DE EXERCÍCIOS */}
             <div className="bg-white/10 rounded-3xl p-6">
               <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3"><Target className="w-6 h-6 text-purple-400" /><h3 className="font-bold text-white">Meus ExercÃ­cios</h3></div>
-                <span className="text-xs text-purple-400">{academia.exercicios?.filter(e => e.concluido).length || 0}/{academia.exercicios?.length || 0} concluÃ­dos</span>
+                <div className="flex items-center gap-3"><Target className="w-6 h-6 text-purple-400" /><h3 className="font-bold text-white">Meus Exercícios</h3></div>
+                <span className="text-xs text-purple-400">{academia.exercicios?.filter(e => e.concluido).length || 0}/{academia.exercicios?.length || 0} concluídos</span>
               </div>
               
               <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -226,7 +226,7 @@ export default function AcademiaLocalPage() {
                         </div>
                         
                         {ex.concluido && ex.dataConclusao && (
-                          <p className="text-[10px] text-green-400 mt-1">? ConcluÃ­do em {new Date(ex.dataConclusao).toLocaleDateString()}</p>
+                          <p className="text-[10px] text-green-400 mt-1">? Concluído em {new Date(ex.dataConclusao).toLocaleDateString()}</p>
                         )}
                       </div>
                       <button
@@ -241,9 +241,9 @@ export default function AcademiaLocalPage() {
               </div>
             </div>
 
-            {/* Link para HistÃ³rico de Cargas */}
+            {/* Link para Histórico de Cargas */}
             <Link href="/academia/historico-carga" className="flex items-center justify-between bg-white/10 rounded-2xl p-4 hover:bg-white/20 transition group">
-              <div className="flex items-center gap-3"><TrendingUp className="w-6 h-6 text-emerald-400" /><div><h4 className="font-bold text-white">HistÃ³rico de Cargas</h4><p className="text-xs text-zinc-400">Acompanhe sua evoluÃ§Ã£o de pesos</p></div></div>
+              <div className="flex items-center gap-3"><TrendingUp className="w-6 h-6 text-emerald-400" /><div><h4 className="font-bold text-white">Histórico de Cargas</h4><p className="text-xs text-zinc-400">Acompanhe sua evolução de pesos</p></div></div>
               <ChevronRight className="w-5 h-5 text-emerald-400 group-hover:translate-x-1 transition" />
             </Link>
           </div>
@@ -251,10 +251,10 @@ export default function AcademiaLocalPage() {
           <div className="space-y-6">
             <div className="bg-white/10 rounded-3xl p-6 space-y-4">
               <input type="text" placeholder="Nome da academia" value={academia.nome} onChange={e => setAcademia({...academia, nome: e.target.value})} className="w-full px-4 py-3 bg-white/10 rounded-xl text-white" />
-              <input type="text" placeholder="EndereÃ§o" value={academia.endereco} onChange={e => setAcademia({...academia, endereco: e.target.value})} className="w-full px-4 py-3 bg-white/10 rounded-xl text-white" />
-              <div className="flex gap-2"><input type="text" placeholder="LocalizaÃ§Ã£o" readOnly className="flex-1 px-4 py-3 bg-white/5 rounded-xl text-zinc-400" /><button onClick={capturarLocalizacao} disabled={capturandoLocal} className="px-4 py-3 bg-emerald-600 rounded-xl"><Navigation className="w-5 h-5" /> Capturar</button></div>
+              <input type="text" placeholder="Endereço" value={academia.endereco} onChange={e => setAcademia({...academia, endereco: e.target.value})} className="w-full px-4 py-3 bg-white/10 rounded-xl text-white" />
+              <div className="flex gap-2"><input type="text" placeholder="Localização" readOnly className="flex-1 px-4 py-3 bg-white/5 rounded-xl text-zinc-400" /><button onClick={capturarLocalizacao} disabled={capturandoLocal} className="px-4 py-3 bg-emerald-600 rounded-xl"><Navigation className="w-5 h-5" /> Capturar</button></div>
               <input type="number" placeholder="Mensalidade (R$)" value={academia.mensalidade} onChange={e => setAcademia({...academia, mensalidade: e.target.value})} className="w-full px-4 py-3 bg-white/10 rounded-xl text-white" />
-              <input type="text" placeholder="ResponsÃ¡vel" value={academia.responsavel} onChange={e => setAcademia({...academia, responsavel: e.target.value})} className="w-full px-4 py-3 bg-white/10 rounded-xl text-white" />
+              <input type="text" placeholder="Responsável" value={academia.responsavel} onChange={e => setAcademia({...academia, responsavel: e.target.value})} className="w-full px-4 py-3 bg-white/10 rounded-xl text-white" />
               <input type="tel" placeholder="WhatsApp" value={academia.responsavelWhatsapp} onChange={e => setAcademia({...academia, responsavelWhatsapp: e.target.value})} className="w-full px-4 py-3 bg-white/10 rounded-xl text-white" />
             </div>
             <button onClick={handleSalvar} disabled={!academia.nome || !academia.endereco} className="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl font-bold"><Save className="w-5 h-5 inline mr-2" />Salvar Academia</button>

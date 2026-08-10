@@ -21,7 +21,7 @@ export default function NotificacaoSininho() {
   useEffect(() => {
     carregarNotificacoes();
     
-    // Verificar notificaÃ§Ãµes a cada 30 segundos
+    // Verificar notificações a cada 30 segundos
     const interval = setInterval(carregarNotificacoes, 30000);
     
     return () => clearInterval(interval);
@@ -38,7 +38,7 @@ export default function NotificacaoSininho() {
         setNaoLidas(naoLidasCount);
       }
     } catch (error) {
-      console.error('Erro ao carregar notificaÃ§Ãµes:', error);
+      console.error('Erro ao carregar notificações:', error);
     }
   };
 
@@ -47,7 +47,7 @@ export default function NotificacaoSininho() {
       await fetch(`/api/notificacoes?id=${id}`, { method: 'PUT' });
       carregarNotificacoes();
     } catch (error) {
-      console.error('Erro ao marcar notificaÃ§Ã£o:', error);
+      console.error('Erro ao marcar notificação:', error);
     }
   };
 
@@ -79,7 +79,7 @@ export default function NotificacaoSininho() {
         <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-200 z-50 overflow-hidden">
           <div className="p-3 border-b bg-gray-50">
             <div className="flex justify-between items-center">
-              <h3 className="font-semibold text-gray-800">NotificaÃ§Ãµes</h3>
+              <h3 className="font-semibold text-gray-800">Notificações</h3>
               <button onClick={() => setMostrarMenu(false)}>
                 <X className="w-4 h-4 text-gray-400" />
               </button>
@@ -90,7 +90,7 @@ export default function NotificacaoSininho() {
             {notificacoes.length === 0 ? (
               <div className="p-6 text-center text-gray-500">
                 <Bell className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                <p className="text-sm">Nenhuma notificaÃ§Ã£o</p>
+                <p className="text-sm">Nenhuma notificação</p>
               </div>
             ) : (
               notificacoes.map((notificacao) => (

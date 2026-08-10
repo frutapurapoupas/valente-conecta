@@ -12,7 +12,7 @@ export function WizardResumo({ produto, sku, imagens, onPublicar, onVoltar }: Wi
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="text-2xl font-bold">âœ… Confirme os dados</h2>
-        <p className="text-gray-500">Revise as informaÃ§Ãµes antes de publicar</p>
+        <p className="text-gray-500">Revise as informações antes de publicar</p>
       </div>
 
       <div className="bg-gray-50 rounded-xl p-6 space-y-4">
@@ -22,7 +22,7 @@ export function WizardResumo({ produto, sku, imagens, onPublicar, onVoltar }: Wi
         </div>
         <div className="flex justify-between items-center">
           <span className="text-gray-500">Categoria</span>
-          <span>{produto.categoria_nome || "NÃ£o definida"}</span>
+          <span>{produto.categoria_nome || "Não definida"}</span>
         </div>
         <div className="flex justify-between items-center">
           <span className="text-gray-500">Imagens</span>

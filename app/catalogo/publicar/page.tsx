@@ -54,7 +54,7 @@ export default function PublicarProdutoPage() {
           {step === 1 && wizardState.categoria_id && (
             <>
               <WizardAtributos categoria={categorias.find(c => c.id === wizardState.categoria_id)!} respostas={wizardState.respostas} onUpdate={updateRespostas} />
-              <div className="mt-6 flex justify-end"><button onClick={handleNext} className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 flex items-center gap-2">PrÃ³ximo <ChevronRight className="w-4 h-4" /></button></div>
+              <div className="mt-6 flex justify-end"><button onClick={handleNext} className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 flex items-center gap-2">Próximo <ChevronRight className="w-4 h-4" /></button></div>
             </>
           )}
           {step === 2 && (
@@ -62,7 +62,7 @@ export default function PublicarProdutoPage() {
               <WizardMidia imagens={wizardState.imagens} video={wizardState.video} onImagensChange={updateImagens} onVideoChange={updateVideo} />
               <div className="mt-6 flex gap-3">
                 <button onClick={handleBack} className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 flex items-center gap-2"><ChevronLeft className="w-4 h-4" /> Voltar</button>
-                <button onClick={handleNext} className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 flex items-center justify-center gap-2">PrÃ³ximo <ChevronRight className="w-4 h-4" /></button>
+                <button onClick={handleNext} className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 flex items-center justify-center gap-2">Próximo <ChevronRight className="w-4 h-4" /></button>
               </div>
             </>
           )}

@@ -1,5 +1,5 @@
 // components/home/CardIndicacao.tsx
-// ?? UI - Card de Indicação com rotação de abas
+// 🎨 UI - Card de Indicação com rotação de abas
 
 "use client";
 
@@ -44,7 +44,7 @@ export default function CardIndicacao({
       >
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="font-bold text-lg">{titulo || '?? Indique e Ganhe'}</h2>
+            <h2 className="font-bold text-lg">{titulo || '💡 Indique e Ganhe'}</h2>
             <p className="text-sm opacity-90">{descricao || 'Indique amigos e ganhe benefícios!'}</p>
           </div>
           <button className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm font-medium transition">
@@ -66,7 +66,7 @@ export default function CardIndicacao({
     >
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-bold text-lg">{titulo || '?? Indique e Ganhe'}</h2>
+          <h2 className="font-bold text-lg">{titulo || '🤝 Indique e Ganhe'}</h2>
           <p className="text-sm opacity-90">{descricao || 'Indique amigos e ganhe benefícios!'}</p>
         </div>
         <button className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm font-medium transition">
@@ -76,7 +76,7 @@ export default function CardIndicacao({
       {aba && (
         <div className="mt-3 h-12 flex items-center">
           <p className={`text-sm font-medium ${aba.cor || 'bg-white/20'} px-3 py-1 rounded-full inline-block transition-all duration-500`}>
-            {aba.texto || '?? Indique agora!'}
+            {aba.texto || '💡 Indique agora!'}
           </p>
         </div>
       )}

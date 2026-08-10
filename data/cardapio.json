@@ -23,5 +23,16 @@
     "precoCustomizado": null,
     "usarPrecoDaReceita": true,
     "isAvailable": true
+  },
+  {
+    "id": "4c61ebd2-de04-488f-b13c-b6c5ba9bfdf6",
+    "receita_id": "db0c2161-6ae4-4360-bc61-cc28f303c14d",
+    "dia_semana": 1,
+    "periodo": "almoco",
+    "preco_customizado": null,
+    "usar_preco_da_receita": true,
+    "is_available": true,
+    "created_at": "2026-08-03T00:08:19.946Z",
+    "updated_at": "2026-08-03T00:08:19.946Z"
   }
 ]

@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
-// â”€â”€â”€ Tipos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Tipos ────────────────────────────────────────────────────────────────────
 interface Produto {
   tipo: 'agua_mineral' | 'agua_garrafao' | 'gas_p13' | 'gas_p45' | 'gas_p20' | 'gas_granel' | 'outro';
   descricao: string;
@@ -35,28 +35,28 @@ interface Fornecedor {
   destaque: boolean;
 }
 
-// â”€â”€â”€ ConfiguraÃ§Ã£o de tipos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Configuração de tipos ────────────────────────────────────────────────────
 const TIPO_CONFIG: Record<string, { label: string; icon: typeof Droplets; cor: string; bg: string }> = {
-  agua_mineral:  { label: 'Ãgua Mineral',    icon: Droplets, cor: 'text-blue-400',   bg: 'bg-blue-500/20'   },
-  agua_garrafao: { label: 'GarrafÃ£o 20L',    icon: Droplets, cor: 'text-cyan-400',   bg: 'bg-cyan-500/20'   },
-  gas_p13:       { label: 'GÃ¡s P13',         icon: Flame,    cor: 'text-orange-400', bg: 'bg-orange-500/20' },
-  gas_p20:       { label: 'GÃ¡s P20',         icon: Flame,    cor: 'text-amber-400',  bg: 'bg-amber-500/20'  },
-  gas_p45:       { label: 'GÃ¡s P45',         icon: Flame,    cor: 'text-red-400',    bg: 'bg-red-500/20'    },
-  gas_granel:    { label: 'GÃ¡s Granel',      icon: Flame,    cor: 'text-rose-400',   bg: 'bg-rose-500/20'   },
+  agua_mineral:  { label: 'Água Mineral',    icon: Droplets, cor: 'text-blue-400',   bg: 'bg-blue-500/20'   },
+  agua_garrafao: { label: 'Garrafão 20L',    icon: Droplets, cor: 'text-cyan-400',   bg: 'bg-cyan-500/20'   },
+  gas_p13:       { label: 'Gás P13',         icon: Flame,    cor: 'text-orange-400', bg: 'bg-orange-500/20' },
+  gas_p20:       { label: 'Gás P20',         icon: Flame,    cor: 'text-amber-400',  bg: 'bg-amber-500/20'  },
+  gas_p45:       { label: 'Gás P45',         icon: Flame,    cor: 'text-red-400',    bg: 'bg-red-500/20'    },
+  gas_granel:    { label: 'Gás Granel',      icon: Flame,    cor: 'text-rose-400',   bg: 'bg-rose-500/20'   },
   outro:         { label: 'Outros',          icon: Package,  cor: 'text-gray-400',   bg: 'bg-gray-500/20'   },
 };
 
 const FILTROS = [
   { id: '',              label: 'Todos'       },
-  { id: 'agua_garrafao', label: 'GarrafÃ£o 20L'},
-  { id: 'agua_mineral',  label: 'Ãgua Mineral'},
-  { id: 'gas_p13',       label: 'GÃ¡s P13'     },
-  { id: 'gas_p20',       label: 'GÃ¡s P20'     },
-  { id: 'gas_p45',       label: 'GÃ¡s P45'     },
-  { id: 'gas_granel',    label: 'GÃ¡s Granel'  },
+  { id: 'agua_garrafao', label: 'Garrafão 20L'},
+  { id: 'agua_mineral',  label: 'Água Mineral'},
+  { id: 'gas_p13',       label: 'Gás P13'     },
+  { id: 'gas_p20',       label: 'Gás P20'     },
+  { id: 'gas_p45',       label: 'Gás P45'     },
+  { id: 'gas_granel',    label: 'Gás Granel'  },
 ];
 
-// â”€â”€â”€ Card de produto dentro do fornecedor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Card de produto dentro do fornecedor ────────────────────────────────────
 function BadgeProduto({ p }: { p: Produto }) {
   const cfg = TIPO_CONFIG[p.tipo] || TIPO_CONFIG.outro;
   const Icon = cfg.icon;
@@ -73,7 +73,7 @@ function BadgeProduto({ p }: { p: Produto }) {
   );
 }
 
-// â”€â”€â”€ Card de fornecedor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Card de fornecedor ───────────────────────────────────────────────────────
 function CardFornecedor({ forn, onPedir }: { forn: Fornecedor; onPedir: (f: Fornecedor) => void }) {
   const produtosVisiveis = forn.produtos?.filter((p) => p.disponivel !== false).slice(0, 4) || [];
 
@@ -86,7 +86,7 @@ function CardFornecedor({ forn, onPedir }: { forn: Fornecedor; onPedir: (f: Forn
       )}
 
       <div className="p-5">
-        {/* CabeÃ§alho */}
+        {/* Cabeçalho */}
         <div className="flex items-start gap-4">
           {forn.foto ? (
             <img src={forn.foto} alt={forn.nome} className="w-14 h-14 rounded-xl object-cover shrink-0 border border-white/10" />
@@ -106,12 +106,12 @@ function CardFornecedor({ forn, onPedir }: { forn: Fornecedor; onPedir: (f: Forn
               )}
               {forn.taxaEntrega === 0 && forn.temEntrega && (
                 <span className="text-xs bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full">
-                  Frete grÃ¡tis
+                  Frete grátis
                 </span>
               )}
               {forn.freteGratisAcima > 0 && (
                 <span className="text-xs text-gray-400">
-                  Frete grÃ¡tis acima de R$ {forn.freteGratisAcima.toFixed(0)}
+                  Frete grátis acima de R$ {forn.freteGratisAcima.toFixed(0)}
                 </span>
               )}
             </div>
@@ -123,7 +123,7 @@ function CardFornecedor({ forn, onPedir }: { forn: Fornecedor; onPedir: (f: Forn
           {(forn.bairro || forn.cidade) && (
             <div className="flex items-center gap-1.5">
               <MapPin className="w-4 h-4 shrink-0" />
-              {[forn.bairro, forn.cidade].filter(Boolean).join(' â€“ ')}
+              {[forn.bairro, forn.cidade].filter(Boolean).join(' – ')}
             </div>
           )}
           {forn.horario && (
@@ -140,13 +140,13 @@ function CardFornecedor({ forn, onPedir }: { forn: Fornecedor; onPedir: (f: Forn
             {produtosVisiveis.map((p, i) => <BadgeProduto key={i} p={p} />)}
             {(forn.produtos?.filter((p) => p.disponivel !== false).length || 0) > 4 && (
               <p className="text-xs text-gray-500 text-center">
-                +{(forn.produtos?.filter((p) => p.disponivel !== false).length || 0) - 4} produto(s) disponÃ­veis
+                +{(forn.produtos?.filter((p) => p.disponivel !== false).length || 0) - 4} produto(s) disponíveis
               </p>
             )}
           </div>
         )}
 
-        {/* AÃ§Ã£o */}
+        {/* Ação */}
         <div className="mt-4 grid grid-cols-2 gap-2 pt-4 border-t border-white/10">
           <a
             href={`https://wa.me/55${forn.whatsapp.replace(/\D/g, '')}`}
@@ -168,7 +168,7 @@ function CardFornecedor({ forn, onPedir }: { forn: Fornecedor; onPedir: (f: Forn
   );
 }
 
-// â”€â”€â”€ Modal de pedido â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Modal de pedido ──────────────────────────────────────────────────────────
 function ModalPedido({ forn, onClose }: { forn: Fornecedor; onClose: () => void }) {
   const produtosDisponiveis = forn.produtos?.filter((p) => p.disponivel !== false) || [];
   const [form, setForm] = useState({ clienteNome: '', clienteTelefone: '', produto: '', quantidade: '1', endereco: '', observacoes: '' });
@@ -191,15 +191,15 @@ function ModalPedido({ forn, onClose }: { forn: Fornecedor; onClose: () => void 
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
 
-      toast.success('Pedido enviado! O fornecedor entrarÃ¡ em contato.');
+      toast.success('Pedido enviado! O fornecedor entrará em contato.');
 
       // WhatsApp direto
       if (forn.whatsapp) {
         const msg = encodeURIComponent(
-          `OlÃ¡ ${forn.nome}! Quero fazer um pedido pelo Valente Conecta.\n` +
+          `Olá ${forn.nome}! Quero fazer um pedido pelo Valente Conecta.\n` +
           `Produto: ${form.produto}\n` +
           `Quantidade: ${form.quantidade}\n` +
-          (form.endereco ? `EndereÃ§o: ${form.endereco}\n` : '') +
+          (form.endereco ? `Endereço: ${form.endereco}\n` : '') +
           (form.observacoes ? `Obs: ${form.observacoes}` : '')
         );
         window.open(`https://wa.me/55${forn.whatsapp.replace(/\D/g, '')}?text=${msg}`, '_blank');
@@ -247,14 +247,14 @@ function ModalPedido({ forn, onClose }: { forn: Fornecedor; onClose: () => void 
                 {produtosDisponiveis.map((p, i) => (
                   <option key={i} value={p.descricao || TIPO_CONFIG[p.tipo]?.label || p.tipo}>
                     {p.descricao || TIPO_CONFIG[p.tipo]?.label || p.tipo}
-                    {p.preco > 0 ? ` â€” R$ ${p.preco.toFixed(2)}` : ''}
+                    {p.preco > 0 ? ` — R$ ${p.preco.toFixed(2)}` : ''}
                   </option>
                 ))}
               </select>
             ) : (
               <input value={form.produto} onChange={(e) => set('produto', e.target.value)}
                 className="w-full mt-1 bg-slate-800 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400"
-                placeholder="Ex: GarrafÃ£o 20L, GÃ¡s P13..." />
+                placeholder="Ex: Garrafão 20L, Gás P13..." />
             )}
           </div>
 
@@ -265,18 +265,18 @@ function ModalPedido({ forn, onClose }: { forn: Fornecedor; onClose: () => void 
                 className="w-full mt-1 bg-slate-800 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400" />
             </div>
             <div>
-              <label className="text-sm text-gray-400">EndereÃ§o de entrega</label>
+              <label className="text-sm text-gray-400">Endereço de entrega</label>
               <input value={form.endereco} onChange={(e) => set('endereco', e.target.value)}
                 className="w-full mt-1 bg-slate-800 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400"
-                placeholder="Rua, nÃºmero..." />
+                placeholder="Rua, número..." />
             </div>
           </div>
 
           <div>
-            <label className="text-sm text-gray-400">ObservaÃ§Ãµes</label>
+            <label className="text-sm text-gray-400">Observações</label>
             <textarea value={form.observacoes} onChange={(e) => set('observacoes', e.target.value)} rows={2}
               className="w-full mt-1 bg-slate-800 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 resize-none"
-              placeholder="Ponto de referÃªncia, horÃ¡rio preferido..." />
+              placeholder="Ponto de referência, horário preferido..." />
           </div>
 
           <button type="submit" disabled={enviando}
@@ -285,7 +285,7 @@ function ModalPedido({ forn, onClose }: { forn: Fornecedor; onClose: () => void 
             {enviando ? 'Enviando...' : 'Confirmar Pedido'}
           </button>
           <p className="text-xs text-gray-500 text-center">
-            ApÃ³s confirmar, serÃ¡ aberto o WhatsApp do fornecedor com seu pedido.
+            Após confirmar, será aberto o WhatsApp do fornecedor com seu pedido.
           </p>
         </form>
       </div>
@@ -293,7 +293,7 @@ function ModalPedido({ forn, onClose }: { forn: Fornecedor; onClose: () => void 
   );
 }
 
-// â”€â”€â”€ PÃ¡gina pÃºblica â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Página pública ───────────────────────────────────────────────────────────
 export default function AguaGasPage() {
   const [fornecedores, setFornecedores] = useState<Fornecedor[]>([]);
   const [primeiraVez, setPrimeiraVez] = useState(true);
@@ -331,9 +331,9 @@ export default function AguaGasPage() {
             <Droplets className="w-10 h-10 text-white" />
             <Flame className="w-10 h-10 text-orange-300" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-extrabold">Ãgua e GÃ¡s em Valente</h1>
+          <h1 className="text-3xl md:text-4xl font-extrabold">Água e Gás em Valente</h1>
           <p className="mt-3 text-white/80 max-w-xl mx-auto">
-            GarrafÃ£o, Ã¡gua mineral, gÃ¡s P13, P20, P45 e granel. Compare fornecedores e peÃ§a pelo WhatsApp.
+            Garrafão, água mineral, gás P13, P20, P45 e granel. Compare fornecedores e peça pelo WhatsApp.
           </p>
           <a
             href="/agua-gas/fornecedor"
@@ -388,7 +388,7 @@ export default function AguaGasPage() {
         {/* CTA */}
         <div className="mt-12 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 border border-blue-500/30 rounded-2xl p-8 text-center">
           <Store className="w-12 h-12 text-blue-400 mx-auto mb-3" />
-          <h3 className="text-xl font-bold text-white">Vende Ã¡gua ou gÃ¡s em Valente?</h3>
+          <h3 className="text-xl font-bold text-white">Vende água ou gás em Valente?</h3>
           <p className="text-gray-400 mt-2">Cadastre sua empresa gratuitamente e receba pedidos pelo WhatsApp.</p>
           <a href="/agua-gas/fornecedor" className="inline-flex items-center gap-2 mt-5 bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-xl font-bold transition-colors">
             Cadastrar empresa <ChevronRight className="w-4 h-4" />

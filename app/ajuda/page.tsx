@@ -47,7 +47,7 @@ export default function AjudaPage() {
         <button onClick={() => router.push("/")} className="text-white">
           <ArrowLeft className="w-6 h-6" />
         </button>
-        <h1 className="text-white font-bold text-lg">?? Central de Ajuda e Vídeos</h1>
+        <h1 className="text-white font-bold text-lg">📹 Central de Ajuda e Vídeos</h1>
       </header>
 
       <main className="max-w-6xl mx-auto p-4">
@@ -108,7 +108,7 @@ export default function AjudaPage() {
                     <div className="w-24 h-24 bg-gradient-to-br from-red-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4">
                       <Youtube className="w-12 h-12 text-white" />
                     </div>
-                    <p className="text-gray-400 text-sm">?? Vídeo demonstrativo</p>
+                    <p className="text-gray-400 text-sm">🎥 Vídeo demonstrativo</p>
                     <p className="text-xs text-gray-500 mt-2">(Em produção - versão demo)</p>
                   </div>
                 </div>

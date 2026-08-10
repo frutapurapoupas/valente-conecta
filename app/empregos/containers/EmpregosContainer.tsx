@@ -106,7 +106,7 @@ export function EmpregosContainer() {
 
   const handleCandidatar = (vaga: Vaga) => {
     if (!user) {
-      toast.error("FaÃ§a login para se candidatar");
+      toast.error("Faça login para se candidatar");
       router.push("/login");
       return;
     }
@@ -217,7 +217,7 @@ export function EmpregosContainer() {
           />
         )}
 
-        {/* MODAL DE CURRÃCULO */}
+        {/* MODAL DE CURRÍCULO */}
         {showCurriculoModal && (
           <CurriculoModal
             isOpen={showCurriculoModal}
@@ -246,7 +246,7 @@ export function EmpregosContainer() {
                   âœ•
                 </button>
               </div>
-              {/* ConteÃºdo do detalhe */}
+              {/* Conteúdo do detalhe */}
               <div className="space-y-4">
                 <div className="flex flex-wrap gap-2">
                   <span className={`text-xs px-2 py-1 rounded-full ${getTipoVagaBadge(vagaSelecionada.tipo)}`}>
@@ -269,7 +269,7 @@ export function EmpregosContainer() {
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-2">BenefÃ­cios:</h4>
+                  <h4 className="font-semibold mb-2">Benefícios:</h4>
                   <ul className="list-disc list-inside space-y-1 text-gray-600">
                     {vagaSelecionada.beneficios.map((beneficio, i) => (
                       <li key={i}>{beneficio}</li>
@@ -300,6 +300,6 @@ export function EmpregosContainer() {
   );
 }
 
-// Importar funÃ§Ãµes utilitÃ¡rias para o modal de detalhes
+// Importar funções utilitárias para o modal de detalhes
 import { formatarSalario, getTipoVagaBadge, getModalidadeBadge, getNivelBadge } from "../utils/empregosUtils";
 

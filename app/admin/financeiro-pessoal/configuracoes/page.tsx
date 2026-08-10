@@ -18,30 +18,30 @@ export default function ConfiguracoesPage() {
 
   const salvarConfig = () => {
     localStorage.setItem('financeiro_config', JSON.stringify({ saldoInicial, moeda }));
-    alert('âœ… ConfiguraÃ§Ãµes salvas com sucesso!');
+    alert('✅ Configurações salvas com sucesso!');
   };
 
   const resetarDados = () => {
-    if (confirm('âš ï¸ ATENÃ‡ÃƒO! Isso irÃ¡ apagar TODOS os seus dados financeiros. Tem certeza?')) {
+    if (confirm('⚠️ ATENÇÃO! Isso irá apagar TODOS os seus dados financeiros. Tem certeza?')) {
       localStorage.removeItem('financeiro_pessoal');
       localStorage.removeItem('financeiro_categorias');
-      alert('âœ… Dados resetados com sucesso!');
+      alert('✅ Dados resetados com sucesso!');
       window.location.reload();
     }
   };
 
   const getMoedaSimbolo = () => {
-    const simbolos: Record<string, string> = { BRL: 'R$', USD: 'US$', EUR: 'â‚¬' };
+    const simbolos: Record<string, string> = { BRL: 'R$', USD: 'US$', EUR: '€' };
     return simbolos[moeda] || 'R$';
   };
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">âš™ï¸ ConfiguraÃ§Ãµes do Financeiro</h1>
+      <h1 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">⚙️ Configurações do Financeiro</h1>
       
       <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md">
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">ðŸ’° Saldo Inicial</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">💰 Saldo Inicial</label>
           <div className="relative">
             <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400">{getMoedaSimbolo()}</span>
             <input
@@ -52,19 +52,19 @@ export default function ConfiguracoesPage() {
               className="w-full pl-8 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Valor inicial da sua conta no inÃ­cio do perÃ­odo</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Valor inicial da sua conta no início do período</p>
         </div>
 
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">ðŸ’± Moeda</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">💱 Moeda</label>
           <select
             value={moeda}
             onChange={(e) => setMoeda(e.target.value)}
             className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
           >
             <option value="BRL">Real Brasileiro (R$)</option>
-            <option value="USD">DÃ³lar Americano (US$)</option>
-            <option value="EUR">Euro (â‚¬)</option>
+            <option value="USD">Dólar Americano (US$)</option>
+            <option value="EUR">Euro (€)</option>
           </select>
         </div>
 
@@ -72,7 +72,7 @@ export default function ConfiguracoesPage() {
           onClick={salvarConfig}
           className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2 mb-4 transition-colors"
         >
-          <Save className="w-4 h-4" /> Salvar ConfiguraÃ§Ãµes
+          <Save className="w-4 h-4" /> Salvar Configurações
         </button>
 
         <button
@@ -85,7 +85,7 @@ export default function ConfiguracoesPage() {
         <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg flex items-start gap-2">
           <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-500 flex-shrink-0 mt-0.5" />
           <p className="text-xs text-yellow-700 dark:text-yellow-400">
-            Resetar irÃ¡ apagar todas as transaÃ§Ãµes, categorias e configuraÃ§Ãµes. Esta aÃ§Ã£o nÃ£o pode ser desfeita.
+            Resetar irá apagar todas as transações, categorias e configurações. Esta ação não pode ser desfeita.
           </p>
         </div>
       </div>

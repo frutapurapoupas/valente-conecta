@@ -25,7 +25,7 @@ export default function ModalCategoria({
       setNovaCategoria('');
       onClose();
     } else if (categorias.includes(novaCategoria.trim())) {
-      alert('?? Esta categoria jÃ¡ existe!');
+      alert('⚠️ Esta categoria já existe!');
     } else {
       alert('? Digite um nome para a categoria');
     }
@@ -38,7 +38,7 @@ export default function ModalCategoria({
       <div className="bg-gray-800 rounded-xl max-w-sm w-full border border-gray-700">
         <div className="p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-white">?? Nova Categoria</h2>
+            <h2 className="text-xl font-bold text-white">📂 Nova Categoria</h2>
             <button onClick={onClose} className="text-gray-400 hover:text-white transition">
               <X size={20} />
             </button>

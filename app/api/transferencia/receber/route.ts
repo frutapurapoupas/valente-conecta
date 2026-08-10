@@ -1,6 +1,6 @@
 // ============================================================================
 // ARQUIVO: app/api/transferencia/receber/route.ts
-// Funcionalidade: API para receber transferÃªncias de Moeda Conecta
+// Funcionalidade: API para receber transferências de Moeda Conecta
 // ============================================================================
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -12,10 +12,10 @@ export async function POST(request: NextRequest) {
     const { destinatario_id, valor, descricao, origem_id, origem_nome } = await request.json();
 
     if (!destinatario_id || !valor || valor <= 0) {
-      return NextResponse.json({ error: 'Dados invÃ¡lidos' }, { status: 400 });
+      return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 });
     }
 
-    // Registrar transaÃ§Ã£o de recebimento no banco
+    // Registrar transação de recebimento no banco
     const { error } = await supabase
       .from('transacoes')
       .insert({
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
         tipo: 'recebimento',
         valor: valor,
         status: 'concluido',
-        descricao: descricao || `TransferÃªncia recebida de ${origem_nome || 'UsuÃ¡rio'}`,
+        descricao: descricao || `Transferência recebida de ${origem_nome || 'Usuário'}`,
         data: new Date().toISOString(),
         metodo: 'moeda_conecta',
         origem_id: origem_id,
@@ -33,10 +33,10 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('Erro ao registrar recebimento:', error);
-      return NextResponse.json({ error: 'Erro ao processar transferÃªncia' }, { status: 500 });
+      return NextResponse.json({ error: 'Erro ao processar transferência' }, { status: 500 });
     }
 
-    // Atualizar saldo do destinatÃ¡rio
+    // Atualizar saldo do destinatário
     const { data: wallet } = await supabase
       .from('wallet')
       .select('total, disponivel')
@@ -54,9 +54,9 @@ export async function POST(request: NextRequest) {
         .eq('usuario_id', destinatario_id);
     }
 
-    return NextResponse.json({ success: true, message: 'TransferÃªncia recebida com sucesso' });
+    return NextResponse.json({ success: true, message: 'Transferência recebida com sucesso' });
   } catch (error) {
-    console.error('Erro na API de transferÃªncia:', error);
+    console.error('Erro na API de transferência:', error);
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 });
   }
 }

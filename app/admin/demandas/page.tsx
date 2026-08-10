@@ -41,7 +41,7 @@ interface Fornecedor {
   dataCadastro: string;
 }
 
-// ðŸ†• INTERFACE PARA BUSCAS PENDENTES
+// 🆕 INTERFACE PARA BUSCAS PENDENTES
 interface BuscaPendente {
   id: string;
   termo: string;
@@ -67,13 +67,13 @@ export default function AdminDemandasPage() {
   const { isAdmin, user } = useApp();
   const [solicitacoes, setSolicitacoes] = useState<Solicitacao[]>([]);
   const [fornecedores, setFornecedores] = useState<Fornecedor[]>([]);
-  // ðŸ†• Estado para buscas pendentes
+  // 🆕 Estado para buscas pendentes
   const [buscasPendentes, setBuscasPendentes] = useState<BuscaPendente[]>([]);
   const [activeTab, setActiveTab] = useState<"solicitacoes" | "fornecedores" | "buscas">("solicitacoes");
   const [showConviteModal, setShowConviteModal] = useState(false);
   const [solicitacaoSelecionada, setSolicitacaoSelecionada] = useState<Solicitacao | null>(null);
   const [conviteData, setConviteData] = useState({ email: "", mensagem: "" });
-  // ðŸ†• Estado para modal de busca pendente
+  // 🆕 Estado para modal de busca pendente
   const [showBuscaModal, setShowBuscaModal] = useState(false);
   const [buscaSelecionada, setBuscaSelecionada] = useState<BuscaPendente | null>(null);
   const [produtoSugerido, setProdutoSugerido] = useState({
@@ -105,18 +105,18 @@ export default function AdminDemandasPage() {
     }
   };
 
-  // ðŸ†• Carregar buscas pendentes do localStorage
+  // 🆕 Carregar buscas pendentes do localStorage
   const carregarBuscasPendentes = () => {
     const buscasSalvas = localStorage.getItem("buscas_pendentes");
     if (buscasSalvas) {
       setBuscasPendentes(JSON.parse(buscasSalvas));
     } else {
-      // Dados de exemplo para demonstraÃ§Ã£o
+      // Dados de exemplo para demonstração
       const exemplos: BuscaPendente[] = [
         {
           id: "1",
           termo: "pneu de bicicleta aro 26",
-          usuario_nome: "JoÃ£o Silva",
+          usuario_nome: "João Silva",
           usuario_email: "joao@email.com",
           tipo: "produto",
           status: "pendente",
@@ -125,7 +125,7 @@ export default function AdminDemandasPage() {
         },
         {
           id: "2",
-          termo: "manicure em domicÃ­lio",
+          termo: "manicure em domicílio",
           usuario_nome: "Maria Santos",
           usuario_email: "maria@email.com",
           tipo: "servico",
@@ -139,22 +139,22 @@ export default function AdminDemandasPage() {
     }
   };
 
-  // ðŸ†• Salvar buscas pendentes
+  // 🆕 Salvar buscas pendentes
   const salvarBuscasPendentes = (novas: BuscaPendente[]) => {
     setBuscasPendentes(novas);
     localStorage.setItem("buscas_pendentes", JSON.stringify(novas));
   };
 
-  // ðŸ†• Atualizar status da busca pendente
+  // 🆕 Atualizar status da busca pendente
   const atualizarStatusBusca = (id: string, status: BuscaPendente["status"]) => {
     const novas = buscasPendentes.map(b => 
       b.id === id ? { ...b, status, data_resposta: new Date().toISOString() } : b
     );
     salvarBuscasPendentes(novas);
-    toast.success(`Busca atualizada para ${status === "concluido" ? "concluÃ­da" : status}`);
+    toast.success(`Busca atualizada para ${status === "concluido" ? "concluída" : status}`);
   };
 
-  // ðŸ†• Convidar fornecedor para a busca pendente
+  // 🆕 Convidar fornecedor para a busca pendente
   const convidarFornecedorBusca = () => {
     if (!buscaSelecionada) return;
 
@@ -187,7 +187,7 @@ export default function AdminDemandasPage() {
     toast.success(`Convite enviado para ${conviteData.email}`);
   };
 
-  // ðŸ†• Sugerir produto da internet
+  // 🆕 Sugerir produto da internet
   const sugerirProduto = () => {
     if (!buscaSelecionada) return;
 
@@ -214,18 +214,18 @@ export default function AdminDemandasPage() {
     );
     salvarBuscasPendentes(novasBuscas);
 
-    // TODO: Enviar notificaÃ§Ã£o para o usuÃ¡rio via popup/push
-    toast.success(`Produto sugerido! UsuÃ¡rio serÃ¡ notificado.`);
+    // TODO: Enviar notificação para o usuário via popup/push
+    toast.success(`Produto sugerido! Usuário será notificado.`);
     setShowBuscaModal(false);
     setBuscaSelecionada(null);
     setProdutoSugerido({ nome: "", preco: "", link: "", loja: "" });
   };
 
-  // ðŸ†• Notificar usuÃ¡rio que o produto foi encontrado
+  // 🆕 Notificar usuário que o produto foi encontrado
   const notificarUsuario = (busca: BuscaPendente) => {
     if (busca.produto_sugerido) {
-      // Disparar notificaÃ§Ã£o push/popup para o usuÃ¡rio
-      toast.success(`UsuÃ¡rio ${busca.usuario_nome} notificado sobre ${busca.produto_sugerido.nome}`);
+      // Disparar notificação push/popup para o usuário
+      toast.success(`Usuário ${busca.usuario_nome} notificado sobre ${busca.produto_sugerido.nome}`);
       
       const novasBuscas = buscasPendentes.map(b =>
         b.id === busca.id ? { ...b, notificado_usuario: true } : b
@@ -278,7 +278,7 @@ export default function AdminDemandasPage() {
   const emAndamento = solicitacoes.filter(s => s.status === "em_andamento").length;
   const concluidas = solicitacoes.filter(s => s.status === "concluido").length;
   
-  // ðŸ†• EstatÃ­sticas de buscas pendentes
+  // 🆕 Estatísticas de buscas pendentes
   const buscasPendentesCount = buscasPendentes.filter(b => b.status === "pendente").length;
   const buscasEmAndamento = buscasPendentes.filter(b => b.status === "em_andamento").length;
   const buscasConcluidas = buscasPendentes.filter(b => b.status === "concluido").length;
@@ -291,7 +291,7 @@ export default function AdminDemandasPage() {
           <ArrowLeft className="w-6 h-6" />
         </button>
         <Bell className="w-6 h-6 text-white" />
-        <h1 className="text-white font-bold text-xl">ðŸ“‹ Demandas de ServiÃ§os</h1>
+        <h1 className="text-white font-bold text-xl">📋 Demandas de Serviços</h1>
       </header>
 
       <main className="max-w-4xl mx-auto p-6 space-y-6">
@@ -307,7 +307,7 @@ export default function AdminDemandasPage() {
           </div>
           <div className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl p-4 text-white text-center">
             <p className="text-2xl font-bold">{concluidas}</p>
-            <p className="text-sm opacity-90">ConcluÃ­das</p>
+            <p className="text-sm opacity-90">Concluídas</p>
           </div>
           <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-4 text-white text-center">
             <p className="text-2xl font-bold">{buscasPendentesCount}</p>
@@ -325,7 +325,7 @@ export default function AdminDemandasPage() {
                 : "text-gray-500 hover:text-gray-700"
             }`}
           >
-            ðŸ“ SolicitaÃ§Ãµes ({solicitacoes.length})
+            📝 Solicitações ({solicitacoes.length})
           </button>
           <button
             onClick={() => setActiveTab("fornecedores")}
@@ -335,7 +335,7 @@ export default function AdminDemandasPage() {
                 : "text-gray-500 hover:text-gray-700"
             }`}
           >
-            ðŸ¢ Fornecedores ({fornecedores.length})
+            🏢 Fornecedores ({fornecedores.length})
           </button>
           <button
             onClick={() => setActiveTab("buscas")}
@@ -346,7 +346,7 @@ export default function AdminDemandasPage() {
             }`}
           >
             <Search className="w-4 h-4" />
-            ðŸ” Demandas de Busca ({buscasPendentes.length})
+            🔍 Demandas de Busca ({buscasPendentes.length})
             {buscasPendentesCount > 0 && (
               <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full ml-1">
                 {buscasPendentesCount}
@@ -355,14 +355,14 @@ export default function AdminDemandasPage() {
           </button>
         </div>
 
-        {/* Lista de SolicitaÃ§Ãµes (ORIGINAL - NÃƒO MODIFICADA) */}
+        {/* Lista de Solicitações (ORIGINAL - NÃO MODIFICADA) */}
         {activeTab === "solicitacoes" && (
           <div className="space-y-4">
             {solicitacoes.length === 0 ? (
               <div className="bg-white rounded-2xl p-12 text-center">
                 <Bell className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500 font-medium">Nenhuma solicitaÃ§Ã£o pendente</p>
-                <p className="text-sm text-gray-400">As demandas dos usuÃ¡rios aparecerÃ£o aqui</p>
+                <p className="text-gray-500 font-medium">Nenhuma solicitação pendente</p>
+                <p className="text-sm text-gray-400">As demandas dos usuários aparecerão aqui</p>
               </div>
             ) : (
               solicitacoes.sort((a,b) => new Date(b.data).getTime() - new Date(a.data).getTime()).map((s) => (
@@ -378,9 +378,9 @@ export default function AdminDemandasPage() {
                           s.status === "concluido" ? "bg-green-100 text-green-700" :
                           "bg-red-100 text-red-700"
                         }`}>
-                          {s.status === "pendente" ? "â³ Pendente" :
-                           s.status === "em_andamento" ? "ðŸ”„ Em andamento" :
-                           s.status === "concluido" ? "âœ… ConcluÃ­do" : "âŒ Cancelado"}
+                          {s.status === "pendente" ? "⏳ Pendente" :
+                           s.status === "em_andamento" ? "🔄 Em andamento" :
+                           s.status === "concluido" ? "✅ Concluído" : "❌ Cancelado"}
                         </span>
                       </div>
                       <p className="text-sm text-gray-500 mb-2">{s.categoria}</p>
@@ -416,7 +416,7 @@ export default function AdminDemandasPage() {
                           className="px-4 py-2 bg-green-600 text-white rounded-xl text-sm font-bold flex items-center gap-2"
                         >
                           <Check className="w-4 h-4" />
-                          Marcar ConcluÃ­do
+                          Marcar Concluído
                         </button>
                       )}
                       <button
@@ -433,14 +433,14 @@ export default function AdminDemandasPage() {
           </div>
         )}
 
-        {/* Lista de Fornecedores (ORIGINAL - NÃƒO MODIFICADA) */}
+        {/* Lista de Fornecedores (ORIGINAL - NÃO MODIFICADA) */}
         {activeTab === "fornecedores" && (
           <div className="space-y-4">
             {fornecedores.length === 0 ? (
               <div className="bg-white rounded-2xl p-12 text-center">
                 <Briefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500 font-medium">Nenhum fornecedor cadastrado</p>
-                <p className="text-sm text-gray-400">Convide fornecedores para atender Ã s demandas</p>
+                <p className="text-sm text-gray-400">Convide fornecedores para atender às demandas</p>
               </div>
             ) : (
               fornecedores.map((f) => (
@@ -461,7 +461,7 @@ export default function AdminDemandasPage() {
                       f.status === "ativo" ? "bg-green-100 text-green-700" :
                       f.status === "pendente" ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-500"
                     }`}>
-                      {f.status === "ativo" ? "âœ… Ativo" : f.status === "pendente" ? "â³ Pendente" : "âŒ Inativo"}
+                      {f.status === "ativo" ? "✅ Ativo" : f.status === "pendente" ? "⏳ Pendente" : "❌ Inativo"}
                     </span>
                   </div>
                 </div>
@@ -470,14 +470,14 @@ export default function AdminDemandasPage() {
           </div>
         )}
 
-        {/* ðŸ†• LISTA DE BUSCAS PENDENTES */}
+        {/* 🆕 LISTA DE BUSCAS PENDENTES */}
         {activeTab === "buscas" && (
           <div className="space-y-4">
             {buscasPendentes.length === 0 ? (
               <div className="bg-white rounded-2xl p-12 text-center">
                 <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500 font-medium">Nenhuma busca pendente</p>
-                <p className="text-sm text-gray-400">Quando um usuÃ¡rio buscar algo nÃ£o encontrado, aparecerÃ¡ aqui</p>
+                <p className="text-sm text-gray-400">Quando um usuário buscar algo não encontrado, aparecerá aqui</p>
               </div>
             ) : (
               buscasPendentes.sort((a,b) => new Date(b.data_busca).getTime() - new Date(a.data_busca).getTime()).map((busca) => (
@@ -497,13 +497,13 @@ export default function AdminDemandasPage() {
                           busca.status === "concluido" ? "bg-green-100 text-green-700" :
                           "bg-red-100 text-red-700"
                         }`}>
-                          {busca.status === "pendente" ? "â³ Pendente" :
-                           busca.status === "em_andamento" ? "ðŸ”„ Em andamento" :
-                           busca.status === "concluido" ? "âœ… ConcluÃ­do" : "âŒ Cancelado"}
+                          {busca.status === "pendente" ? "⏳ Pendente" :
+                           busca.status === "em_andamento" ? "🔄 Em andamento" :
+                           busca.status === "concluido" ? "✅ Concluído" : "❌ Cancelado"}
                         </span>
                         {busca.produto_sugerido && (
                           <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
-                            ðŸŽ¯ SugestÃ£o enviada
+                            🎯 Sugestão enviada
                           </span>
                         )}
                       </div>
@@ -563,7 +563,7 @@ export default function AdminDemandasPage() {
                           className="px-4 py-2 bg-green-600 text-white rounded-xl text-sm font-bold flex items-center gap-2"
                         >
                           <Check className="w-4 h-4" />
-                          Marcar ConcluÃ­do
+                          Marcar Concluído
                         </button>
                       )}
                       {busca.produto_sugerido && !busca.notificado_usuario && (
@@ -572,7 +572,7 @@ export default function AdminDemandasPage() {
                           className="px-4 py-2 bg-yellow-500 text-white rounded-xl text-sm font-bold flex items-center gap-2"
                         >
                           <Bell className="w-4 h-4" />
-                          Notificar UsuÃ¡rio
+                          Notificar Usuário
                         </button>
                       )}
                       <button
@@ -590,7 +590,7 @@ export default function AdminDemandasPage() {
         )}
       </main>
 
-      {/* Modal de Convite (ORIGINAL - NÃƒO MODIFICADO) */}
+      {/* Modal de Convite (ORIGINAL - NÃO MODIFICADO) */}
       {showConviteModal && solicitacaoSelecionada && (
         <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6">
@@ -602,7 +602,7 @@ export default function AdminDemandasPage() {
             </div>
             <div className="mb-4">
               <p className="text-sm text-gray-600 mb-2">
-                ServiÃ§o solicitado: <strong>{solicitacaoSelecionada.servico}</strong>
+                Serviço solicitado: <strong>{solicitacaoSelecionada.servico}</strong>
               </p>
               <p className="text-sm text-gray-600 mb-4">
                 Cliente: <strong>{solicitacaoSelecionada.cliente.nome}</strong>
@@ -627,7 +627,7 @@ export default function AdminDemandasPage() {
                   onChange={(e) => setConviteData({ ...conviteData, mensagem: e.target.value })}
                   rows={3}
                   className="w-full px-4 py-2 border border-gray-300 rounded-xl"
-                  placeholder={`OlÃ¡! Recebemos uma solicitaÃ§Ã£o de ${solicitacaoSelecionada.cliente.nome} para o serviÃ§o "${solicitacaoSelecionada.servico}". Gostaria de se cadastrar como fornecedor?`}
+                  placeholder={`Olá! Recebemos uma solicitação de ${solicitacaoSelecionada.cliente.nome} para o serviço "${solicitacaoSelecionada.servico}". Gostaria de se cadastrar como fornecedor?`}
                 />
               </div>
             </div>
@@ -650,19 +650,19 @@ export default function AdminDemandasPage() {
         </div>
       )}
 
-      {/* ðŸ†• MODAL PARA SUGERIR PRODUTO DA INTERNET */}
+      {/* 🆕 MODAL PARA SUGERIR PRODUTO DA INTERNET */}
       {showBuscaModal && buscaSelecionada && (
         <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-800">ðŸ” Sugerir Produto/ServiÃ§o</h2>
+              <h2 className="text-xl font-bold text-gray-800">🔍 Sugerir Produto/Serviço</h2>
               <button onClick={() => setShowBuscaModal(false)} className="text-gray-400">
                 <XCircle className="w-6 h-6" />
               </button>
             </div>
             
             <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-600">UsuÃ¡rio buscou por:</p>
+              <p className="text-sm text-gray-600">Usuário buscou por:</p>
               <p className="font-bold text-gray-800">{buscaSelecionada.termo}</p>
               <p className="text-xs text-gray-500 mt-1">
                 {buscaSelecionada.usuario_nome} - {buscaSelecionada.usuario_email}
@@ -672,7 +672,7 @@ export default function AdminDemandasPage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nome do produto/serviÃ§o *
+                  Nome do produto/serviço *
                 </label>
                 <input
                   type="text"
@@ -686,7 +686,7 @@ export default function AdminDemandasPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    PreÃ§o (R$)
+                    Preço (R$)
                   </label>
                   <input
                     type="number"
@@ -747,7 +747,7 @@ export default function AdminDemandasPage() {
   );
 }
 
-// ðŸ†• Ãcone Package (nÃ£o estava no import)
+// 🆕 Ícone Package (não estava no import)
 function Package(props: any) {
   return (
     <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

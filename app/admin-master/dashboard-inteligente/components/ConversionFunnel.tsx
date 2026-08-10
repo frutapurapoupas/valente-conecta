@@ -14,7 +14,7 @@ export default function ConversionFunnel() {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border p-4">
-      <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">?? Funil de Conversão</h3>
+      <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">📈 Funil de Conversão</h3>
       <div className="space-y-4">
         {etapas.map((etapa, idx) => {
           const Icon = etapa.icone;

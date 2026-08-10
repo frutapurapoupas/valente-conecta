@@ -79,7 +79,7 @@ export default function AdminNotificacoesPage() {
   }, [mounted, isAdmin]);
 
   // ============================================================================
-  // FUNÃ‡Ã•ES DE UTILIDADE
+  // FUNÇÕES DE UTILIDADE
   // ============================================================================
 
   if (!mounted) {
@@ -114,22 +114,22 @@ export default function AdminNotificacoesPage() {
   const getAlvoLabel = (notif: Notificacao) => {
     if (notif.para_usuario_id) {
       const usuario = usuarios.find(u => u.id === notif.para_usuario_id);
-      return `ðŸ‘¤ ${usuario?.nome || 'UsuÃ¡rio especÃ­fico'}`;
+      return `👤 ${usuario?.nome || 'Usuário específico'}`;
     }
     if (notif.para_grupo && notif.para_grupo !== 'todos') {
       const grupo = grupos.find(g => g.id === notif.para_grupo);
-      return grupo ? `${getIconeGrupo(grupo.icone)} ${grupo.nome}` : `ðŸ“Œ Grupo: ${notif.para_grupo}`;
+      return grupo ? `${getIconeGrupo(grupo.icone)} ${grupo.nome}` : `📌 Grupo: ${notif.para_grupo}`;
     }
-    return "ðŸŒ Todos os usuÃ¡rios";
+    return "🌍 Todos os usuários";
   };
 
   const handleAdicionar = async () => {
     if (!novaNotificacao.titulo || !novaNotificacao.mensagem) {
-      toast.error("Preencha tÃ­tulo e mensagem");
+      toast.error("Preencha título e mensagem");
       return;
     }
     if (novaNotificacao.tipoAlvo === 'usuario' && !novaNotificacao.usuarioAlvo) {
-      toast.error("Selecione um usuÃ¡rio para enviar");
+      toast.error("Selecione um usuário para enviar");
       return;
     }
 
@@ -137,8 +137,8 @@ export default function AdminNotificacoesPage() {
     const result = await adicionarNotificacao(novaNotificacao);
     
     const msgAlvo = novaNotificacao.tipoAlvo === 'todos' ? 'para todos' : 
-                    (novaNotificacao.tipoAlvo === 'grupo' ? `para grupo ${novaNotificacao.grupoAlvo}` : 'para usuÃ¡rio especÃ­fico');
-    const msgTeste = modoTeste ? ' ðŸ§ª MODO TESTE ATIVADO' : '';
+                    (novaNotificacao.tipoAlvo === 'grupo' ? `para grupo ${novaNotificacao.grupoAlvo}` : 'para usuário específico');
+    const msgTeste = modoTeste ? ' 🧪 MODO TESTE ATIVADO' : '';
     
     setNovaNotificacao({ 
       titulo: "", 
@@ -156,7 +156,7 @@ export default function AdminNotificacoesPage() {
     });
     setMostrarFormulario(false);
     
-    toast.success(`âœ… NotificaÃ§Ã£o publicada ${msgAlvo}!${msgTeste} ${result.canais.length > 0 ? `Enviada via: ${result.canais.join(", ")}` : ""}`);
+    toast.success(`✅ Notificação publicada ${msgAlvo}!${msgTeste} ${result.canais.length > 0 ? `Enviada via: ${result.canais.join(", ")}` : ""}`);
     setEnviando(false);
   };
 
@@ -181,7 +181,7 @@ export default function AdminNotificacoesPage() {
 
   const handleSalvarEdicao = () => {
     if (!novaNotificacao.titulo || !novaNotificacao.mensagem) {
-      toast.error("Preencha tÃ­tulo e mensagem");
+      toast.error("Preencha título e mensagem");
       return;
     }
 
@@ -215,17 +215,17 @@ export default function AdminNotificacoesPage() {
     });
     setMostrarFormulario(false);
     setEditandoId(null);
-    toast.success("âœ… NotificaÃ§Ã£o atualizada!");
+    toast.success("✅ Notificação atualizada!");
   };
 
   const handleToggleAtiva = (id: number | string) => {
     const ativa = toggleAtiva(id);
-    toast.success(ativa ? "âœ… NotificaÃ§Ã£o ativada!" : "âŒ NotificaÃ§Ã£o desativada!");
+    toast.success(ativa ? "✅ Notificação ativada!" : "❌ Notificação desativada!");
   };
 
   const handleRemover = (id: number | string) => {
     removerNotificacao(id);
-    toast.success("ðŸ—‘ï¸ NotificaÃ§Ã£o removida!");
+    toast.success("🗑️ Notificação removida!");
   };
 
   const handleNovaNotificacao = () => {

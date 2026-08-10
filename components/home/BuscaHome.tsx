@@ -19,7 +19,7 @@ export default function BuscaHome({ onSearchResult }: BuscaHomeProps) {
       <div className="container mx-auto px-4">
         <BuscaInteligente 
           onResultadoClick={onSearchResult}
-          placeholder="?? Buscar produtos, serviços, profissionais..."
+          placeholder="🔍 Buscar produtos, serviços, profissionais..."
         />
       </div>
     </div>

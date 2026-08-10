@@ -28,7 +28,7 @@ export default function PushSubscriptionManager() {
     try {
       const registration = await navigator.serviceWorker.ready;
       
-      // Solicitar permissÃ£o
+      // Solicitar permissão
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') {
         return;
@@ -70,7 +70,7 @@ export default function PushSubscriptionManager() {
           ? 'bg-green-500 hover:bg-green-600' 
           : 'bg-gray-500 hover:bg-gray-600'
       } text-white`}
-      title={isSubscribed ? 'NotificaÃ§Ãµes ativadas' : 'Ativar notificaÃ§Ãµes'}
+      title={isSubscribed ? 'Notificações ativadas' : 'Ativar notificações'}
     >
       <Bell className="w-5 h-5" />
     </button>

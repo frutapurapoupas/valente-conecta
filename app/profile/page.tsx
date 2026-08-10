@@ -116,7 +116,7 @@ export default function ProfilePage() {
   const handleLogout = () => {
     logout();
     localStorage.removeItem("valente_user");
-    toast.success("?? Logout realizado com sucesso!");
+    toast.success("👋 Logout realizado com sucesso!");
     router.push("/login");
   };
 

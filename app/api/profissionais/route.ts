@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     if (!body.nome?.trim() || !body.categoria?.trim() || !body.telefone?.trim()) {
-      return NextResponse.json({ success: false, error: 'Nome, categoria e telefone sÃ£o obrigatÃ³rios.' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'Nome, categoria e telefone são obrigatórios.' }, { status: 400 });
     }
 
     const items = read();
@@ -100,12 +100,12 @@ export async function PUT(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
-    if (!id) return NextResponse.json({ success: false, error: 'ID nÃ£o informado' }, { status: 400 });
+    if (!id) return NextResponse.json({ success: false, error: 'ID não informado' }, { status: 400 });
 
     const body = await request.json();
     const items = read();
     const idx = items.findIndex((i) => i.id === id);
-    if (idx === -1) return NextResponse.json({ success: false, error: 'Profissional nÃ£o encontrado' }, { status: 404 });
+    if (idx === -1) return NextResponse.json({ success: false, error: 'Profissional não encontrado' }, { status: 404 });
 
     items[idx] = { ...items[idx], ...body, id, updatedAt: new Date().toISOString() };
     write(items);
@@ -120,12 +120,12 @@ export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
-    if (!id) return NextResponse.json({ success: false, error: 'ID nÃ£o informado' }, { status: 400 });
+    if (!id) return NextResponse.json({ success: false, error: 'ID não informado' }, { status: 400 });
 
     const items = read();
     const filtered = items.filter((i) => i.id !== id);
     if (filtered.length === items.length) {
-      return NextResponse.json({ success: false, error: 'Profissional nÃ£o encontrado' }, { status: 404 });
+      return NextResponse.json({ success: false, error: 'Profissional não encontrado' }, { status: 404 });
     }
 
     write(filtered);

@@ -5,11 +5,11 @@ import path from 'path';
 // ============================================
 // BUSCA INTELIGENTE - API COMPLETA
 // ============================================
-// 1. Busca em catÃ¡logos locais (profissionais, lojas, mototaxi)
+// 1. Busca em catálogos locais (profissionais, lojas, mototaxi)
 // 2. Agrupamento por produto/nome
 // 3. Fallback internet (Google) com 3 resultados
-// 4. Aplicar borramento se usuÃ¡rio nÃ£o tem plano pago
-// 5. Registrar pendÃªncia no admin se nÃ£o encontrar
+// 4. Aplicar borramento se usuário não tem plano pago
+// 5. Registrar pendência no admin se não encontrar
 
 interface LocalProduct {
   id: string;
@@ -38,7 +38,7 @@ interface GroupedProduct {
   totalLocations: number;
 }
 
-// Ler dados de usuÃ¡rios com seus produtos
+// Ler dados de usuários com seus produtos
 function lerDadosLocais(): LocalProduct[] {
   const produtos: LocalProduct[] = [];
 
@@ -59,8 +59,8 @@ function lerDadosLocais(): LocalProduct[] {
               categoria: 'profissionais',
               usuarioId: prof.id,
               usuarioNome: prof.nome,
-              usuarioEndereco: prof.endereco || 'EndereÃ§o nÃ£o informado',
-              usuarioTelefone: prof.telefone || 'Telefone nÃ£o informado',
+              usuarioEndereco: prof.endereco || 'Endereço não informado',
+              usuarioTelefone: prof.telefone || 'Telefone não informado',
               usuarioPlano: prof.plano || 'gratis',
               usuarioLocalizacao: prof.localizacao,
               localidade: prof.localidade || 'Valente, BA'
@@ -70,7 +70,7 @@ function lerDadosLocais(): LocalProduct[] {
       });
     }
 
-    // === CATÃLOGO COMERCIAL ===
+    // === CATÁLOGO COMERCIAL ===
     const catalogoPath = path.join(process.cwd(), 'data', 'catalogo.json');
     if (fs.existsSync(catalogoPath)) {
       const catalogo = JSON.parse(fs.readFileSync(catalogoPath, 'utf8'));
@@ -84,8 +84,8 @@ function lerDadosLocais(): LocalProduct[] {
           categoria: item.categoria || 'comercial',
           usuarioId: item.vendedorId,
           usuarioNome: item.vendedorNome,
-          usuarioEndereco: item.endereco || 'EndereÃ§o nÃ£o informado',
-          usuarioTelefone: item.telefone || 'Telefone nÃ£o informado',
+          usuarioEndereco: item.endereco || 'Endereço não informado',
+          usuarioTelefone: item.telefone || 'Telefone não informado',
           usuarioPlano: item.vendedorPlano || 'gratis',
           usuarioLocalizacao: item.localizacao,
           localidade: item.localidade || 'Valente, BA'
@@ -103,14 +103,14 @@ function lerDadosLocais(): LocalProduct[] {
             produtos.push({
               id: `taxi-${taxi.id}-${servico}`,
               nome: servico,
-              descricao: 'ServiÃ§o de transporte',
+              descricao: 'Serviço de transporte',
               preco: taxi.precoBase || 15,
               imagem: taxi.foto,
               categoria: 'transporte',
               usuarioId: taxi.id,
               usuarioNome: taxi.nome,
-              usuarioEndereco: taxi.endereco || 'EndereÃ§o nÃ£o informado',
-              usuarioTelefone: taxi.telefone || 'Telefone nÃ£o informado',
+              usuarioEndereco: taxi.endereco || 'Endereço não informado',
+              usuarioTelefone: taxi.telefone || 'Telefone não informado',
               usuarioPlano: taxi.plano || 'gratis',
               usuarioLocalizacao: taxi.localizacao,
               localidade: 'Valente, BA'
@@ -136,8 +136,8 @@ function lerDadosLocais(): LocalProduct[] {
               categoria: loja.categoria || 'comercio',
               usuarioId: loja.id,
               usuarioNome: loja.nome,
-              usuarioEndereco: loja.endereco || 'EndereÃ§o nÃ£o informado',
-              usuarioTelefone: loja.telefone || 'Telefone nÃ£o informado',
+              usuarioEndereco: loja.endereco || 'Endereço não informado',
+              usuarioTelefone: loja.telefone || 'Telefone não informado',
               usuarioPlano: loja.plano || 'gratis',
               usuarioLocalizacao: loja.localizacao,
               localidade: 'Valente, BA'
@@ -180,7 +180,7 @@ function filtrarEAgrupar(
   // Converter para array de produtos agrupados
   const resultado: GroupedProduct[] = Array.from(grouped.entries()).map(([nome, locations]) => ({
     nome: locations[0].nome, // Use o nome original do primeiro item
-    preco: Math.min(...locations.map(l => l.preco)), // PreÃ§o mÃ­nimo
+    preco: Math.min(...locations.map(l => l.preco)), // Preço mínimo
     descricao: locations[0].descricao,
     imagem: locations[0].imagem,
     categoria: locations[0].categoria,
@@ -201,7 +201,7 @@ function aplicarBorramento(produtos: GroupedProduct[], desbloqueados: string[] =
       
       return {
         ...loc,
-        usuarioEndereco: precisaBloquear ? '*** Desbloqueie para ver endereÃ§o ***' : loc.usuarioEndereco,
+        usuarioEndereco: precisaBloquear ? '*** Desbloqueie para ver endereço ***' : loc.usuarioEndereco,
         usuarioTelefone: precisaBloquear ? '*** Desbloqueie para ver telefone ***' : loc.usuarioTelefone,
         usuarioLocalizacao: precisaBloquear ? undefined : loc.usuarioLocalizacao
       };
@@ -211,7 +211,7 @@ function aplicarBorramento(produtos: GroupedProduct[], desbloqueados: string[] =
 
 // Buscar 3 resultados na internet (simulado com Google)
 async function buscarInternet(termo: string): Promise<any[]> {
-  // Em produÃ§Ã£o, usar Google Custom Search API ou similar
+  // Em produção, usar Google Custom Search API ou similar
   // Por enquanto, retornar array vazio com mensagem de registro
   return [
     {
@@ -240,14 +240,14 @@ async function buscarInternet(termo: string): Promise<any[]> {
       descricao: 'Resultado de busca na internet',
       preco: 0,
       categoria: 'internet',
-      linkExterno: `https://www.google.com/search?q=${encodeURIComponent(termo + ' preÃ§o')}`,
+      linkExterno: `https://www.google.com/search?q=${encodeURIComponent(termo + ' preço')}`,
       usuarioNome: 'Google',
       origem: 'internet'
     }
   ];
 }
 
-// Registrar pendÃªncia no admin
+// Registrar pendência no admin
 function registrarPendencia(termo: string, userId: string, localizacao?: { lat: number; lng: number }) {
   try {
     const demandasPath = path.join(process.cwd(), 'data', 'demandas_busca.json');
@@ -257,12 +257,12 @@ function registrarPendencia(termo: string, userId: string, localizacao?: { lat: 
       demandas = JSON.parse(fs.readFileSync(demandasPath, 'utf8'));
     }
 
-    // CORRIGIDO: Certifique-se de que todos os campos estÃ£o definidos corretamente
+    // CORRIGIDO: Certifique-se de que todos os campos estão definidos corretamente
     const novaDemanda = {
       id: `demanda-${Date.now()}`,
       termo,
       userId,
-      localizacao: localizacao || null, // Usar null se nÃ£o tiver localizaÃ§Ã£o
+      localizacao: localizacao || null, // Usar null se não tiver localização
       status: 'pendente',
       criadoEm: new Date().toISOString(),
       respondidoEm: null,
@@ -275,7 +275,7 @@ function registrarPendencia(termo: string, userId: string, localizacao?: { lat: 
     demandas.push(novaDemanda);
     fs.writeFileSync(demandasPath, JSON.stringify(demandas, null, 2));
   } catch (error) {
-    console.error('Erro ao registrar pendÃªncia:', error);
+    console.error('Erro ao registrar pendência:', error);
   }
 }
 
@@ -294,7 +294,7 @@ export async function GET(request: NextRequest) {
     if (!termo || termo.length < 2) {
       return NextResponse.json({
         success: false,
-        message: 'Termo de busca invÃ¡lido'
+        message: 'Termo de busca inválido'
       });
     }
 
@@ -318,7 +318,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Se nÃ£o encontrar, registrar demanda e retornar fallback internet
+    // Se não encontrar, registrar demanda e retornar fallback internet
     registrarPendencia(termo, userId, lat && lng ? { lat: parseFloat(lat), lng: parseFloat(lng) } : undefined);
 
     const resultadosInternet = await buscarInternet(termo);
@@ -330,7 +330,7 @@ export async function GET(request: NextRequest) {
       totalLocal: 0,
       mensagem: `Nenhum resultado em Valente, BA. Mostrando resultados da internet.`,
       demandaRegistrada: true,
-      demandaMensagem: `Sua busca por "${termo}" foi registrada! VocÃª receberÃ¡ uma notificaÃ§Ã£o quando um produto for encontrado ou adicionado em atÃ© 24 horas.`
+      demandaMensagem: `Sua busca por "${termo}" foi registrada! Você receberá uma notificação quando um produto for encontrado ou adicionado em até 24 horas.`
     });
   } catch (error) {
     console.error('Erro na busca:', error);

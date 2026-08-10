@@ -37,7 +37,7 @@ export function VagaCard({
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
       <div className="flex flex-col md:flex-row md:items-start gap-4">
-        {/* ConteÃºdo Principal */}
+        {/* Conteúdo Principal */}
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-start gap-2 mb-2">
             <h3 
@@ -89,7 +89,7 @@ export function VagaCard({
           </div>
         </div>
 
-        {/* AÃ§Ãµes */}
+        {/* Ações */}
         <div className="flex flex-wrap gap-2 flex-shrink-0">
           {isAdmin ? (
             <>

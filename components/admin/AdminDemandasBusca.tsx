@@ -42,7 +42,7 @@ export default function AdminDemandasBusca({
         setDemandas(data.demandas);
         setEstatisticas(data.estatisticas);
       } else {
-        // Adicionado para tratar falhas da API que nÃ£o geram exceÃ§Ã£o
+        // Adicionado para tratar falhas da API que não geram exceção
         throw new Error(data.error || 'Falha ao carregar dados da API');
       }
     } catch (error) {
@@ -168,7 +168,7 @@ export default function AdminDemandasBusca({
               Demandas de Busca
             </h2>
             <p className="text-sm text-gray-500 mt-1">
-              Gerenciar buscas que nÃ£o encontraram resultados locais
+              Gerenciar buscas que não encontraram resultados locais
             </p>
           </div>
           <button
@@ -179,7 +179,7 @@ export default function AdminDemandasBusca({
           </button>
         </div>
 
-        {/* EstatÃ­sticas */}
+        {/* Estatísticas */}
         <div className="grid grid-cols-3 gap-3 mt-4">
           <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
             <p className="text-xs text-yellow-700 font-semibold">PENDENTES</p>
@@ -250,7 +250,7 @@ export default function AdminDemandasBusca({
                     </span>
                   </div>
                   <p className="text-sm text-gray-600 mt-1">
-                    UsuÃ¡rio: {demanda.userId}
+                    Usuário: {demanda.userId}
                   </p>
                   <p className="text-xs text-gray-500 mt-0.5">
                     {formatarData(demanda.criadoEm)}
@@ -264,10 +264,10 @@ export default function AdminDemandasBusca({
               {/* Card expandido */}
               {expandida === demanda.id && (
                 <div className="bg-gray-50 border-t border-gray-200 p-4 space-y-3">
-                  {/* LocalizaÃ§Ã£o */}
+                  {/* Localização */}
                   {demanda.localizacao && (
                     <div className="text-sm">
-                      <p className="font-semibold text-gray-700">LocalizaÃ§Ã£o:</p>
+                      <p className="font-semibold text-gray-700">Localização:</p>
                       <p className="text-gray-600">
                         Lat: {demanda.localizacao.lat.toFixed(4)}, Lng: {demanda.localizacao.lng.toFixed(4)}
                       </p>
@@ -293,14 +293,14 @@ export default function AdminDemandasBusca({
                     </div>
                   )}
 
-                  {/* Ãrea para nova resposta */}
+                  {/* Área para nova resposta */}
                   {demanda.status === 'pendente' && (
                     <div className="space-y-2">
                       <textarea
                         value={respostaModal?.demandaId === demanda.id ? resposta : ''}
                         onChange={(e) => setResposta(e.target.value)}
                         onClick={() => setRespostaModal({ demandaId: demanda.id, show: true })}
-                        placeholder="Digite uma resposta ou sugestÃ£o..."
+                        placeholder="Digite uma resposta ou sugestão..."
                         className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                         rows={3}
                       />
@@ -322,7 +322,7 @@ export default function AdminDemandasBusca({
                     </div>
                   )}
 
-                  {/* AÃ§Ãµes */}
+                  {/* Ações */}
                   <div className="flex gap-2 pt-2 border-t border-gray-200">
                     {demanda.status === 'pendente' && (
                       <button

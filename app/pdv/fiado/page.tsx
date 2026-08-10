@@ -105,13 +105,13 @@ export default function FiadoPage() {
   const carregarDados = async () => {
     setLoading(true);
     try {
-      // Simular carregamento - em produÃ§Ã£o, chamar APIs
+      // Simular carregamento - em produção, chamar APIs
       setTimeout(() => {
         // Dados mock
         const mockClientes: ClienteFiado[] = [
           {
             id: '1',
-            nome: 'JoÃ£o Silva',
+            nome: 'João Silva',
             telefone: '(75) 99999-1111',
             email: 'joao@email.com',
             endereco: 'Rua A, 123, Centro',
@@ -157,7 +157,7 @@ export default function FiadoPage() {
           {
             id: '1',
             clienteId: '1',
-            clienteNome: 'JoÃ£o Silva',
+            clienteNome: 'João Silva',
             valor: 150.00,
             valorPago: 0,
             saldoDevedor: 150.00,
@@ -166,14 +166,14 @@ export default function FiadoPage() {
             status: 'pendente',
             itens: [
               { nome: 'Arroz 5kg', quantidade: 2, preco: 25.90 },
-              { nome: 'FeijÃ£o 1kg', quantidade: 3, preco: 8.50 }
+              { nome: 'Feijão 1kg', quantidade: 3, preco: 8.50 }
             ],
             observacoes: 'Cliente novo, primeira compra'
           },
           {
             id: '2',
             clienteId: '1',
-            clienteNome: 'JoÃ£o Silva',
+            clienteNome: 'João Silva',
             valor: 100.00,
             valorPago: 100.00,
             saldoDevedor: 0,
@@ -249,7 +249,7 @@ export default function FiadoPage() {
 
   const registrarPagamento = async () => {
     if (!selectedDivida || valorPagamento <= 0) {
-      toast.error('Valor invÃ¡lido');
+      toast.error('Valor inválido');
       return;
     }
 
@@ -295,7 +295,7 @@ export default function FiadoPage() {
 
       toast.success(`Pagamento de R$ ${valorPagamento.toFixed(2)} registrado!`);
       
-      // Enviar notificaÃ§Ã£o push
+      // Enviar notificação push
       enviarNotificacao(cliente?.nome || '', valorPagamento);
       
       setShowModalPagamento(false);
@@ -308,14 +308,14 @@ export default function FiadoPage() {
   };
 
   const enviarNotificacao = (clienteNome: string, valor: number) => {
-    console.log(`NotificaÃ§Ã£o enviada para ${clienteNome}: Pagamento de R$ ${valor.toFixed(2)} recebido`);
-    toast.success(`NotificaÃ§Ã£o enviada para ${clienteNome}`);
+    console.log(`Notificação enviada para ${clienteNome}: Pagamento de R$ ${valor.toFixed(2)} recebido`);
+    toast.success(`Notificação enviada para ${clienteNome}`);
   };
 
   const enviarCobranca = (divida: Divida) => {
     const cliente = clientes.find(c => c.id === divida.clienteId);
     if (cliente) {
-      toast.success(`CobranÃ§a enviada para ${cliente.nome}`);
+      toast.success(`Cobrança enviada para ${cliente.nome}`);
     }
   };
 
@@ -398,7 +398,7 @@ export default function FiadoPage() {
               <CreditCard className="w-6 h-6 text-blue-600" />
               Controle de Fiado
             </h1>
-            <p className="text-sm text-gray-500">Gerencie crÃ©dito e cobranÃ§as</p>
+            <p className="text-sm text-gray-500">Gerencie crédito e cobranças</p>
           </div>
           <button
             onClick={() => setShowModalCliente(true)}
@@ -441,7 +441,7 @@ export default function FiadoPage() {
           <div className="bg-white rounded-lg shadow p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">CrÃ©dito DisponÃ­vel</p>
+                <p className="text-sm text-gray-500">Crédito Disponível</p>
                 <p className="text-2xl font-bold text-green-600">
                   {formatCurrency(clientes.reduce((sum, c) => sum + c.saldoDisponivel, 0))}
                 </p>
@@ -522,14 +522,14 @@ export default function FiadoPage() {
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Saldo Devedor</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Vencimento</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">AÃ§Ãµes</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {dividasFiltradas.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
-                      Nenhuma dÃ­vida encontrada
+                      Nenhuma dívida encontrada
                     </td>
                   </tr>
                 ) : (
@@ -571,7 +571,7 @@ export default function FiadoPage() {
                           <button
                             onClick={() => enviarCobranca(divida)}
                             className="p-1 text-blue-600 hover:text-blue-800"
-                            title="Enviar CobranÃ§a"
+                            title="Enviar Cobrança"
                           >
                             <Send className="w-4 h-4" />
                           </button>
@@ -594,7 +594,7 @@ export default function FiadoPage() {
         {/* Lista de Clientes */}
         <div className="bg-white rounded-lg shadow">
           <div className="p-4 border-b">
-            <h2 className="font-bold text-gray-800">Clientes com CrÃ©dito</h2>
+            <h2 className="font-bold text-gray-800">Clientes com Crédito</h2>
           </div>
           <div className="divide-y">
             {clientesFiltrados.map((cliente) => (
@@ -635,7 +635,7 @@ export default function FiadoPage() {
                         <p className="font-medium text-red-600">{formatCurrency(cliente.saldoUtilizado)}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-400">DisponÃ­vel</p>
+                        <p className="text-xs text-gray-400">Disponível</p>
                         <p className="font-medium text-green-600">{formatCurrency(cliente.saldoDisponivel)}</p>
                       </div>
                       <div>
@@ -653,7 +653,7 @@ export default function FiadoPage() {
                     </button>
                     <button
                       className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                      title="HistÃ³rico"
+                      title="Histórico"
                     >
                       <History className="w-4 h-4" />
                     </button>
@@ -710,7 +710,7 @@ export default function FiadoPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">EndereÃ§o</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Endereço</label>
                   <input
                     type="text"
                     value={formCliente.endereco}
@@ -731,7 +731,7 @@ export default function FiadoPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Limite de CrÃ©dito</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Limite de Crédito</label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">R$</span>
                     <input
@@ -822,7 +822,7 @@ export default function FiadoPage() {
                       onClick={() => setMetodoPagamento('cartao')}
                       className={`p-2 border rounded-lg text-sm ${metodoPagamento === 'cartao' ? 'border-green-500 bg-green-50' : ''}`}
                     >
-                      CartÃ£o
+                      Cartão
                     </button>
                   </div>
                 </div>

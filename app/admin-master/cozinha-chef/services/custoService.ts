@@ -63,24 +63,32 @@ export function calcularFinanceiroReceita(params: {
   preco_venda?: number;
   preco_sugerido?: number;
   custo_receita?: number;
+  custos_extras_unitario?: number;
 }) {
   const ingredientes = (params.ingredientes || []).map(normalizarIngredienteCanonico);
   const custoReceitaCalculado = ingredientes.reduce((acc, item) => acc + toNumber(item.custo_total, 0), 0);
-  const custoReceita = toNumber(params.custo_receita, custoReceitaCalculado);
+  const custoIngredientes = toNumber(params.custo_receita, custoReceitaCalculado);
   const porcoes = toNumber(params.porcoes, 0);
+
+  const custosExtrasUnitario = toNumber(params.custos_extras_unitario, 0);
+  const custosExtrasTotal = custosExtrasUnitario * porcoes;
+  const custoReceita = custoIngredientes + custosExtrasTotal;
 
   const precoSugerido = toNumber(params.preco_sugerido, toNumber(params.preco_venda, 0));
   const precoVenda = toNumber(params.preco_venda, precoSugerido);
 
   const custoPorUnidade = porcoes > 0 ? custoReceita / porcoes : 0;
-  const lucro = precoVenda - custoReceita;
-  const margemPercentual = precoVenda > 0 ? ((precoVenda - custoReceita) / precoVenda) * 100 : 0;
+
+  const receitaTotal = precoVenda * porcoes;
+  const lucro = receitaTotal - custoReceita;
+  const margemPercentual = receitaTotal > 0 ? (lucro / receitaTotal) * 100 : 0;
 
   return {
     ingredientes,
     porcoes,
     custo_receita: custoReceita,
     custo_por_unidade: custoPorUnidade,
+    custos_extras_unitario: custosExtrasUnitario,
     lucro,
     margem_percentual: margemPercentual,
     preco_sugerido: precoSugerido,
@@ -99,6 +107,7 @@ export function normalizarReceitaCanonica(item: any): ReceitaCanonicaCompat {
     preco_venda: item?.preco_venda ?? item?.preco ?? item?.price,
     preco_sugerido: item?.preco_sugerido,
     custo_receita: item?.custo_receita ?? item?.custo_total,
+    custos_extras_unitario: item?.custos_extras_unitario,
   });
 
   return {
@@ -111,6 +120,7 @@ export function normalizarReceitaCanonica(item: any): ReceitaCanonicaCompat {
     ingredientes: financeiro.ingredientes,
     rendimento: toNumber(item?.rendimento, financeiro.porcoes),
     peso_final: item?.peso_final != null ? toNumber(item.peso_final, 0) : null,
+    custos_extras_unitario: financeiro.custos_extras_unitario,
     porcoes: financeiro.porcoes,
     custo_receita: financeiro.custo_receita,
     custo_por_unidade: financeiro.custo_por_unidade,
@@ -124,7 +134,6 @@ export function normalizarReceitaCanonica(item: any): ReceitaCanonicaCompat {
     },
     created_at: String(item?.created_at ?? item?.createdAt ?? new Date().toISOString()),
     updated_at: String(item?.updated_at ?? item?.updatedAt ?? new Date().toISOString()),
-    // aliases legados
     preco: financeiro.preco_venda,
     custo_total: financeiro.custo_receita,
     margem: financeiro.margem_percentual,
@@ -157,6 +166,7 @@ export function buildReceitaPayload(canonica: ReceitaCanonicaCompat) {
     ingredientes: canonica.ingredientes,
     rendimento: canonica.rendimento,
     peso_final: canonica.peso_final,
+    custos_extras_unitario: canonica.custos_extras_unitario,
     porcoes: canonica.porcoes,
     custo_receita: canonica.custo_receita,
     custo_por_unidade: canonica.custo_por_unidade,
@@ -167,7 +177,6 @@ export function buildReceitaPayload(canonica: ReceitaCanonicaCompat) {
     integracoes: canonica.integracoes,
     created_at: canonica.created_at,
     updated_at: canonica.updated_at,
-    // aliases legados de persistencia
     preco: canonica.preco_venda,
     custo_total: canonica.custo_receita,
     margem: canonica.margem_percentual,
@@ -192,6 +201,7 @@ export const custoService = {
       preco_venda: receitaCanonica.preco_venda,
       preco_sugerido: receitaCanonica.preco_sugerido,
       custo_receita: receitaCanonica.custo_receita,
+      custos_extras_unitario: receitaCanonica.custos_extras_unitario,
     });
 
     const receitaAtualizada: ReceitaCanonicaCompat = {
@@ -225,7 +235,6 @@ export const custoService = {
   },
 
   async calcularCustoPrato(pratoId: string) {
-    // Buscar prato e sua receita
     const { data: prato } = await supabase
       .from('pratos')
       .select('*, receitas(*)')
@@ -244,11 +253,10 @@ export const custoService = {
       .not('margem', 'is', null);
 
     if (error) throw new Error(error.message);
-    
+
     const margens = data.map(r => r.margem).filter(m => m !== null);
     if (margens.length === 0) return 0;
-    
+
     return margens.reduce((a, b) => a + b, 0) / margens.length;
   }
 };
-

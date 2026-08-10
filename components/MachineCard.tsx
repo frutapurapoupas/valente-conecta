@@ -19,7 +19,7 @@ interface Supplier {
 
 export default function MachineCard({ supplier }: { supplier: Supplier }) {
   const nome = supplier.nomeEmpresa || supplier.fornecedorNome || (supplier as any).nome || 'Fornecedor';
-  const endereco = supplier.endereco || supplier.fornecedorEndereco || (supplier as any).address || 'EndereÃ§o nÃ£o informado';
+  const endereco = supplier.endereco || supplier.fornecedorEndereco || (supplier as any).address || 'Endereço não informado';
   const precoValor = supplier.preco ?? supplier.price;
   const preco = precoValor ? "R$ " + precoValor.toString() : null;
   const imagem = supplier.imagem || supplier.image || '/images/placeholder-machine.png';

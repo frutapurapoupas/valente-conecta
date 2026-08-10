@@ -69,7 +69,7 @@ export default function Page() {
     event.preventDefault();
 
     if (!form.nome.trim() || !form.descricao.trim() || !form.categoria.trim() || form.preco <= 0 || !form.imagem.trim()) {
-      toast.error('Preencha nome, descriÃ§Ã£o, categoria, preÃ§o e imagem.');
+      toast.error('Preencha nome, descrição, categoria, preço e imagem.');
       return;
     }
 
@@ -93,7 +93,7 @@ export default function Page() {
       toast.success('Item atualizado com sucesso.');
     } else {
       CatalogStorage.add(item);
-      toast.success('Item criado no catÃ¡logo de mÃ¡quinas.');
+      toast.success('Item criado no catálogo de máquinas.');
     }
 
     setItems(CatalogStorage.getAll());
@@ -118,14 +118,14 @@ export default function Page() {
   const handleRemove = (id: string) => {
     CatalogStorage.remove(id);
     setItems(CatalogStorage.getAll());
-    toast.success('Item removido do catÃ¡logo.');
+    toast.success('Item removido do catálogo.');
   };
 
   const handleToggleStatus = (item: CatalogItem) => {
     const nextStatus = item.status === 'publicado' ? 'pendente' : 'publicado';
     CatalogStorage.update(item.id, { status: nextStatus });
     setItems(CatalogStorage.getAll());
-    toast.success(`Item agora estÃ¡ ${nextStatus}.`);
+    toast.success(`Item agora está ${nextStatus}.`);
   };
 
   return (
@@ -135,8 +135,8 @@ export default function Page() {
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-sm uppercase tracking-[0.3em] text-cyan-300">Painel Admin Master</p>
-              <h1 className="mt-3 text-4xl font-bold text-white">CatÃ¡logo de MÃ¡quinas</h1>
-              <p className="mt-3 max-w-2xl text-sm text-gray-400">Gerencie equipamentos, publique e controle o catÃ¡logo que aparece no portal pÃºblico de mÃ¡quinas.</p>
+              <h1 className="mt-3 text-4xl font-bold text-white">Catálogo de Máquinas</h1>
+              <p className="mt-3 max-w-2xl text-sm text-gray-400">Gerencie equipamentos, publique e controle o catálogo que aparece no portal público de máquinas.</p>
             </div>
             <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-3">
               <div className="rounded-3xl border border-white/10 bg-slate-950/80 p-5 text-center">
@@ -163,15 +163,15 @@ export default function Page() {
           <section className="rounded-3xl border border-white/10 bg-slate-900/90 p-8 shadow-xl shadow-slate-950/40">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
-                <h2 className="text-2xl font-bold text-white">Cadastro e ediÃ§Ã£o</h2>
-                <p className="text-sm text-gray-400">Crie ou atualize itens do catÃ¡logo administrativo de mÃ¡quinas.</p>
+                <h2 className="text-2xl font-bold text-white">Cadastro e edição</h2>
+                <p className="text-sm text-gray-400">Crie ou atualize itens do catálogo administrativo de máquinas.</p>
               </div>
               <button
                 type="button"
                 onClick={resetForm}
                 className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
               >
-                <PlusCircle className="h-4 w-4" /> Limpar formulÃ¡rio
+                <PlusCircle className="h-4 w-4" /> Limpar formulário
               </button>
             </div>
 
@@ -201,18 +201,18 @@ export default function Page() {
               </label>
 
               <label className="space-y-2 text-sm text-gray-300 lg:col-span-2">
-                <span>DescriÃ§Ã£o</span>
+                <span>Descrição</span>
                 <textarea
                   value={form.descricao}
                   onChange={(event) => setForm({ ...form, descricao: event.target.value })}
                   rows={4}
                   className="w-full rounded-3xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/20"
-                  placeholder="Detalhes sobre o equipamento, condiÃ§Ãµes de entrega e aluguel"
+                  placeholder="Detalhes sobre o equipamento, condições de entrega e aluguel"
                 />
               </label>
 
               <label className="space-y-2 text-sm text-gray-300">
-                <span>PreÃ§o</span>
+                <span>Preço</span>
                 <input
                   type="number"
                   step="0.01"
@@ -266,7 +266,7 @@ export default function Page() {
               </label>
 
               <button type="submit" className="lg:col-span-2 rounded-3xl bg-gradient-to-r from-emerald-400 to-cyan-500 px-6 py-4 text-black font-bold transition hover:opacity-95">
-                {editId ? 'Salvar alteraÃ§Ãµes' : 'Adicionar ao catÃ¡logo'}
+                {editId ? 'Salvar alterações' : 'Adicionar ao catálogo'}
               </button>
             </form>
           </section>
@@ -275,13 +275,13 @@ export default function Page() {
             <div className="rounded-3xl border border-white/10 bg-slate-900/90 p-6 shadow-xl shadow-slate-950/40">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-2xl font-bold text-white">Demandas rÃ¡pidas</h2>
-                  <p className="text-sm text-gray-400">Captura de pedidos e solicitaÃ§Ãµes de aluguel.</p>
+                  <h2 className="text-2xl font-bold text-white">Demandas rápidas</h2>
+                  <p className="text-sm text-gray-400">Captura de pedidos e solicitações de aluguel.</p>
                 </div>
                 <MessageCircle className="h-6 w-6 text-cyan-300" />
               </div>
               <div className="mt-6">
-                <DemandView category="MAQUINAS" title="Registrar demanda de mÃ¡quina" />
+                <DemandView category="MAQUINAS" title="Registrar demanda de máquina" />
               </div>
             </div>
           </aside>
@@ -290,8 +290,8 @@ export default function Page() {
         <section className="rounded-3xl border border-white/10 bg-slate-900/90 p-8 shadow-xl shadow-slate-950/40">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h2 className="text-2xl font-bold text-white">Itens do catÃ¡logo</h2>
-              <p className="text-sm text-gray-400">Use filtros para localizar rapidamente equipamentos e gerir seu estado de publicaÃ§Ã£o.</p>
+              <h2 className="text-2xl font-bold text-white">Itens do catálogo</h2>
+              <p className="text-sm text-gray-400">Use filtros para localizar rapidamente equipamentos e gerir seu estado de publicação.</p>
             </div>
             <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-4">
               <div className="flex items-center gap-2 rounded-3xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white">
@@ -336,9 +336,9 @@ export default function Page() {
                   <th className="px-4 py-3">Nome</th>
                   <th className="px-4 py-3">Categoria</th>
                   <th className="px-4 py-3">Fornecedor</th>
-                  <th className="px-4 py-3">PreÃ§o</th>
+                  <th className="px-4 py-3">Preço</th>
                   <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">AÃ§Ãµes</th>
+                  <th className="px-4 py-3">Ações</th>
                 </tr>
               </thead>
               <tbody>

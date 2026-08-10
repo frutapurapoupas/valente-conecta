@@ -32,12 +32,12 @@ export function WizardMidia({ imagens, video, onImagensChange, onVideoChange }: 
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-bold">ðŸ“¸ Fotos e VÃ­deo</h2>
-        <p className="text-gray-500">Adicione mÃ­dias para mostrar seu produto</p>
+        <h2 className="text-2xl font-bold">📸 Fotos e Vídeo</h2>
+        <p className="text-gray-500">Adicione mídias para mostrar seu produto</p>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Fotos do Produto (mÃ¡ximo 10)</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Fotos do Produto (máximo 10)</label>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {previews.map((preview, index) => (
             <div key={index} className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">

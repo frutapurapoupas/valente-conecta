@@ -12,7 +12,7 @@ export function SyncStatus() {
     setMounted(true);
   }, []);
 
-  // NÃ£o renderizar durante SSR
+  // Não renderizar durante SSR
   if (!mounted) return null;
 
   if (!syncStatus.hasSupabase) {
@@ -31,7 +31,7 @@ export function SyncStatus() {
       <div className="fixed bottom-4 right-4 bg-gray-100 border border-gray-400 rounded-lg p-3 shadow-lg z-50">
         <div className="flex items-center gap-2">
           <span className="text-gray-600">ðŸ“´</span>
-          <span className="text-sm">Sem conexÃ£o - Dados salvos localmente</span>
+          <span className="text-sm">Sem conexão - Dados salvos localmente</span>
         </div>
       </div>
     );

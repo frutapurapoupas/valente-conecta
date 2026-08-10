@@ -1,5 +1,5 @@
 // hooks/cozinha/usePerfilCozinha.ts
-// ðŸª LÃ“GICA - SeleÃ§Ã£o de Perfil da Cozinha
+// 🪝 LÓGICA - Seleção de Perfil da Cozinha
 
 "use client";
 
@@ -62,7 +62,7 @@ export const usePerfilCozinha = () => {
     } else if (perfilId === 'revendedor') {
       setModalRevendedorAberto(true);
     } else {
-      // PÃºblico geral - vai direto para o catÃ¡logo
+      // Público geral - vai direto para o catálogo
       router.push('/cozinha/catalogo?perfil=publico');
     }
   }, [router]);

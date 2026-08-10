@@ -3,14 +3,14 @@
 import { Vaga, Candidatura, StatusVaga, StatusCandidatura, TipoVaga, Modalidade, NivelExperiencia } from "../types";
 
 // ============================================================================
-// FORMATAÃ‡ÃƒO
+// FORMATAÇÃO
 // ============================================================================
 
 export const formatarSalario = (min?: number, max?: number): string => {
   if (!min && !max) return "A combinar";
   if (min && max) return `R$ ${min.toFixed(2)} - R$ ${max.toFixed(2)}`;
   if (min) return `A partir de R$ ${min.toFixed(2)}`;
-  return `AtÃ© R$ ${max!.toFixed(2)}`;
+  return `Até R$ ${max!.toFixed(2)}`;
 };
 
 export const formatarData = (data: string): string => {
@@ -27,10 +27,10 @@ export const formatarDataRelativa = (data: string): string => {
     const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
     if (dias === 0) return "Hoje";
     if (dias === 1) return "Ontem";
-    if (dias < 7) return `${dias} dias atrÃ¡s`;
-    if (dias < 30) return `${Math.floor(dias / 7)} semanas atrÃ¡s`;
-    if (dias < 365) return `${Math.floor(dias / 30)} meses atrÃ¡s`;
-    return `${Math.floor(dias / 365)} anos atrÃ¡s`;
+    if (dias < 7) return `${dias} dias atrás`;
+    if (dias < 30) return `${Math.floor(dias / 7)} semanas atrás`;
+    if (dias < 365) return `${Math.floor(dias / 30)} meses atrás`;
+    return `${Math.floor(dias / 365)} anos atrás`;
   } catch {
     return data;
   }
@@ -51,9 +51,9 @@ export const getStatusVagaCor = (status: StatusVaga): string => {
 
 export const getStatusVagaLabel = (status: StatusVaga): string => {
   const labels = {
-    aberta: "ðŸŸ¢ Aberta",
-    fechada: "ðŸ”´ Fechada",
-    em_andamento: "ðŸŸ¡ Em andamento"
+    aberta: "🟢 Aberta",
+    fechada: "🔴 Fechada",
+    em_andamento: "🟡 Em andamento"
   };
   return labels[status] || status;
 };
@@ -70,10 +70,10 @@ export const getStatusCandidaturaCor = (status: StatusCandidatura): string => {
 
 export const getStatusCandidaturaLabel = (status: StatusCandidatura): string => {
   const labels = {
-    pendente: "â³ Pendente",
-    analise: "ðŸ” Em anÃ¡lise",
-    aprovada: "âœ… Aprovada",
-    rejeitada: "âŒ Rejeitada"
+    pendente: "⏳ Pendente",
+    analise: "🔍 Em análise",
+    aprovada: "✅ Aprovada",
+    rejeitada: "❌ Rejeitada"
   };
   return labels[status] || status;
 };
@@ -83,8 +83,8 @@ export const getTipoVagaBadge = (tipo: TipoVaga): string => {
     CLT: "bg-blue-100 text-blue-700",
     PJ: "bg-purple-100 text-purple-700",
     Freelancer: "bg-orange-100 text-orange-700",
-    "EstÃ¡gio": "bg-green-100 text-green-700",
-    "TemporÃ¡rio": "bg-gray-100 text-gray-700"
+    "Estágio": "bg-green-100 text-green-700",
+    "Temporário": "bg-gray-100 text-gray-700"
   };
   return badges[tipo] || "bg-gray-100 text-gray-700";
 };
@@ -100,10 +100,10 @@ export const getModalidadeBadge = (modalidade: Modalidade): string => {
 
 export const getNivelBadge = (nivel: NivelExperiencia): string => {
   const badges = {
-    "EstagiÃ¡rio": "bg-gray-100 text-gray-700",
-    "JÃºnior": "bg-blue-100 text-blue-700",
+    "Estagiário": "bg-gray-100 text-gray-700",
+    "Júnior": "bg-blue-100 text-blue-700",
     "Pleno": "bg-green-100 text-green-700",
-    "SÃªnior": "bg-orange-100 text-orange-700",
+    "Sênior": "bg-orange-100 text-orange-700",
     "Especialista": "bg-red-100 text-red-700"
   };
   return badges[nivel] || "bg-gray-100 text-gray-700";
@@ -130,16 +130,16 @@ export const filtrarVagas = (vagas: Vaga[], filtros: any): Vaga[] => {
     // Filtro por modalidade
     if (filtros.modalidade && vaga.modalidade !== filtros.modalidade) return false;
 
-    // Filtro por nÃ­vel
+    // Filtro por nível
     if (filtros.nivel && vaga.nivel !== filtros.nivel) return false;
 
     // Filtro por status
     if (filtros.status && vaga.status !== filtros.status) return false;
 
-    // Filtro por localizaÃ§Ã£o
+    // Filtro por localização
     if (filtros.localizacao && !vaga.localizacao.toLowerCase().includes(filtros.localizacao.toLowerCase())) return false;
 
-    // Filtro por salÃ¡rio
+    // Filtro por salário
     if (filtros.salarioMin && (vaga.salarioMax || 0) < filtros.salarioMin) return false;
     if (filtros.salarioMax && (vaga.salarioMin || 0) > filtros.salarioMax) return false;
 
@@ -148,7 +148,7 @@ export const filtrarVagas = (vagas: Vaga[], filtros: any): Vaga[] => {
 };
 
 // ============================================================================
-// ESTATÃSTICAS
+// ESTATÍSTICAS
 // ============================================================================
 
 export const calcularEstatisticasVagas = (vagas: Vaga[]) => {
@@ -168,20 +168,20 @@ export const calcularEstatisticasVagas = (vagas: Vaga[]) => {
 };
 
 // ============================================================================
-// VALIDAÃ‡Ã•ES
+// VALIDAÇÕES
 // ============================================================================
 
 export const validarVaga = (vaga: Partial<Vaga>): { valido: boolean; erros: string[] } => {
   const erros: string[] = [];
 
-  if (!vaga.titulo?.trim()) erros.push("TÃ­tulo Ã© obrigatÃ³rio");
-  if (!vaga.empresa?.trim()) erros.push("Empresa Ã© obrigatÃ³ria");
-  if (!vaga.descricao?.trim()) erros.push("DescriÃ§Ã£o Ã© obrigatÃ³ria");
-  if (!vaga.tipo) erros.push("Tipo de vaga Ã© obrigatÃ³rio");
-  if (!vaga.modalidade) erros.push("Modalidade Ã© obrigatÃ³ria");
-  if (!vaga.nivel) erros.push("NÃ­vel de experiÃªncia Ã© obrigatÃ³rio");
-  if (!vaga.localizacao?.trim()) erros.push("LocalizaÃ§Ã£o Ã© obrigatÃ³ria");
-  if (!vaga.status) erros.push("Status Ã© obrigatÃ³rio");
+  if (!vaga.titulo?.trim()) erros.push("Título é obrigatório");
+  if (!vaga.empresa?.trim()) erros.push("Empresa é obrigatória");
+  if (!vaga.descricao?.trim()) erros.push("Descrição é obrigatória");
+  if (!vaga.tipo) erros.push("Tipo de vaga é obrigatório");
+  if (!vaga.modalidade) erros.push("Modalidade é obrigatória");
+  if (!vaga.nivel) erros.push("Nível de experiência é obrigatório");
+  if (!vaga.localizacao?.trim()) erros.push("Localização é obrigatória");
+  if (!vaga.status) erros.push("Status é obrigatório");
 
   return {
     valido: erros.length === 0,
@@ -192,10 +192,10 @@ export const validarVaga = (vaga: Partial<Vaga>): { valido: boolean; erros: stri
 export const validarCurriculo = (curriculo: Partial<any>): { valido: boolean; erros: string[] } => {
   const erros: string[] = [];
 
-  if (!curriculo.nome?.trim()) erros.push("Nome Ã© obrigatÃ³rio");
-  if (!curriculo.email?.trim()) erros.push("Email Ã© obrigatÃ³rio");
-  if (!curriculo.telefone?.trim()) erros.push("Telefone Ã© obrigatÃ³rio");
-  if (!curriculo.objetivo?.trim()) erros.push("Objetivo Ã© obrigatÃ³rio");
+  if (!curriculo.nome?.trim()) erros.push("Nome é obrigatório");
+  if (!curriculo.email?.trim()) erros.push("Email é obrigatório");
+  if (!curriculo.telefone?.trim()) erros.push("Telefone é obrigatório");
+  if (!curriculo.objetivo?.trim()) erros.push("Objetivo é obrigatório");
 
   return {
     valido: erros.length === 0,

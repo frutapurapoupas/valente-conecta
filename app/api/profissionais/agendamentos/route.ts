@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
     if (!body.profissionalId || !body.clienteNome?.trim() || !body.clienteTelefone?.trim() || !body.servico?.trim() || !body.data) {
       return NextResponse.json(
-        { success: false, error: 'profissionalId, clienteNome, clienteTelefone, servico e data sÃ£o obrigatÃ³rios.' },
+        { success: false, error: 'profissionalId, clienteNome, clienteTelefone, servico e data são obrigatórios.' },
         { status: 400 }
       );
     }
@@ -80,12 +80,12 @@ export async function PUT(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
-    if (!id) return NextResponse.json({ success: false, error: 'ID nÃ£o informado' }, { status: 400 });
+    if (!id) return NextResponse.json({ success: false, error: 'ID não informado' }, { status: 400 });
 
     const body = await request.json();
     const items = read();
     const idx = items.findIndex((i) => i.id === id);
-    if (idx === -1) return NextResponse.json({ success: false, error: 'Agendamento nÃ£o encontrado' }, { status: 404 });
+    if (idx === -1) return NextResponse.json({ success: false, error: 'Agendamento não encontrado' }, { status: 404 });
 
     items[idx] = { ...items[idx], ...body, id, updatedAt: new Date().toISOString() };
     write(items);

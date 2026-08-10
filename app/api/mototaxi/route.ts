@@ -1,380 +1,371 @@
+// Caminho sugerido: C:\valente_conecta\app\api\mototaxi\route.ts
+// Substitui a versão anterior baseada em arquivo JSON local (incompatível com Vercel).
+
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { createClient } from '@/lib/supabase/server';
 
-const DATA_PATH = path.join(process.cwd(), 'data', 'mototaxi.json');
-
-type DriverPlan = 'gratis' | 'basico' | 'premium';
-type RideStatus = 'solicitada' | 'aceita' | 'em_andamento' | 'concluida' | 'cancelada';
-
-const defaultData = {
-  version: 1,
-  updatedAt: new Date().toISOString(),
-  driverPlanBenefits: {
-    gratis: {
-      prioridadeFila: 0,
-      alertaSonoro: false,
-      vantagens: ['Recebimento padrao de corridas']
-    },
-    basico: {
-      prioridadeFila: 1,
-      alertaSonoro: true,
-      vantagens: ['Alerta sonoro de nova corrida', 'Prioridade media na fila', 'Selo motorista verificado']
-    },
-    premium: {
-      prioridadeFila: 2,
-      alertaSonoro: true,
-      vantagens: ['Alerta sonoro reforcado', 'Prioridade alta na fila', 'Destaque no topo e corridas preferenciais']
-    }
-  },
-  adsConfig: {
-    enabled: true,
-    showToFreePassengersOnly: true,
-    cooldownMinutes: 30,
-    popupTitle: 'Destrave vantagens no Moto Taxi',
-    popupMessage: 'Assine e evite pop-ups durante as corridas.',
-    items: [
-      {
-        id: 'ad_1',
-        titulo: 'Plano Passageiro Basico',
-        mensagem: 'Evite pop-ups e tenha prioridade no atendimento por apenas R$ 7,90/mes.',
-        ctaLabel: 'Quero Assinar',
-        ctaLink: '/planos',
-        ativo: true
-      }
-    ]
-  },
-  drivers: [
-    {
-      id: 'drv_1',
-      nome: 'Carlos Moto',
-      fotoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=320&q=80',
-      telefone: '75999999999',
-      veiculo: 'Honda CG 160',
-      placa: 'ABC-1234',
-      avaliacao: 4.8,
-      plano: 'premium' as DriverPlan,
-      online: true,
-      latitude: -11.406,
-      longitude: -39.461,
-      cnhNumero: '00000000001',
-      cnhValida: true,
-      documentoVeiculoOk: true,
-      licenciamentoVencimento: '2027-01-10',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    },
-    {
-      id: 'drv_2',
-      nome: 'Paulo Freire',
-      fotoUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=320&q=80',
-      telefone: '75988888888',
-      veiculo: 'Yamaha Fazer 250',
-      placa: 'DEF-5678',
-      avaliacao: 4.9,
-      plano: 'basico' as DriverPlan,
-      online: true,
-      latitude: -11.408,
-      longitude: -39.459,
-      cnhNumero: '00000000002',
-      cnhValida: true,
-      documentoVeiculoOk: true,
-      licenciamentoVencimento: '2026-11-18',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
-  ],
-  rides: [] as any[]
-};
-
-function ensureDataFile() {
-  if (!fs.existsSync(DATA_PATH)) {
-    fs.writeFileSync(DATA_PATH, JSON.stringify(defaultData, null, 2));
+function validarMotoristaPayload(payload: any) {
+  const obrigatorios = ['nome', 'telefone', 'veiculo', 'placa', 'cnh_numero', 'licenciamento_vencimento'];
+  for (const campo of obrigatorios) {
+    if (!payload?.[campo]) return `Campo obrigatorio ausente: ${campo}`;
   }
-}
-
-function readData() {
-  ensureDataFile();
-  try {
-    const data = JSON.parse(fs.readFileSync(DATA_PATH, 'utf-8'));
-    if (!Array.isArray(data.drivers)) data.drivers = [];
-    if (!Array.isArray(data.rides)) data.rides = [];
-    if (!data.adsConfig) data.adsConfig = defaultData.adsConfig;
-    if (!data.driverPlanBenefits) data.driverPlanBenefits = defaultData.driverPlanBenefits;
-    return data;
-  } catch {
-    return defaultData;
-  }
-}
-
-function writeData(data: any) {
-  fs.writeFileSync(DATA_PATH, JSON.stringify({ ...data, updatedAt: new Date().toISOString() }, null, 2));
-}
-
-function getMetrics(data: any) {
-  const rides = Array.isArray(data.rides) ? data.rides : [];
-  const drivers = Array.isArray(data.drivers) ? data.drivers : [];
-  const today = new Date().toISOString().slice(0, 10);
-  const ridesToday = rides.filter((r: any) => String(r.createdAt || '').slice(0, 10) === today);
-  const completed = rides.filter((r: any) => r.status === 'concluida');
-  const concludedToday = ridesToday.filter((r: any) => r.status === 'concluida');
-  const revenueToday = concludedToday.reduce((sum: number, r: any) => sum + Number(r.price || 0), 0);
-  const avgTicket = completed.length
-    ? completed.reduce((sum: number, r: any) => sum + Number(r.price || 0), 0) / completed.length
-    : 0;
-
-  const docAlerts = drivers.filter((d: any) => {
-    const lic = new Date(d.licenciamentoVencimento || 0).getTime();
-    const threshold = Date.now() + 1000 * 60 * 60 * 24 * 30;
-    return !d.cnhValida || !d.documentoVeiculoOk || lic < threshold;
-  }).length;
-
-  return {
-    totalDrivers: drivers.length,
-    activeDrivers: drivers.filter((d: any) => d.online).length,
-    compliantDrivers: drivers.filter((d: any) => d.cnhValida && d.documentoVeiculoOk).length,
-    ridesToday: ridesToday.length,
-    inProgress: rides.filter((r: any) => r.status === 'em_andamento').length,
-    completedToday: concludedToday.length,
-    pendingPayment: rides.filter((r: any) => r.paymentStatus === 'pendente').length,
-    revenueToday,
-    avgTicket: Number(avgTicket.toFixed(2)),
-    cancellationRate: rides.length
-      ? Number(((rides.filter((r: any) => r.status === 'cancelada').length / rides.length) * 100).toFixed(2))
-      : 0,
-    docAlerts
-  };
-}
-
-function validateDriverPayload(payload: any) {
-  const required = ['nome', 'telefone', 'veiculo', 'placa', 'cnhNumero', 'licenciamentoVencimento'];
-  for (const field of required) {
-    if (!payload?.[field]) {
-      return `Campo obrigatorio ausente: ${field}`;
-    }
-  }
-
-  const licDate = new Date(payload.licenciamentoVencimento);
-  if (Number.isNaN(licDate.getTime())) {
-    return 'Data de vencimento do licenciamento invalida.';
-  }
-
-  if (licDate.getTime() < Date.now()) {
-    return 'Licenciamento vencido. Regularize para cadastrar.';
-  }
-
-  if (!payload?.cnhValida) {
-    return 'CNH invalida. Nao e possivel concluir cadastro.';
-  }
-
-  if (!payload?.documentoVeiculoOk) {
-    return 'Documentacao do veiculo invalida.';
-  }
-
+  const licDate = new Date(payload.licenciamento_vencimento);
+  if (Number.isNaN(licDate.getTime())) return 'Data de vencimento do licenciamento invalida.';
+  if (licDate.getTime() < Date.now()) return 'Licenciamento vencido. Regularize para cadastrar.';
+  if (!payload?.cnh_valida) return 'CNH invalida. Nao e possivel concluir cadastro.';
+  if (!payload?.documento_veiculo_ok) return 'Documentacao do veiculo invalida.';
   return null;
 }
 
 export async function GET(request: NextRequest) {
   try {
-    const data = readData();
+    const supabase = createClient();
     const { searchParams } = new URL(request.url);
-    const recurso = searchParams.get('recurso') || 'drivers';
-    const rideId = searchParams.get('rideId');
-    const userId = searchParams.get('userId');
-    const driverId = searchParams.get('driverId');
+    const recurso = searchParams.get('recurso') || 'motoristas';
 
-    if (recurso === 'drivers') {
-      const onlyOnline = searchParams.get('online') === 'true';
-      const drivers = onlyOnline ? data.drivers.filter((d: any) => d.online) : data.drivers;
-      return NextResponse.json({ success: true, data: drivers, benefits: data.driverPlanBenefits });
+    if (recurso === 'motoristas') {
+      let query = supabase.from('mototaxi_motoristas').select('*').order('nome');
+      if (searchParams.get('online') === 'true') query = query.eq('online', true);
+      const { data, error } = await query;
+      if (error) throw error;
+      return NextResponse.json({ success: true, data: data || [] });
     }
 
-    if (recurso === 'rides') {
-      let rides = data.rides;
-      if (rideId) rides = rides.filter((r: any) => r.id === rideId);
-      if (userId) rides = rides.filter((r: any) => r.passengerId === userId);
-      if (driverId) rides = rides.filter((r: any) => r.driverId === driverId);
-      return NextResponse.json({ success: true, data: rides });
+    if (recurso === 'corridas') {
+      let query = supabase.from('mototaxi_corridas').select('*').order('created_at', { ascending: false });
+      const status = searchParams.get('status');
+      const motoristaId = searchParams.get('motorista_id');
+      const passageiroId = searchParams.get('passageiro_id');
+      const corridaId = searchParams.get('corrida_id');
+      if (status) query = query.eq('status', status);
+      if (motoristaId) query = query.eq('motorista_id', motoristaId);
+      if (passageiroId) query = query.eq('passageiro_id', passageiroId);
+      if (corridaId) query = query.eq('id', corridaId);
+      const { data, error } = await query;
+      if (error) throw error;
+      return NextResponse.json({ success: true, data: data || [] });
     }
 
     if (recurso === 'ads') {
-      return NextResponse.json({ success: true, data: data.adsConfig });
+      const { data, error } = await supabase.from('mototaxi_ads_config').select('*').limit(1).single();
+      if (error) throw error;
+      return NextResponse.json({ success: true, data });
+    }
+
+    if (recurso === 'cidades') {
+      const { data, error } = await supabase.from('cidades').select('*').eq('ativa', true).order('nome');
+      if (error) throw error;
+      return NextResponse.json({ success: true, data: data || [] });
+    }
+
+    if (recurso === 'ponto_referencia') {
+      const cidadeId = searchParams.get('cidade_id');
+      const texto = (searchParams.get('q') || '').trim().toLowerCase();
+      if (!cidadeId || !texto) {
+        return NextResponse.json({ success: true, data: null });
+      }
+
+      const { data, error } = await supabase
+        .from('pontos_referencia')
+        .select('*')
+        .eq('cidade_id', cidadeId)
+        .eq('ativo', true);
+
+      if (error) throw error;
+
+      const encontrado = (data || []).find((ponto) => {
+        const nomeMatch = ponto.nome.toLowerCase().includes(texto) || texto.includes(ponto.nome.toLowerCase());
+        const apelidoMatch = (ponto.apelidos || []).some((a: string) => texto.includes(a.toLowerCase()) || a.toLowerCase().includes(texto));
+        return nomeMatch || apelidoMatch;
+      });
+
+      return NextResponse.json({ success: true, data: encontrado || null });
+    }
+
+    if (recurso === 'autocomplete') {
+      const cidadeId = searchParams.get('cidade_id');
+      const texto = (searchParams.get('q') || '').trim();
+
+      if (!cidadeId || texto.length < 2) {
+        return NextResponse.json({ success: true, data: [] });
+      }
+
+      // 1. Pontos de referencia locais (prioridade — nomes/apelidos conhecidos)
+      const { data: pontos } = await supabase
+        .from('pontos_referencia')
+        .select('id, nome, latitude, longitude')
+        .eq('cidade_id', cidadeId)
+        .eq('ativo', true)
+        .ilike('nome', `%${texto}%`)
+        .limit(5);
+
+      const sugestoesLocais = (pontos || []).map((p) => ({
+        id: `local_${p.id}`,
+        texto: p.nome,
+        lat: p.latitude,
+        lng: p.longitude,
+        origem: 'local' as const,
+      }));
+
+      // 2. Se ja tiver 5 sugestoes locais suficientes, nao precisa consultar o Nominatim
+      if (sugestoesLocais.length >= 5) {
+        return NextResponse.json({ success: true, data: sugestoesLocais });
+      }
+
+      // 3. Busca a cidade para restringir o Nominatim ao raio dela
+      const { data: cidade } = await supabase
+        .from('cidades')
+        .select('centro_lat, centro_lng, raio_km')
+        .eq('id', cidadeId)
+        .single();
+
+      let sugestoesNominatim: any[] = [];
+      if (cidade) {
+        const grausPorKm = 1 / 111;
+        const delta = Number(cidade.raio_km) * grausPorKm;
+        const viewbox = `${cidade.centro_lng - delta},${cidade.centro_lat + delta},${cidade.centro_lng + delta},${cidade.centro_lat - delta}`;
+
+        try {
+          const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=4&countrycodes=br&viewbox=${viewbox}&bounded=1&q=${encodeURIComponent(texto)}`;
+          const res = await fetch(url, { headers: { 'User-Agent': 'ValenteConecta/1.0' } });
+          const data = await res.json();
+          sugestoesNominatim = (Array.isArray(data) ? data : []).map((d: any) => ({
+            id: `osm_${d.place_id}`,
+            texto: d.display_name,
+            lat: Number(d.lat),
+            lng: Number(d.lon),
+            origem: 'mapa' as const,
+          }));
+        } catch {
+          sugestoesNominatim = [];
+        }
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: [...sugestoesLocais, ...sugestoesNominatim].slice(0, 6),
+      });
     }
 
     if (recurso === 'metrics') {
-      return NextResponse.json({ success: true, data: getMetrics(data) });
+      const hoje = new Date().toISOString().slice(0, 10);
+      const [{ data: motoristas }, { data: corridas }] = await Promise.all([
+        supabase.from('mototaxi_motoristas').select('*'),
+        supabase.from('mototaxi_corridas').select('*'),
+      ]);
+
+      const listaMotoristas = motoristas || [];
+      const listaCorridas = corridas || [];
+      const corridasHoje = listaCorridas.filter((r) => String(r.created_at).slice(0, 10) === hoje);
+      const concluidasHoje = corridasHoje.filter((r) => r.status === 'concluida');
+      const concluidas = listaCorridas.filter((r) => r.status === 'concluida');
+      const receitaHoje = concluidasHoje.reduce((soma, r) => soma + Number(r.preco || 0), 0);
+      const ticketMedio = concluidas.length
+        ? concluidas.reduce((soma, r) => soma + Number(r.preco || 0), 0) / concluidas.length
+        : 0;
+
+      const limiar = Date.now() + 1000 * 60 * 60 * 24 * 30;
+      const alertasDoc = listaMotoristas.filter((m) => {
+        const lic = new Date(m.licenciamento_vencimento || 0).getTime();
+        return !m.cnh_valida || !m.documento_veiculo_ok || lic < limiar;
+      }).length;
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          totalMotoristas: listaMotoristas.length,
+          motoristasAtivos: listaMotoristas.filter((m) => m.online).length,
+          corridasHoje: corridasHoje.length,
+          emAndamento: listaCorridas.filter((r) => r.status === 'em_andamento').length,
+          concluidasHoje: concluidasHoje.length,
+          pagamentoPendente: listaCorridas.filter((r) => r.status_pagamento === 'pendente').length,
+          receitaHoje,
+          ticketMedio: Number(ticketMedio.toFixed(2)),
+          alertasDoc,
+        },
+      });
     }
 
     return NextResponse.json({ success: false, error: 'Recurso invalido.' }, { status: 400 });
   } catch (error: any) {
+    console.error('Erro GET mototaxi:', error);
     return NextResponse.json({ success: false, error: error?.message || 'Erro interno.' }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const data = readData();
+    const supabase = createClient();
     const body = await request.json();
     const recurso = body?.recurso;
 
-    if (recurso === 'drivers') {
-      const error = validateDriverPayload(body);
-      if (error) {
-        return NextResponse.json({ success: false, error }, { status: 400 });
-      }
+    if (recurso === 'motoristas') {
+      const erro = validarMotoristaPayload(body);
+      if (erro) return NextResponse.json({ success: false, error: erro }, { status: 400 });
 
-      const driver = {
-        id: `drv_${Date.now()}`,
-        nome: String(body.nome),
-        fotoUrl: String(body.fotoUrl || ''),
-        telefone: String(body.telefone),
-        veiculo: String(body.veiculo),
-        placa: String(body.placa).toUpperCase(),
-        avaliacao: Number(body.avaliacao || 5),
-        plano: (body.plano || 'gratis') as DriverPlan,
-        online: Boolean(body.online ?? true),
-        latitude: Number(body.latitude || -11.406),
-        longitude: Number(body.longitude || -39.461),
-        cnhNumero: String(body.cnhNumero),
-        cnhValida: Boolean(body.cnhValida),
-        documentoVeiculoOk: Boolean(body.documentoVeiculoOk),
-        licenciamentoVencimento: String(body.licenciamentoVencimento),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
+      const { data, error } = await supabase
+        .from('mototaxi_motoristas')
+        .insert([{
+          nome: body.nome,
+          telefone: body.telefone,
+          foto_url: body.foto_url || null,
+          veiculo: body.veiculo,
+          placa: String(body.placa).toUpperCase(),
+          plano: body.plano || 'gratis',
+          online: Boolean(body.online ?? false),
+          latitude: body.latitude ?? null,
+          longitude: body.longitude ?? null,
+          cnh_numero: body.cnh_numero,
+          cnh_valida: Boolean(body.cnh_valida),
+          documento_veiculo_ok: Boolean(body.documento_veiculo_ok),
+          licenciamento_vencimento: body.licenciamento_vencimento,
+        }])
+        .select()
+        .single();
 
-      data.drivers.unshift(driver);
-      writeData(data);
-      return NextResponse.json({ success: true, data: driver });
+      if (error) throw error;
+      return NextResponse.json({ success: true, data });
     }
 
-    if (recurso === 'rides') {
-      const required = ['passengerName', 'passengerId', 'driverId', 'origin', 'destination', 'price'];
-      for (const field of required) {
-        if (!body?.[field]) {
-          return NextResponse.json({ success: false, error: `Campo obrigatorio: ${field}` }, { status: 400 });
+    // Passageiro solicita corrida — SEM motorista definido ainda.
+    // Fica em 'aguardando_motorista' ate algum motorista aceitar.
+    if (recurso === 'corridas') {
+      const obrigatorios = ['passageiro_nome', 'origem', 'destino', 'origem_lat', 'origem_lng', 'destino_lat', 'destino_lng', 'preco'];
+      for (const campo of obrigatorios) {
+        if (body?.[campo] === undefined || body?.[campo] === null || body?.[campo] === '') {
+          return NextResponse.json({ success: false, error: `Campo obrigatorio: ${campo}` }, { status: 400 });
         }
       }
 
-      const driver = data.drivers.find((d: any) => d.id === body.driverId);
-      if (!driver) {
-        return NextResponse.json({ success: false, error: 'Motorista nao encontrado.' }, { status: 404 });
-      }
+      const { data, error } = await supabase
+        .from('mototaxi_corridas')
+        .insert([{
+          passageiro_id: body.passageiro_id || null,
+          passageiro_nome: body.passageiro_nome,
+          passageiro_plano: body.passageiro_plano || 'gratis',
+          cidade_id: body.cidade_id || null,
+          motorista_id: null,
+          origem: body.origem,
+          destino: body.destino,
+          origem_lat: body.origem_lat,
+          origem_lng: body.origem_lng,
+          destino_lat: body.destino_lat,
+          destino_lng: body.destino_lng,
+          preco: body.preco,
+          metodo_pagamento: body.metodo_pagamento || 'pix',
+          status: 'aguardando_motorista',
+        }])
+        .select()
+        .single();
 
-      const ride = {
-        id: `ride_${Date.now()}`,
-        passengerName: String(body.passengerName),
-        passengerId: String(body.passengerId),
-        passengerPlan: String(body.passengerPlan || 'gratis'),
-        driverId: String(driver.id),
-        driverName: String(driver.nome),
-        driverPhoto: String(driver.fotoUrl || ''),
-        vehicle: String(driver.veiculo),
-        plate: String(driver.placa),
-        origin: body.origin,
-        destination: body.destination,
-        originLat: Number(body.originLat || driver.latitude),
-        originLng: Number(body.originLng || driver.longitude),
-        destinationLat: Number(body.destinationLat || driver.latitude + 0.005),
-        destinationLng: Number(body.destinationLng || driver.longitude + 0.005),
-        driverLat: Number(driver.latitude),
-        driverLng: Number(driver.longitude),
-        price: Number(body.price),
-        paymentMethod: String(body.paymentMethod || 'pix'),
-        paymentStatus: 'pendente',
-        status: 'solicitada' as RideStatus,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-
-      data.rides.unshift(ride);
-      writeData(data);
-      return NextResponse.json({ success: true, data: ride });
+      if (error) throw error;
+      return NextResponse.json({ success: true, data });
     }
 
     return NextResponse.json({ success: false, error: 'Recurso invalido.' }, { status: 400 });
   } catch (error: any) {
+    console.error('Erro POST mototaxi:', error);
     return NextResponse.json({ success: false, error: error?.message || 'Erro ao salvar.' }, { status: 500 });
   }
 }
 
 export async function PUT(request: NextRequest) {
   try {
-    const data = readData();
+    const supabase = createClient();
     const body = await request.json();
     const recurso = body?.recurso;
 
-    if (recurso === 'ride_status') {
-      const { rideId, status, paymentStatus } = body;
-      const idx = data.rides.findIndex((r: any) => r.id === rideId);
-      if (idx === -1) {
-        return NextResponse.json({ success: false, error: 'Corrida nao encontrada.' }, { status: 404 });
+    // Motorista aceita uma corrida pendente.
+    // Trava por concorrencia: so aceita se ainda estiver 'aguardando_motorista'.
+    if (recurso === 'corrida_aceitar') {
+      const { corridaId, motoristaId, motoristaLat, motoristaLng } = body;
+
+      const { data, error } = await supabase
+        .from('mototaxi_corridas')
+        .update({
+          motorista_id: motoristaId,
+          motorista_lat: motoristaLat,
+          motorista_lng: motoristaLng,
+          status: 'aceita',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', corridaId)
+        .eq('status', 'aguardando_motorista') // evita dois motoristas aceitando a mesma corrida
+        .select()
+        .single();
+
+      if (error || !data) {
+        return NextResponse.json({ success: false, error: 'Corrida ja foi aceita por outro motorista ou nao existe mais.' }, { status: 409 });
       }
-
-      data.rides[idx] = {
-        ...data.rides[idx],
-        status: status || data.rides[idx].status,
-        paymentStatus: paymentStatus || data.rides[idx].paymentStatus,
-        updatedAt: new Date().toISOString()
-      };
-
-      writeData(data);
-      return NextResponse.json({ success: true, data: data.rides[idx] });
+      return NextResponse.json({ success: true, data });
     }
 
-    if (recurso === 'driver_location') {
-      const { rideId, driverLat, driverLng, status } = body;
-      const idx = data.rides.findIndex((r: any) => r.id === rideId);
-      if (idx === -1) {
-        return NextResponse.json({ success: false, error: 'Corrida nao encontrada.' }, { status: 404 });
+    if (recurso === 'corrida_status') {
+      const { corridaId, status, statusPagamento } = body;
+      const patch: any = { updated_at: new Date().toISOString() };
+      if (status) patch.status = status;
+      if (statusPagamento) patch.status_pagamento = statusPagamento;
+
+      const { data, error } = await supabase
+        .from('mototaxi_corridas')
+        .update(patch)
+        .eq('id', corridaId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return NextResponse.json({ success: true, data });
+    }
+
+    // Atualiza a localizacao real do motorista (chamado periodicamente pela
+    // tela do motorista via navigator.geolocation.watchPosition).
+    if (recurso === 'motorista_localizacao') {
+      const { motoristaId, latitude, longitude, corridaId } = body;
+
+      await supabase
+        .from('mototaxi_motoristas')
+        .update({ latitude, longitude, updated_at: new Date().toISOString() })
+        .eq('id', motoristaId);
+
+      if (corridaId) {
+        await supabase
+          .from('mototaxi_corridas')
+          .update({ motorista_lat: latitude, motorista_lng: longitude, updated_at: new Date().toISOString() })
+          .eq('id', corridaId);
       }
 
-      data.rides[idx] = {
-        ...data.rides[idx],
-        driverLat: Number(driverLat),
-        driverLng: Number(driverLng),
-        status: status || data.rides[idx].status,
-        updatedAt: new Date().toISOString()
-      };
+      return NextResponse.json({ success: true });
+    }
 
-      writeData(data);
-      return NextResponse.json({ success: true, data: data.rides[idx] });
+    if (recurso === 'motorista') {
+      const { id, patch } = body;
+      const { data, error } = await supabase
+        .from('mototaxi_motoristas')
+        .update({ ...patch, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return NextResponse.json({ success: true, data });
     }
 
     if (recurso === 'ads') {
-      data.adsConfig = {
-        ...data.adsConfig,
-        ...body.config,
-        items: Array.isArray(body?.config?.items) ? body.config.items : data.adsConfig.items
-      };
-      writeData(data);
-      return NextResponse.json({ success: true, data: data.adsConfig });
-    }
+      const { data: atual } = await supabase.from('mototaxi_ads_config').select('id').limit(1).single();
+      const { data, error } = await supabase
+        .from('mototaxi_ads_config')
+        .update({ ...body.config, updated_at: new Date().toISOString() })
+        .eq('id', atual?.id)
+        .select()
+        .single();
 
-    if (recurso === 'driver') {
-      const { id, patch } = body;
-      const idx = data.drivers.findIndex((d: any) => d.id === id);
-      if (idx === -1) {
-        return NextResponse.json({ success: false, error: 'Motorista nao encontrado.' }, { status: 404 });
-      }
-
-      data.drivers[idx] = {
-        ...data.drivers[idx],
-        ...patch,
-        updatedAt: new Date().toISOString(),
-        alertaSonoroAtivo:
-          patch?.plano
-            ? ['basico', 'premium'].includes(String(patch.plano).toLowerCase())
-            : data.drivers[idx].alertaSonoroAtivo
-      };
-
-      writeData(data);
-      return NextResponse.json({ success: true, data: data.drivers[idx] });
+      if (error) throw error;
+      return NextResponse.json({ success: true, data });
     }
 
     return NextResponse.json({ success: false, error: 'Recurso invalido.' }, { status: 400 });
   } catch (error: any) {
+    console.error('Erro PUT mototaxi:', error);
     return NextResponse.json({ success: false, error: error?.message || 'Erro ao atualizar.' }, { status: 500 });
   }
 }
-

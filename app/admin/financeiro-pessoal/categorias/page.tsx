@@ -28,14 +28,14 @@ export default function CategoriasPage() {
       setCategorias(JSON.parse(stored));
     } else {
       const categoriasPadrao: Categoria[] = [
-        { id: '1', nome: 'SalÃ¡rio', tipo: 'receita', cor: '#10b981' },
+        { id: '1', nome: 'Salário', tipo: 'receita', cor: '#10b981' },
         { id: '2', nome: 'Freelance', tipo: 'receita', cor: '#3b82f6' },
-        { id: '3', nome: 'AlimentaÃ§Ã£o', tipo: 'despesa', cor: '#ef4444' },
+        { id: '3', nome: 'Alimentação', tipo: 'despesa', cor: '#ef4444' },
         { id: '4', nome: 'Contas', tipo: 'despesa', cor: '#f59e0b' },
         { id: '5', nome: 'Lazer', tipo: 'despesa', cor: '#8b5cf6' },
         { id: '6', nome: 'Transporte', tipo: 'despesa', cor: '#ec4899' },
-        { id: '7', nome: 'SaÃºde', tipo: 'despesa', cor: '#06b6d4' },
-        { id: '8', nome: 'EducaÃ§Ã£o', tipo: 'despesa', cor: '#84cc16' }
+        { id: '7', nome: 'Saúde', tipo: 'despesa', cor: '#06b6d4' },
+        { id: '8', nome: 'Educação', tipo: 'despesa', cor: '#84cc16' }
       ];
       setCategorias(categoriasPadrao);
       localStorage.setItem('financeiro_categorias', JSON.stringify(categoriasPadrao));
@@ -46,7 +46,7 @@ export default function CategoriasPage() {
     e.preventDefault();
     
     if (!formData.nome.trim()) {
-      alert('âŒ O nome da categoria Ã© obrigatÃ³rio');
+      alert('❌ O nome da categoria é obrigatório');
       return;
     }
     
@@ -65,7 +65,7 @@ export default function CategoriasPage() {
   };
 
   const excluirCategoria = (id: string) => {
-    if (confirm('âš ï¸ Tem certeza que deseja excluir esta categoria?')) {
+    if (confirm('⚠️ Tem certeza que deseja excluir esta categoria?')) {
       const novas = categorias.filter(c => c.id !== id);
       setCategorias(novas);
       localStorage.setItem('financeiro_categorias', JSON.stringify(novas));
@@ -79,7 +79,7 @@ export default function CategoriasPage() {
   };
 
   const getTipoLabel = (tipo: string) => {
-    return tipo === 'receita' ? 'ðŸ’° Receita' : 'ðŸ’¸ Despesa';
+    return tipo === 'receita' ? '💰 Receita' : '💸 Despesa';
   };
 
   const getTipoBg = (tipo: string) => {
@@ -90,7 +90,7 @@ export default function CategoriasPage() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">ðŸ“‚ Categorias Financeiras</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">📂 Categorias Financeiras</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Organize suas receitas e despesas por categoria</p>
         </div>
         <button
@@ -109,7 +109,7 @@ export default function CategoriasPage() {
         {/* Receitas */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-lg font-semibold text-green-600 dark:text-green-400">ðŸ’° Receitas</h2>
+            <h2 className="text-lg font-semibold text-green-600 dark:text-green-400">💰 Receitas</h2>
             <p className="text-xs text-gray-500 dark:text-gray-400">Categorias de entrada de dinheiro</p>
           </div>
           <div className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -152,8 +152,8 @@ export default function CategoriasPage() {
         {/* Despesas */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-lg font-semibold text-red-600 dark:text-red-400">ðŸ’¸ Despesas</h2>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Categorias de saÃ­da de dinheiro</p>
+            <h2 className="text-lg font-semibold text-red-600 dark:text-red-400">💸 Despesas</h2>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Categorias de saída de dinheiro</p>
           </div>
           <div className="divide-y divide-gray-200 dark:divide-gray-700">
             {categorias.filter(c => c.tipo === 'despesa').length === 0 ? (
@@ -193,13 +193,13 @@ export default function CategoriasPage() {
         </div>
       </div>
 
-      {/* Modal de Cadastro/EdiÃ§Ã£o */}
+      {/* Modal de Cadastro/Edição */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                {editing ? 'âœï¸ Editar Categoria' : 'âž• Nova Categoria'}
+                {editing ? '✏️ Editar Categoria' : '➕ Nova Categoria'}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
@@ -212,11 +212,11 @@ export default function CategoriasPage() {
             <form onSubmit={salvarCategoria} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  ðŸ·ï¸ Nome da Categoria <span className="text-red-500">*</span>
+                  🏷️ Nome da Categoria <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  placeholder="Ex: SalÃ¡rio, AlimentaÃ§Ã£o, Transporte..."
+                  placeholder="Ex: Salário, Alimentação, Transporte..."
                   value={formData.nome}
                   onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
                   className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 placeholder-gray-400 dark:placeholder-gray-500"
@@ -226,7 +226,7 @@ export default function CategoriasPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  ðŸ“‚ Tipo
+                  📂 Tipo
                 </label>
                 <div className="flex gap-4">
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -237,7 +237,7 @@ export default function CategoriasPage() {
                       onChange={() => setFormData({ ...formData, tipo: 'receita' })}
                       className="w-4 h-4 text-green-600"
                     />
-                    <span className="text-gray-700 dark:text-gray-300">ðŸ’° Receita</span>
+                    <span className="text-gray-700 dark:text-gray-300">💰 Receita</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -247,14 +247,14 @@ export default function CategoriasPage() {
                       onChange={() => setFormData({ ...formData, tipo: 'despesa' })}
                       className="w-4 h-4 text-red-600"
                     />
-                    <span className="text-gray-700 dark:text-gray-300">ðŸ’¸ Despesa</span>
+                    <span className="text-gray-700 dark:text-gray-300">💸 Despesa</span>
                   </label>
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  ðŸŽ¨ Cor da Categoria
+                  🎨 Cor da Categoria
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {cores.map(cor => (

@@ -1,8 +1,8 @@
 /**
  * Formata uma quantidade e sua unidade, convertendo 'g' para 'kg' e 'ml' para 'L'
- * se a quantidade for >= 1000. TambÃ©m arredonda o valor para 3 casas decimais.
+ * se a quantidade for >= 1000. Também arredonda o valor para 3 casas decimais.
  *
- * @param quantity - A quantidade numÃ©rica.
+ * @param quantity - A quantidade numérica.
  * @param unit - A unidade de medida (ex: 'g', 'ml', 'un').
  * @returns Um objeto com a nova quantidade e unidade.
  */

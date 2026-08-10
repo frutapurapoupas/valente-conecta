@@ -367,7 +367,7 @@ export default function AdminProfissionaisPage() {
         </div>
       )}
 
-      {/* Modal de EdiÃ§Ã£o / CriaÃ§Ã£o */}
+      {/* Modal de Edição / Criação */}
       {editando && (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-start sm:items-center justify-center p-4 overflow-y-auto">
           <div className="bg-slate-900 border border-white/10 rounded-2xl w-full max-w-2xl my-4">

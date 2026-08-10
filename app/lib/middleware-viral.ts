@@ -21,7 +21,7 @@ export async function checkUserAccess(userId: number): Promise<AccessStatus> {
 
   const now = new Date();
 
-  // 1. Verificar perÃ­odo de teste inicial (2 dias)
+  // 1. Verificar período de teste inicial (2 dias)
   if (user.trial_end_at && new Date(user.trial_end_at) > now) {
     const daysLeft = Math.ceil((new Date(user.trial_end_at).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     return { hasAccess: true, reason: 'trial', daysLeft };
@@ -41,14 +41,14 @@ export async function checkUserAccess(userId: number): Promise<AccessStatus> {
   const metaUsuarios = await getConfiguracao('meta_usuarios_indicados', 50);
 
   if (indicadosCount >= metaUsuarios) {
-    // Ativar automaticamente 30 dias grÃ¡tis
+    // Ativar automaticamente 30 dias grátis
     await ativarViralGratis(userId);
     const daysLeft = 30;
     return { 
       hasAccess: true, 
       reason: 'viral', 
       daysLeft,
-      showMessage: `ðŸŽ‰ VocÃª indicou ${indicadosCount} usuÃ¡rios! Ganhou 30 dias grÃ¡tis!`
+      showMessage: `🎉 Você indicou ${indicadosCount} usuários! Ganhou 30 dias grátis!`
     };
   }
 
@@ -57,7 +57,7 @@ export async function checkUserAccess(userId: number): Promise<AccessStatus> {
     hasAccess: false, 
     reason: 'expired', 
     daysLeft: 0,
-    showMessage: `â° Seu perÃ­odo de teste acabou. Indique mais ${faltam} amigos para ganhar 30 dias grÃ¡tis!`
+    showMessage: `⏰ Seu período de teste acabou. Indique mais ${faltam} amigos para ganhar 30 dias grátis!`
   };
 }
 

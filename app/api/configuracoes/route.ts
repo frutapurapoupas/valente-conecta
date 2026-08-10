@@ -1,10 +1,10 @@
 // ============================================================================
 // ARQUIVO 2: app/api/configuracoes/route.ts
-// Funcionalidade: API para gerenciar configuraÃ§Ãµes do sistema
+// Funcionalidade: API para gerenciar configurações do sistema
 // Rotas:
-//   GET /api/configuracoes?chave=xxx - Buscar configuraÃ§Ã£o especÃ­fica
+//   GET /api/configuracoes?chave=xxx - Buscar configuração específica
 //   GET /api/configuracoes?categoria=xxx - Buscar todas configs de uma categoria
-//   POST /api/configuracoes - Salvar/Atualizar configuraÃ§Ã£o
+//   POST /api/configuracoes - Salvar/Atualizar configuração
 //   GET /api/configuracoes/grupos - Listar todos os grupos
 //   POST /api/configuracoes/grupos - Criar novo grupo
 //   PUT /api/configuracoes/grupos - Atualizar grupo
@@ -15,7 +15,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
-// ServiÃ§o inline de configuraÃ§Ãµes (substitui import inexistente)
+// Serviço inline de configurações (substitui import inexistente)
 const configuracoesService = {
   async getGrupos() {
     try {
@@ -106,13 +106,13 @@ const configuracoesService = {
   }
 };
 
-// Verificar se o usuÃ¡rio Ã© Admin
+// Verificar se o usuário é Admin
 async function isAdmin(request: NextRequest): Promise<boolean> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
     
-    // Verificar na tabela de usuÃ¡rios se Ã© admin
+    // Verificar na tabela de usuários se é admin
     const { data } = await supabase
       .from('usuarios')
       .select('is_admin')
@@ -127,13 +127,13 @@ async function isAdmin(request: NextRequest): Promise<boolean> {
 }
 
 // ============================================================================
-// GET - Buscar configuraÃ§Ãµes
+// GET - Buscar configurações
 // ============================================================================
 export async function GET(request: NextRequest) {
-  // Verificar autenticaÃ§Ã£o
+  // Verificar autenticação
   const admin = await isAdmin(request);
   if (!admin) {
-    return NextResponse.json({ error: 'NÃ£o autorizado' }, { status: 401 });
+    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
   }
 
   const searchParams = request.nextUrl.searchParams;
@@ -147,7 +147,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: true, data: grupos });
   }
 
-  // Buscar logs por notificaÃ§Ã£o
+  // Buscar logs por notificação
   if (tipo === 'logs') {
     const notificacaoId = searchParams.get('notificacaoId');
     if (notificacaoId) {
@@ -164,13 +164,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: true, data: [] });
   }
 
-  // Buscar configuraÃ§Ã£o especÃ­fica
+  // Buscar configuração específica
   if (chave) {
     const valor = await configuracoesService.getConfiguracao(chave);
     return NextResponse.json({ success: true, data: { chave, valor } });
   }
 
-  // Buscar todas configuraÃ§Ãµes de uma categoria
+  // Buscar todas configurações de uma categoria
   if (categoria) {
     const chavesPorCategoria: Record<string, string[]> = {
       telegram: ['telegram_bot_token', 'telegram_grupo_teste_id', 'telegram_grupo_todos_id'],
@@ -188,7 +188,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: true, data: resultados });
   }
 
-  // Listar todas configuraÃ§Ãµes (apenas chaves pÃºblicas)
+  // Listar todas configurações (apenas chaves públicas)
   const configuracoesPublicas = {
     modo_teste: await configuracoesService.getConfiguracao('modo_teste'),
     telegram_grupo_teste_id: await configuracoesService.getConfiguracao('telegram_grupo_teste_id'),
@@ -200,13 +200,13 @@ export async function GET(request: NextRequest) {
 }
 
 // ============================================================================
-// POST - Salvar configuraÃ§Ã£o
+// POST - Salvar configuração
 // ============================================================================
 export async function POST(request: NextRequest) {
-  // Verificar autenticaÃ§Ã£o
+  // Verificar autenticação
   const admin = await isAdmin(request);
   if (!admin) {
-    return NextResponse.json({ error: 'NÃ£o autorizado' }, { status: 401 });
+    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
   }
 
   try {
@@ -218,7 +218,7 @@ export async function POST(request: NextRequest) {
       const { nome, descricao, icone, cor, telegram_chat_id } = dados;
       
       if (!nome) {
-        return NextResponse.json({ error: 'Nome do grupo Ã© obrigatÃ³rio' }, { status: 400 });
+        return NextResponse.json({ error: 'Nome do grupo é obrigatório' }, { status: 400 });
       }
       
       const novoGrupo = await configuracoesService.criarGrupo({
@@ -233,58 +233,58 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, data: novoGrupo });
     }
     
-    // Salvar configuraÃ§Ã£o individual
+    // Salvar configuração individual
     if (tipo === 'config') {
       const { chave, valor } = dados;
       
       if (!chave) {
-        return NextResponse.json({ error: 'Chave Ã© obrigatÃ³ria' }, { status: 400 });
+        return NextResponse.json({ error: 'Chave é obrigatória' }, { status: 400 });
       }
       
-      // CORRIGIDO: removido o terceiro parÃ¢metro usuarioId
+      // CORRIGIDO: removido o terceiro parâmetro usuarioId
       const salvou = await configuracoesService.setConfiguracao(chave, valor);
       
       if (salvou) {
-        return NextResponse.json({ success: true, message: 'ConfiguraÃ§Ã£o salva com sucesso' });
+        return NextResponse.json({ success: true, message: 'Configuração salva com sucesso' });
       } else {
-        return NextResponse.json({ error: 'Erro ao salvar configuraÃ§Ã£o' }, { status: 500 });
+        return NextResponse.json({ error: 'Erro ao salvar configuração' }, { status: 500 });
       }
     }
     
-    // Adicionar usuÃ¡rio a grupo
+    // Adicionar usuário a grupo
     if (tipo === 'usuario_grupo') {
       const { usuarioId, grupoId } = dados;
       
       if (!usuarioId || !grupoId) {
-        return NextResponse.json({ error: 'UsuÃ¡rio e grupo sÃ£o obrigatÃ³rios' }, { status: 400 });
+        return NextResponse.json({ error: 'Usuário e grupo são obrigatórios' }, { status: 400 });
       }
       
-      // CORRIGIDO: removido o terceiro parÃ¢metro adminId
+      // CORRIGIDO: removido o terceiro parâmetro adminId
       const adicionou = await configuracoesService.adicionarUsuarioAoGrupo(usuarioId, grupoId);
       
       if (adicionou) {
-        return NextResponse.json({ success: true, message: 'UsuÃ¡rio adicionado ao grupo' });
+        return NextResponse.json({ success: true, message: 'Usuário adicionado ao grupo' });
       } else {
-        return NextResponse.json({ error: 'Erro ao adicionar usuÃ¡rio ao grupo' }, { status: 500 });
+        return NextResponse.json({ error: 'Erro ao adicionar usuário ao grupo' }, { status: 500 });
       }
     }
     
-    return NextResponse.json({ error: 'Tipo de operaÃ§Ã£o nÃ£o reconhecido' }, { status: 400 });
+    return NextResponse.json({ error: 'Tipo de operação não reconhecido' }, { status: 400 });
     
   } catch (error) {
-    console.error('Erro na API de configuraÃ§Ãµes:', error);
+    console.error('Erro na API de configurações:', error);
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 }
 
 // ============================================================================
-// PUT - Atualizar configuraÃ§Ã£o existente
+// PUT - Atualizar configuração existente
 // ============================================================================
 export async function PUT(request: NextRequest) {
-  // Verificar autenticaÃ§Ã£o
+  // Verificar autenticação
   const admin = await isAdmin(request);
   if (!admin) {
-    return NextResponse.json({ error: 'NÃ£o autorizado' }, { status: 401 });
+    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
   }
 
   try {
@@ -296,7 +296,7 @@ export async function PUT(request: NextRequest) {
       const { id, nome, descricao, icone, cor, telegram_chat_id, ativo } = dados;
       
       if (!id) {
-        return NextResponse.json({ error: 'ID do grupo Ã© obrigatÃ³rio' }, { status: 400 });
+        return NextResponse.json({ error: 'ID do grupo é obrigatório' }, { status: 400 });
       }
       
       const atualizou = await configuracoesService.atualizarGrupo(id, {
@@ -315,39 +315,39 @@ export async function PUT(request: NextRequest) {
       }
     }
     
-    // Remover usuÃ¡rio de grupo
+    // Remover usuário de grupo
     if (tipo === 'usuario_grupo') {
       const { usuarioId, grupoId } = dados;
       
       if (!usuarioId || !grupoId) {
-        return NextResponse.json({ error: 'UsuÃ¡rio e grupo sÃ£o obrigatÃ³rios' }, { status: 400 });
+        return NextResponse.json({ error: 'Usuário e grupo são obrigatórios' }, { status: 400 });
       }
       
       const removeu = await configuracoesService.removerUsuarioDoGrupo(usuarioId, grupoId);
       
       if (removeu) {
-        return NextResponse.json({ success: true, message: 'UsuÃ¡rio removido do grupo' });
+        return NextResponse.json({ success: true, message: 'Usuário removido do grupo' });
       } else {
-        return NextResponse.json({ error: 'Erro ao remover usuÃ¡rio do grupo' }, { status: 500 });
+        return NextResponse.json({ error: 'Erro ao remover usuário do grupo' }, { status: 500 });
       }
     }
     
-    return NextResponse.json({ error: 'Tipo de operaÃ§Ã£o nÃ£o reconhecido' }, { status: 400 });
+    return NextResponse.json({ error: 'Tipo de operação não reconhecido' }, { status: 400 });
     
   } catch (error) {
-    console.error('Erro na API de configuraÃ§Ãµes:', error);
+    console.error('Erro na API de configurações:', error);
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 }
 
 // ============================================================================
-// DELETE - Remover configuraÃ§Ã£o/grupo
+// DELETE - Remover configuração/grupo
 // ============================================================================
 export async function DELETE(request: NextRequest) {
-  // Verificar autenticaÃ§Ã£o
+  // Verificar autenticação
   const admin = await isAdmin(request);
   if (!admin) {
-    return NextResponse.json({ error: 'NÃ£o autorizado' }, { status: 401 });
+    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
   }
 
   try {
@@ -359,7 +359,7 @@ export async function DELETE(request: NextRequest) {
       const id = searchParams.get('id');
       
       if (!id) {
-        return NextResponse.json({ error: 'ID do grupo Ã© obrigatÃ³rio' }, { status: 400 });
+        return NextResponse.json({ error: 'ID do grupo é obrigatório' }, { status: 400 });
       }
       
       const deletou = await configuracoesService.deletarGrupo(id);
@@ -371,10 +371,10 @@ export async function DELETE(request: NextRequest) {
       }
     }
     
-    return NextResponse.json({ error: 'Tipo de operaÃ§Ã£o nÃ£o reconhecido' }, { status: 400 });
+    return NextResponse.json({ error: 'Tipo de operação não reconhecido' }, { status: 400 });
     
   } catch (error) {
-    console.error('Erro na API de configuraÃ§Ãµes:', error);
+    console.error('Erro na API de configurações:', error);
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 }

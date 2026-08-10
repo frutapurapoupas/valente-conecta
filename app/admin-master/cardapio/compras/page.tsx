@@ -47,7 +47,7 @@ export default function ExtratoComprasPage() {
   const [itensCompra, setItensCompra] = useState<ItemCompra[]>([]);
   const [showEstoqueModal, setShowEstoqueModal] = useState(false);
 
-  const diasSemana = ["Segunda", "TerÃ§a", "Quarta", "Quinta", "Sexta", "SÃ¡bado"];
+  const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 
   useEffect(() => {
     const storedPratos = localStorage.getItem("pratos_cardapio");
@@ -152,12 +152,12 @@ export default function ExtratoComprasPage() {
   return (
     <div className="min-h-screen bg-gray-100 p-4">
       <div className="max-w-7xl mx-auto">
-        {/* CabeÃ§alho */}
+        {/* Cabeçalho */}
         <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">ðŸ“‹ Extrato para Compras</h1>
+            <h1 className="text-2xl font-bold text-gray-800">📋 Extrato para Compras</h1>
             <p className="text-sm text-gray-500">
-              Lista de compras baseada na previsÃ£o de vendas da semana
+              Lista de compras baseada na previsão de vendas da semana
             </p>
           </div>
           <div className="flex gap-2">
@@ -202,7 +202,7 @@ export default function ExtratoComprasPage() {
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="p-4 bg-gray-50 border-b">
             <h3 className="font-semibold text-gray-800 flex items-center gap-2">
-              <ShoppingCart size={18} /> Lista de Compras NecessÃ¡rias
+              <ShoppingCart size={18} /> Lista de Compras Necessárias
             </h3>
           </div>
           <div className="overflow-x-auto">
@@ -210,11 +210,11 @@ export default function ExtratoComprasPage() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="p-3 text-left text-xs font-medium text-gray-500">Ingrediente</th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500">NecessÃ¡rio</th>
+                  <th className="p-3 text-left text-xs font-medium text-gray-500">Necessário</th>
                   <th className="p-3 text-left text-xs font-medium text-gray-500">Em Estoque</th>
                   <th className="p-3 text-left text-xs font-medium text-gray-500">Comprar</th>
                   <th className="p-3 text-left text-xs font-medium text-gray-500">Custo Est.</th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500">AÃ§Ãµes</th>
+                  <th className="p-3 text-left text-xs font-medium text-gray-500">Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -228,7 +228,7 @@ export default function ExtratoComprasPage() {
                       </span>
                     </td>
                     <td className="p-3 font-bold text-orange-600">
-                      {item.quantidadeComprar > 0 ? formatarQuantidade(item.quantidadeComprar, item.unidade) : "âœ… Suficiente"}
+                      {item.quantidadeComprar > 0 ? formatarQuantidade(item.quantidadeComprar, item.unidade) : "✅ Suficiente"}
                     </td>
                     <td className="p-3">R$ {(item.custoEstimado).toFixed(2)}</td>
                     <td className="p-3">
@@ -247,7 +247,7 @@ export default function ExtratoComprasPage() {
                 {itensCompra.length === 0 && (
                   <tr>
                     <td colSpan={6} className="p-8 text-center text-gray-500">
-                      Nenhum ingrediente necessÃ¡rio. Configure o cardÃ¡pio e a previsÃ£o de vendas.
+                      Nenhum ingrediente necessário. Configure o cardápio e a previsão de vendas.
                     </td>
                   </tr>
                 )}
@@ -265,8 +265,8 @@ export default function ExtratoComprasPage() {
           <ul className="text-sm text-yellow-700 space-y-1 list-disc list-inside">
             <li>Considere comprar a granel para itens com alto consumo</li>
             <li>Verifique fornecedores locais para carnes e verduras frescas</li>
-            <li>Estime uma margem de seguranÃ§a de 10-15% para imprevistos</li>
-            <li>Itens com <strong>"âœ… Suficiente"</strong> nÃ£o precisam ser comprados</li>
+            <li>Estime uma margem de segurança de 10-15% para imprevistos</li>
+            <li>Itens com <strong>"✅ Suficiente"</strong> não precisam ser comprados</li>
           </ul>
         </div>
       </div>
@@ -276,8 +276,8 @@ export default function ExtratoComprasPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto">
             <div className="p-4 border-b flex justify-between items-center sticky top-0 bg-white">
-              <h3 className="text-xl font-bold">ðŸ“¦ Gerenciar Estoque</h3>
-              <button onClick={() => setShowEstoqueModal(false)} className="text-gray-400">âœ•</button>
+              <h3 className="text-xl font-bold">📦 Gerenciar Estoque</h3>
+              <button onClick={() => setShowEstoqueModal(false)} className="text-gray-400">✕</button>
             </div>
             <div className="p-4 space-y-3">
               {itensCompra.map(item => (

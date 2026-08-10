@@ -1,5 +1,5 @@
 // components/financeiro/ModalTransacao.tsx
-// ?? DESIGN - Modal de criaÃ§Ã£o/ediÃ§Ã£o de transaÃ§Ã£o
+// ?? DESIGN - Modal de criação/edição de transação
 
 "use client";
 
@@ -60,8 +60,8 @@ export default function ModalTransacao({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // ? LOG: Ver o que estÃ¡ sendo enviado
-    console.log('?? Modal: Enviando dados:', formData);
+    // ? LOG: Ver o que está sendo enviado
+    console.log('📤 Modal: Enviando dados:', formData);
     
     onSave(formData);
   };
@@ -70,7 +70,7 @@ export default function ModalTransacao({
 
   const getQuantidadeLabel = (recorrencia: string) => {
     switch (recorrencia) {
-      case 'diÃ¡ria': return 'dias';
+      case 'diária': return 'dias';
       case 'semanal': return 'semanas';
       case 'quinzenal': return 'quinzenas';
       case 'mensal': return 'meses';
@@ -85,7 +85,7 @@ export default function ModalTransacao({
         <div className="p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-white">
-              {editingId ? '?? Editar TransaÃ§Ã£o' : '?? Nova TransaÃ§Ã£o'}
+              {editingId ? '✏️ Editar Transação' : '💰 Nova Transação'}
             </h2>
             <button onClick={onClose} className="text-gray-400 hover:text-white transition">
               <X size={20} />
@@ -93,9 +93,9 @@ export default function ModalTransacao({
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* DescriÃ§Ã£o */}
+            {/* Descrição */}
             <div>
-              <label className="block text-sm text-gray-400 mb-1">DescriÃ§Ã£o *</label>
+              <label className="block text-sm text-gray-400 mb-1">Descrição *</label>
               <input
                 type="text"
                 required
@@ -184,10 +184,10 @@ export default function ModalTransacao({
               </div>
             </div>
 
-            {/* RecorrÃªncia e Quantidade */}
+            {/* Recorrência e Quantidade */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm text-gray-400 mb-1">?? RecorrÃªncia</label>
+                <label className="block text-sm text-gray-400 mb-1">🔄 Recorrência</label>
                 <select
                   value={formData.recorrencia}
                   onChange={(e) => setFormData({ ...formData, recorrencia: e.target.value })}
@@ -224,7 +224,7 @@ export default function ModalTransacao({
                   <p className="text-xs text-gray-500 mt-1">
                     ?? Ex: 12 = {formData.recorrencia === 'mensal' ? '12 meses' : 
                                     formData.recorrencia === 'semanal' ? '12 semanas' :
-                                    formData.recorrencia === 'diÃ¡ria' ? '12 dias' :
+                                    formData.recorrencia === 'diária' ? '12 dias' :
                                     formData.recorrencia === 'anual' ? '12 anos' : 
                                     '12 vezes'}
                   </p>
@@ -232,19 +232,19 @@ export default function ModalTransacao({
               </div>
             </div>
 
-            {/* ObservaÃ§Ãµes */}
+            {/* Observações */}
             <div>
-              <label className="block text-sm text-gray-400 mb-1">ObservaÃ§Ãµes</label>
+              <label className="block text-sm text-gray-400 mb-1">Observações</label>
               <textarea
                 value={formData.observacoes}
                 onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
                 rows={2}
-                placeholder="ObservaÃ§Ãµes adicionais..."
+                placeholder="Observações adicionais..."
                 className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-green-500 focus:outline-none"
               />
             </div>
 
-            {/* BotÃµes */}
+            {/* Botões */}
             <div className="flex gap-3 pt-4">
               <button
                 type="button"

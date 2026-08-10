@@ -12,14 +12,14 @@ export function NotificacaoInfo({ modoTeste }: NotificacaoInfoProps) {
       <div className="flex items-start gap-3">
         <Database className="w-5 h-5 text-blue-500 mt-0.5" />
         <div>
-          <p className="text-sm font-medium text-gray-800">ðŸ“¡ Status dos canais de comunicaÃ§Ã£o:</p>
+          <p className="text-sm font-medium text-gray-800">📡 Status dos canais de comunicação:</p>
           <ul className="text-xs text-gray-600 mt-2 space-y-1">
-            <li>â€¢ <strong>Telegram</strong>: âœ… Bot @valenteconecta_bot ativo e funcionando</li>
-            <li>â€¢ <strong>Push Notification</strong>: âš ï¸ NecessÃ¡rio ativar permissÃ£o no navegador</li>
-            <li>â€¢ <strong>Popup Ãºnica vez</strong>: âœ… Cada usuÃ¡rio vÃª apenas uma vez</li>
-            <li>â€¢ <strong>SegmentaÃ§Ã£o</strong>: âœ… Envio para grupos especÃ­ficos ou usuÃ¡rio individual</li>
-            <li>â€¢ <strong>Modo Teste</strong>: {modoTeste ? 'âœ… ATIVADO - NotificaÃ§Ãµes vÃ£o apenas para grupo de teste' : 'âŒ DESATIVADO - NotificaÃ§Ãµes vÃ£o para todos'}</li>
-            <li>â€¢ As notificaÃ§Ãµes ativas aparecem no card abaixo do "Indique e Ganhe" na Home</li>
+            <li>• <strong>Telegram</strong>: ✅ Bot @valenteconecta_bot ativo e funcionando</li>
+            <li>• <strong>Push Notification</strong>: ⚠️ Necessário ativar permissão no navegador</li>
+            <li>• <strong>Popup única vez</strong>: ✅ Cada usuário vê apenas uma vez</li>
+            <li>• <strong>Segmentação</strong>: ✅ Envio para grupos específicos ou usuário individual</li>
+            <li>• <strong>Modo Teste</strong>: {modoTeste ? '✅ ATIVADO - Notificações vão apenas para grupo de teste' : '❌ DESATIVADO - Notificações vão para todos'}</li>
+            <li>• As notificações ativas aparecem no card abaixo do "Indique e Ganhe" na Home</li>
           </ul>
         </div>
       </div>

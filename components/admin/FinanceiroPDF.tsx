@@ -39,10 +39,10 @@ export default function FinanceiroPDF({
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
 
-    // TÃ­tulo
+    // Título
     doc.setFontSize(20);
     doc.setTextColor(34, 197, 94);
-    doc.text('ðŸ“Š RelatÃ³rio Financeiro', pageWidth / 2, 20, { align: 'center' });
+    doc.text('📊 Relatório Financeiro', pageWidth / 2, 20, { align: 'center' });
 
     doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
@@ -71,7 +71,7 @@ export default function FinanceiroPDF({
       }
     });
 
-    // Tabela de transaÃ§Ãµes
+    // Tabela de transações
     const tableData = transacoes.map(t => [
       new Date(t.data).toLocaleDateString('pt-BR'),
       t.descricao,
@@ -82,7 +82,7 @@ export default function FinanceiroPDF({
 
     autoTable(doc, {
       startY: (doc as any).lastAutoTable?.finalY + 10 || 70,
-      head: [['Data', 'DescriÃ§Ã£o', 'Categoria', 'Tipo', 'Valor']],
+      head: [['Data', 'Descrição', 'Categoria', 'Tipo', 'Valor']],
       body: tableData,
       theme: 'striped',
       styles: { fontSize: 8 },
@@ -96,7 +96,7 @@ export default function FinanceiroPDF({
       }
     });
 
-    // RodapÃ©
+    // Rodapé
     const finalY = (doc as any).lastAutoTable?.finalY || 250;
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);

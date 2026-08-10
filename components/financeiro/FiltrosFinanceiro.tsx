@@ -20,7 +20,7 @@ export default function FiltrosFinanceiro({
 }: FiltrosFinanceiroProps) {
   return (
     <div className="flex flex-wrap items-center gap-3 mb-4 bg-gray-800/30 rounded-xl border border-gray-700 p-3">
-      <span className="text-sm text-gray-400">?? Filtros:</span>
+      <span className="text-sm text-gray-400">📊 Filtros:</span>
       <select
         value={filtroPeriodo}
         onChange={(e) => onPeriodoChange(e.target.value)}

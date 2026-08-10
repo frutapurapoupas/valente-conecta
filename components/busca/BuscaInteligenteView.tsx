@@ -3,10 +3,10 @@
 // ============================================
 // BUSCA INTELIGENTE VIEW - DESIGN PURO
 // ============================================
-// Componente de UI sem lÃ³gica de negÃ³cios.
+// Componente de UI sem lógica de negócios.
 // Recebe todos os dados e callbacks via props.
 // Glassmorphism, cantos arredondados amplos,
-// sombras suaves, micro-interaÃ§Ãµes hover.
+// sombras suaves, micro-interações hover.
 // ============================================
 
 import {
@@ -153,7 +153,7 @@ export default function BuscaInteligenteView({
           rounded-2xl
           transition-all duration-300
         ">
-          {/* Ãcone de busca */}
+          {/* Ícone de busca */}
           <div className="pl-4 pr-2">
             <Search className="
               w-5 h-5
@@ -181,7 +181,7 @@ export default function BuscaInteligenteView({
             "
           />
 
-          {/* BotÃ£o microfone */}
+          {/* Botão microfone */}
           <button
             onClick={onIniciarBuscaVoz}
             title={isListening ? 'Ouvindo...' : 'Buscar por voz'}
@@ -210,7 +210,7 @@ export default function BuscaInteligenteView({
             z-50 p-4
           ">
             <div className="flex items-center justify-center gap-3">
-              {/* CÃ­rculo pulsante vermelho */}
+              {/* Círculo pulsante vermelho */}
               <span className="relative flex w-4 h-4">
                 <span className="
                   absolute inline-flex w-full h-full
@@ -365,9 +365,9 @@ export default function BuscaInteligenteView({
                           )}
                         </div>
 
-                        {/* InformaÃ§Ãµes */}
+                        {/* Informações */}
                         <div className="flex-1 min-w-0">
-                          {/* TÃ­tulo + PreÃ§o */}
+                          {/* Título + Preço */}
                           <div className="flex justify-between items-start gap-2">
                             <div className="min-w-0">
                               <h3 className="
@@ -441,7 +441,7 @@ export default function BuscaInteligenteView({
                                 </p>
                               </div>
 
-                              {/* BotÃ£o de desbloqueio */}
+                              {/* Botão de desbloqueio */}
                               {!isInternet && displayInfo.precisaDesbloquear && (
                                 <button
                                   onClick={(e) => {
@@ -530,7 +530,7 @@ export default function BuscaInteligenteView({
               </button>
             </div>
 
-            {/* ConteÃºdo */}
+            {/* Conteúdo */}
             <div className="p-6">
               {/* Produto */}
               <div className="flex gap-4 mb-5">
@@ -565,17 +565,17 @@ export default function BuscaInteligenteView({
                 </div>
               </div>
 
-              {/* BenefÃ­cios */}
+              {/* Benefícios */}
               <div className="
                 bg-gradient-to-br from-gray-50 to-gray-100/50
                 rounded-2xl p-4 mb-5
                 border border-gray-100
               ">
                 <p className="text-sm font-medium text-gray-700 mb-2">
-                  Ao desbloquear, vocÃª terÃ¡ acesso a:
+                  Ao desbloquear, você terá acesso a:
                 </p>
                 <ul className="space-y-1.5 text-sm">
-                  {['Nome do fornecedor', 'EndereÃ§o completo', 'Telefone para contato'].map((item) => (
+                  {['Nome do fornecedor', 'Endereço completo', 'Telefone para contato'].map((item) => (
                     <li key={item} className="flex items-center gap-2 text-gray-600">
                       <span className="
                         w-5 h-5 rounded-lg
@@ -590,7 +590,7 @@ export default function BuscaInteligenteView({
                 </ul>
               </div>
 
-              {/* PreÃ§o */}
+              {/* Preço */}
               <div className="
                 border-t border-gray-100
                 pt-4 pb-1
@@ -606,7 +606,7 @@ export default function BuscaInteligenteView({
               </div>
             </div>
 
-            {/* AÃ§Ãµes */}
+            {/* Ações */}
             <div className="px-6 pb-6 space-y-3">
               <div className="flex gap-3">
                 <button
@@ -638,7 +638,7 @@ export default function BuscaInteligenteView({
                 </button>
               </div>
               <p className="text-[11px] text-gray-400 text-center">
-                Pagamento seguro via PIX ou CartÃ£o de CrÃ©dito
+                Pagamento seguro via PIX ou Cartão de Crédito
               </p>
             </div>
           </div>

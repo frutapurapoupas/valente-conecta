@@ -32,9 +32,9 @@ export default function AdminAcademiaPage() {
   }
 
   const [alunos, setAlunos] = useState<AlunoAdmin[]>([
-    { id: 1, nome: "JoÃ£o Silva", email: "joao@email.com", telefone: "(75) 99999-1111", peso: 72, altura: 1.75, imc: 23.5, objetivo: "Ganhar Massa", plano: "Premium", status: "ativo", treinosRealizados: 45 },
-    { id: 2, nome: "Maria Santos", email: "maria@email.com", telefone: "(75) 99999-2222", peso: 65, altura: 1.65, imc: 23.9, objetivo: "Emagrecer", plano: "BÃ¡sico", status: "ativo", treinosRealizados: 28 },
-    { id: 3, nome: "Pedro Costa", email: "pedro@email.com", telefone: "(75) 99999-3333", peso: 85, altura: 1.80, imc: 26.2, objetivo: "Definir", plano: "GrÃ¡tis", status: "inativo", treinosRealizados: 12 }
+    { id: 1, nome: "João Silva", email: "joao@email.com", telefone: "(75) 99999-1111", peso: 72, altura: 1.75, imc: 23.5, objetivo: "Ganhar Massa", plano: "Premium", status: "ativo", treinosRealizados: 45 },
+    { id: 2, nome: "Maria Santos", email: "maria@email.com", telefone: "(75) 99999-2222", peso: 65, altura: 1.65, imc: 23.9, objetivo: "Emagrecer", plano: "Básico", status: "ativo", treinosRealizados: 28 },
+    { id: 3, nome: "Pedro Costa", email: "pedro@email.com", telefone: "(75) 99999-3333", peso: 85, altura: 1.80, imc: 26.2, objetivo: "Definir", plano: "Grátis", status: "inativo", treinosRealizados: 12 }
   ]);
 
   const [estatisticas, setEstatisticas] = useState({
@@ -59,7 +59,7 @@ export default function AdminAcademiaPage() {
         <h1 className="text-white font-bold text-xl">ðŸ‹ï¸ Admin Academia</h1>
       </header>
 
-      {/* EstatÃ­sticas */}
+      {/* Estatísticas */}
       <div className="p-4 grid grid-cols-2 md:grid-cols-5 gap-3">
         <div className="bg-gray-800 rounded-2xl p-3 text-center">
           <p className="text-2xl font-bold text-white">{estatisticas.totalAlunos}</p>
@@ -75,7 +75,7 @@ export default function AdminAcademiaPage() {
         </div>
         <div className="bg-gray-800 rounded-2xl p-3 text-center">
           <p className="text-2xl font-bold text-yellow-400">{estatisticas.mediaIMC}</p>
-          <p className="text-xs text-gray-400">MÃ©dia IMC</p>
+          <p className="text-xs text-gray-400">Média IMC</p>
         </div>
         <div className="bg-gray-800 rounded-2xl p-3 text-center">
           <p className="text-2xl font-bold text-orange-400">{estatisticas.planosPremium}</p>
@@ -117,7 +117,7 @@ export default function AdminAcademiaPage() {
         </div>
       </div>
 
-      {/* BotÃ£o adicionar */}
+      {/* Botão adicionar */}
       <div className="p-4">
         <button className="w-full bg-yellow-500 text-black py-3 rounded-2xl font-bold">
           + Adicionar Novo Aluno

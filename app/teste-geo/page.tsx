@@ -70,14 +70,14 @@ export default function TesteGeoPage() {
   return (
     <div className="min-h-screen bg-gray-900 p-6">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold text-white mb-6">?? Teste de Geolocalização</h1>
+        <h1 className="text-2xl font-bold text-white mb-6">🧪 Teste de Geolocalização</h1>
         
         <button
           onClick={testarGeolocalizacao}
           disabled={carregando}
           className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold text-lg mb-6 disabled:opacity-50"
         >
-          {carregando ? '?? Testando...' : '?? Testar Geolocalização'}
+          {carregando ? '🔍 Testando...' : '📍 Testar Geolocalização'}
         </button>
         
         <div className={`rounded-2xl p-4 mb-6 ${erro ? 'bg-red-500/20 border border-red-500' : localizacao ? 'bg-green-500/20 border border-green-500' : 'bg-yellow-500/20 border border-yellow-500'}`}>
@@ -86,7 +86,7 @@ export default function TesteGeoPage() {
         
         {localizacao && (
           <div className="bg-green-500/20 rounded-2xl p-4">
-            <p className="text-green-400 font-bold mb-2">?? Localização capturada:</p>
+            <p className="text-green-400 font-bold mb-2">📍 Localização capturada:</p>
             <p className="text-white">Latitude: {localizacao.lat}</p>
             <p className="text-white">Longitude: {localizacao.lng}</p>
             <button
@@ -104,7 +104,7 @@ export default function TesteGeoPage() {
         )}
         
         <div className="bg-gray-800 rounded-2xl p-4 mt-6">
-          <h2 className="font-bold text-white mb-3">?? Como resolver problemas de localização:</h2>
+          <h2 className="font-bold text-white mb-3">🔧 Como resolver problemas de localização:</h2>
           <ol className="space-y-2 text-gray-300 text-sm">
             <li>1. ?? Verifique se o site tem permissão para acessar sua localização</li>
             <li>2. ?? No Chrome/Edge: Clique no cadeado na barra de endereço ? Permitir localização</li>

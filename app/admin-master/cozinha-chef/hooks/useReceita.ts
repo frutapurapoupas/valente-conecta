@@ -83,6 +83,7 @@ function toCanonicalFromLegacy(legacy: Receita): ReceitaCanonicaCompat {
     preco_venda: legacy.preco_sugerido,
     preco_sugerido: legacy.preco_sugerido,
     custo_receita: legacy.custo_total,
+    custos_extras_unitario: (legacy as any).custos_extras_unitario,
   });
 
   return {
@@ -95,6 +96,7 @@ function toCanonicalFromLegacy(legacy: Receita): ReceitaCanonicaCompat {
     ingredientes,
     rendimento: asNumber(legacy.porcoes, 0),
     peso_final: null,
+    custos_extras_unitario: financeiro.custos_extras_unitario,
     porcoes: financeiro.porcoes,
     custo_receita: financeiro.custo_receita,
     custo_por_unidade: financeiro.custo_por_unidade,
@@ -151,13 +153,19 @@ export function useReceita(receitaId?: string) {
     }
   }, [receitaCanonica]);
 
-  // Carregar na montagem
+  // Carregar na montagem (se houver ID)
   useEffect(() => {
     if (receitaId) {
       carregarReceita();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [receitaId]);
+
+  // Carregar ingredientes disponiveis sempre na montagem (novo ou edicao)
+  useEffect(() => {
+    carregarIngredientes();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ============================================================
   // FUNCOES DE CARREGAMENTO
@@ -175,6 +183,9 @@ export function useReceita(receitaId?: string) {
         nome: String(item?.nome ?? item?.produto ?? ''),
         preco_unitario: asNumber(item?.preco_unitario, 0),
         unidade: String(item?.unidade ?? 'un'),
+        unidade_uso: String(item?.unidade_uso ?? item?.unidade ?? 'un'),
+        fator_conversao: asNumber(item?.fator_conversao, 1),
+        peso_gramas_unidade_uso: asNumber(item?.peso_gramas_unidade_uso, 1),
       }));
 
       setIngredientesDisponiveis(ingredientes);
@@ -243,7 +254,6 @@ export function useReceita(receitaId?: string) {
       }
 
       setReceitaCanonica(normalizeReceitaCanonica(receitaData));
-      await carregarIngredientes();
     } catch (error) {
       console.error('Erro ao carregar receita:', error);
       setError('Erro ao carregar receita');
@@ -251,7 +261,7 @@ export function useReceita(receitaId?: string) {
     } finally {
       setLoading(false);
     }
-  }, [receitaId, carregarIngredientes]);
+  }, [receitaId]);
 
   // ============================================================
   // FUNCOES DE SALVAMENTO
@@ -515,6 +525,7 @@ export function useReceita(receitaId?: string) {
     
     // Ingredientes
     ingredientesDisponiveis,
+    carregarIngredientes,
     pesoMeta,
     
     // Funcoes de calculo
@@ -537,4 +548,3 @@ export function useReceita(receitaId?: string) {
 }
 
 export default useReceita;
-

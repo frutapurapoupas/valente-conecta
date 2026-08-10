@@ -2,7 +2,7 @@
 import { DemandView } from '@/components/DemandView';
 
 export default function Page() {
-  return <DemandView category="CONTATOS" title="SolicitaÃ§Ã£o: contatos" />;
+  return <DemandView category="CONTATOS" title="Solicitação: contatos" />;
 }
 
 

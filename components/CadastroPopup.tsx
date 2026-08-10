@@ -18,17 +18,17 @@ export function CadastroPopup({ onSuccess, codigoIndicacao }: CadastroPopupProps
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // NÃ£o mostrar se jÃ¡ logado
+    // Não mostrar se já logado
     if (isUserLoggedIn()) return;
     
-    // Verificar sessÃ£o temporÃ¡ria
+    // Verificar sessão temporária
     if (isSessaoTempValida()) return;
     
-    // Verificar se jÃ¡ mostrou antes
+    // Verificar se já mostrou antes
     const alreadyShown = localStorage.getItem('cadastro_popup_shown');
     if (alreadyShown) return;
     
-    // Mostrar popup apÃ³s 2 segundos
+    // Mostrar popup após 2 segundos
     const timer = setTimeout(() => {
       setShow(true);
       localStorage.setItem('cadastro_popup_shown', 'true');
@@ -46,7 +46,7 @@ export function CadastroPopup({ onSuccess, codigoIndicacao }: CadastroPopupProps
     }
     
     if (!whatsapp.trim() || whatsapp.length < 10) {
-      toast.error('Digite um WhatsApp vÃ¡lido (com DDD)');
+      toast.error('Digite um WhatsApp válido (com DDD)');
       return;
     }
     
@@ -55,7 +55,7 @@ export function CadastroPopup({ onSuccess, codigoIndicacao }: CadastroPopupProps
     const result = await cadastroSimples(nome, whatsapp, codigoIndicacao);
     
     if (result.success) {
-      toast.success('âœ… Cadastro realizado! Agora vocÃª tem acesso completo.');
+      toast.success('✅ Cadastro realizado! Agora você tem acesso completo.');
       setShow(false);
       onSuccess?.();
       
@@ -78,7 +78,7 @@ export function CadastroPopup({ onSuccess, codigoIndicacao }: CadastroPopupProps
         <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-t-2xl p-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <User className="w-5 h-5 text-white" />
-            <h2 className="text-white font-bold text-lg">Cadastro RÃ¡pido</h2>
+            <h2 className="text-white font-bold text-lg">Cadastro Rápido</h2>
           </div>
           <button onClick={() => setShow(false)} className="text-white/70 hover:text-white">
             <X className="w-5 h-5" />
@@ -97,7 +97,7 @@ export function CadastroPopup({ onSuccess, codigoIndicacao }: CadastroPopupProps
                 type="text"
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
-                placeholder="Ex: JoÃ£o Silva"
+                placeholder="Ex: João Silva"
                 className="w-full bg-gray-700 rounded-xl p-3 text-white border border-gray-600 focus:border-green-500 outline-none"
                 required
               />
@@ -113,7 +113,7 @@ export function CadastroPopup({ onSuccess, codigoIndicacao }: CadastroPopupProps
                 className="w-full bg-gray-700 rounded-xl p-3 text-white border border-gray-600 focus:border-green-500 outline-none"
                 required
               />
-              <p className="text-gray-500 text-xs mt-1">âœ… NÃºmero real para notificaÃ§Ãµes</p>
+              <p className="text-gray-500 text-xs mt-1">✅ Número real para notificações</p>
             </div>
             
             <button

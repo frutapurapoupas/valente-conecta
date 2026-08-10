@@ -34,7 +34,7 @@ export function useWizardProduto() {
     setCategorias([
       {
         id: "1",
-        nome: "Material ElÃ©trico",
+        nome: "Material Elétrico",
         icone: "âš¡",
         cor: "#f59e0b",
         slug: "material-eletrico",

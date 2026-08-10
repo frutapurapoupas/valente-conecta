@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
   const userId = request.nextUrl.searchParams.get('userId');
   
   if (!userId) {
-    return NextResponse.json({ hasAccess: false, message: 'UsuÃ¡rio nÃ£o identificado' });
+    return NextResponse.json({ hasAccess: false, message: 'Usuário não identificado' });
   }
   
   const { data: user, error } = await supabase
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     .single();
   
   if (error || !user) {
-    return NextResponse.json({ hasAccess: false, message: 'UsuÃ¡rio nÃ£o encontrado' });
+    return NextResponse.json({ hasAccess: false, message: 'Usuário não encontrado' });
   }
   
   const now = new Date();
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
     .select('*', { count: 'exact', head: true })
     .eq('usuario_id', userId);
   
-  const metaUsuarios = 50; // Buscar da configuraÃ§Ã£o
+  const metaUsuarios = 50; // Buscar da configuração
   
   if (indicados && indicados >= metaUsuarios) {
     // Ativar viral automaticamente
@@ -63,14 +63,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ 
       hasAccess: true, 
       daysLeft: 30,
-      message: `ðŸŽ‰ VocÃª indicou ${indicados} amigos! Ganhou 30 dias grÃ¡tis!`
+      message: `🎉 Você indicou ${indicados} amigos! Ganhou 30 dias grátis!`
     });
   }
   
   const faltam = metaUsuarios - (indicados || 0);
   return NextResponse.json({ 
     hasAccess: false, 
-    message: `â° Seu perÃ­odo de teste acabou. Indique mais ${faltam} amigos para ganhar 30 dias grÃ¡tis!`,
+    message: `⏰ Seu período de teste acabou. Indique mais ${faltam} amigos para ganhar 30 dias grátis!`,
     faltam
   });
 }

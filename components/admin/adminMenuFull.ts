@@ -180,8 +180,9 @@ export const adminMenuFull: MenuGroup[] = [
     icon: Dumbbell,
     collapsible: true,
     items: [
-      { name: "Academia Aluno", path: "/admin-master/academia-aluno", icon: Users, status: 'construction' },
-      { name: "Academias Empresa", path: "/admin-master/academias-empresa", icon: Dumbbell, status: 'construction' },
+      { name: "Academia (visão geral)", path: "/admin-master/academia-master", icon: Dumbbell, status: 'active' },
+      { name: "Academia Aluno", path: "/admin-master/academia-master?tab=alunos", icon: Users, status: 'active' },
+      { name: "Academias Empresa", path: "/admin-master/academia-master?tab=empresas", icon: Dumbbell, status: 'active' },
       { name: "Personal trainer", path: "/admin-master/personal-trainer", icon: Dumbbell, status: 'construction' },
     ]
   },

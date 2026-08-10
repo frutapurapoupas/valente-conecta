@@ -47,7 +47,7 @@ export default function SolicitacaoModal({ isOpen, onClose, servico, categoria }
             telefone: user.whatsapp || user.telefone || ""
           }));
         } catch (e) {
-          console.error("Erro ao carregar usuÃ¡rio:", e);
+          console.error("Erro ao carregar usuário:", e);
         }
       }
     }
@@ -93,7 +93,7 @@ export default function SolicitacaoModal({ isOpen, onClose, servico, categoria }
       const notifLista = notificacoes ? JSON.parse(notificacoes) : [];
       notifLista.push({
         id: Date.now(),
-        mensagem: `ðŸ“‹ Nova solicitaÃ§Ã£o de ${servico} - ${consumidor.nome}`,
+        mensagem: `📋 Nova solicitação de ${servico} - ${consumidor.nome}`,
         importancia: "alta",
         data: new Date().toLocaleDateString(),
         lida: false
@@ -101,7 +101,7 @@ export default function SolicitacaoModal({ isOpen, onClose, servico, categoria }
       localStorage.setItem("admin_notificacoes_demandas", JSON.stringify(notifLista));
 
       setEnviado(true);
-      toast.success("âœ… SolicitaÃ§Ã£o enviada com sucesso!");
+      toast.success("✅ Solicitação enviada com sucesso!");
 
       setTimeout(() => {
         onClose();
@@ -113,8 +113,8 @@ export default function SolicitacaoModal({ isOpen, onClose, servico, categoria }
       }, 2000);
 
     } catch (error) {
-      console.error("Erro ao enviar solicitaÃ§Ã£o:", error);
-      toast.error("Erro ao enviar solicitaÃ§Ã£o");
+      console.error("Erro ao enviar solicitação:", error);
+      toast.error("Erro ao enviar solicitação");
       setEnviando(false);
     }
   };
@@ -124,7 +124,7 @@ export default function SolicitacaoModal({ isOpen, onClose, servico, categoria }
       <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center p-6 border-b">
           <h2 className="text-xl font-bold">
-            {step === 1 ? "ðŸ“‹ Solicitar ServiÃ§o" : "ðŸ‘¤ Indicar Fornecedor"}
+            {step === 1 ? "📋 Solicitar Serviço" : "👤 Indicar Fornecedor"}
           </h2>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition">
             <X className="w-5 h-5" />
@@ -133,8 +133,8 @@ export default function SolicitacaoModal({ isOpen, onClose, servico, categoria }
 
         {enviado ? (
           <div className="p-12 text-center">
-            <div className="text-6xl mb-4">âœ…</div>
-            <h3 className="text-xl font-bold text-green-600">SolicitaÃ§Ã£o Enviada!</h3>
+            <div className="text-6xl mb-4">✅</div>
+            <h3 className="text-xl font-bold text-green-600">Solicitação Enviada!</h3>
             <p className="text-gray-500 mt-2">Aguarde o contato de um fornecedor</p>
           </div>
         ) : (
@@ -151,7 +151,7 @@ export default function SolicitacaoModal({ isOpen, onClose, servico, categoria }
             {step === 1 ? (
               <form onSubmit={handleSubmitConsumidor} className="space-y-4">
                 <p className="text-sm text-gray-500">
-                  VocÃª estÃ¡ solicitando: <strong>{servico}</strong>
+                  Você está solicitando: <strong>{servico}</strong>
                 </p>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Seu Nome *</label>
@@ -177,7 +177,7 @@ export default function SolicitacaoModal({ isOpen, onClose, servico, categoria }
                   type="submit"
                   className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition"
                 >
-                  Continuar â†’
+                  Continuar →
                 </button>
               </form>
             ) : (
@@ -218,7 +218,7 @@ export default function SolicitacaoModal({ isOpen, onClose, servico, categoria }
                     disabled={enviando}
                     className="flex-1 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition disabled:opacity-50"
                   >
-                    {enviando ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Enviar SolicitaÃ§Ã£o"}
+                    {enviando ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Enviar Solicitação"}
                   </button>
                 </div>
               </form>

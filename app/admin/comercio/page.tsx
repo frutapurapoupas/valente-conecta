@@ -6,7 +6,7 @@ import { useApp } from "@/app/context/AppContext";
 import toast from "react-hot-toast";
 import { Store, Plus, Edit, Trash2, Search, X, Package } from "lucide-react";
 
-// Adicionado para desabilitar renderizaÃ§Ã£o estÃ¡tica
+// Adicionado para desabilitar renderização estática
 export const dynamic = 'force-dynamic';
 
 export default function AdminComercioPage() {
@@ -27,7 +27,7 @@ export default function AdminComercioPage() {
     } else {
       const exemplos = [
         { id: 1, nome: "Arroz 5kg", preco: 25.90, estoque: 50, loja: "Supermercado Central", categoria: "Alimentos" },
-        { id: 2, nome: "FeijÃ£o 1kg", preco: 8.90, estoque: 100, loja: "Supermercado Central", categoria: "Alimentos" },
+        { id: 2, nome: "Feijão 1kg", preco: 8.90, estoque: 100, loja: "Supermercado Central", categoria: "Alimentos" },
       ];
       setProdutos(exemplos);
       localStorage.setItem("admin_comercio_produtos", JSON.stringify(exemplos));
@@ -43,7 +43,7 @@ export default function AdminComercioPage() {
       <header className="bg-gradient-to-r from-green-400 to-green-700 p-4 sticky top-0 z-40">
         <div className="flex items-center justify-between">
           <button onClick={() => router.push("/admin")} className="text-white text-xl">â†</button>
-          <h1 className="text-white font-bold text-lg">ðŸ›’ Gerenciar ComÃ©rcio</h1>
+          <h1 className="text-white font-bold text-lg">🛒 Gerenciar Comércio</h1>
           <div className="w-8"></div>
         </div>
       </header>

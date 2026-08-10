@@ -81,7 +81,7 @@ const defaultConfig = {
       periodo: 'mes',
       negociavel: false,
       ativo: true,
-      descricao: 'Entrada para comeÃ§ar no app',
+      descricao: 'Entrada para começar no app',
       fotosPorItem: 1,
       featuresPadrao: [
         'Anuncio com foto, descricao e preco',

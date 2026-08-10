@@ -69,7 +69,7 @@ export interface VideoProduto {
 }
 
 // ============================================================================
-// WIZARD - QUESTIONÃRIO DINÃ‚MICO
+// WIZARD - QUESTIONÁRIO DINÂMICO
 // ============================================================================
 
 export interface WizardState {

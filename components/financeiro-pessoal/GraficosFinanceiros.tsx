@@ -1,5 +1,5 @@
 // components/financeiro-pessoal/GraficosFinanceiros.tsx
-// ðŸŽ¨ GrÃ¡ficos financeiros (Chart.js)
+// 🎨 Gráficos financeiros (Chart.js)
 
 "use client";
 
@@ -36,7 +36,7 @@ interface GraficosFinanceirosProps {
 }
 
 export default function GraficosFinanceiros({ porCategoria, porMes, totais }: GraficosFinanceirosProps) {
-  // Cores para os grÃ¡ficos
+  // Cores para os gráficos
   const cores = [
     'rgba(34, 197, 94, 0.8)',
     'rgba(239, 68, 68, 0.8)',
@@ -48,7 +48,7 @@ export default function GraficosFinanceiros({ porCategoria, porMes, totais }: Gr
     'rgba(249, 115, 22, 0.8)',
   ];
 
-  // Dados para grÃ¡fico de pizza (categorias)
+  // Dados para gráfico de pizza (categorias)
   const categoriasLabels = Object.keys(porCategoria);
   const categoriasData = Object.values(porCategoria);
   const categoriasCores = categoriasLabels.map((_, i) => cores[i % cores.length]);
@@ -65,7 +65,7 @@ export default function GraficosFinanceiros({ porCategoria, porMes, totais }: Gr
     ],
   };
 
-  // Dados para grÃ¡fico de barras (mensal)
+  // Dados para gráfico de barras (mensal)
   const mesesLabels = Object.keys(porMes);
   const receitasData = mesesLabels.map(m => porMes[m].receitas);
   const despesasData = mesesLabels.map(m => porMes[m].despesas);
@@ -90,7 +90,7 @@ export default function GraficosFinanceiros({ porCategoria, porMes, totais }: Gr
     ],
   };
 
-  // Dados para grÃ¡fico de linha (evoluÃ§Ã£o)
+  // Dados para gráfico de linha (evolução)
   const lineData = {
     labels: mesesLabels.length > 0 ? mesesLabels : ['Sem dados'],
     datasets: [
@@ -151,9 +151,9 @@ export default function GraficosFinanceiros({ porCategoria, porMes, totais }: Gr
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {/* GrÃ¡fico de DistribuiÃ§Ã£o por Categoria */}
+      {/* Gráfico de Distribuição por Categoria */}
       <div className="bg-gray-800/30 rounded-xl border border-gray-700 p-4">
-        <h3 className="text-sm font-medium text-gray-400 mb-3">ðŸ“Š DistribuiÃ§Ã£o por Categoria</h3>
+        <h3 className="text-sm font-medium text-gray-400 mb-3">📊 Distribuição por Categoria</h3>
         <div className="h-64 flex items-center justify-center">
           {categoriasLabels.length > 0 ? (
             <Pie data={pieData} options={pieOptions} />
@@ -163,9 +163,9 @@ export default function GraficosFinanceiros({ porCategoria, porMes, totais }: Gr
         </div>
       </div>
 
-      {/* GrÃ¡fico de EvoluÃ§Ã£o Mensal (Linha) */}
+      {/* Gráfico de Evolução Mensal (Linha) */}
       <div className="bg-gray-800/30 rounded-xl border border-gray-700 p-4">
-        <h3 className="text-sm font-medium text-gray-400 mb-3">ðŸ“ˆ EvoluÃ§Ã£o do Saldo</h3>
+        <h3 className="text-sm font-medium text-gray-400 mb-3">📈 Evolução do Saldo</h3>
         <div className="h-64 flex items-center justify-center">
           {mesesLabels.length > 0 ? (
             <Line data={lineData} options={options} />
@@ -175,9 +175,9 @@ export default function GraficosFinanceiros({ porCategoria, porMes, totais }: Gr
         </div>
       </div>
 
-      {/* GrÃ¡fico de Receitas vs Despesas (Barras) */}
+      {/* Gráfico de Receitas vs Despesas (Barras) */}
       <div className="bg-gray-800/30 rounded-xl border border-gray-700 p-4 md:col-span-2">
-        <h3 className="text-sm font-medium text-gray-400 mb-3">ðŸ“Š Receitas vs Despesas por MÃªs</h3>
+        <h3 className="text-sm font-medium text-gray-400 mb-3">📊 Receitas vs Despesas por Mês</h3>
         <div className="h-64 flex items-center justify-center">
           {mesesLabels.length > 0 ? (
             <Bar data={barData} options={options} />

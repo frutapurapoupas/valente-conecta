@@ -67,7 +67,7 @@ export default function ControlCenterPage() {
 
   const executarAcao = (acao: string) => {
     if (selectedUsers.length === 0) {
-      alert("Selecione pelo menos um usuÃ¡rio!");
+      alert("Selecione pelo menos um usuário!");
       return;
     }
     setActionType(acao);
@@ -81,12 +81,12 @@ export default function ControlCenterPage() {
     }
 
     let mensagem = "";
-    if (actionType === "enviar_mensagem") mensagem = `ðŸ“§ Mensagem enviada: "${mensagemPersonalizada}"`;
-    if (actionType === "enviar_push") mensagem = `ðŸ“± Push enviado: "${mensagemPersonalizada || "NotificaÃ§Ã£o geral"}"`;
-    if (actionType === "bloquear") mensagem = `ðŸ”’ ${selectedUsers.length} usuÃ¡rio(s) bloqueados`;
-    if (actionType === "desbloquear") mensagem = `ðŸ”“ ${selectedUsers.length} usuÃ¡rio(s) desbloqueados`;
+    if (actionType === "enviar_mensagem") mensagem = `📧 Mensagem enviada: "${mensagemPersonalizada}"`;
+    if (actionType === "enviar_push") mensagem = `📱 Push enviado: "${mensagemPersonalizada || "Notificação geral"}"`;
+    if (actionType === "bloquear") mensagem = `🔒 ${selectedUsers.length} usuário(s) bloqueados`;
+    if (actionType === "desbloquear") mensagem = `🔓 ${selectedUsers.length} usuário(s) desbloqueados`;
 
-    alert(`âœ… ${mensagem}`);
+    alert(`✅ ${mensagem}`);
     setShowActionModal(false);
     setSelectedUsers([]);
     setMensagemPersonalizada("");
@@ -103,13 +103,13 @@ export default function ControlCenterPage() {
 
   return (
     <div className="space-y-6">
-      {/* CabeÃ§alho */}
+      {/* Cabeçalho */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-800">ðŸŽ›ï¸ Central de Controle</h1>
-        <p className="text-sm text-gray-500">Gerencie usuÃ¡rios e execute aÃ§Ãµes em massa</p>
+        <h1 className="text-2xl font-bold text-gray-800">🎛️ Central de Controle</h1>
+        <p className="text-sm text-gray-500">Gerencie usuários e execute ações em massa</p>
       </div>
 
-      {/* Cards de estatÃ­sticas */}
+      {/* Cards de estatísticas */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
         <div className="bg-white rounded-xl p-3 shadow-sm border text-center">
           <p className="text-2xl font-bold text-blue-600">{stats.total}</p>
@@ -121,7 +121,7 @@ export default function ControlCenterPage() {
         </div>
         <div className="bg-white rounded-xl p-3 shadow-sm border text-center">
           <p className="text-2xl font-bold text-green-600">{stats.comuns}</p>
-          <p className="text-xs text-gray-500">UsuÃ¡rios</p>
+          <p className="text-xs text-gray-500">Usuários</p>
         </div>
         <div className="bg-white rounded-xl p-3 shadow-sm border text-center">
           <p className="text-2xl font-bold text-green-600">{stats.ativos}</p>
@@ -137,15 +137,15 @@ export default function ControlCenterPage() {
         </div>
       </div>
 
-      {/* Modal de aÃ§Ã£o */}
+      {/* Modal de ação */}
       {showActionModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6">
             <h3 className="text-xl font-bold mb-4">
-              {actionType === "bloquear" && "ðŸ”’ Bloquear UsuÃ¡rios"}
-              {actionType === "desbloquear" && "ðŸ”“ Desbloquear UsuÃ¡rios"}
-              {actionType === "enviar_mensagem" && "âœ‰ï¸ Enviar Mensagem"}
-              {actionType === "enviar_push" && "ðŸ“± Enviar Push"}
+              {actionType === "bloquear" && "🔒 Bloquear Usuários"}
+              {actionType === "desbloquear" && "🔓 Desbloquear Usuários"}
+              {actionType === "enviar_mensagem" && "✉️ Enviar Mensagem"}
+              {actionType === "enviar_push" && "📱 Enviar Push"}
             </h3>
             {(actionType === "enviar_mensagem" || actionType === "enviar_push") && (
               <textarea
@@ -155,19 +155,19 @@ export default function ControlCenterPage() {
                 className="w-full p-2 border rounded-lg h-24 mb-3"
               />
             )}
-            <p className="text-sm text-gray-600 mb-4">Aplicar a <strong>{stats.selecionados}</strong> usuÃ¡rio(s)</p>
+            <p className="text-sm text-gray-600 mb-4">Aplicar a <strong>{stats.selecionados}</strong> usuário(s)</p>
             <button onClick={confirmarAcao} className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold">Confirmar</button>
             <button onClick={() => setShowActionModal(false)} className="w-full bg-gray-200 text-gray-700 py-2 rounded-lg mt-2">Cancelar</button>
           </div>
         </div>
       )}
 
-      {/* Barra de aÃ§Ãµes em massa */}
+      {/* Barra de ações em massa */}
       {stats.selecionados > 0 && (
         <div className="bg-indigo-50 rounded-xl p-3 flex flex-wrap gap-2 items-center justify-between">
           <span className="text-sm text-indigo-700">
             <CheckSquare size={14} className="inline mr-1" />
-            {stats.selecionados} usuÃ¡rio(s) selecionado(s)
+            {stats.selecionados} usuário(s) selecionado(s)
           </span>
           <div className="flex gap-2">
             <button onClick={() => executarAcao("enviar_push")} className="bg-blue-600 text-white px-3 py-1 rounded-lg text-xs flex items-center gap-1">
@@ -195,13 +195,13 @@ export default function ControlCenterPage() {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar usuÃ¡rio..."
+              placeholder="Buscar usuário..."
               className="w-full pl-9 p-2 border rounded-lg text-sm"
             />
           </div>
           <select value={filterTipo} onChange={(e) => setFilterTipo(e.target.value)} className="p-2 border rounded-lg text-sm bg-white">
             <option value="todos">Todos os tipos</option>
-            <option value="comum">UsuÃ¡rios Comuns</option>
+            <option value="comum">Usuários Comuns</option>
             <option value="empresa">Empresas</option>
           </select>
           <select value={filterCidade} onChange={(e) => setFilterCidade(e.target.value)} className="p-2 border rounded-lg text-sm bg-white">
@@ -217,7 +217,7 @@ export default function ControlCenterPage() {
         </div>
       </div>
 
-      {/* Tabela de usuÃ¡rios */}
+      {/* Tabela de usuários */}
       <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -226,18 +226,18 @@ export default function ControlCenterPage() {
                 <th className="p-3 w-10">
                   <input type="checkbox" onChange={handleSelectAll} className="w-4 h-4" />
                 </th>
-                <th className="p-3 text-left text-xs font-semibold text-gray-500">UsuÃ¡rio</th>
+                <th className="p-3 text-left text-xs font-semibold text-gray-500">Usuário</th>
                 <th className="p-3 text-left text-xs font-semibold text-gray-500">Tipo</th>
                 <th className="p-3 text-left text-xs font-semibold text-gray-500">Cidade</th>
                 <th className="p-3 text-left text-xs font-semibold text-gray-500">Status</th>
-                <th className="p-3 text-left text-xs font-semibold text-gray-500">AÃ§Ãµes</th>
+                <th className="p-3 text-left text-xs font-semibold text-gray-500">Ações</th>
               </tr>
             </thead>
             <tbody>
               {usuariosFiltrados.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="p-8 text-center text-gray-400">
-                    Nenhum usuÃ¡rio encontrado
+                    Nenhum usuário encontrado
                   </td>
                 </tr>
               ) : (
@@ -254,7 +254,7 @@ export default function ControlCenterPage() {
                     <td className="p-3 text-sm font-medium text-gray-800">{u.nome}</td>
                     <td className="p-3">
                       <span className={`text-xs px-2 py-0.5 rounded-full ${u.tipo === "empresa" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-700"}`}>
-                        {u.tipo === "empresa" ? "ðŸ¢ Empresa" : "ðŸ‘¤ UsuÃ¡rio"}
+                        {u.tipo === "empresa" ? "🏢 Empresa" : "👤 Usuário"}
                       </span>
                     </td>
                     <td className="p-3 text-sm text-gray-600">{u.cidade || "Valente"}</td>

@@ -4,7 +4,7 @@ import { ChevronDown } from 'lucide-react'
 import { useState } from 'react'
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
-// Interface para os dados do grÃ¡fico
+// Interface para os dados do gráfico
 interface DadoMetrica {
   dia: string;
   usuarios: number;
@@ -37,7 +37,7 @@ const MetricasTooltip = ({ active, payload, label }: any) => {
   )
 }
 
-// Dados simulados com movimento diÃ¡rio representado
+// Dados simulados com movimento diário representado
 const gerarDadosPeriodo = (tipo: string): DadoMetrica[] => {
   const dados: DadoMetrica[] = []
   const data = new Date(2026, 4, 1)
@@ -81,8 +81,8 @@ export default function MetricasGrafico() {
   const [dados, setDados] = useState<DadoMetrica[]>(gerarDadosPeriodo('mes'))
 
   const periodos = [
-    { id: 'semana', label: 'Ãšltima Semana' },
-    { id: 'mes', label: 'Este MÃªs' },
+    { id: 'semana', label: 'Última Semana' },
+    { id: 'mes', label: 'Este Mês' },
     { id: 'ano', label: 'Este Ano' },
   ]
 
@@ -101,11 +101,11 @@ export default function MetricasGrafico() {
     <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-xl font-bold text-gray-800">MÃ©tricas do Sistema</h2>
+          <h2 className="text-xl font-bold text-gray-800">Métricas do Sistema</h2>
           <p className="text-sm text-gray-500 mt-1">
-            {periodo === 'semana' && 'Ãšltimos 7 dias com movimento diÃ¡rio'}
-            {periodo === 'mes' && 'Ãšltimos 30 dias com movimento diÃ¡rio'}
-            {periodo === 'ano' && 'Ãšltimos 12 meses com agregaÃ§Ã£o de movimento diÃ¡rio'}
+            {periodo === 'semana' && 'Últimos 7 dias com movimento diário'}
+            {periodo === 'mes' && 'Últimos 30 dias com movimento diário'}
+            {periodo === 'ano' && 'Últimos 12 meses com agregação de movimento diário'}
           </p>
         </div>
 
@@ -152,7 +152,7 @@ export default function MetricasGrafico() {
               strokeWidth={2}
               dot={false}
               isAnimationActive={true}
-              name="UsuÃ¡rios"
+              name="Usuários"
             />
             <Line
               type="monotone"
@@ -179,7 +179,7 @@ export default function MetricasGrafico() {
       <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wide">UsuÃ¡rios</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wide">Usuários</p>
             <p className="text-lg font-bold text-blue-600 mt-1">
               {getUltimoValor('usuarios')}
             </p>

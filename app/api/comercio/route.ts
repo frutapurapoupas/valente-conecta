@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Rota base de comÃ©rcio para evitar mÃ³dulo vazio no App Router.
+// Rota base de comércio para evitar módulo vazio no App Router.
 export async function GET() {
 	return NextResponse.json({
 		success: true,

@@ -22,10 +22,10 @@ export async function GET(request: NextRequest) {
         .single();
       
       if (error) {
-        // Se nÃ£o encontrar, retornar 404
+        // Se não encontrar, retornar 404
         if (error.code === 'PGRST116') {
           return NextResponse.json(
-            { success: false, error: 'Receita nÃ£o encontrada' },
+            { success: false, error: 'Receita não encontrada' },
             { status: 404 }
           );
         }
@@ -75,18 +75,18 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    // ValidaÃ§Ã£o bÃ¡sica
+    // Validação básica
     if (!body.titulo || !body.ingredientes || !body.modo_preparo) {
       return NextResponse.json(
         { 
           success: false, 
-          error: 'TÃ­tulo, ingredientes e modo de preparo sÃ£o obrigatÃ³rios' 
+          error: 'Título, ingredientes e modo de preparo são obrigatórios' 
         },
         { status: 400 }
       );
     }
     
-    // Garantir que os campos obrigatÃ³rios existam
+    // Garantir que os campos obrigatórios existam
     const novaReceita = {
       titulo: body.titulo,
       descricao: body.descricao || '',
@@ -141,12 +141,12 @@ export async function PUT(request: NextRequest) {
     
     if (!id) {
       return NextResponse.json(
-        { success: false, error: 'ID nÃ£o informado' },
+        { success: false, error: 'ID não informado' },
         { status: 400 }
       );
     }
     
-    // ValidaÃ§Ã£o: pelo menos um campo para atualizar
+    // Validação: pelo menos um campo para atualizar
     if (Object.keys(body).length === 0) {
       return NextResponse.json(
         { success: false, error: 'Nenhum campo para atualizar' },
@@ -154,13 +154,13 @@ export async function PUT(request: NextRequest) {
       );
     }
     
-    // Preparar dados para atualizaÃ§Ã£o
+    // Preparar dados para atualização
     const dadosAtualizados = {
       ...body,
       updated_at: new Date().toISOString()
     };
     
-    // Se houver campo de visualizaÃ§Ãµes ou curtidas, incrementar
+    // Se houver campo de visualizações ou curtidas, incrementar
     if (body.incrementar_visualizacao) {
       // Para incrementar, precisamos buscar o valor atual primeiro
       const { data: currentData } = await supabase
@@ -196,7 +196,7 @@ export async function PUT(request: NextRequest) {
     
     if (!data || data.length === 0) {
       return NextResponse.json(
-        { success: false, error: 'Receita nÃ£o encontrada' },
+        { success: false, error: 'Receita não encontrada' },
         { status: 404 }
       );
     }
@@ -228,7 +228,7 @@ export async function DELETE(request: NextRequest) {
     
     if (!id) {
       return NextResponse.json(
-        { success: false, error: 'ID nÃ£o informado' },
+        { success: false, error: 'ID não informado' },
         { status: 400 }
       );
     }
@@ -242,7 +242,7 @@ export async function DELETE(request: NextRequest) {
     
     if (findError || !existingRecipe) {
       return NextResponse.json(
-        { success: false, error: 'Receita nÃ£o encontrada' },
+        { success: false, error: 'Receita não encontrada' },
         { status: 404 }
       );
     }

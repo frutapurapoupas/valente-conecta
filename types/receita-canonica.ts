@@ -27,6 +27,7 @@ export interface ReceitaCanonica {
   ingredientes: ReceitaIngredienteCanonico[];
   rendimento: number;
   peso_final: number | null;
+  custos_extras_unitario: number;
   porcoes: number;
   custo_receita: number;
   custo_por_unidade: number;

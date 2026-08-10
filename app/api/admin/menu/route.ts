@@ -20,10 +20,10 @@ export async function GET(request: NextRequest) {
         .single();
       
       if (error) {
-        // Se nÃ£o encontrar, retornar 404
+        // Se não encontrar, retornar 404
         if (error.code === 'PGRST116') {
           return NextResponse.json(
-            { success: false, error: 'Item nÃ£o encontrado' },
+            { success: false, error: 'Item não encontrado' },
             { status: 404 }
           );
         }
@@ -65,10 +65,10 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    // ValidaÃ§Ã£o bÃ¡sica
+    // Validação básica
     if (!body.nome || !body.preco) {
       return NextResponse.json(
-        { success: false, error: 'Nome e preÃ§o sÃ£o obrigatÃ³rios' },
+        { success: false, error: 'Nome e preço são obrigatórios' },
         { status: 400 }
       );
     }
@@ -115,12 +115,12 @@ export async function PUT(request: NextRequest) {
     
     if (!id) {
       return NextResponse.json(
-        { success: false, error: 'ID nÃ£o informado' },
+        { success: false, error: 'ID não informado' },
         { status: 400 }
       );
     }
     
-    // ValidaÃ§Ã£o: pelo menos um campo para atualizar
+    // Validação: pelo menos um campo para atualizar
     if (Object.keys(body).length === 0) {
       return NextResponse.json(
         { success: false, error: 'Nenhum campo para atualizar' },
@@ -141,7 +141,7 @@ export async function PUT(request: NextRequest) {
     
     if (!data || data.length === 0) {
       return NextResponse.json(
-        { success: false, error: 'Item nÃ£o encontrado' },
+        { success: false, error: 'Item não encontrado' },
         { status: 404 }
       );
     }
@@ -173,7 +173,7 @@ export async function DELETE(request: NextRequest) {
     
     if (!id) {
       return NextResponse.json(
-        { success: false, error: 'ID nÃ£o informado' },
+        { success: false, error: 'ID não informado' },
         { status: 400 }
       );
     }
@@ -187,7 +187,7 @@ export async function DELETE(request: NextRequest) {
     
     if (findError || !existingItem) {
       return NextResponse.json(
-        { success: false, error: 'Item nÃ£o encontrado' },
+        { success: false, error: 'Item não encontrado' },
         { status: 404 }
       );
     }

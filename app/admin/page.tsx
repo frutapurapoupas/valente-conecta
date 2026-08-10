@@ -10,40 +10,40 @@ import { Menu, X, ChevronRight, ChevronDown, Crown, Users, Settings, Utensils, D
 // Estrutura completa do menu lateral
 const menuEstrutura = [
   {
-    titulo: "ðŸ“Š DASHBOARD",
+    titulo: "📊 DASHBOARD",
     icon: "fas fa-chart-line",
     items: [
       { nome: "Dashboard Principal", href: "/admin", status: "ativo" },
-      { nome: "Dashboard GrÃ¡ficos", href: "/admin/graficos", status: "construcao" },
-      { nome: "MÃ©tricas da IA", href: "/admin/metricas-ia", status: "construcao" },
-      { nome: "RelatÃ³rios", href: "/admin/relatorios", status: "construcao" }
+      { nome: "Dashboard Gráficos", href: "/admin/graficos", status: "construcao" },
+      { nome: "Métricas da IA", href: "/admin/metricas-ia", status: "construcao" },
+      { nome: "Relatórios", href: "/admin/relatorios", status: "construcao" }
     ]
   },
   {
-    titulo: "âš™ï¸ CONFIGURAÃ‡Ã•ES",
+    titulo: "⚙️ CONFIGURAÇÕES",
     icon: "fas fa-cog",
     items: [
-      { nome: "ConfiguraÃ§Ã£o da Home", href: "/admin/configuracoes", status: "ativo" },
-      { nome: "ðŸ“¢ NotificaÃ§Ãµes do Sistema", href: "/admin/notificacoes", status: "ativo" },
-      { nome: "ConfiguraÃ§Ãµes Gerais", href: "/admin/configuracoes-gerais", status: "construcao" },
-      { nome: "AparÃªncia", href: "/admin/aparencia", status: "construcao" },
-      { nome: "SeguranÃ§a", href: "/admin/seguranca", status: "construcao" }
+      { nome: "Configuração da Home", href: "/admin/configuracoes", status: "ativo" },
+      { nome: "📢 Notificações do Sistema", href: "/admin/notificacoes", status: "ativo" },
+      { nome: "Configurações Gerais", href: "/admin/configuracoes-gerais", status: "construcao" },
+      { nome: "Aparência", href: "/admin/aparencia", status: "construcao" },
+      { nome: "Segurança", href: "/admin/seguranca", status: "construcao" }
     ]
   },
   {
-    titulo: "ðŸ‘¥ USUÃRIOS & PLANOS",
+    titulo: "👥 USUÁRIOS & PLANOS",
     icon: "fas fa-users",
     items: [
-      { nome: "Gerenciar UsuÃ¡rios", href: "/admin/usuarios", status: "ativo" },
+      { nome: "Gerenciar Usuários", href: "/admin/usuarios", status: "ativo" },
       { nome: "Gerenciar Planos", href: "/admin/planos", status: "ativo" },
-      { nome: "Gerenciar BenefÃ­cios", href: "/admin/beneficios", status: "ativo" },
-      { nome: "IA & AutomaÃ§Ã£o", href: "/admin/ia", status: "construcao" },
+      { nome: "Gerenciar Benefícios", href: "/admin/beneficios", status: "ativo" },
+      { nome: "IA & Automação", href: "/admin/ia", status: "construcao" },
       { nome: "Financeiro", href: "/admin/financeiro", status: "construcao" },
       { nome: "Marketing", href: "/admin/marketing", status: "construcao" }
     ]
   },
   {
-    titulo: "ðŸ³ COZINHA DONA NEIDE",
+    titulo: "🍳 COZINHA DONA NEIDE",
     icon: "fas fa-utensils",
     items: [
       { nome: "Dashboard Cozinha", href: "/admin/cozinha/dashboard", status: "construcao" },
@@ -52,24 +52,24 @@ const menuEstrutura = [
       { nome: "Estoque", href: "/admin/cozinha/estoque", status: "construcao" },
       { nome: "Pratos & Produtos", href: "/admin/cozinha", status: "ativo" },
       { nome: "Lista de Compras", href: "/admin/cozinha/lista-compras", status: "construcao" },
-      { nome: "ProduÃ§Ã£o", href: "/admin/cozinha/producao", status: "construcao" },
-      { nome: "Preview CardÃ¡pio", href: "/cozinha", status: "ativo" }
+      { nome: "Produção", href: "/admin/cozinha/producao", status: "construcao" },
+      { nome: "Preview Cardápio", href: "/cozinha", status: "ativo" }
     ]
   },
   {
-    titulo: "ðŸ’ª ACADEMIAS & ESPORTES",
+    titulo: "💪 ACADEMIAS & ESPORTES",
     icon: "fas fa-dumbbell",
     items: [
       { nome: "Academias Empresa", href: "/admin/academias-empresa", status: "construcao" },
       { nome: "Academia Aluno", href: "/admin/academia", status: "ativo" },
       { nome: "Personal Trainer", href: "/admin/personal-trainer", status: "construcao" },
-      { nome: "DanÃ§a", href: "/admin/danca", status: "construcao" },
+      { nome: "Dança", href: "/admin/danca", status: "construcao" },
       { nome: "Crossfit", href: "/admin/crossfit", status: "construcao" },
       { nome: "Funcional", href: "/admin/funcional", status: "construcao" }
     ]
   },
   {
-    titulo: "ðŸ² MARMITA & BOLOS",
+    titulo: "🍲 MARMITA & BOLOS",
     icon: "fas fa-birthday-cake",
     items: [
       { nome: "Marmitaria", href: "/admin/marmitaria", status: "construcao" },
@@ -81,14 +81,14 @@ const menuEstrutura = [
     ]
   },
   {
-    titulo: "ðŸ” ALIMENTAÃ‡ÃƒO",
+    titulo: "🍔 ALIMENTAÇÃO",
     icon: "fas fa-hamburger",
     items: [
       { nome: "Restaurantes", href: "/admin/restaurantes", status: "construcao" },
       { nome: "Lanchonetes", href: "/admin/lanchonetes", status: "construcao" },
       { nome: "Pizzarias", href: "/admin/pizzarias", status: "construcao" },
       { nome: "Hamburguerias", href: "/admin/hamburguerias", status: "construcao" },
-      { nome: "AÃ§aÃ­", href: "/admin/acai", status: "construcao" },
+      { nome: "Açaí", href: "/admin/acai", status: "construcao" },
       { nome: "Padarias", href: "/admin/padarias", status: "construcao" },
       { nome: "Delivery", href: "/admin/delivery", status: "construcao" },
       { nome: "Espetinhos", href: "/admin/espetinhos", status: "construcao" },
@@ -99,80 +99,80 @@ const menuEstrutura = [
     ]
   },
   {
-    titulo: "ðŸšš TRANSPORTE & DELIVERY",
+    titulo: "🚚 TRANSPORTE & DELIVERY",
     icon: "fas fa-truck",
     items: [
-      { nome: "Moto TÃ¡xi", href: "/admin/mototaxi", status: "ativo" },
+      { nome: "Moto Táxi", href: "/admin/mototaxi", status: "ativo" },
       { nome: "Entregadores", href: "/admin/entregadores", status: "construcao" },
       { nome: "Frete", href: "/admin/frete", status: "construcao" },
-      { nome: "MudanÃ§as", href: "/admin/mudancas", status: "construcao" },
+      { nome: "Mudanças", href: "/admin/mudancas", status: "construcao" },
       { nome: "Guincho", href: "/admin/guincho", status: "construcao" },
       { nome: "Transporte Escolar", href: "/admin/transporte-escolar", status: "construcao" }
     ]
   },
   {
-    titulo: "ðŸ›’ UTILIDADES",
+    titulo: "🛒 UTILIDADES",
     icon: "fas fa-tools",
     items: [
-      { nome: "Ãgua e GÃ¡s", href: "/admin/agua-gas", status: "construcao" },
+      { nome: "Água e Gás", href: "/admin/agua-gas", status: "construcao" },
       { nome: "Chaveiros", href: "/admin/chaveiros", status: "construcao" },
       { nome: "Internet", href: "/admin/internet", status: "construcao" }
     ]
   },
   {
-    titulo: "ðŸ”§ SERVIÃ‡OS",
+    titulo: "🔧 SERVIÇOS",
     icon: "fas fa-wrench",
     items: [
       { nome: "Serralheiro", href: "/admin/serralheiro", status: "construcao" },
       { nome: "Montador", href: "/admin/montador", status: "construcao" },
-      { nome: "TÃ©cnico InformÃ¡tica", href: "/admin/tecnico-informatica", status: "construcao" },
-      { nome: "TÃ©cnico Celular", href: "/admin/tecnico-celular", status: "construcao" },
-      { nome: "RefrigeraÃ§Ã£o", href: "/admin/refrigeracao", status: "construcao" },
-      { nome: "InstalaÃ§Ãµes", href: "/admin/instalacoes", status: "construcao" },
+      { nome: "Técnico Informática", href: "/admin/tecnico-informatica", status: "construcao" },
+      { nome: "Técnico Celular", href: "/admin/tecnico-celular", status: "construcao" },
+      { nome: "Refrigeração", href: "/admin/refrigeracao", status: "construcao" },
+      { nome: "Instalações", href: "/admin/instalacoes", status: "construcao" },
       { nome: "Advogado", href: "/admin/advogado", status: "construcao" },
       { nome: "Terapeuta", href: "/admin/terapeuta", status: "construcao" }
     ]
   },
   {
-    titulo: "ðŸª MERCADOS",
+    titulo: "🏪 MERCADOS",
     icon: "fas fa-store",
     items: [
       { nome: "Mercados", href: "/admin/mercados", status: "construcao" },
       { nome: "Mercadinhos", href: "/admin/mercadinhos", status: "construcao" },
       { nome: "Atacadistas", href: "/admin/atacadistas", status: "construcao" },
       { nome: "Hortifruti", href: "/admin/hortifruti", status: "construcao" },
-      { nome: "AÃ§ougues", href: "/admin/acougues", status: "construcao" },
+      { nome: "Açougues", href: "/admin/acougues", status: "construcao" },
       { nome: "Distribuidoras", href: "/admin/distribuidoras", status: "construcao" },
-      { nome: "ConveniÃªncia", href: "/admin/conveniencia", status: "construcao" }
+      { nome: "Conveniência", href: "/admin/conveniencia", status: "construcao" }
     ]
   },
   {
-    titulo: "ðŸ  IMÃ“VEL / HOSPEDAGEM",
+    titulo: "🏠 IMÓVEL / HOSPEDAGEM",
     icon: "fas fa-home",
     items: [
-      { nome: "Venda de ImÃ³vel", href: "/admin/venda-imovel", status: "construcao" },
-      { nome: "Aluguel de ImÃ³vel", href: "/admin/aluguel-imovel", status: "construcao" },
+      { nome: "Venda de Imóvel", href: "/admin/venda-imovel", status: "construcao" },
+      { nome: "Aluguel de Imóvel", href: "/admin/aluguel-imovel", status: "construcao" },
       { nome: "Hotel", href: "/admin/hotel", status: "construcao" },
       { nome: "Pousada", href: "/admin/pousada", status: "construcao" },
-      { nome: "DormitÃ³rio", href: "/admin/dormitorio", status: "construcao" }
+      { nome: "Dormitório", href: "/admin/dormitorio", status: "construcao" }
     ]
   },
   {
-    titulo: "ðŸŒ¾ AGRO & CAMPO",
+    titulo: "🌾 AGRO & CAMPO",
     icon: "fas fa-tractor",
     items: [
-      { nome: "AgropecuÃ¡ria", href: "/admin/agropecuaria", status: "construcao" },
-      { nome: "RaÃ§Ã£o Animal", href: "/admin/racao-animal", status: "construcao" },
-      { nome: "Produtos AgrÃ­colas", href: "/admin/produtos-agricolas", status: "construcao" },
+      { nome: "Agropecuária", href: "/admin/agropecuaria", status: "construcao" },
+      { nome: "Ração Animal", href: "/admin/racao-animal", status: "construcao" },
+      { nome: "Produtos Agrícolas", href: "/admin/produtos-agricolas", status: "construcao" },
       { nome: "Ferramentas Rurais", href: "/admin/ferramentas-rurais", status: "construcao" },
-      { nome: "IrrigaÃ§Ã£o", href: "/admin/irrigacao", status: "construcao" },
-      { nome: "VeterinÃ¡rio", href: "/admin/veterinario", status: "construcao" },
+      { nome: "Irrigação", href: "/admin/irrigacao", status: "construcao" },
+      { nome: "Veterinário", href: "/admin/veterinario", status: "construcao" },
       { nome: "Insumos Agro", href: "/admin/insumos-agro", status: "construcao" },
       { nome: "Produtos para Sisal", href: "/admin/produtos-sisal", status: "construcao" }
     ]
   },
   {
-    titulo: "ðŸ—ï¸ CONSTRUÃ‡ÃƒO",
+    titulo: "🏗️ CONSTRUÇÃO",
     icon: "fas fa-hard-hat",
     items: [
       { nome: "Eletricista", href: "/admin/eletricista", status: "construcao" },
@@ -183,7 +183,7 @@ const menuEstrutura = [
     ]
   },
   {
-    titulo: "ðŸ”¨ ALUGUEL DE MÃQUINAS",
+    titulo: "🔨 ALUGUEL DE MÁQUINAS",
     icon: "fas fa-cogs",
     items: [
       { nome: "Aluguel de Trator", href: "/admin/aluguel-trator", status: "construcao" },
@@ -193,124 +193,124 @@ const menuEstrutura = [
     ]
   },
   {
-    titulo: "ðŸ“± TECNOLOGIA",
+    titulo: "📱 TECNOLOGIA",
     icon: "fas fa-mobile-alt",
     items: [
-      { nome: "AssistÃªncia Celular", href: "/admin/assistencia-celular", status: "construcao" },
+      { nome: "Assistência Celular", href: "/admin/assistencia-celular", status: "construcao" },
       { nome: "Loja de Celular", href: "/admin/loja-celular", status: "construcao" },
-      { nome: "InformÃ¡tica", href: "/admin/informatica", status: "construcao" },
+      { nome: "Informática", href: "/admin/informatica", status: "construcao" },
       { nome: "Internet", href: "/admin/internet-tech", status: "construcao" },
-      { nome: "CÃ¢meras", href: "/admin/cameras", status: "construcao" },
-      { nome: "SeguranÃ§a EletrÃ´nica", href: "/admin/seguranca-eletronica", status: "construcao" }
+      { nome: "Câmeras", href: "/admin/cameras", status: "construcao" },
+      { nome: "Segurança Eletrônica", href: "/admin/seguranca-eletronica", status: "construcao" }
     ]
   },
   {
-    titulo: "ðŸš— AUTOMOTIVO",
+    titulo: "🚗 AUTOMOTIVO",
     icon: "fas fa-car",
     items: [
       { nome: "Oficina", href: "/admin/oficina", status: "construcao" },
-      { nome: "Auto PeÃ§as", href: "/admin/auto-pecas", status: "construcao" },
+      { nome: "Auto Peças", href: "/admin/auto-pecas", status: "construcao" },
       { nome: "Lava Jato", href: "/admin/lava-jato", status: "construcao" },
       { nome: "Borracharia", href: "/admin/borracharia", status: "construcao" },
-      { nome: "Auto ElÃ©trica", href: "/admin/auto-eletrica", status: "construcao" },
+      { nome: "Auto Elétrica", href: "/admin/auto-eletrica", status: "construcao" },
       { nome: "Som Automotivo", href: "/admin/som-automotivo", status: "construcao" },
       { nome: "Motos", href: "/admin/motos", status: "construcao" }
     ]
   },
   {
-    titulo: "ðŸŽ“ EDUCAÃ‡ÃƒO",
+    titulo: "🎓 EDUCAÇÃO",
     icon: "fas fa-graduation-cap",
     items: [
       { nome: "Escolas", href: "/admin/escolas", status: "construcao" },
       { nome: "Cursos", href: "/admin/cursos", status: "construcao" },
-      { nome: "ReforÃ§o Escolar", href: "/admin/reforco-escolar", status: "construcao" },
+      { nome: "Reforço Escolar", href: "/admin/reforco-escolar", status: "construcao" },
       { nome: "Idiomas", href: "/admin/idiomas", status: "construcao" },
-      { nome: "InformÃ¡tica", href: "/admin/informatica-edu", status: "construcao" },
-      { nome: "MÃºsica", href: "/admin/musica", status: "construcao" }
+      { nome: "Informática", href: "/admin/informatica-edu", status: "construcao" },
+      { nome: "Música", href: "/admin/musica", status: "construcao" }
     ]
   },
   {
-    titulo: "ðŸ¥ SAÃšDE",
+    titulo: "🏥 SAÚDE",
     icon: "fas fa-heartbeat",
     items: [
-      { nome: "FarmÃ¡cias", href: "/admin/farmacias", status: "construcao" },
-      { nome: "ClÃ­nicas", href: "/admin/clinicas", status: "construcao" },
+      { nome: "Farmácias", href: "/admin/farmacias", status: "construcao" },
+      { nome: "Clínicas", href: "/admin/clinicas", status: "construcao" },
       { nome: "Dentistas", href: "/admin/dentistas", status: "construcao" },
-      { nome: "PsicÃ³logos", href: "/admin/psicologos", status: "construcao" },
+      { nome: "Psicólogos", href: "/admin/psicologos", status: "construcao" },
       { nome: "Nutricionistas", href: "/admin/nutricionistas", status: "construcao" },
-      { nome: "LaboratÃ³rios", href: "/admin/laboratorios", status: "construcao" },
+      { nome: "Laboratórios", href: "/admin/laboratorios", status: "construcao" },
       { nome: "Fisioterapia", href: "/admin/fisioterapia", status: "construcao" },
-      { nome: "Ã“ticas", href: "/admin/oticas", status: "construcao" }
+      { nome: "Óticas", href: "/admin/oticas", status: "construcao" }
     ]
   },
   {
-    titulo: "ðŸ‘” MODA MASCULINA",
+    titulo: "👔 MODA MASCULINA",
     icon: "fas fa-male",
     items: [
       { nome: "Moda Infantil", href: "/admin/moda-infantil-mas", status: "construcao" },
-      { nome: "CalÃ§ados", href: "/admin/calcados-mas", status: "construcao" },
+      { nome: "Calçados", href: "/admin/calcados-mas", status: "construcao" },
       { nome: "Bolsas", href: "/admin/bolsas-mas", status: "construcao" },
-      { nome: "Moda Ãntima", href: "/admin/moda-intima-mas", status: "construcao" },
-      { nome: "Moda EvangÃ©lica", href: "/admin/moda-evangelica", status: "construcao" }
+      { nome: "Moda Íntima", href: "/admin/moda-intima-mas", status: "construcao" },
+      { nome: "Moda Evangélica", href: "/admin/moda-evangelica", status: "construcao" }
     ]
   },
   {
-    titulo: "ðŸ‘— MODA FEMININA",
+    titulo: "👗 MODA FEMININA",
     icon: "fas fa-female",
     items: [
       { nome: "Moda Infantil", href: "/admin/moda-infantil-fem", status: "construcao" },
-      { nome: "CalÃ§ados", href: "/admin/calcados-fem", status: "construcao" },
+      { nome: "Calçados", href: "/admin/calcados-fem", status: "construcao" },
       { nome: "Bolsas", href: "/admin/bolsas-fem", status: "construcao" },
-      { nome: "Moda Ãntima", href: "/admin/moda-intima-fem", status: "construcao" },
+      { nome: "Moda Íntima", href: "/admin/moda-intima-fem", status: "construcao" },
       { nome: "Moda Fitness", href: "/admin/moda-fitness", status: "construcao" },
-      { nome: "AcessÃ³rios", href: "/admin/acessorios", status: "construcao" }
+      { nome: "Acessórios", href: "/admin/acessorios", status: "construcao" }
     ]
   },
   {
-    titulo: "ðŸ’„ BELEZA & ESTÃ‰TICA",
+    titulo: "💄 BELEZA & ESTÉTICA",
     icon: "fas fa-spa",
     items: [
-      { nome: "SalÃ£o de Beleza", href: "/admin/salao-beleza", status: "construcao" },
+      { nome: "Salão de Beleza", href: "/admin/salao-beleza", status: "construcao" },
       { nome: "Barbearia", href: "/admin/barbearia", status: "construcao" },
       { nome: "Manicure", href: "/admin/manicure", status: "construcao" },
       { nome: "Maquiagem", href: "/admin/maquiagem", status: "construcao" },
-      { nome: "EstÃ©tica Facial", href: "/admin/estetica-facial", status: "construcao" },
-      { nome: "EstÃ©tica Corporal", href: "/admin/estetica-corporal", status: "construcao" },
-      { nome: "Produtos CosmÃ©ticos", href: "/admin/produtos-cosmeticos", status: "construcao" },
+      { nome: "Estética Facial", href: "/admin/estetica-facial", status: "construcao" },
+      { nome: "Estética Corporal", href: "/admin/estetica-corporal", status: "construcao" },
+      { nome: "Produtos Cosméticos", href: "/admin/produtos-cosmeticos", status: "construcao" },
       { nome: "Perfumaria", href: "/admin/perfumaria", status: "construcao" }
     ]
   },
   {
-    titulo: "ðŸŽ‰ EVENTOS & ENTRETENIMENTO",
+    titulo: "🎉 EVENTOS & ENTRETENIMENTO",
     icon: "fas fa-music",
     items: [
       { nome: "Som Automotivo", href: "/admin/som-eventos", status: "construcao" },
       { nome: "Eventos", href: "/admin/eventos", status: "construcao" },
-      { nome: "DecoraÃ§Ã£o", href: "/admin/decoracao", status: "construcao" },
+      { nome: "Decoração", href: "/admin/decoracao", status: "construcao" },
       { nome: "Buffet", href: "/admin/buffet", status: "construcao" },
       { nome: "Fotografia", href: "/admin/fotografia", status: "construcao" },
       { nome: "Filmagem", href: "/admin/filmagem", status: "construcao" },
       { nome: "Convites", href: "/admin/convites", status: "construcao" },
-      { nome: "EspaÃ§os de Festa", href: "/admin/espacos-festa", status: "construcao" }
+      { nome: "Espaços de Festa", href: "/admin/espacos-festa", status: "construcao" }
     ]
   },
   {
-    titulo: "ðŸ¶ PET SHOP & ANIMAIS",
+    titulo: "🐶 PET SHOP & ANIMAIS",
     icon: "fas fa-paw",
     items: [
       { nome: "Pet Shop", href: "/admin/petshop", status: "construcao" },
       { nome: "Banho e Tosa", href: "/admin/banho-tosa", status: "construcao" },
-      { nome: "VeterinÃ¡rio", href: "/admin/veterinario-pet", status: "construcao" },
-      { nome: "RaÃ§Ã£o", href: "/admin/racao", status: "construcao" },
+      { nome: "Veterinário", href: "/admin/veterinario-pet", status: "construcao" },
+      { nome: "Ração", href: "/admin/racao", status: "construcao" },
       { nome: "Medicamentos Animais", href: "/admin/medicamentos-animais", status: "construcao" }
     ]
   },
   {
-    titulo: "ðŸ’° FINANCEIRO",
+    titulo: "💰 FINANCEIRO",
     icon: "fas fa-chart-line",
     items: [
-      { nome: "Correspondente BancÃ¡rio", href: "/admin/correspondente", status: "construcao" },
-      { nome: "EmprÃ©stimos", href: "/admin/emprestimos", status: "construcao" },
+      { nome: "Correspondente Bancário", href: "/admin/correspondente", status: "construcao" },
+      { nome: "Empréstimos", href: "/admin/emprestimos", status: "construcao" },
       { nome: "Seguros", href: "/admin/seguros", status: "construcao" },
       { nome: "Contabilidade", href: "/admin/contabilidade", status: "construcao" },
       { nome: "Consultoria Financeira", href: "/admin/consultoria-financeira", status: "construcao" }
@@ -444,7 +444,7 @@ export default function AdminMasterPage() {
                           {item.nome}
                         </span>
                         {item.status === "construcao" && (
-                          <span className="text-[10px] bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded-full">ðŸš§</span>
+                          <span className="text-[10px] bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded-full">🚧</span>
                         )}
                       </button>
                     ))}
@@ -458,7 +458,7 @@ export default function AdminMasterPage() {
         <div className="flex-1 p-4 md:p-6 overflow-x-auto">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
             <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-3">
-              <p className="text-white/80 text-xs">Total UsuÃ¡rios</p>
+              <p className="text-white/80 text-xs">Total Usuários</p>
               <p className="text-xl md:text-2xl font-bold text-white">{stats.totalUsuarios}</p>
             </div>
             <div className="bg-gradient-to-r from-green-600 to-green-800 rounded-2xl p-3">
@@ -474,7 +474,7 @@ export default function AdminMasterPage() {
               <p className="text-xl md:text-2xl font-bold text-white">{stats.novosHoje}</p>
             </div>
             <div className="bg-gradient-to-r from-purple-600 to-purple-800 rounded-2xl p-3">
-              <p className="text-white/80 text-xs">Receita MÃªs</p>
+              <p className="text-white/80 text-xs">Receita Mês</p>
               <p className="text-xl md:text-2xl font-bold text-white">R$ {stats.receitaMes}</p>
             </div>
           </div>
@@ -482,23 +482,23 @@ export default function AdminMasterPage() {
           <div className="bg-gray-800 rounded-2xl p-6 text-center">
             <i className="fas fa-crown text-6xl text-yellow-500 mb-4"></i>
             <h2 className="text-white text-xl font-bold mb-2">Bem-vindo ao Admin Master</h2>
-            <p className="text-gray-400 text-sm">Selecione uma opÃ§Ã£o no menu lateral para gerenciar o sistema</p>
+            <p className="text-gray-400 text-sm">Selecione uma opção no menu lateral para gerenciar o sistema</p>
             <div className="mt-4 flex flex-col sm:flex-row justify-center gap-3">
               <button onClick={() => router.push("/admin/configuracoes")} className="bg-yellow-500 text-black px-4 py-2 rounded-xl font-bold text-sm">
-                âš™ï¸ Configurar Home
+                ⚙️ Configurar Home
               </button>
               <button onClick={() => router.push("/admin/usuarios")} className="bg-blue-500 text-white px-4 py-2 rounded-xl font-bold text-sm">
-                ðŸ‘¥ Gerenciar UsuÃ¡rios
+                👥 Gerenciar Usuários
               </button>
               <button onClick={() => router.push("/admin/beneficios")} className="bg-purple-500 text-white px-4 py-2 rounded-xl font-bold text-sm">
-                ðŸŽ Gerenciar BenefÃ­cios
+                🎁 Gerenciar Benefícios
               </button>
             </div>
           </div>
 
           <div className="mt-6 bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-3 text-center md:hidden">
             <p className="text-yellow-400 text-xs">
-              ðŸ“± Toque no Ã­cone â˜° no topo para abrir o menu lateral
+              📱 Toque no ícone ☰ no topo para abrir o menu lateral
             </p>
           </div>
         </div>

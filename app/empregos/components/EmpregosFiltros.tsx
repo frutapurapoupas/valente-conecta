@@ -49,7 +49,7 @@ export function EmpregosFiltros({ filtros, onAplicarFiltros, onLimparFiltros }: 
           />
         </div>
 
-        {/* BotÃ£o Filtros */}
+        {/* Botão Filtros */}
         <button
           onClick={() => setMostrarFiltros(!mostrarFiltros)}
           className={`px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition ${
@@ -94,8 +94,8 @@ export function EmpregosFiltros({ filtros, onAplicarFiltros, onLimparFiltros }: 
                 <option value="CLT">CLT</option>
                 <option value="PJ">PJ</option>
                 <option value="Freelancer">Freelancer</option>
-                <option value="EstÃ¡gio">EstÃ¡gio</option>
-                <option value="TemporÃ¡rio">TemporÃ¡rio</option>
+                <option value="Estágio">Estágio</option>
+                <option value="Temporário">Temporário</option>
               </select>
             </div>
 
@@ -110,23 +110,23 @@ export function EmpregosFiltros({ filtros, onAplicarFiltros, onLimparFiltros }: 
                 <option value="">Todas</option>
                 <option value="Presencial">Presencial</option>
                 <option value="Remoto">Remoto</option>
-                <option value="HÃ­brido">HÃ­brido</option>
+                <option value="Híbrido">Híbrido</option>
               </select>
             </div>
 
-            {/* NÃ­vel */}
+            {/* Nível */}
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">NÃ­vel</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Nível</label>
               <select
                 value={filtrosLocais.nivel || ""}
                 onChange={(e) => handleChange("nivel", e.target.value as NivelExperiencia || undefined)}
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
               >
                 <option value="">Todos</option>
-                <option value="EstagiÃ¡rio">EstagiÃ¡rio</option>
-                <option value="JÃºnior">JÃºnior</option>
+                <option value="Estagiário">Estagiário</option>
+                <option value="Júnior">Júnior</option>
                 <option value="Pleno">Pleno</option>
-                <option value="SÃªnior">SÃªnior</option>
+                <option value="Sênior">Sênior</option>
                 <option value="Especialista">Especialista</option>
               </select>
             </div>

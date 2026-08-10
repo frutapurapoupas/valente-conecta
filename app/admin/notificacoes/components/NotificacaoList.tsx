@@ -25,7 +25,7 @@ export function NotificacaoList({
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
       <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
         <Bell className="w-5 h-5 text-indigo-500" />
-        NotificaÃ§Ãµes Publicadas
+        Notificações Publicadas
         {notificacoesAtivas > 0 && (
           <span className="text-sm bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
             {notificacoesAtivas} ativas
@@ -49,8 +49,8 @@ export function NotificacaoList({
       {notificacoes.length === 0 && (
         <div className="text-center py-12">
           <Bell className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500 font-medium">Nenhuma notificaÃ§Ã£o cadastrada</p>
-          <p className="text-sm text-gray-400">Clique em "Nova NotificaÃ§Ã£o" para comeÃ§ar</p>
+          <p className="text-gray-500 font-medium">Nenhuma notificação cadastrada</p>
+          <p className="text-sm text-gray-400">Clique em "Nova Notificação" para começar</p>
         </div>
       )}
     </div>

@@ -1,21 +1,21 @@
 // components/admin/automacao/rules/aprovacao.ts
-// ðŸ†• REGRAS DE APROVAÃ‡ÃƒO AUTOMÃTICA
+// 🆕 REGRAS DE APROVAÇÃO AUTOMÁTICA
 
 import { Lojista, RegraAprovacao } from '../../menu/types';
 
 // ============================================================
-// REGRA 1: AUTO-APROVAÃ‡ÃƒO POR SCORE
+// REGRA 1: AUTO-APROVAÇÃO POR SCORE
 // ============================================================
 
 export const regraAutoAprovacao: RegraAprovacao = {
   id: 'auto-aprovacao-score',
-  nome: 'Auto-AprovaÃ§Ã£o por Score',
+  nome: 'Auto-Aprovação por Score',
   prioridade: 1,
   condicao: (lojista: Lojista) => {
     // Aprova automaticamente se:
-    // - Score de confianÃ§a >= 70
+    // - Score de confiança >= 70
     // - Tem foto
-    // - DescriÃ§Ã£o completa
+    // - Descrição completa
     return (
       lojista.scoreConfianca >= 70 &&
       lojista.possuiFoto &&
@@ -26,12 +26,12 @@ export const regraAutoAprovacao: RegraAprovacao = {
 };
 
 // ============================================================
-// REGRA 2: APROVAÃ‡ÃƒO APÃ“S 5 AVALIAÃ‡Ã•ES POSITIVAS
+// REGRA 2: APROVAÇÃO APÓS 5 AVALIAÇÕES POSITIVAS
 // ============================================================
 
 export const regraAprovacaoPorAvaliacoes: RegraAprovacao = {
   id: 'aprovacao-avaliacoes',
-  nome: 'AprovaÃ§Ã£o por AvaliaÃ§Ãµes',
+  nome: 'Aprovação por Avaliações',
   prioridade: 2,
   condicao: (lojista: Lojista) => {
     return (
@@ -43,12 +43,12 @@ export const regraAprovacaoPorAvaliacoes: RegraAprovacao = {
 };
 
 // ============================================================
-// REGRA 3: SUSPENSÃƒO POR DENÃšNCIAS
+// REGRA 3: SUSPENSÃO POR DENÚNCIAS
 // ============================================================
 
 export const regraSuspensaoPorDenuncias: RegraAprovacao = {
   id: 'suspensao-denuncias',
-  nome: 'SuspensÃ£o por DenÃºncias',
+  nome: 'Suspensão por Denúncias',
   prioridade: 10,
   condicao: (lojista: Lojista) => {
     return lojista.denuncias >= 3;
@@ -57,15 +57,15 @@ export const regraSuspensaoPorDenuncias: RegraAprovacao = {
 };
 
 // ============================================================
-// REGRA 4: SUSPENSÃƒO POR BAIXA QUALIDADE
+// REGRA 4: SUSPENSÃO POR BAIXA QUALIDADE
 // ============================================================
 
 export const regraSuspensaoPorQualidade: RegraAprovacao = {
   id: 'suspensao-qualidade',
-  nome: 'SuspensÃ£o por Baixa Qualidade',
+  nome: 'Suspensão por Baixa Qualidade',
   prioridade: 11,
   condicao: (lojista: Lojista) => {
-    // Sem foto e sem descriÃ§Ã£o por mais de 30 dias
+    // Sem foto e sem descrição por mais de 30 dias
     const diasInativo = calcularDiasInativo(lojista.ultimaAtividade);
     return (
       !lojista.possuiFoto &&
@@ -77,12 +77,12 @@ export const regraSuspensaoPorQualidade: RegraAprovacao = {
 };
 
 // ============================================================
-// REGRA 5: AUTO-PUBLICAÃ‡ÃƒO PARA LOJAS CONFIÃVEIS
+// REGRA 5: AUTO-PUBLICAÇÃO PARA LOJAS CONFIÁVEIS
 // ============================================================
 
 export const regraAutoPublicacao: RegraAprovacao = {
   id: 'auto-publicacao',
-  nome: 'Auto-PublicaÃ§Ã£o',
+  nome: 'Auto-Publicação',
   prioridade: 3,
   condicao: (lojista: Lojista) => {
     return (
@@ -96,16 +96,16 @@ export const regraAutoPublicacao: RegraAprovacao = {
 };
 
 // ============================================================
-// REGRA 6: NOTIFICAÃ‡ÃƒO PARA ADMIN
+// REGRA 6: NOTIFICAÇÃO PARA ADMIN
 // ============================================================
 
 export const regraNotificacaoAdmin: RegraAprovacao = {
   id: 'notificacao-admin',
-  nome: 'NotificaÃ§Ã£o para Admin',
+  nome: 'Notificação para Admin',
   prioridade: 20,
   condicao: (lojista: Lojista) => {
     // Notifica se:
-    // - DenÃºncias >= 2 (prÃ³ximo de suspensÃ£o)
+    // - Denúncias >= 2 (próximo de suspensão)
     // - Score < 30 (muito baixo)
     return (
       lojista.denuncias >= 2 ||
@@ -129,7 +129,7 @@ export const todasRegras: RegraAprovacao[] = [
 ];
 
 // ============================================================
-// FUNÃ‡ÃƒO AUXILIAR
+// FUNÇÃO AUXILIAR
 // ============================================================
 
 function calcularDiasInativo(ultimaAtividade: string): number {

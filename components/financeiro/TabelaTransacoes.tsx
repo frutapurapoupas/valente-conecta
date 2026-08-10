@@ -1,5 +1,5 @@
 // components/financeiro/TabelaTransacoes.tsx
-// ?? DESIGN - Tabela de transaÃ§Ãµes
+// ?? DESIGN - Tabela de transações
 
 import { Edit, Trash2, Repeat, DollarSign } from 'lucide-react';  // ? ADICIONADO
 import { formatarData, formatarMoeda } from '@/utils/financeiroUtils';
@@ -20,7 +20,7 @@ export default function TabelaTransacoes({
     return (
       <div className="text-center py-12 text-gray-400">
         <DollarSign size={48} className="mx-auto opacity-30 mb-3" />
-        <p>Nenhuma transaÃ§Ã£o encontrada</p>
+        <p>Nenhuma transação encontrada</p>
       </div>
     );
   }
@@ -32,12 +32,12 @@ export default function TabelaTransacoes({
           <thead className="bg-gray-800/50">
             <tr>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Data</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">DescriÃ§Ã£o</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Descrição</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Categoria</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">RecorrÃªncia</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Recorrência</th>
               <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase">Valor</th>
               <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase">Tipo</th>
-              <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase">AÃ§Ãµes</th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700">

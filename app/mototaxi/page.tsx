@@ -1,73 +1,64 @@
+// Caminho: C:\valente_conecta\app\mototaxi\page.tsx
+// Substitui a versao anterior. Mudanca desta versao: campos de origem e
+// destino agora usam o componente CampoEnderecoAutocomplete (sugestoes
+// enquanto digita, combinando pontos de referencia locais + Nominatim).
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/app/context/AppContext";
-import {
-  AlertTriangle,
-  Bike,
-  CreditCard,
-  ShieldCheck,
-  Star,
-  User,
-  X
-} from "lucide-react";
+import { Bike, CreditCard, ShieldCheck, Star, User, X } from "lucide-react";
 import toast from "react-hot-toast";
+import CampoEnderecoAutocomplete from "./_components/CampoEnderecoAutocomplete";
 
 export const dynamic = "force-dynamic";
 
-type Driver = {
+type CorridaApi = {
+  id: string;
+  passageiro_id: string | null;
+  passageiro_nome: string;
+  passageiro_plano: string;
+  motorista_id: string | null;
+  origem: string;
+  destino: string;
+  origem_lat: number;
+  origem_lng: number;
+  destino_lat: number;
+  destino_lng: number;
+  motorista_lat: number | null;
+  motorista_lng: number | null;
+  preco: number;
+  metodo_pagamento: string;
+  status_pagamento: "pendente" | "confirmado";
+  status: "aguardando_motorista" | "aceita" | "em_andamento" | "concluida" | "cancelada";
+  created_at: string;
+};
+
+type MotoristaApi = {
   id: string;
   nome: string;
-  fotoUrl?: string;
-  telefone?: string;
+  foto_url?: string;
   veiculo: string;
   placa: string;
   avaliacao: number;
-  plano: "gratis" | "basico" | "premium";
-  online: boolean;
-  latitude: number;
-  longitude: number;
-};
-
-type Ride = {
-  id: string;
-  passengerName: string;
-  passengerId: string;
-  passengerPlan: string;
-  driverId: string;
-  driverName: string;
-  driverPhoto?: string;
-  vehicle: string;
-  plate: string;
-  origin: string;
-  destination: string;
-  originLat: number;
-  originLng: number;
-  destinationLat: number;
-  destinationLng: number;
-  driverLat: number;
-  driverLng: number;
-  price: number;
-  paymentMethod: string;
-  paymentStatus: "pendente" | "confirmado";
-  status: "solicitada" | "aceita" | "em_andamento" | "concluida" | "cancelada";
-  createdAt: string;
 };
 
 type AdsConfig = {
   enabled: boolean;
-  showToFreePassengersOnly: boolean;
-  popupTitle: string;
-  popupMessage?: string;
+  show_to_free_passengers_only: boolean;
+  popup_title: string;
+  popup_message?: string;
   items: Array<{ id: string; titulo: string; mensagem: string; ctaLabel: string; ctaLink: string; ativo?: boolean }>;
 };
 
-type NearbyDriver = Driver & { distancia?: number; ordem: number };
-
-function clamp(value: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, value));
-}
+type Cidade = {
+  id: string;
+  nome: string;
+  estado: string;
+  centro_lat: number;
+  centro_lng: number;
+  raio_km: number;
+};
 
 function distanceKm(aLat: number, aLng: number, bLat: number, bLng: number) {
   const dx = (aLat - bLat) * 111;
@@ -75,121 +66,86 @@ function distanceKm(aLat: number, aLng: number, bLat: number, bLng: number) {
   return Math.sqrt(dx * dx + dy * dy);
 }
 
-function buildNearbyMapHtml(userPosition: { lat: number; lng: number } | null, drivers: NearbyDriver[]) {
-  const center = userPosition
-    ? { lat: userPosition.lat, lng: userPosition.lng }
-    : drivers.length > 0
-      ? { lat: drivers[0].latitude, lng: drivers[0].longitude }
-      : null;
-
-  if (!center) return "";
-
-  const payload = {
-    center,
-    user: userPosition,
-    drivers: drivers.map((driver) => ({
-      id: driver.id,
-      nome: driver.nome,
-      lat: driver.latitude,
-      lng: driver.longitude,
-      ordem: driver.ordem,
-      distancia: driver.distancia
-    }))
-  };
-
-  return `<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-      html, body, #map { height: 100%; margin: 0; }
-      .hud {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        z-index: 1000;
-        background: rgba(15, 23, 42, 0.88);
-        color: #e2e8f0;
-        border: 1px solid rgba(148, 163, 184, 0.35);
-        border-radius: 10px;
-        padding: 8px 10px;
-        font-family: Arial, sans-serif;
-        font-size: 12px;
-        max-width: 320px;
-      }
-      .chip {
-        display: inline-block;
-        margin-top: 4px;
-        margin-right: 6px;
-        background: rgba(14, 116, 144, 0.28);
-        border: 1px solid rgba(34, 211, 238, 0.5);
-        border-radius: 999px;
-        padding: 2px 8px;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="map"></div>
-    <div class="hud">
-      <div><strong>Mapa real de proximidade</strong></div>
-      <div>Legenda: ponto azul = voce, pontos verdes = motoristas</div>
-      <div class="chip">M1 mais proximo</div>
-    </div>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-      const data = ${JSON.stringify(payload)};
-      const map = L.map('map', { zoomControl: true }).setView([data.center.lat, data.center.lng], 14);
-
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors'
-      }).addTo(map);
-
-      const bounds = [];
-      if (data.user) {
-        const userMarker = L.circleMarker([data.user.lat, data.user.lng], {
-          radius: 8,
-          color: '#1d4ed8',
-          fillColor: '#60a5fa',
-          fillOpacity: 0.95,
-          weight: 2
-        }).addTo(map);
-        userMarker.bindTooltip('Voce', { permanent: true, direction: 'top' });
-        bounds.push([data.user.lat, data.user.lng]);
-      }
-
-      data.drivers.forEach((driver) => {
-        const marker = L.circleMarker([driver.lat, driver.lng], {
-          radius: 7,
-          color: '#065f46',
-          fillColor: '#10b981',
-          fillOpacity: 0.95,
-          weight: 2
-        }).addTo(map);
-
-        const distancia = typeof driver.distancia === 'number' ? (' - ' + driver.distancia.toFixed(2) + ' km') : '';
-        marker.bindTooltip('M' + driver.ordem + ' - ' + driver.nome + distancia, { permanent: true, direction: 'top' });
-        bounds.push([driver.lat, driver.lng]);
-      });
-
-      if (bounds.length > 1) {
-        map.fitBounds(bounds, { padding: [20, 20] });
-      }
-    </script>
-  </body>
-</html>`;
+function clamp(value: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, value));
 }
 
-function buildRideMapHtml(ride: Ride) {
+function construirViewbox(cidade: Cidade) {
+  const grausPorKm = 1 / 111;
+  const delta = cidade.raio_km * grausPorKm;
+  const minLng = cidade.centro_lng - delta;
+  const maxLng = cidade.centro_lng + delta;
+  const minLat = cidade.centro_lat - delta;
+  const maxLat = cidade.centro_lat + delta;
+  return `${minLng},${maxLat},${maxLng},${minLat}`;
+}
+
+async function geocodificarComFallback(texto: string, cidade: Cidade): Promise<{ lat: number; lng: number } | null> {
+  // Tentativa 0: ponto de referencia local cadastrado (ex: APAEB, pracas, etc.)
+  try {
+    const urlPonto = `/api/mototaxi?recurso=ponto_referencia&cidade_id=${cidade.id}&q=${encodeURIComponent(texto)}`;
+    const resPonto = await fetch(urlPonto);
+    const dataPonto = await resPonto.json();
+    if (dataPonto?.data) {
+      return { lat: dataPonto.data.latitude, lng: dataPonto.data.longitude };
+    }
+  } catch {
+    // segue para as tentativas com Nominatim
+  }
+
+  // Tentativa 1: busca restrita ao raio da cidade (mais segura)
+  try {
+    const urlRestrita = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=br&viewbox=${construirViewbox(cidade)}&bounded=1&q=${encodeURIComponent(texto)}`;
+    const res = await fetch(urlRestrita);
+    const data = await res.json();
+    if (Array.isArray(data) && data[0]) {
+      return { lat: Number(data[0].lat), lng: Number(data[0].lon) };
+    }
+  } catch {
+    // segue para a tentativa 2
+  }
+
+  // Tentativa 2: busca ampla, mas valida distancia maxima do centro da cidade
+  try {
+    const urlAmpla = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=br&q=${encodeURIComponent(texto + ", " + cidade.nome + ", " + cidade.estado)}`;
+    const res = await fetch(urlAmpla);
+    const data = await res.json();
+    if (Array.isArray(data) && data[0]) {
+      const lat = Number(data[0].lat);
+      const lng = Number(data[0].lon);
+      const distanciaDoCentro = distanceKm(lat, lng, cidade.centro_lat, cidade.centro_lng);
+      if (distanciaDoCentro <= 50) {
+        return { lat, lng };
+      }
+    }
+  } catch {
+    // sem resultado
+  }
+
+  return null;
+}
+
+async function calcularDistanciaRotaKm(origemLat: number, origemLng: number, destinoLat: number, destinoLng: number): Promise<number | null> {
+  try {
+    const url = `https://router.project-osrm.org/route/v1/driving/${origemLng},${origemLat};${destinoLng},${destinoLat}?overview=false`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const metros = data?.routes?.[0]?.distance;
+    return typeof metros === "number" ? metros / 1000 : null;
+  } catch {
+    return null;
+  }
+}
+
+function buildRideMapHtml(corrida: CorridaApi, motorista: MotoristaApi | null) {
+  const temMotorista = corrida.motorista_lat != null && corrida.motorista_lng != null;
   const payload = {
-    origin: { lat: ride.originLat, lng: ride.originLng, label: ride.origin || "Origem" },
-    destination: { lat: ride.destinationLat, lng: ride.destinationLng, label: ride.destination || "Destino" },
-    driver: { lat: ride.driverLat, lng: ride.driverLng, label: ride.driverName || "Motorista" },
-    status: ride.status,
-    pagamento: ride.paymentStatus,
-    valor: Number(ride.price || 0)
+    origin: { lat: corrida.origem_lat, lng: corrida.origem_lng, label: corrida.origem || "Origem" },
+    destination: { lat: corrida.destino_lat, lng: corrida.destino_lng, label: corrida.destino || "Destino" },
+    driver: temMotorista ? { lat: corrida.motorista_lat, lng: corrida.motorista_lng, label: motorista?.nome || "Motorista" } : null,
+    status: corrida.status,
+    pagamento: corrida.status_pagamento,
+    valor: Number(corrida.preco || 0),
   };
 
   return `<!doctype html>
@@ -200,31 +156,8 @@ function buildRideMapHtml(ride: Ride) {
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
       html, body, #map { height: 100%; margin: 0; }
-      .hud {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        z-index: 1000;
-        background: rgba(15, 23, 42, 0.9);
-        color: #e2e8f0;
-        border: 1px solid rgba(148, 163, 184, 0.35);
-        border-radius: 10px;
-        padding: 10px;
-        font-family: Arial, sans-serif;
-        font-size: 12px;
-        max-width: 340px;
-        line-height: 1.35;
-      }
+      .hud { position: absolute; top: 10px; left: 10px; z-index: 1000; background: rgba(15, 23, 42, 0.9); color: #e2e8f0; border: 1px solid rgba(148, 163, 184, 0.35); border-radius: 10px; padding: 10px; font-family: Arial, sans-serif; font-size: 12px; max-width: 340px; line-height: 1.35; }
       .row { margin-top: 2px; }
-      .badge {
-        display: inline-block;
-        margin-top: 5px;
-        margin-right: 6px;
-        border-radius: 999px;
-        padding: 2px 8px;
-        border: 1px solid rgba(56, 189, 248, 0.5);
-        background: rgba(14, 116, 144, 0.26);
-      }
     </style>
   </head>
   <body>
@@ -233,67 +166,41 @@ function buildRideMapHtml(ride: Ride) {
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
       const data = ${JSON.stringify(payload)};
-
-      function km(aLat, aLng, bLat, bLng) {
-        const dx = (aLat - bLat) * 111;
-        const dy = (aLng - bLng) * 111;
-        return Math.sqrt(dx * dx + dy * dy);
-      }
-
       const map = L.map('map', { zoomControl: true });
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors'
-      }).addTo(map);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
 
       const origem = [data.origin.lat, data.origin.lng];
       const destino = [data.destination.lat, data.destination.lng];
-      const motorista = [data.driver.lat, data.driver.lng];
+      const bounds = [origem, destino];
 
-      const origemMarker = L.circleMarker(origem, { radius: 7, color: '#1d4ed8', fillColor: '#60a5fa', fillOpacity: 0.95, weight: 2 }).addTo(map);
-      origemMarker.bindTooltip('Origem', { permanent: true, direction: 'top' });
+      L.circleMarker(origem, { radius: 7, color: '#1d4ed8', fillColor: '#60a5fa', fillOpacity: 0.95, weight: 2 }).addTo(map).bindTooltip('Origem', { permanent: true, direction: 'top' });
+      L.circleMarker(destino, { radius: 7, color: '#9a3412', fillColor: '#f97316', fillOpacity: 0.95, weight: 2 }).addTo(map).bindTooltip('Destino', { permanent: true, direction: 'top' });
 
-      const destinoMarker = L.circleMarker(destino, { radius: 7, color: '#9a3412', fillColor: '#f97316', fillOpacity: 0.95, weight: 2 }).addTo(map);
-      destinoMarker.bindTooltip('Destino', { permanent: true, direction: 'top' });
+      if (data.driver) {
+        const motorista = [data.driver.lat, data.driver.lng];
+        bounds.push(motorista);
+        L.circleMarker(motorista, { radius: 8, color: '#065f46', fillColor: '#10b981', fillOpacity: 0.95, weight: 2 }).addTo(map).bindTooltip('Motorista', { permanent: true, direction: 'top' });
 
-      const motoristaMarker = L.circleMarker(motorista, { radius: 8, color: '#065f46', fillColor: '#10b981', fillOpacity: 0.95, weight: 2 }).addTo(map);
-      motoristaMarker.bindTooltip('Motorista', { permanent: true, direction: 'top' });
+        fetch('https://router.project-osrm.org/route/v1/driving/' + data.driver.lng + ',' + data.driver.lat + ';' + data.destination.lng + ',' + data.destination.lat + '?overview=full&geometries=geojson')
+          .then((r) => r.json())
+          .then((json) => {
+            if (json?.routes?.[0]?.geometry?.coordinates) {
+              const coords = json.routes[0].geometry.coordinates.map((p) => [p[1], p[0]]);
+              L.polyline(coords, { color: '#22d3ee', weight: 5, opacity: 0.95 }).addTo(map);
+            }
+          })
+          .catch(() => null);
+      } else {
+        L.polyline([origem, destino], { color: '#94a3b8', weight: 4, opacity: 0.65, dashArray: '6 5' }).addTo(map);
+      }
 
-      const bounds = L.latLngBounds([origem, destino, motorista]);
       map.fitBounds(bounds, { padding: [24, 24] });
 
-      L.polyline([origem, destino], { color: '#94a3b8', weight: 4, opacity: 0.65, dashArray: '6 5' }).addTo(map);
-
-      fetch('https://router.project-osrm.org/route/v1/driving/' + data.driver.lng + ',' + data.driver.lat + ';' + data.destination.lng + ',' + data.destination.lat + '?overview=full&geometries=geojson')
-        .then((response) => response.json())
-        .then((json) => {
-          if (json && json.routes && json.routes[0] && json.routes[0].geometry && json.routes[0].geometry.coordinates) {
-            const coords = json.routes[0].geometry.coordinates.map((point) => [point[1], point[0]]);
-            L.polyline(coords, { color: '#22d3ee', weight: 5, opacity: 0.95 }).addTo(map);
-          } else {
-            L.polyline([motorista, destino], { color: '#22d3ee', weight: 5, opacity: 0.95 }).addTo(map);
-          }
-        })
-        .catch(() => {
-          L.polyline([motorista, destino], { color: '#22d3ee', weight: 5, opacity: 0.95 }).addTo(map);
-        });
-
-      const distTotal = km(data.origin.lat, data.origin.lng, data.destination.lat, data.destination.lng);
-      const distRestante = km(data.driver.lat, data.driver.lng, data.destination.lat, data.destination.lng);
-      const eta = Math.max(1, Math.round((distRestante / 0.35) * 6));
-
       const hud = document.getElementById('hud');
-      hud.innerHTML = '' +
-        '<div><strong>Descricao da rota no mapa</strong></div>' +
-        '<div class="row">Origem: ' + data.origin.label + '</div>' +
-        '<div class="row">Destino: ' + data.destination.label + '</div>' +
+      hud.innerHTML = '<div><strong>Status da corrida</strong></div>' +
         '<div class="row">Status: ' + data.status + '</div>' +
-        '<div class="row">Distancia estimada: ' + distTotal.toFixed(2) + ' km</div>' +
-        '<div class="row">Distancia restante: ' + distRestante.toFixed(2) + ' km</div>' +
-        '<div class="row">ETA aproximado: ' + eta + ' min</div>' +
-        '<div class="badge">Rota principal: origem -> destino</div>' +
-        '<div class="badge">Rota em ciano: trecho restante</div>' +
-        '<div class="row">Pagamento: ' + data.pagamento + ' | Valor: R$ ' + Number(data.valor).toFixed(2) + '</div>';
+        '<div class="row">Pagamento: ' + data.pagamento + ' | Valor: R$ ' + Number(data.valor).toFixed(2) + '</div>' +
+        (data.driver ? '' : '<div class="row">Aguardando motorista aceitar...</div>');
     </script>
   </body>
 </html>`;
@@ -315,168 +222,82 @@ export default function MotoTaxiPage() {
   const router = useRouter();
   const { user } = useApp();
 
-  const [drivers, setDrivers] = useState<Driver[]>([]);
-  const [rides, setRides] = useState<Ride[]>([]);
   const [adsConfig, setAdsConfig] = useState<AdsConfig | null>(null);
+  const [cidadeAtiva, setCidadeAtiva] = useState<Cidade | null>(null);
   const [loading, setLoading] = useState(true);
 
   const [origem, setOrigem] = useState("");
   const [destino, setDestino] = useState("");
   const [userPosition, setUserPosition] = useState<{ lat: number; lng: number } | null>(null);
   const [destinationPosition, setDestinationPosition] = useState<{ lat: number; lng: number } | null>(null);
-  const [resolvendoDestino, setResolvendoDestino] = useState(false);
   const [capturandoPosicao, setCapturandoPosicao] = useState(false);
-  const [preco, setPreco] = useState<number | null>(null);
-  const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
-  const [activeRide, setActiveRide] = useState<Ride | null>(null);
+  const [solicitando, setSolicitando] = useState(false);
+
+  const [distanciaRotaKm, setDistanciaRotaKm] = useState<number | null>(null);
+  const [calculandoPreco, setCalculandoPreco] = useState(false);
+
+  const [corridaAtiva, setCorridaAtiva] = useState<CorridaApi | null>(null);
+  const [motoristaAtivo, setMotoristaAtivo] = useState<MotoristaApi | null>(null);
 
   const [showAdModal, setShowAdModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"pix" | "cartao" | "saldo" | "dinheiro">("pix");
   const [paymentLoading, setPaymentLoading] = useState(false);
 
-  const [showDriverRegister, setShowDriverRegister] = useState(false);
-  const [driverFormLoading, setDriverFormLoading] = useState(false);
-  const [driverForm, setDriverForm] = useState({
-    nome: "",
-    telefone: "",
-    veiculo: "",
-    placa: "",
-    fotoUrl: "",
-    cnhNumero: "",
-    cnhValida: false,
-    documentoVeiculoOk: false,
-    licenciamentoVencimento: "",
-    plano: "gratis"
-  });
-
-  const trackingInterval = useRef<any>(null);
-  const watchPositionRef = useRef<number | null>(null);
+  const pollingRef = useRef<any>(null);
 
   const passengerPlan = useMemo(() => getStoredUserPlan(user), [user]);
   const freePassenger = passengerPlan === "gratis" || passengerPlan === "free";
 
-  const myRides = useMemo(() => {
-    const userId = String(user?.id || "anonimo");
-    return rides.filter((r) => r.passengerId === userId).slice(0, 12);
-  }, [rides, user?.id]);
+  // Preco = R$6 de bandeirada + R$2,30/km de distancia REAL de rota
+  const precoEstimado = useMemo(() => {
+    if (distanciaRotaKm === null) return null;
+    return Number((6 + distanciaRotaKm * 2.3).toFixed(2));
+  }, [distanciaRotaKm]);
 
-  const driversOrdenados = useMemo(() => {
-    if (!userPosition) return drivers;
-    return [...drivers]
-      .map((driver) => ({
-        ...driver,
-        distancia: distanceKm(userPosition.lat, userPosition.lng, driver.latitude, driver.longitude)
-      }))
-      .sort((a, b) => a.distancia - b.distancia);
-  }, [drivers, userPosition]);
+  const rideMapHtml = useMemo(() => {
+    if (!corridaAtiva) return "";
+    return buildRideMapHtml(corridaAtiva, motoristaAtivo);
+  }, [corridaAtiva, motoristaAtivo]);
 
-  const displayedDrivers = useMemo<NearbyDriver[]>(() => {
-    const base = (selectedDriver
-      ? driversOrdenados.filter((driver) => driver.id === selectedDriver.id)
-      : driversOrdenados.slice(0, 8)) as Array<Driver & { distancia?: number }>;
-
-    return base.map((driver, idx) => ({ ...driver, ordem: idx + 1 }));
-  }, [driversOrdenados, selectedDriver]);
-
-  const destinationReady = useMemo(() => destino.trim().length >= 3, [destino]);
-
-  const priceByDriver = useMemo(() => {
-    if (!userPosition || !destinationPosition) return {} as Record<string, { totalKm: number; pickupKm: number; price: number }>;
-
-    const tripKm = distanceKm(userPosition.lat, userPosition.lng, destinationPosition.lat, destinationPosition.lng);
-    const map: Record<string, { totalKm: number; pickupKm: number; price: number }> = {};
-
-    displayedDrivers.forEach((driver) => {
-      const pickupKm = distanceKm(driver.latitude, driver.longitude, userPosition.lat, userPosition.lng);
-      const totalKm = pickupKm + tripKm;
-      const valor = 6 + totalKm * 2.3;
-      map[driver.id] = {
-        totalKm,
-        pickupKm,
-        price: Number(valor.toFixed(2))
-      };
-    });
-
-    return map;
-  }, [destinationPosition, displayedDrivers, userPosition]);
-
-  const nearbyMapHtml = useMemo(() => {
-    if (!userPosition && displayedDrivers.length === 0) return "";
-    return buildNearbyMapHtml(userPosition, displayedDrivers);
-  }, [displayedDrivers, userPosition]);
-
-  const activeRideProgress = useMemo(() => {
-    if (!activeRide) return 0;
-    const total = distanceKm(activeRide.originLat, activeRide.originLng, activeRide.destinationLat, activeRide.destinationLng);
-    const done = distanceKm(activeRide.originLat, activeRide.originLng, activeRide.driverLat, activeRide.driverLng);
+  const progresso = useMemo(() => {
+    if (!corridaAtiva || corridaAtiva.motorista_lat == null || corridaAtiva.motorista_lng == null) return 0;
+    const total = distanceKm(corridaAtiva.origem_lat, corridaAtiva.origem_lng, corridaAtiva.destino_lat, corridaAtiva.destino_lng);
+    const feito = distanceKm(corridaAtiva.origem_lat, corridaAtiva.origem_lng, corridaAtiva.motorista_lat, corridaAtiva.motorista_lng);
     if (total <= 0.001) return 0;
-    return clamp(Math.round((done / total) * 100), 0, 100);
-  }, [activeRide]);
+    return clamp(Math.round((feito / total) * 100), 0, 100);
+  }, [corridaAtiva]);
 
-  const activeRideEta = useMemo(() => {
-    if (!activeRide || activeRide.status === "concluida") return "Chegou";
-    const remaining = distanceKm(activeRide.driverLat, activeRide.driverLng, activeRide.destinationLat, activeRide.destinationLng);
-    const mins = Math.max(1, Math.round((remaining / 0.35) * 6));
-    return `${mins} min`;
-  }, [activeRide]);
-
-  const activeRideMapHtml = useMemo(() => {
-    if (!activeRide) return "";
-    return buildRideMapHtml(activeRide);
-  }, [activeRide]);
-
-  const geocodeDestino = async (query: string) => {
-    try {
-      const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(query)}`;
-      const res = await fetch(url);
-      const data = await res.json();
-      if (Array.isArray(data) && data[0]) {
-        const lat = Number(data[0].lat);
-        const lng = Number(data[0].lon);
-        if (!Number.isNaN(lat) && !Number.isNaN(lng)) {
-          return { lat, lng };
-        }
-      }
-    } catch {
-      return null;
-    }
-    return null;
-  };
-
-  const loadAll = async () => {
-    setLoading(true);
-    try {
-      const [driversRes, ridesRes, adsRes] = await Promise.all([
-        fetch("/api/mototaxi?recurso=drivers&online=true", { cache: "no-store" }),
-        fetch("/api/mototaxi?recurso=rides", { cache: "no-store" }),
-        fetch("/api/mototaxi?recurso=ads", { cache: "no-store" })
-      ]);
-
-      const driversData = await driversRes.json();
-      const ridesData = await ridesRes.json();
-      const adsData = await adsRes.json();
-
-      setDrivers(Array.isArray(driversData?.data) ? driversData.data : []);
-      setRides(Array.isArray(ridesData?.data) ? ridesData.data : []);
-      setAdsConfig(adsData?.data || null);
-    } catch {
-      toast.error("Erro ao carregar modulo de moto taxi");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // ============================================================
+  // Carregamento inicial (config de anúncios + cidade ativa)
+  // ============================================================
   useEffect(() => {
-    loadAll();
+    (async () => {
+      try {
+        const [adsRes, cidadesRes] = await Promise.all([
+          fetch("/api/mototaxi?recurso=ads", { cache: "no-store" }),
+          fetch("/api/mototaxi?recurso=cidades", { cache: "no-store" }),
+        ]);
+        const adsData = await adsRes.json();
+        const cidadesData = await cidadesRes.json();
+        setAdsConfig(adsData?.data || null);
+        setCidadeAtiva(Array.isArray(cidadesData?.data) ? cidadesData.data[0] || null : null);
+      } catch {
+        toast.error("Erro ao carregar modulo de moto taxi");
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
+  // ============================================================
+  // Geolocalização do passageiro
+  // ============================================================
   const capturarPosicaoAtual = () => {
     if (typeof window === "undefined" || !navigator.geolocation) {
       toast.error("Geolocalizacao indisponivel neste dispositivo");
       return;
     }
-
     setCapturandoPosicao(true);
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -487,7 +308,7 @@ export default function MotoTaxiPage() {
         setCapturandoPosicao(false);
       },
       () => {
-        toast.error("Nao foi possivel capturar sua localizacao");
+        toast.error("Nao foi possivel capturar sua localizacao. Digite a origem manualmente.");
         setCapturandoPosicao(false);
       },
       { enableHighAccuracy: true, maximumAge: 10000 }
@@ -498,192 +319,158 @@ export default function MotoTaxiPage() {
     capturarPosicaoAtual();
   }, []);
 
+  // ============================================================
+  // Fallback: se o usuario digitar e apertar Solicitar sem escolher uma
+  // sugestao do autocomplete, tenta geocodificar o texto puro no envio.
+  // ============================================================
+  const garantirPosicoes = async (): Promise<boolean> => {
+    if (!cidadeAtiva) return false;
+
+    if (!userPosition && origem.trim()) {
+      const coords = await geocodificarComFallback(origem, cidadeAtiva);
+      if (coords) setUserPosition(coords);
+      else return false;
+    }
+    if (!destinationPosition && destino.trim()) {
+      const coords = await geocodificarComFallback(destino, cidadeAtiva);
+      if (coords) setDestinationPosition(coords);
+      else return false;
+    }
+    return true;
+  };
+
+  // ============================================================
+  // Calcula distância REAL de rota (OSRM) assim que origem e destino
+  // estiverem resolvidos — substitui a linha reta no cálculo do preço.
+  // ============================================================
   useEffect(() => {
-    if (typeof window === "undefined" || !navigator.geolocation) return;
+    if (!userPosition || !destinationPosition) {
+      setDistanciaRotaKm(null);
+      return;
+    }
+    setCalculandoPreco(true);
+    calcularDistanciaRotaKm(userPosition.lat, userPosition.lng, destinationPosition.lat, destinationPosition.lng)
+      .then((km) => {
+        if (km !== null) {
+          setDistanciaRotaKm(km);
+        } else {
+          const linhaReta = distanceKm(userPosition.lat, userPosition.lng, destinationPosition.lat, destinationPosition.lng);
+          setDistanciaRotaKm(Number((linhaReta * 1.3).toFixed(2)));
+          toast("Nao foi possivel calcular a rota exata — usando estimativa aproximada.");
+        }
+      })
+      .finally(() => setCalculandoPreco(false));
+  }, [userPosition, destinationPosition]);
 
-    watchPositionRef.current = navigator.geolocation.watchPosition(
-      (position) => {
-        const lat = Number(position.coords.latitude.toFixed(6));
-        const lng = Number(position.coords.longitude.toFixed(6));
-
-        setUserPosition((prev) => {
-          const movedKm = prev ? distanceKm(prev.lat, prev.lng, lat, lng) : 999;
-          if (!prev || movedKm >= 0.05) {
-            setOrigem(`Minha localizacao (${lat}, ${lng})`);
-          }
-          return { lat, lng };
-        });
-      },
-      () => null,
-      { enableHighAccuracy: true, maximumAge: 8000, timeout: 15000 }
-    );
-
-    return () => {
-      if (watchPositionRef.current !== null) {
-        navigator.geolocation.clearWatch(watchPositionRef.current);
-      }
-    };
-  }, []);
-
+  // ============================================================
+  // Polling da corrida ativa — detecta quando um motorista aceita
+  // ============================================================
   useEffect(() => {
-    if (!destinationReady) {
-      setDestinationPosition(null);
+    if (!corridaAtiva) {
+      if (pollingRef.current) clearInterval(pollingRef.current);
       return;
     }
 
-    const timer = setTimeout(async () => {
-      setResolvendoDestino(true);
-      const coords = await geocodeDestino(destino);
-      setDestinationPosition(coords);
-      setResolvendoDestino(false);
-    }, 650);
+    pollingRef.current = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/mototaxi?recurso=corridas&corrida_id=${corridaAtiva.id}`, { cache: "no-store" });
+        const data = await res.json();
+        const atualizada: CorridaApi | undefined = Array.isArray(data?.data) ? data.data[0] : undefined;
+        if (!atualizada) return;
 
-    return () => clearTimeout(timer);
-  }, [destino, destinationReady]);
+        const statusMudouParaAceita = corridaAtiva.status === "aguardando_motorista" && atualizada.status === "aceita";
+        setCorridaAtiva(atualizada);
 
-  useEffect(() => {
-    if (!activeRide || activeRide.status !== "em_andamento") {
-      if (trackingInterval.current) {
-        clearInterval(trackingInterval.current);
-        trackingInterval.current = null;
-      }
-      return;
-    }
+        if (statusMudouParaAceita && atualizada.motorista_id) {
+          const resMotorista = await fetch(`/api/mototaxi?recurso=motoristas`, { cache: "no-store" });
+          const motoristasData = await resMotorista.json();
+          const encontrado = (motoristasData?.data || []).find((m: MotoristaApi) => m.id === atualizada.motorista_id);
+          setMotoristaAtivo(encontrado || null);
+          toast.success("Motorista encontrado!");
 
-    if (trackingInterval.current) return;
+          const shouldShowAd =
+            Boolean(adsConfig?.enabled) &&
+            (!adsConfig?.show_to_free_passengers_only || freePassenger) &&
+            Array.isArray(adsConfig?.items) &&
+            adsConfig.items.some((item) => item.ativo !== false);
 
-    trackingInterval.current = setInterval(async () => {
-      setActiveRide((prev) => {
-        if (!prev || prev.status !== "em_andamento") return prev;
-
-        const nextLat = prev.driverLat + (prev.destinationLat - prev.driverLat) * 0.15;
-        const nextLng = prev.driverLng + (prev.destinationLng - prev.driverLng) * 0.15;
-        const arrived = distanceKm(nextLat, nextLng, prev.destinationLat, prev.destinationLng) < 0.12;
-
-        const updated = {
-          ...prev,
-          driverLat: arrived ? prev.destinationLat : nextLat,
-          driverLng: arrived ? prev.destinationLng : nextLng,
-          status: arrived ? "concluida" : prev.status
-        } as Ride;
-
-        fetch("/api/mototaxi", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            recurso: "driver_location",
-            rideId: prev.id,
-            driverLat: updated.driverLat,
-            driverLng: updated.driverLng,
-            status: updated.status
-          })
-        }).catch(() => null);
-
-        if (arrived) {
-          toast.success("Corrida concluida com sucesso");
+          if (shouldShowAd) setShowAdModal(true);
+          else setShowPaymentModal(true);
         }
 
-        return updated;
-      });
-    }, 4500);
+        if (atualizada.status === "concluida") {
+          toast.success("Corrida concluida com sucesso!");
+        }
+      } catch {
+        // silencioso — proxima tentativa corrige
+      }
+    }, 3500);
 
     return () => {
-      if (trackingInterval.current) {
-        clearInterval(trackingInterval.current);
-        trackingInterval.current = null;
-      }
+      if (pollingRef.current) clearInterval(pollingRef.current);
     };
-  }, [activeRide]);
+  }, [corridaAtiva, adsConfig, freePassenger]);
 
-  const solicitarCorrida = async (driver: Driver) => {
+  const solicitarCorrida = async () => {
     if (!origem || !destino) {
       toast.error("Informe origem e destino");
       return;
     }
 
-    const valorMotorista = priceByDriver[driver.id]?.price;
-    if (!valorMotorista) {
-      toast.error("Digite um destino valido para calcular os valores");
-      return;
-    }
-
-    setSelectedDriver(driver);
-    setPreco(valorMotorista);
-
+    setSolicitando(true);
     try {
+      const posicoesOk = await garantirPosicoes();
+      if (!posicoesOk || !userPosition || !destinationPosition || precoEstimado === null) {
+        toast.error("Nao foi possivel localizar origem/destino. Selecione uma sugestao da lista.");
+        setSolicitando(false);
+        return;
+      }
+
       const payload = {
-        recurso: "rides",
-        passengerName: user?.nome || "Passageiro",
-        passengerId: String(user?.id || "anonimo"),
-        passengerPlan,
-        driverId: driver.id,
-        origin: origem,
-        destination: destino,
-        originLat: Number(userPosition?.lat || driver.latitude - 0.006),
-        originLng: Number(userPosition?.lng || driver.longitude - 0.004),
-        destinationLat: Number(destinationPosition?.lat || (userPosition?.lat || driver.latitude) + 0.008),
-        destinationLng: Number(destinationPosition?.lng || (userPosition?.lng || driver.longitude) + 0.007),
-        price: valorMotorista,
-        paymentMethod
+        recurso: "corridas",
+        passageiro_id: user?.id ? String(user.id) : null,
+        passageiro_nome: user?.nome || "Passageiro",
+        passageiro_plano: passengerPlan,
+        cidade_id: cidadeAtiva?.id || null,
+        origem,
+        destino,
+        origem_lat: userPosition.lat,
+        origem_lng: userPosition.lng,
+        destino_lat: destinationPosition.lat,
+        destino_lng: destinationPosition.lng,
+        preco: precoEstimado,
+        metodo_pagamento: paymentMethod,
       };
 
       const res = await fetch("/api/mototaxi", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
+      if (!data?.success || !data?.data) throw new Error(data?.error || "Nao foi possivel solicitar a corrida");
 
-      if (!data?.success || !data?.data) {
-        throw new Error(data?.error || "Nao foi possivel criar corrida");
-      }
-
-      const createdRide = data.data as Ride;
-      setRides((prev) => [createdRide, ...prev]);
-      setActiveRide(createdRide);
-      setSelectedDriver(driver);
-
-      const shouldShowAd =
-        Boolean(adsConfig?.enabled) &&
-        (!adsConfig?.showToFreePassengersOnly || freePassenger) &&
-        Array.isArray(adsConfig?.items) &&
-        adsConfig.items.some((item) => item.ativo !== false);
-
-      if (shouldShowAd) {
-        setShowAdModal(true);
-      } else {
-        setShowPaymentModal(true);
-      }
-
-      toast.success("Corrida solicitada. Falta confirmar pagamento");
+      setCorridaAtiva(data.data as CorridaApi);
+      toast.success("Corrida solicitada! Procurando motorista...");
     } catch (error: any) {
       toast.error(error?.message || "Erro ao solicitar corrida");
+    } finally {
+      setSolicitando(false);
     }
   };
 
   const confirmarPagamento = async () => {
-    if (!activeRide) return;
-
+    if (!corridaAtiva) return;
     setPaymentLoading(true);
     try {
       const res = await fetch("/api/mototaxi", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          recurso: "ride_status",
-          rideId: activeRide.id,
-          status: "em_andamento",
-          paymentStatus: "confirmado"
-        })
+        body: JSON.stringify({ recurso: "corrida_status", corridaId: corridaAtiva.id, statusPagamento: "confirmado" }),
       });
       const data = await res.json();
-      if (!data?.success) {
-        throw new Error(data?.error || "Falha ao confirmar pagamento");
-      }
-
-      const updated = data.data as Ride;
-      setActiveRide(updated);
-      setRides((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+      if (!data?.success) throw new Error(data?.error || "Falha ao confirmar pagamento");
+      setCorridaAtiva(data.data as CorridaApi);
       setShowPaymentModal(false);
       toast.success("Pagamento confirmado com seguranca");
     } catch (error: any) {
@@ -693,39 +480,9 @@ export default function MotoTaxiPage() {
     }
   };
 
-  const cadastrarMotorista = async () => {
-    setDriverFormLoading(true);
-    try {
-      const res = await fetch("/api/mototaxi", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recurso: "drivers", ...driverForm })
-      });
-      const data = await res.json();
-      if (!data?.success) {
-        throw new Error(data?.error || "Falha no cadastro");
-      }
-
-      toast.success("Cadastro enviado para validacao");
-      setShowDriverRegister(false);
-      setDriverForm({
-        nome: "",
-        telefone: "",
-        veiculo: "",
-        placa: "",
-        fotoUrl: "",
-        cnhNumero: "",
-        cnhValida: false,
-        documentoVeiculoOk: false,
-        licenciamentoVencimento: "",
-        plano: "gratis"
-      });
-      loadAll();
-    } catch (error: any) {
-      toast.error(error?.message || "Erro no cadastro do motorista");
-    } finally {
-      setDriverFormLoading(false);
-    }
+  const cancelarBusca = () => {
+    setCorridaAtiva(null);
+    setMotoristaAtivo(null);
   };
 
   if (loading) {
@@ -737,167 +494,114 @@ export default function MotoTaxiPage() {
       <header className="sticky top-0 z-30 bg-gradient-to-r from-blue-700 to-cyan-600 px-4 py-3 shadow-lg">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
           <button onClick={() => router.back()} className="text-white/90 hover:text-white">Voltar</button>
-          <h1 className="font-bold text-lg">Moto Taxi Valente</h1>
-          <button onClick={() => setShowDriverRegister(true)} className="text-xs bg-white/15 px-3 py-1.5 rounded-full">Sou motorista</button>
+          <h1 className="font-bold text-lg">Moto Taxi {cidadeAtiva ? cidadeAtiva.nome : "Valente"}</h1>
+          <button onClick={() => router.push("/mototaxi/motorista")} className="text-xs bg-white/15 px-3 py-1.5 rounded-full flex items-center gap-1">
+            <Bike size={13} /> Sou motorista
+          </button>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto p-4 space-y-4">
-        <section className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-          <h2 className="font-semibold mb-3">Solicitar corrida</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-            <input
-              value={origem}
-              onChange={(e) => setOrigem(e.target.value)}
-              placeholder="Origem"
-              className="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2"
-            />
-            <input
-              value={destino}
-              onChange={(e) => setDestino(e.target.value)}
-              placeholder="Destino"
-              className="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2"
-            />
-            <div className="bg-blue-600/20 border border-blue-500/40 rounded-xl px-4 py-2 text-sm text-blue-100 flex items-center">
-              Digite apenas o destino para ver motoristas e valores
+      <main className="max-w-3xl mx-auto p-4 space-y-4">
+        {!corridaAtiva && (
+          <section className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+            <h2 className="font-semibold mb-3">Solicitar corrida</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <CampoEnderecoAutocomplete
+                placeholder="Origem"
+                value={origem}
+                cidadeId={cidadeAtiva?.id || null}
+                onChange={setOrigem}
+                onSelecionar={(s) => setUserPosition({ lat: s.lat, lng: s.lng })}
+              />
+              <CampoEnderecoAutocomplete
+                placeholder="Destino"
+                value={destino}
+                cidadeId={cidadeAtiva?.id || null}
+                onChange={setDestino}
+                onSelecionar={(s) => setDestinationPosition({ lat: s.lat, lng: s.lng })}
+              />
             </div>
-          </div>
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+              <button onClick={capturarPosicaoAtual} className="bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5">
+                {capturandoPosicao ? "Capturando..." : "Usar minha localizacao atual"}
+              </button>
+              {userPosition && <span className="text-cyan-300">Lat {userPosition.lat} · Lng {userPosition.lng}</span>}
+            </div>
+
+            {calculandoPreco && (
+              <p className="text-sm text-cyan-300 mt-3">Calculando rota e valor...</p>
+            )}
+            {precoEstimado !== null && !calculandoPreco && (
+              <p className="text-green-400 font-bold mt-3">
+                Valor estimado: R$ {precoEstimado.toFixed(2)} ({distanciaRotaKm?.toFixed(2)} km de rota)
+              </p>
+            )}
+
             <button
-              onClick={capturarPosicaoAtual}
-              className="bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5"
+              onClick={solicitarCorrida}
+              disabled={solicitando}
+              className="mt-4 w-full bg-green-500 text-black font-bold py-3 rounded-xl disabled:opacity-50"
             >
-              {capturandoPosicao ? "Capturando..." : "Usar minha localizacao atual"}
+              {solicitando ? "Solicitando..." : "Solicitar corrida"}
             </button>
-            {userPosition && <span className="text-cyan-300">Origem autoatualizada: Lat {userPosition.lat} · Lng {userPosition.lng}</span>}
-          </div>
-          {preco !== null && selectedDriver && (
-            <p className="text-green-400 font-bold mt-3">Estimativa escolhida para {selectedDriver.nome}: R$ {preco.toFixed(2)}</p>
-          )}
-        </section>
+          </section>
+        )}
 
-        <section className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-          <h2 className="font-semibold mb-3">Motoristas proximos</h2>
-          {!destinationReady && (
-            <div className="rounded-xl border border-dashed border-slate-700 bg-slate-800/40 p-3 text-sm text-slate-300">
-              Digite o destino para carregar os motoristas mais proximos e os valores.
-            </div>
-          )}
-          {destinationReady && resolvendoDestino && (
-            <div className="rounded-xl border border-slate-700 bg-slate-800/40 p-3 text-sm text-cyan-300">
-              Localizando destino e calculando valores...
-            </div>
-          )}
-          {destinationReady && !resolvendoDestino && !destinationPosition && (
-            <div className="rounded-xl border border-amber-700/40 bg-amber-950/30 p-3 text-sm text-amber-200">
-              Nao foi possivel localizar este destino no mapa. Ajuste o texto do destino para exibir as opcoes.
-            </div>
-          )}
-          {destinationReady && destinationPosition && nearbyMapHtml && (
-            <div className="mb-3 rounded-xl border border-slate-700 bg-slate-800 p-3">
-              <p className="text-xs text-slate-300 mb-2">Mapa local em tempo real</p>
-              <div className="rounded-lg overflow-hidden border border-slate-700">
-                <iframe title="mapa motoristas proximos" className="w-full h-64" srcDoc={nearbyMapHtml} />
-              </div>
-              {selectedDriver && (
-                <p className="text-xs text-emerald-300 mt-2">Motorista aceito: {selectedDriver.nome}. Os demais foram ocultados.</p>
-              )}
-            </div>
-          )}
-          {destinationReady && destinationPosition && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {displayedDrivers.map((driver) => (
-              <div key={driver.id} className="rounded-xl border border-slate-700 p-3 bg-slate-800/50">
-                <div className="flex items-center gap-3">
-                  <img
-                    src={driver.fotoUrl || "https://via.placeholder.com/80x80"}
-                    alt={driver.nome}
-                    className="w-14 h-14 rounded-full object-cover border border-slate-600"
-                  />
-                  <div className="flex-1">
-                    <p className="font-bold flex items-center gap-2">
-                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-300 text-xs border border-cyan-500/40">M{driver.ordem}</span>
-                      {driver.nome}
-                    </p>
-                    <p className="text-xs text-slate-300">{driver.veiculo} · Placa {driver.placa}</p>
-                    <p className="text-xs text-yellow-300 flex items-center gap-1"><Star size={12} /> {driver.avaliacao.toFixed(1)}</p>
-                    {typeof driver.distancia === "number" && (
-                      <p className="text-[11px] text-emerald-300">{driver.distancia.toFixed(2)} km de voce · ordem {driver.ordem}</p>
-                    )}
-                    {priceByDriver[driver.id] && (
-                      <p className="text-[12px] text-green-300 font-semibold">
-                        R$ {priceByDriver[driver.id].price.toFixed(2)} · percurso total {priceByDriver[driver.id].totalKm.toFixed(2)} km
-                      </p>
-                    )}
-                    <p className="text-[11px] text-cyan-300 uppercase">Plano {driver.plano}</p>
-                  </div>
-                  <button onClick={() => solicitarCorrida(driver)} className="bg-green-500 text-black font-bold px-3 py-1.5 rounded-full text-sm">
-                    Aceitar
-                  </button>
-                </div>
-              </div>
-              ))}
-            </div>
-          )}
-        </section>
-
-        {activeRide && (
+        {corridaAtiva && (
           <section className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
             <div className="flex items-center justify-between gap-3">
-              <h2 className="font-semibold">Corrida ativa</h2>
-              <span className="text-xs px-2 py-1 rounded-full bg-slate-700">{activeRide.status}</span>
+              <h2 className="font-semibold">
+                {corridaAtiva.status === "aguardando_motorista" ? "Procurando motorista..." : "Corrida"}
+              </h2>
+              <span className="text-xs px-2 py-1 rounded-full bg-slate-700">{corridaAtiva.status}</span>
             </div>
 
-            <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-              <div className="rounded-xl bg-slate-800 p-3">
-                <p className="text-slate-400">Motorista</p>
-                <p className="font-semibold flex items-center gap-2"><User size={14} /> {activeRide.driverName}</p>
-                <p className="text-slate-300 text-xs">{activeRide.vehicle} · {activeRide.plate}</p>
+            {corridaAtiva.status === "aguardando_motorista" && (
+              <div className="mt-3 flex items-center justify-between rounded-xl bg-slate-800 p-3">
+                <p className="text-sm text-slate-300">Aguardando algum motorista aceitar sua corrida...</p>
+                <button onClick={cancelarBusca} className="text-xs bg-red-600 px-3 py-1.5 rounded-lg">Cancelar</button>
               </div>
-              <div className="rounded-xl bg-slate-800 p-3">
-                <p className="text-slate-400">Deslocamento</p>
-                <p className="font-semibold">{activeRideProgress}%</p>
-                <div className="mt-2 h-2 bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-cyan-400" style={{ width: `${activeRideProgress}%` }} /></div>
-                <p className="text-xs text-cyan-300 mt-1">ETA: {activeRideEta}</p>
-              </div>
-              <div className="rounded-xl bg-slate-800 p-3">
-                <p className="text-slate-400">Pagamento</p>
-                <p className="font-semibold">R$ {Number(activeRide.price || 0).toFixed(2)}</p>
-                <p className="text-xs text-slate-300">Metodo: {activeRide.paymentMethod}</p>
-                <p className="text-xs text-green-300">Status: {activeRide.paymentStatus}</p>
-              </div>
-            </div>
+            )}
 
-            {activeRideMapHtml && (
+            {motoristaAtivo && corridaAtiva.status !== "aguardando_motorista" && (
+              <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                <div className="rounded-xl bg-slate-800 p-3">
+                  <p className="text-slate-400">Motorista</p>
+                  <p className="font-semibold flex items-center gap-2"><User size={14} /> {motoristaAtivo.nome}</p>
+                  <p className="text-slate-300 text-xs">{motoristaAtivo.veiculo} · {motoristaAtivo.placa}</p>
+                  <p className="text-xs text-yellow-300 flex items-center gap-1"><Star size={12} /> {motoristaAtivo.avaliacao.toFixed(1)}</p>
+                </div>
+                <div className="rounded-xl bg-slate-800 p-3">
+                  <p className="text-slate-400">Deslocamento</p>
+                  <p className="font-semibold">{progresso}%</p>
+                  <div className="mt-2 h-2 bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-cyan-400" style={{ width: `${progresso}%` }} /></div>
+                </div>
+                <div className="rounded-xl bg-slate-800 p-3">
+                  <p className="text-slate-400">Pagamento</p>
+                  <p className="font-semibold">R$ {Number(corridaAtiva.preco || 0).toFixed(2)}</p>
+                  <p className="text-xs text-slate-300">Metodo: {corridaAtiva.metodo_pagamento}</p>
+                  <p className="text-xs text-green-300">Status: {corridaAtiva.status_pagamento}</p>
+                </div>
+              </div>
+            )}
+
+            {rideMapHtml && (
               <div className="mt-3 rounded-xl overflow-hidden border border-slate-700">
-                <iframe title="mapa corrida" className="w-full h-72" srcDoc={activeRideMapHtml} />
+                <iframe title="mapa corrida" className="w-full h-72" srcDoc={rideMapHtml} />
               </div>
             )}
           </section>
         )}
-
-        <section className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-          <h2 className="font-semibold mb-2">Historico</h2>
-          <div className="space-y-2">
-            {myRides.length === 0 && <p className="text-sm text-slate-400">Nenhuma corrida registrada.</p>}
-            {myRides.map((ride) => (
-              <div key={ride.id} className="text-sm rounded-lg bg-slate-800 px-3 py-2 flex items-center justify-between">
-                <span>{ride.origin} ? {ride.destination}</span>
-                <span className="text-green-300">R$ {Number(ride.price).toFixed(2)}</span>
-              </div>
-            ))}
-          </div>
-        </section>
       </main>
 
       {showAdModal && adsConfig && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-2xl p-4">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="font-bold">{adsConfig.popupTitle || "Publicidade"}</h3>
+              <h3 className="font-bold">{adsConfig.popup_title || "Publicidade"}</h3>
               <button onClick={() => { setShowAdModal(false); setShowPaymentModal(true); }}><X size={18} /></button>
             </div>
-            <p className="text-sm text-slate-300">{adsConfig.popupMessage}</p>
+            <p className="text-sm text-slate-300">{adsConfig.popup_message}</p>
             <div className="mt-3 space-y-2">
               {(adsConfig.items || []).filter((item) => item.ativo !== false).map((item) => (
                 <div key={item.id} className="rounded-xl bg-slate-800 p-3 border border-slate-700">
@@ -917,7 +621,7 @@ export default function MotoTaxiPage() {
         </div>
       )}
 
-      {showPaymentModal && activeRide && (
+      {showPaymentModal && corridaAtiva && motoristaAtivo && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-2xl p-4">
             <div className="flex items-center justify-between mb-3">
@@ -925,9 +629,9 @@ export default function MotoTaxiPage() {
               <button onClick={() => setShowPaymentModal(false)}><X size={18} /></button>
             </div>
 
-            <p className="text-sm text-slate-300">Motorista: {activeRide.driverName}</p>
-            <p className="text-sm text-slate-300">Placa: {activeRide.plate}</p>
-            <p className="text-lg font-bold text-green-400 mt-2">R$ {Number(activeRide.price).toFixed(2)}</p>
+            <p className="text-sm text-slate-300">Motorista: {motoristaAtivo.nome}</p>
+            <p className="text-sm text-slate-300">Placa: {motoristaAtivo.placa}</p>
+            <p className="text-lg font-bold text-green-400 mt-2">R$ {Number(corridaAtiva.preco).toFixed(2)}</p>
 
             <div className="mt-3 grid grid-cols-2 gap-2">
               {(["pix", "cartao", "saldo", "dinheiro"] as const).map((m) => (
@@ -943,8 +647,7 @@ export default function MotoTaxiPage() {
 
             <div className="mt-3 rounded-xl bg-slate-800 p-3 text-xs text-slate-300 space-y-1">
               <p className="flex items-center gap-1"><ShieldCheck size={12} /> Tokenizacao ativa para metodo de pagamento.</p>
-              <p>ID da corrida: {activeRide.id}</p>
-              <p>Metodo mascarado: {paymentMethod === "cartao" ? "cartao_****" : paymentMethod === "pix" ? "pix_tokenizado" : paymentMethod === "saldo" ? "saldo_interno" : "dinheiro_confirmado"}</p>
+              <p>ID da corrida: {corridaAtiva.id}</p>
             </div>
 
             <button
@@ -957,51 +660,6 @@ export default function MotoTaxiPage() {
           </div>
         </div>
       )}
-
-      {showDriverRegister && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="w-full max-w-lg bg-slate-900 border border-slate-700 rounded-2xl p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-bold flex items-center gap-2"><Bike size={16} /> Cadastro de motorista</h3>
-              <button onClick={() => setShowDriverRegister(false)}><X size={18} /></button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              <input value={driverForm.nome} onChange={(e) => setDriverForm((p) => ({ ...p, nome: e.target.value }))} placeholder="Nome" className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2" />
-              <input value={driverForm.telefone} onChange={(e) => setDriverForm((p) => ({ ...p, telefone: e.target.value }))} placeholder="Telefone" className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2" />
-              <input value={driverForm.veiculo} onChange={(e) => setDriverForm((p) => ({ ...p, veiculo: e.target.value }))} placeholder="Veiculo" className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2" />
-              <input value={driverForm.placa} onChange={(e) => setDriverForm((p) => ({ ...p, placa: e.target.value }))} placeholder="Placa" className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2" />
-              <input value={driverForm.cnhNumero} onChange={(e) => setDriverForm((p) => ({ ...p, cnhNumero: e.target.value }))} placeholder="Numero da CNH" className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2" />
-              <input type="date" value={driverForm.licenciamentoVencimento} onChange={(e) => setDriverForm((p) => ({ ...p, licenciamentoVencimento: e.target.value }))} className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2" />
-              <input value={driverForm.fotoUrl} onChange={(e) => setDriverForm((p) => ({ ...p, fotoUrl: e.target.value }))} placeholder="URL da foto (opcional)" className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 md:col-span-2" />
-              <select value={driverForm.plano} onChange={(e) => setDriverForm((p) => ({ ...p, plano: e.target.value }))} className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 md:col-span-2">
-                <option value="gratis">Plano Gratis</option>
-                <option value="basico">Plano Basico</option>
-                <option value="premium">Plano Premium</option>
-              </select>
-            </div>
-
-            <div className="mt-3 space-y-2 text-sm">
-              <label className="flex items-center gap-2"><input type="checkbox" checked={driverForm.cnhValida} onChange={(e) => setDriverForm((p) => ({ ...p, cnhValida: e.target.checked }))} /> CNH valida confirmada</label>
-              <label className="flex items-center gap-2"><input type="checkbox" checked={driverForm.documentoVeiculoOk} onChange={(e) => setDriverForm((p) => ({ ...p, documentoVeiculoOk: e.target.checked }))} /> Documentacao do veiculo valida</label>
-            </div>
-
-            <div className="mt-3 rounded-xl bg-amber-950/40 border border-amber-700/50 p-3 text-amber-200 text-xs flex items-start gap-2">
-              <AlertTriangle size={14} className="mt-0.5" />
-              Somente motoristas com CNH valida e licenciamento em dia podem ser aprovados.
-            </div>
-
-            <button
-              onClick={cadastrarMotorista}
-              disabled={driverFormLoading}
-              className="mt-4 w-full bg-cyan-600 py-2.5 rounded-xl font-bold disabled:opacity-70"
-            >
-              {driverFormLoading ? "Enviando..." : "Cadastrar motorista"}
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
-

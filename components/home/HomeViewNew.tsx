@@ -1,5 +1,5 @@
 // components/home/HomeViewNew.tsx
-// ðŸŽ¨ UI PURA - View da Home
+// 🎨 UI PURA - View da Home
 
 "use client";
 
@@ -52,7 +52,7 @@ export default function HomeViewNew({
       {/* Header */}
       <HeaderHome isAdmin={isAdmin} />
 
-      {/* ConteÃºdo Principal */}
+      {/* Conteúdo Principal */}
       <main className="container mx-auto px-4 pb-8 pt-4">
         {/* Barra de Busca */}
         <BuscaHome onSearchResult={() => {}} />
@@ -64,7 +64,7 @@ export default function HomeViewNew({
         >
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="font-bold text-lg">ðŸ”¥ Ofertas do Dia</h2>
+              <h2 className="font-bold text-lg">🔥 Ofertas do Dia</h2>
               <p className="text-sm opacity-90">Aproveite as melhores ofertas da cidade!</p>
             </div>
             <button className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm font-medium transition">
@@ -80,8 +80,8 @@ export default function HomeViewNew({
         >
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="font-bold text-lg">ðŸ¤ Indique e Ganhe</h2>
-              <p className="text-sm opacity-90">Indique amigos e ganhe benefÃ­cios!</p>
+              <h2 className="font-bold text-lg">🤝 Indique e Ganhe</h2>
+              <p className="text-sm opacity-90">Indique amigos e ganhe benefícios!</p>
             </div>
             <button className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm font-medium transition">
               Indicar
@@ -113,10 +113,10 @@ export default function HomeViewNew({
           <section className="mt-6 bg-white/10 backdrop-blur-sm rounded-2xl p-4">
             <div className="flex items-center justify-between">
               <h2 className="text-white font-bold text-lg flex items-center gap-2">
-                <span>ðŸ½ï¸</span> Pratos do Dia
+                <span>🍽️</span> Pratos do Dia
               </h2>
               <Link href="/cozinha" className="text-sm text-white/80 hover:text-white underline">
-                Ver cardÃ¡pio completo
+                Ver cardápio completo
               </Link>
             </div>
             <div className="overflow-x-auto mt-3 pb-2">
@@ -126,7 +126,7 @@ export default function HomeViewNew({
                     <div className="bg-white/10 rounded-xl p-3 min-w-[160px] backdrop-blur-sm hover:bg-white/20 transition-all cursor-pointer">
                       <div className="flex items-center justify-between mb-2">
                         <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center text-2xl">
-                          {prato.emoji || 'ðŸ½ï¸'}
+                          {prato.emoji || '🍽️'}
                         </div>
                         {prato.badge && (
                           <span className="text-[10px] bg-yellow-500 text-white px-2 py-0.5 rounded-full whitespace-nowrap">
@@ -145,7 +145,7 @@ export default function HomeViewNew({
                             )}
                           </>
                         ) : (
-                          <span className="text-sm font-semibold">ðŸŽ GrÃ¡tis!</span>
+                          <span className="text-sm font-semibold">🎁 Grátis!</span>
                         )}
                       </div>
                     </div>
@@ -156,19 +156,19 @@ export default function HomeViewNew({
           </section>
         )}
 
-        {/* EstatÃ­sticas */}
+        {/* Estatísticas */}
         <SecaoEstatisticas />
 
-        {/* VÃ­deo de LanÃ§amento */}
+        {/* Vídeo de Lançamento */}
         <VideoLancamento />
       </main>
 
-      {/* BotÃ£o Admin Master */}
+      {/* Botão Admin Master */}
       <BotaoAdmin />
 
       {/* Footer */}
       <footer className="bg-black/30 backdrop-blur-sm mt-8 py-6 text-center text-white/60 text-sm">
-        <p>Â© 2026 Valente Conecta - Todos os direitos reservados</p>
+        <p>© 2026 Valente Conecta - Todos os direitos reservados</p>
         <p className="text-xs mt-1">Valente, BA</p>
       </footer>
     </div>

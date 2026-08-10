@@ -35,7 +35,7 @@ export default function ExtratoFinanceiro({
       
       doc.setFontSize(22);
       doc.setTextColor(255, 255, 255);
-      doc.text('?? EXTRATO FINANCEIRO', pageWidth / 2, 15, { align: 'center' });
+      doc.text('📊 EXTRATO FINANCEIRO', pageWidth / 2, 15, { align: 'center' });
       
       doc.setFontSize(10);
       doc.setTextColor(200, 200, 200);
@@ -66,7 +66,7 @@ export default function ExtratoFinanceiro({
         new Date(t.data).toLocaleDateString('pt-BR'),
         t.descricao,
         t.categoria || '-',
-        t.recorrencia && t.recorrencia !== 'nenhuma' ? `?? ${t.recorrencia}` : '-',
+        t.recorrencia && t.recorrencia !== 'nenhuma' ? `🔄 ${t.recorrencia}` : '-',
         t.tipo === 'receita' ? '+' : '-',
         `R$ ${t.valor.toFixed(2)}`
       ]);
@@ -134,7 +134,7 @@ export default function ExtratoFinanceiro({
       </head>
       <body>
         <div class="header">
-          <h1>?? EXTRATO FINANCEIRO</h1>
+          <h1>📊 EXTRATO FINANCEIRO</h1>
           <p>Período: ${new Date().toLocaleDateString('pt-BR')}</p>
           <p>Gerado em: ${formatarDataCompleta(new Date().toISOString())}</p>
         </div>
@@ -168,7 +168,7 @@ export default function ExtratoFinanceiro({
                 <td>${new Date(t.data).toLocaleDateString('pt-BR')}</td>
                 <td>${t.descricao}</td>
                 <td>${t.categoria || '-'}</td>
-                <td>${t.recorrencia && t.recorrencia !== 'nenhuma' ? `?? ${t.recorrencia}` : '-'}</td>
+                <td>${t.recorrencia && t.recorrencia !== 'nenhuma' ? `🔄 ${t.recorrencia}` : '-'}</td>
                 <td class="${t.tipo}">${t.tipo === 'receita' ? '+' : '-'}</td>
                 <td style="text-align:right;font-weight:bold;">R$ ${t.valor.toFixed(2)}</td>
               </tr>
@@ -177,7 +177,7 @@ export default function ExtratoFinanceiro({
         </table>
         <div class="footer">Valente Conecta - Sistema Financeiro | Total de registros: ${transacoesFiltradas.length}</div>
         <div class="no-print" style="text-align:center;margin-top:20px;">
-          <button onclick="window.print()" style="padding:10px 30px;background:#22c55e;color:white;border:none;border-radius:8px;cursor:pointer;font-size:16px;">??? Imprimir</button>
+          <button onclick="window.print()" style="padding:10px 30px;background:#22c55e;color:white;border:none;border-radius:8px;cursor:pointer;font-size:16px;">🖨️ Imprimir</button>
           <button onclick="window.close()" style="padding:10px 30px;background:#6b7280;color:white;border:none;border-radius:8px;cursor:pointer;font-size:16px;margin-left:10px;">Fechar</button>
         </div>
       </body>

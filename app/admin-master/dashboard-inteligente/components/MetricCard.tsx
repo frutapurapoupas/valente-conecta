@@ -28,7 +28,7 @@ export default function MetricCard({ titulo, valor, icone, cor, tendencia, label
           <p className="text-2xl font-bold text-gray-800 mt-1">{valor}</p>
           {tendencia !== undefined && (
             <p className={`text-xs mt-2 ${isTendenciaPositiva ? "text-green-600" : "text-red-600"}`}>
-              {isTendenciaPositiva ? "?" : "?"} {tendencia} {labelTendencia && `• ${labelTendencia}`}
+              {isTendenciaPositiva ? "↑" : "↓"} {tendencia} {labelTendencia && `• ${labelTendencia}`}
             </p>
           )}
         </div>

@@ -1,6 +1,6 @@
 // ============================================================================
 // ARQUIVO 10: app/api/notificacoes/enqueue/route.ts
-// Funcionalidade: API para adicionar notificaÃ§Ã£o Ã  fila
+// Funcionalidade: API para adicionar notificação à fila
 // ============================================================================
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    // Adicionar job Ã  fila
+    // Adicionar job à fila
     const job = await notificationQueue.add('send-notification', body, {
       priority: body.importancia === 'alta' ? 1 : body.importancia === 'media' ? 2 : 3,
       delay: body.agendar ? new Date(body.agendar).getTime() - Date.now() : 0
@@ -19,11 +19,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       jobId: job.id,
-      message: 'NotificaÃ§Ã£o adicionada Ã  fila'
+      message: 'Notificação adicionada à fila'
     });
     
   } catch (error) {
-    console.error('Erro ao adicionar Ã  fila:', error);
+    console.error('Erro ao adicionar à fila:', error);
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 });
   }
 }
@@ -42,6 +42,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: true, jobs: jobs.map(j => ({ id: j.id, data: j.data, status: j.finishedOn ? 'completed' : 'processing' })) });
   }
   
-  return NextResponse.json({ error: 'AÃ§Ã£o nÃ£o reconhecida' }, { status: 400 });
+  return NextResponse.json({ error: 'Ação não reconhecida' }, { status: 400 });
 }
 

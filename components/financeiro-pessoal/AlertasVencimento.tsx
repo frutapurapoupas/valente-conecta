@@ -1,5 +1,5 @@
 // components/financeiro-pessoal/AlertasVencimento.tsx
-// ðŸŽ¨ Alertas de vencimento de despesas
+// 🎨 Alertas de vencimento de despesas
 
 "use client";
 
@@ -26,7 +26,7 @@ export default function AlertasVencimento({ transacoes }: AlertasVencimentoProps
 
   useEffect(() => {
     // Simular despesas com vencimento
-    // Na prÃ¡tica, viriam do banco com campo 'data_vencimento'
+    // Na prática, viriam do banco com campo 'data_vencimento'
     const hoje = new Date();
     const despesasMock: DespesaVencimento[] = [
       { 
@@ -58,7 +58,7 @@ export default function AlertasVencimento({ transacoes }: AlertasVencimentoProps
       },
       { 
         id: '4', 
-        descricao: 'Ãgua', 
+        descricao: 'Água', 
         valor: 80, 
         dataVencimento: new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate()).toISOString(),
         diasRestantes: 0,
@@ -67,7 +67,7 @@ export default function AlertasVencimento({ transacoes }: AlertasVencimentoProps
       },
       { 
         id: '5', 
-        descricao: 'CartÃ£o de CrÃ©dito', 
+        descricao: 'Cartão de Crédito', 
         valor: 450, 
         dataVencimento: new Date(hoje.getFullYear(), hoje.getMonth(), 20).toISOString(),
         diasRestantes: 12,
@@ -108,24 +108,24 @@ export default function AlertasVencimento({ transacoes }: AlertasVencimentoProps
 
   const getStatusLabel = (status: string, dias: number) => {
     switch (status) {
-      case 'vencido': return `âš ï¸ Vencido hÃ¡ ${Math.abs(dias)} dias`;
-      case 'hoje': return 'ðŸ”´ Vence hoje!';
-      case 'proximo': return `ðŸ“… Vence em ${dias} dias`;
-      case 'pago': return 'âœ… Pago';
+      case 'vencido': return `⚠️ Vencido há ${Math.abs(dias)} dias`;
+      case 'hoje': return '🔴 Vence hoje!';
+      case 'proximo': return `📅 Vence em ${dias} dias`;
+      case 'pago': return '✅ Pago';
       default: return status;
     }
   };
 
   return (
     <div className="bg-gray-800/30 rounded-xl border border-gray-700 p-6">
-      {/* CabeÃ§alho */}
+      {/* Cabeçalho */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
         <div>
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <Bell className="text-yellow-400" />
             Alertas de Vencimento
           </h2>
-          <p className="text-sm text-gray-400">Despesas com vencimento prÃ³ximo</p>
+          <p className="text-sm text-gray-400">Despesas com vencimento próximo</p>
         </div>
         <div className="flex gap-2">
           <button
@@ -150,7 +150,7 @@ export default function AlertasVencimento({ transacoes }: AlertasVencimentoProps
               filtro === 'proximos' ? 'bg-orange-600 text-white' : 'bg-gray-700/50 hover:bg-gray-600 text-gray-400'
             }`}
           >
-            PrÃ³ximos
+            Próximos
           </button>
           <button
             onClick={() => setFiltro('vencidos')}
@@ -163,7 +163,7 @@ export default function AlertasVencimento({ transacoes }: AlertasVencimentoProps
         </div>
       </div>
 
-      {/* EstatÃ­sticas rÃ¡pidas */}
+      {/* Estatísticas rápidas */}
       <div className="grid grid-cols-4 gap-3 mb-4">
         <div className="bg-gray-800/50 rounded-lg p-3 text-center">
           <p className="text-lg font-bold text-yellow-400">{alertas.filter(a => a.status === 'hoje').length}</p>
@@ -171,7 +171,7 @@ export default function AlertasVencimento({ transacoes }: AlertasVencimentoProps
         </div>
         <div className="bg-gray-800/50 rounded-lg p-3 text-center">
           <p className="text-lg font-bold text-orange-400">{alertas.filter(a => a.status === 'proximo').length}</p>
-          <p className="text-xs text-gray-400">PrÃ³ximos</p>
+          <p className="text-xs text-gray-400">Próximos</p>
         </div>
         <div className="bg-gray-800/50 rounded-lg p-3 text-center">
           <p className="text-lg font-bold text-red-400">{alertas.filter(a => a.status === 'vencido').length}</p>

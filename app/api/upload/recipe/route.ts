@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     const file = formData.get('image') as File;
     const recipeId = formData.get('recipeId') as string;
 
-    // Criar diretÃ³rio se nÃ£o existir
+    // Criar diretório se não existir
     const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'recipes');
     if (!existsSync(uploadDir)) {
       await mkdir(uploadDir, { recursive: true });

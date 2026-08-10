@@ -26,25 +26,25 @@ interface PerfilUsuario {
 const objetivosOpcoes = [
   'Emagrecimento',
   'Ganho de massa muscular',
-  'Condicionamento fÃ­sico',
-  'SaÃºde geral',
-  'ForÃ§a',
+  'Condicionamento físico',
+  'Saúde geral',
+  'Força',
   'Flexibilidade',
-  'ResistÃªncia'
+  'Resistência'
 ];
 
 const condicoesOpcoes = [
   'Diabetes',
-  'HipertensÃ£o',
-  'Problemas cardÃ­acos',
+  'Hipertensão',
+  'Problemas cardíacos',
   'Asma',
-  'LesÃµes anteriores',
-  'Dores nas articulaÃ§Ãµes',
+  'Lesões anteriores',
+  'Dores nas articulações',
   'Nenhuma'
 ];
 
 const condicaoFisicaOpcoes = [
-  'SedentÃ¡rio',
+  'Sedentário',
   'Levemente ativo',
   'Moderadamente ativo',
   'Muito ativo',
@@ -53,9 +53,9 @@ const condicaoFisicaOpcoes = [
 
 const nivelVidaOpcoes = [
   'Trabalho sentado',
-  'Trabalho em pÃ©',
-  'Trabalho fÃ­sico leve',
-  'Trabalho fÃ­sico pesado',
+  'Trabalho em pé',
+  'Trabalho físico leve',
+  'Trabalho físico pesado',
   'Estudante'
 ];
 
@@ -94,7 +94,7 @@ export default function CadastroInicialPage() {
       peso_meta: parseFloat(perfil.pesoMeta), altura: parseFloat(perfil.altura), idade: parseInt(perfil.idade),
       sexo: perfil.sexo, objetivo: perfil.objetivos.includes('Emagrecimento') ? 'emagrecer' :
                  perfil.objetivos.includes('Ganho de massa muscular') ? 'hipertrofia' :
-                 perfil.objetivos.includes('Condicionamento fÃ­sico') ? 'condicionamento' : 'saude',
+                 perfil.objetivos.includes('Condicionamento físico') ? 'condicionamento' : 'saude',
       nivel: perfil.nivel, freq_semanal: parseInt(perfil.freqSemanal), condicoes_fisicas: perfil.condicoesMedicas,
       tipo_exercicio: perfil.tipoExercicio, ativo: true
     };
@@ -124,7 +124,7 @@ export default function CadastroInicialPage() {
               <div className="flex items-center gap-2"><Activity className="w-5 h-5 text-pink-400" /><div><p className="text-xs text-zinc-400">Idade</p><p className="font-bold text-white">{perfil.idade} anos</p></div></div>
             </div>
           </div>
-          <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6"><h3 className="font-bold text-white">?? Objetivos</h3><div className="flex flex-wrap gap-2 mt-2">{perfil.objetivos.map(obj => (<span key={obj} className="px-3 py-1 bg-purple-500/30 rounded-full text-sm">{obj}</span>))}</div></div>
+          <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6"><h3 className="font-bold text-white">🎯 Objetivos</h3><div className="flex flex-wrap gap-2 mt-2">{perfil.objetivos.map(obj => (<span key={obj} className="px-3 py-1 bg-purple-500/30 rounded-full text-sm">{obj}</span>))}</div></div>
           <button onClick={() => router.push('/academia')} className="w-full py-4 bg-yellow-500 text-black rounded-2xl font-bold">Ir para Academia</button>
         </main>
       </div>
@@ -141,7 +141,7 @@ export default function CadastroInicialPage() {
         </div>
       </header>
       <main className="max-w-2xl mx-auto px-4 pt-8 space-y-6">
-        <div className="text-center mb-8"><div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4"><User className="w-10 h-10 text-white" /></div><h1 className="text-2xl font-black text-white">Seu Perfil FÃ­sico</h1><p className="text-zinc-400">Configure suas caracterÃ­sticas e metas</p></div>
+        <div className="text-center mb-8"><div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4"><User className="w-10 h-10 text-white" /></div><h1 className="text-2xl font-black text-white">Seu Perfil Físico</h1><p className="text-zinc-400">Configure suas características e metas</p></div>
         
         <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 space-y-4">
           <input type="text" placeholder="Nome" value={perfil.nome} onChange={e => setPerfil({...perfil, nome: e.target.value})} className="w-full px-4 py-3 bg-white/10 rounded-xl text-white" />
@@ -150,14 +150,14 @@ export default function CadastroInicialPage() {
           <div className="grid grid-cols-3 gap-2">{['masculino', 'feminino', 'outro'].map(sexo => (<button key={sexo} onClick={() => setPerfil({...perfil, sexo: sexo as any})} className={`py-3 rounded-xl text-sm font-bold border-2 ${perfil.sexo === sexo ? 'border-indigo-500 bg-indigo-500/30' : 'border-white/20'}`}>{sexo}</button>))}</div>
         </div>
 
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6"><h3 className="font-bold text-white">?? Objetivos</h3><div className="flex flex-wrap gap-2 mt-2">{objetivosOpcoes.map(obj => (<button key={obj} onClick={() => toggleObjetivo(obj)} className={`px-4 py-2 rounded-full text-sm border-2 ${perfil.objetivos.includes(obj) ? 'border-purple-500 bg-purple-500/30' : 'border-white/20'}`}>{obj}</button>))}</div></div>
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6"><h3 className="font-bold text-white">🎯 Objetivos</h3><div className="flex flex-wrap gap-2 mt-2">{objetivosOpcoes.map(obj => (<button key={obj} onClick={() => toggleObjetivo(obj)} className={`px-4 py-2 rounded-full text-sm border-2 ${perfil.objetivos.includes(obj) ? 'border-purple-500 bg-purple-500/30' : 'border-white/20'}`}>{obj}</button>))}</div></div>
 
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6"><h3 className="font-bold text-white">?? CondiÃ§Ãµes MÃ©dicas</h3><div className="flex flex-wrap gap-2 mt-2">{condicoesOpcoes.map(cond => (<button key={cond} onClick={() => toggleCondicao(cond)} className={`px-4 py-2 rounded-full text-sm border-2 ${perfil.condicoesMedicas.includes(cond) ? 'border-red-500 bg-red-500/30' : 'border-white/20'}`}>{cond}</button>))}</div></div>
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6"><h3 className="font-bold text-white">❤️ Condições Médicas</h3><div className="flex flex-wrap gap-2 mt-2">{condicoesOpcoes.map(cond => (<button key={cond} onClick={() => toggleCondicao(cond)} className={`px-4 py-2 rounded-full text-sm border-2 ${perfil.condicoesMedicas.includes(cond) ? 'border-red-500 bg-red-500/30' : 'border-white/20'}`}>{cond}</button>))}</div></div>
 
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6"><h3 className="font-bold text-white">?? ConfiguraÃ§Ãµes da IA</h3>
-          <label className="text-xs text-zinc-400">FrequÃªncia semanal</label>
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6"><h3 className="font-bold text-white">⚙️ Configurações da IA</h3>
+          <label className="text-xs text-zinc-400">Frequência semanal</label>
           <div className="grid grid-cols-4 gap-2 mt-2">{[1,2,3,4,5,6,7].map(freq => (<button key={freq} onClick={() => setPerfil({...perfil, freqSemanal: freq.toString()})} className={`py-3 rounded-xl text-sm font-bold border-2 ${perfil.freqSemanal === freq.toString() ? 'border-emerald-500 bg-emerald-500/30' : 'border-white/20'}`}>{freq}</button>))}</div>
-          <label className="text-xs text-zinc-400 mt-3">NÃ­vel de treino</label>
+          <label className="text-xs text-zinc-400 mt-3">Nível de treino</label>
           <div className="grid grid-cols-3 gap-2 mt-2">{['iniciante', 'intermediario', 'avancado'].map(nivel => (<button key={nivel} onClick={() => setPerfil({...perfil, nivel: nivel as any})} className={`py-3 rounded-xl text-sm font-bold border-2 ${perfil.nivel === nivel ? 'border-emerald-500 bg-emerald-500/30' : 'border-white/20'}`}>{nivel}</button>))}</div>
         </div>
 

@@ -90,7 +90,7 @@ export default function FornecedorPage() {
   }, [mounted, isAdmin, router]);
 
   // ============================================================================
-  // FUNÃ‡Ã•ES
+  // FUNÇÕES
   // ============================================================================
 
   if (!mounted || !isAdmin) {
@@ -114,7 +114,7 @@ export default function FornecedorPage() {
     try {
       // Simular salvamento
       await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success("âœ… Fornecedor salvo com sucesso!");
+      toast.success("✅ Fornecedor salvo com sucesso!");
       setStep('produtos');
     } catch (error) {
       toast.error("Erro ao salvar fornecedor");
@@ -125,7 +125,7 @@ export default function FornecedorPage() {
 
   const handleAdicionarProduto = () => {
     if (!novoProduto.nome || novoProduto.preco <= 0) {
-      toast.error("Preencha nome e preÃ§o do produto");
+      toast.error("Preencha nome e preço do produto");
       return;
     }
 
@@ -139,7 +139,7 @@ export default function FornecedorPage() {
     setProdutos([...produtos, novo]);
     setNovoProduto({ nome: "", descricao: "", preco: 0, unidade: "L", categoria: "agua" });
     setMostrarFormProduto(false);
-    toast.success("âœ… Produto adicionado!");
+    toast.success("✅ Produto adicionado!");
   };
 
   const handleRemoverProduto = (id: string) => {
@@ -156,7 +156,7 @@ export default function FornecedorPage() {
     setLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 1500));
-      toast.success("ðŸŽ‰ Fornecedor cadastrado com sucesso!");
+      toast.success("🎉 Fornecedor cadastrado com sucesso!");
       router.push("/admin/agua-gas");
     } catch (error) {
       toast.error("Erro ao finalizar cadastro");
@@ -185,7 +185,7 @@ export default function FornecedorPage() {
               <Truck className="text-blue-400" />
               Cadastrar Fornecedor
             </h1>
-            <p className="text-sm text-gray-400">Ãgua e GÃ¡s</p>
+            <p className="text-sm text-gray-400">Água e Gás</p>
           </div>
         </div>
 
@@ -194,13 +194,13 @@ export default function FornecedorPage() {
           {(['dados', 'produtos'] as Step[]).map((s, i) => (
             <div key={s} className="flex items-center gap-2">
               {/* ============================================================
-                  ðŸ”´ CORREÃ‡ÃƒO AQUI: Removida a comparaÃ§Ã£o com 'sucesso'
+                  🔴 CORREÇÃO AQUI: Removida a comparação com 'sucesso'
                   ============================================================ */}
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${step === s ? 'bg-blue-600 text-white' : 'bg-white/10 text-gray-400'}`}>
                 {i + 1}
               </div>
               <span className={`text-sm ${step === s ? 'text-white font-semibold' : 'text-gray-500'}`}>
-                {s === 'dados' ? 'ðŸ“‹ Dados' : 'ðŸ“¦ Produtos'}
+                {s === 'dados' ? '📋 Dados' : '📦 Produtos'}
               </span>
               {i < 1 && (
                 <div className="w-8 h-0.5 bg-white/10 mx-2"></div>
@@ -209,7 +209,7 @@ export default function FornecedorPage() {
           ))}
         </div>
 
-        {/* ConteÃºdo */}
+        {/* Conteúdo */}
         {step === 'dados' && (
           <div className="bg-white/5 rounded-2xl border border-white/10 p-6 space-y-4">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -225,7 +225,7 @@ export default function FornecedorPage() {
                   value={fornecedor.nome}
                   onChange={(e) => setFornecedor({ ...fornecedor, nome: e.target.value })}
                   className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-500 text-white"
-                  placeholder="Ex: Ãgua Mineral da Serra"
+                  placeholder="Ex: Água Mineral da Serra"
                 />
               </div>
 
@@ -263,13 +263,13 @@ export default function FornecedorPage() {
               </div>
 
               <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-300 mb-1">EndereÃ§o</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Endereço</label>
                 <input
                   type="text"
                   value={fornecedor.endereco}
                   onChange={(e) => setFornecedor({ ...fornecedor, endereco: e.target.value })}
                   className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-500 text-white"
-                  placeholder="Rua, NÃºmero, Bairro"
+                  placeholder="Rua, Número, Bairro"
                 />
               </div>
 
@@ -280,7 +280,7 @@ export default function FornecedorPage() {
                   value={fornecedor.cidade}
                   onChange={(e) => setFornecedor({ ...fornecedor, cidade: e.target.value })}
                   className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-500 text-white"
-                  placeholder="SÃ£o Paulo"
+                  placeholder="São Paulo"
                 />
               </div>
 
@@ -341,7 +341,7 @@ export default function FornecedorPage() {
                 </button>
               </div>
 
-              {/* FormulÃ¡rio de produto */}
+              {/* Formulário de produto */}
               {mostrarFormProduto && (
                 <div className="bg-white/5 rounded-xl p-4 space-y-3 mb-4">
                   <div className="grid grid-cols-2 gap-3">
@@ -352,11 +352,11 @@ export default function FornecedorPage() {
                         value={novoProduto.nome}
                         onChange={(e) => setNovoProduto({ ...novoProduto, nome: e.target.value })}
                         className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-green-500 text-white"
-                        placeholder="Ex: Ãgua Mineral 20L"
+                        placeholder="Ex: Água Mineral 20L"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-1">PreÃ§o (R$) *</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-1">Preço (R$) *</label>
                       <input
                         type="number"
                         step="0.01"
@@ -376,18 +376,18 @@ export default function FornecedorPage() {
                         <option value="L">Litro (L)</option>
                         <option value="kg">Quilograma (kg)</option>
                         <option value="un">Unidade</option>
-                        <option value="botijao">BotijÃ£o</option>
-                        <option value="galÃ£o">GalÃ£o</option>
+                        <option value="botijao">Botijão</option>
+                        <option value="galão">Galão</option>
                       </select>
                     </div>
                     <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-300 mb-1">DescriÃ§Ã£o</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-1">Descrição</label>
                       <input
                         type="text"
                         value={novoProduto.descricao}
                         onChange={(e) => setNovoProduto({ ...novoProduto, descricao: e.target.value })}
                         className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-green-500 text-white"
-                        placeholder="DescriÃ§Ã£o opcional do produto"
+                        placeholder="Descrição opcional do produto"
                       />
                     </div>
                   </div>
@@ -415,7 +415,7 @@ export default function FornecedorPage() {
                   <div className="text-center py-8 text-gray-400">
                     <Package className="w-12 h-12 mx-auto mb-3 opacity-50" />
                     <p>Nenhum produto cadastrado</p>
-                    <p className="text-sm">Clique em "Adicionar Produto" para comeÃ§ar</p>
+                    <p className="text-sm">Clique em "Adicionar Produto" para começar</p>
                   </div>
                 ) : (
                   produtos.map((p) => (
@@ -446,7 +446,7 @@ export default function FornecedorPage() {
               </div>
             </div>
 
-            {/* BotÃµes finais */}
+            {/* Botões finais */}
             <div className="flex gap-4">
               <button
                 onClick={() => setStep('dados')}

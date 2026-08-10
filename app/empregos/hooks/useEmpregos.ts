@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import { Vaga, Curriculo, Candidatura, FiltrosVaga } from "../types";
 
 // ============================================================================
-// HOOK PRINCIPAL - LÃ“GICA PURA
+// HOOK PRINCIPAL - LÓGICA PURA
 // ============================================================================
 
 export function useEmpregos() {
@@ -49,7 +49,7 @@ export function useEmpregos() {
         setCurriculos(data.data);
       }
     } catch (error) {
-      console.error("Erro ao carregar currÃ­culos:", error);
+      console.error("Erro ao carregar currículos:", error);
     }
   }, []);
 
@@ -79,7 +79,7 @@ export function useEmpregos() {
       const data = await response.json();
       if (data.success) {
         setVagas(prev => [data.data, ...prev]);
-        toast.success("âœ… Vaga criada com sucesso!");
+        toast.success("✅ Vaga criada com sucesso!");
         return data.data;
       }
       toast.error("Erro ao criar vaga");
@@ -100,7 +100,7 @@ export function useEmpregos() {
       const data = await response.json();
       if (data.success) {
         setVagas(prev => prev.map(v => v.id === id ? { ...v, ...dados } : v));
-        toast.success("âœ… Vaga atualizada!");
+        toast.success("✅ Vaga atualizada!");
         return data.data;
       }
       toast.error("Erro ao atualizar vaga");
@@ -131,7 +131,7 @@ export function useEmpregos() {
   }, []);
 
   // ==========================================================================
-  // CRUD CURRÃCULOS
+  // CRUD CURRÍCULOS
   // ==========================================================================
 
   const criarCurriculo = useCallback(async (curriculo: Omit<Curriculo, 'id' | 'criadoEm' | 'atualizadoEm'>) => {
@@ -145,13 +145,13 @@ export function useEmpregos() {
       if (data.success) {
         setCurriculos(prev => [data.data, ...prev]);
         setCurriculoAtivo(data.data);
-        toast.success("âœ… CurrÃ­culo cadastrado!");
+        toast.success("✅ Currículo cadastrado!");
         return data.data;
       }
-      toast.error("Erro ao criar currÃ­culo");
+      toast.error("Erro ao criar currículo");
       return null;
     } catch (error) {
-      toast.error("Erro ao criar currÃ­culo");
+      toast.error("Erro ao criar currículo");
       return null;
     }
   }, []);
@@ -170,7 +170,7 @@ export function useEmpregos() {
       const data = await response.json();
       if (data.success) {
         setCandidaturas(prev => [data.data, ...prev]);
-        toast.success("âœ… Candidatura realizada com sucesso!");
+        toast.success("✅ Candidatura realizada com sucesso!");
         return data.data;
       }
       toast.error("Erro ao candidatar-se");
@@ -202,9 +202,9 @@ export function useEmpregos() {
       id: "1",
       titulo: "Desenvolvedor Full Stack Pleno",
       empresa: "Tech Solutions",
-      descricao: "Desenvolvimento de aplicaÃ§Ãµes web com React, Next.js e Node.js",
+      descricao: "Desenvolvimento de aplicações web com React, Next.js e Node.js",
       requisitos: ["React", "Next.js", "Node.js", "TypeScript", "PostgreSQL"],
-      beneficios: ["Vale alimentaÃ§Ã£o", "Vale transporte", "Plano de saÃºde", "Home office"],
+      beneficios: ["Vale alimentação", "Vale transporte", "Plano de saúde", "Home office"],
       tipo: "CLT",
       modalidade: "Remoto",
       nivel: "Pleno",
@@ -220,17 +220,17 @@ export function useEmpregos() {
     },
     {
       id: "2",
-      titulo: "UX/UI Designer SÃªnior",
+      titulo: "UX/UI Designer Sênior",
       empresa: "Design Pro",
-      descricao: "CriaÃ§Ã£o de interfaces e experiÃªncia para produtos digitais",
-      requisitos: ["Figma", "Adobe XD", "Design System", "Pesquisa UX", "PrototipaÃ§Ã£o"],
-      beneficios: ["Vale alimentaÃ§Ã£o", "Plano de saÃºde", "BÃ´nus anual"],
+      descricao: "Criação de interfaces e experiência para produtos digitais",
+      requisitos: ["Figma", "Adobe XD", "Design System", "Pesquisa UX", "Prototipação"],
+      beneficios: ["Vale alimentação", "Plano de saúde", "Bônus anual"],
       tipo: "PJ",
-      modalidade: "HÃ­brido",
-      nivel: "SÃªnior",
+      modalidade: "Híbrido",
+      nivel: "Sênior",
       salarioMin: 10000,
       salarioMax: 15000,
-      localizacao: "SÃ£o Paulo, SP",
+      localizacao: "São Paulo, SP",
       status: "aberta",
       dataPublicacao: new Date().toISOString(),
       criadoPor: "admin",
@@ -240,14 +240,14 @@ export function useEmpregos() {
     },
     {
       id: "3",
-      titulo: "Analista de Dados JÃºnior",
+      titulo: "Analista de Dados Júnior",
       empresa: "Data Insights",
-      descricao: "AnÃ¡lise de dados, criaÃ§Ã£o de dashboards e relatÃ³rios",
-      requisitos: ["SQL", "Python", "Power BI", "Excel", "EstatÃ­stica"],
-      beneficios: ["Vale alimentaÃ§Ã£o", "Vale transporte", "Home office"],
+      descricao: "Análise de dados, criação de dashboards e relatórios",
+      requisitos: ["SQL", "Python", "Power BI", "Excel", "Estatística"],
+      beneficios: ["Vale alimentação", "Vale transporte", "Home office"],
       tipo: "CLT",
       modalidade: "Presencial",
-      nivel: "JÃºnior",
+      nivel: "Júnior",
       salarioMin: 4500,
       salarioMax: 6000,
       localizacao: "Belo Horizonte, MG",
@@ -261,7 +261,7 @@ export function useEmpregos() {
   ];
 
   // ==========================================================================
-  // INICIALIZAÃ‡ÃƒO
+  // INICIALIZAÇÃO
   // ==========================================================================
 
   useEffect(() => {
@@ -291,7 +291,7 @@ export function useEmpregos() {
     vagaSelecionada,
     curriculoAtivo,
 
-    // AÃ§Ãµes
+    // Ações
     carregarVagas,
     carregarCurriculos,
     carregarCandidaturas,

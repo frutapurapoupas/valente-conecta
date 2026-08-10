@@ -1,5 +1,5 @@
 // components/admin/automacao/services/selfService.ts
-// ðŸ†• SERVIÃ‡O DE AUTO-CADASTRO
+// 🆕 SERVIÇO DE AUTO-CADASTRO
 
 import { Lojista, LojistaStatus, Notificacao } from '../../menu/types';
 import { todasRegras } from '../rules/aprovacao';
@@ -39,7 +39,7 @@ export async function cadastrarLojista(dados: CadastroLojistaInput): Promise<{
     ultimaAtividade: new Date().toISOString()
   };
 
-  // 2. Aplicar regras de aprovaÃ§Ã£o
+  // 2. Aplicar regras de aprovação
   const resultado = await aplicarRegrasAprovacao(novoLojista);
 
   // 3. Se aprovado automaticamente, atualizar status
@@ -50,17 +50,17 @@ export async function cadastrarLojista(dados: CadastroLojistaInput): Promise<{
     // Notificar lojista
     await enviarNotificacao({
       tipo: 'aprovacao',
-      mensagem: 'ðŸŽ‰ Seu cadastro foi aprovado automaticamente!',
+      mensagem: '🎉 Seu cadastro foi aprovado automaticamente!',
       lojistaId: novoLojista.id,
       prioridade: 'baixa'
     });
   }
 
-  // 4. Se nÃ£o aprovado, notificar admin
+  // 4. Se não aprovado, notificar admin
   if (!resultado.aprovado) {
     await enviarNotificacao({
       tipo: 'alerta',
-      mensagem: `ðŸ“‹ Novo cadastro pendente: ${novoLojista.nome}`,
+      mensagem: `📋 Novo cadastro pendente: ${novoLojista.nome}`,
       lojistaId: novoLojista.id,
       prioridade: 'media'
     });
@@ -76,7 +76,7 @@ export async function cadastrarLojista(dados: CadastroLojistaInput): Promise<{
 }
 
 // ============================================================
-// APLICAR REGRAS DE APROVAÃ‡ÃƒO
+// APLICAR REGRAS DE APROVAÇÃO
 // ============================================================
 
 async function aplicarRegrasAprovacao(lojista: Lojista): Promise<{
@@ -96,7 +96,7 @@ async function aplicarRegrasAprovacao(lojista: Lojista): Promise<{
         notificacao = {
           id: gerarId(),
           tipo: 'aprovacao',
-          mensagem: `âœ… Auto-aprovado pela regra: ${regra.nome}`,
+          mensagem: `✅ Auto-aprovado pela regra: ${regra.nome}`,
           lojistaId: lojista.id,
           data: new Date().toISOString(),
           lida: false,
@@ -110,7 +110,7 @@ async function aplicarRegrasAprovacao(lojista: Lojista): Promise<{
         notificacao = {
           id: gerarId(),
           tipo: 'suspensao',
-          mensagem: `âš ï¸ Suspenso pela regra: ${regra.nome}`,
+          mensagem: `⚠️ Suspenso pela regra: ${regra.nome}`,
           lojistaId: lojista.id,
           data: new Date().toISOString(),
           lida: false,
@@ -123,7 +123,7 @@ async function aplicarRegrasAprovacao(lojista: Lojista): Promise<{
         notificacao = {
           id: gerarId(),
           tipo: 'alerta',
-          mensagem: `âš ï¸ AtenÃ§Ã£o: ${regra.nome} para ${lojista.nome}`,
+          mensagem: `⚠️ Atenção: ${regra.nome} para ${lojista.nome}`,
           lojistaId: lojista.id,
           data: new Date().toISOString(),
           lida: false,
@@ -137,7 +137,7 @@ async function aplicarRegrasAprovacao(lojista: Lojista): Promise<{
 }
 
 // ============================================================
-// FUNÃ‡Ã•ES AUXILIARES (SIMULADAS)
+// FUNÇÕES AUXILIARES (SIMULADAS)
 // ============================================================
 
 function gerarId(): string {
@@ -146,11 +146,11 @@ function gerarId(): string {
 
 async function salvarLojista(lojista: Lojista): Promise<void> {
   // Simular salvamento no banco
-  console.log('ðŸ’¾ Lojista salvo:', lojista);
+  console.log('💾 Lojista salvo:', lojista);
 }
 
 async function enviarNotificacao(notificacao: Partial<Notificacao>): Promise<void> {
-  // Simular envio de notificaÃ§Ã£o
-  console.log('ðŸ”” NotificaÃ§Ã£o:', notificacao);
+  // Simular envio de notificação
+  console.log('🔔 Notificação:', notificacao);
 }
 

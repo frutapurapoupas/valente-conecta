@@ -3,9 +3,9 @@
 
 import { supabase, type Usuario } from './supabase';
 
-// FunÃ§Ã£o alternativa para gerar UUID (funciona em qualquer navegador)
+// Função alternativa para gerar UUID (funciona em qualquer navegador)
 function gerarUUID(): string {
-  // Tentativa 1: usar crypto.randomUUID se disponÃ­vel
+  // Tentativa 1: usar crypto.randomUUID se disponível
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
     return crypto.randomUUID();
   }
@@ -18,7 +18,7 @@ function gerarUUID(): string {
   });
 }
 
-// Gera ID de sessÃ£o temporÃ¡ria (30 minutos)
+// Gera ID de sessão temporária (30 minutos)
 export function gerarSessaoTemp(): string {
   const sessaoId = gerarUUID();
   const expiraEm = new Date();
@@ -36,7 +36,7 @@ export function gerarSessaoTemp(): string {
   return sessaoId;
 }
 
-// Verifica se a sessÃ£o temporÃ¡ria Ã© vÃ¡lida
+// Verifica se a sessão temporária é válida
 export function isSessaoTempValida(): boolean {
   if (typeof window === 'undefined') return false;
   const expiraEm = localStorage.getItem('sessao_temp_expira');
@@ -44,13 +44,13 @@ export function isSessaoTempValida(): boolean {
   return new Date(expiraEm) > new Date();
 }
 
-// Verifica se usuÃ¡rio estÃ¡ logado
+// Verifica se usuário está logado
 export function isUserLoggedIn(): boolean {
   if (typeof window === 'undefined') return false;
   return localStorage.getItem('user_logged_in') === 'true';
 }
 
-// ObtÃ©m usuÃ¡rio atual do localStorage
+// Obtém usuário atual do localStorage
 export function getCurrentUser(): Usuario | null {
   if (typeof window === 'undefined') return null;
   const userStr = localStorage.getItem('user_data');
@@ -69,10 +69,10 @@ export async function cadastroSimples(
   codigoIndicacao?: string
 ): Promise<{ success: boolean; user?: Usuario; error?: string }> {
   try {
-    // Limpar WhatsApp (remover espaÃ§os e caracteres especiais)
+    // Limpar WhatsApp (remover espaços e caracteres especiais)
     const whatsappLimpo = whatsapp.replace(/\D/g, '');
     
-    // Verificar se usuÃ¡rio jÃ¡ existe
+    // Verificar se usuário já existe
     const { data: existing, error: searchError } = await supabase
       .from('usuarios')
       .select('*')
@@ -80,11 +80,11 @@ export async function cadastroSimples(
       .maybeSingle();
     
     if (searchError && searchError.code !== 'PGRST116') {
-      console.error('Erro ao buscar usuÃ¡rio:', searchError);
+      console.error('Erro ao buscar usuário:', searchError);
     }
     
     if (existing) {
-      // UsuÃ¡rio jÃ¡ existe, apenas logar
+      // Usuário já existe, apenas logar
       localStorage.setItem('user_logged_in', 'true');
       localStorage.setItem('user_data', JSON.stringify(existing));
       
@@ -94,12 +94,12 @@ export async function cadastroSimples(
       return { success: true, user: existing };
     }
     
-    // Criar cÃ³digo de indicaÃ§Ã£o Ãºnico
+    // Criar código de indicação único
     const codigo = `VALENTE_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
     const trialEndAt = new Date();
-    trialEndAt.setDate(trialEndAt.getDate() + 2); // 2 dias grÃ¡tis
+    trialEndAt.setDate(trialEndAt.getDate() + 2); // 2 dias grátis
     
-    // Buscar ID do usuÃ¡rio que indicou
+    // Buscar ID do usuário que indicou
     let convidadoPorId = null;
     if (codigoIndicacao) {
       const { data: indicador } = await supabase
@@ -113,7 +113,7 @@ export async function cadastroSimples(
       }
     }
     
-    // Criar novo usuÃ¡rio
+    // Criar novo usuário
     const { data: newUser, error: insertError } = await supabase
       .from('usuarios')
       .insert({
@@ -131,11 +131,11 @@ export async function cadastroSimples(
       .single();
     
     if (insertError) {
-      console.error('Erro ao criar usuÃ¡rio:', insertError);
+      console.error('Erro ao criar usuário:', insertError);
       return { success: false, error: insertError.message };
     }
     
-    // Registrar indicaÃ§Ã£o
+    // Registrar indicação
     if (convidadoPorId && newUser) {
       await supabase
         .from('indicacoes')
@@ -174,7 +174,7 @@ export function logout(): void {
   }
 }
 
-// Verificar acesso do usuÃ¡rio (trial, viral, etc.)
+// Verificar acesso do usuário (trial, viral, etc.)
 export async function checkUserAccess(userId: number): Promise<{
   hasAccess: boolean;
   reason: 'trial' | 'viral' | 'paid' | 'expired';
@@ -188,7 +188,7 @@ export async function checkUserAccess(userId: number): Promise<{
     .single();
   
   if (error || !user) {
-    return { hasAccess: false, reason: 'expired', daysLeft: 0, message: 'UsuÃ¡rio nÃ£o encontrado' };
+    return { hasAccess: false, reason: 'expired', daysLeft: 0, message: 'Usuário não encontrado' };
   }
   
   // Admin tem acesso total
@@ -211,7 +211,7 @@ export async function checkUserAccess(userId: number): Promise<{
   }
   
   // Acesso expirado
-  // Contar quantos usuÃ¡rios este usuÃ¡rio indicou
+  // Contar quantos usuários este usuário indicou
   const { count } = await supabase
     .from('indicacoes')
     .select('*', { count: 'exact', head: true })
@@ -224,7 +224,7 @@ export async function checkUserAccess(userId: number): Promise<{
     hasAccess: false,
     reason: 'expired',
     daysLeft: 0,
-    message: `â° Seu perÃ­odo de teste acabou. Indique mais ${faltam} amigos para ganhar 30 dias grÃ¡tis!`
+    message: `⏰ Seu período de teste acabou. Indique mais ${faltam} amigos para ganhar 30 dias grátis!`
   };
 }
 

@@ -17,10 +17,10 @@ export default function AdminPlanosPage() {
   }
 
   const [planos, setPlanos] = useState([
-    { id: 1, nome: "GrÃ¡tis", preco: 0, descricao: "Acesso bÃ¡sico", recursos: ["Perfil pÃºblico", "Busca limitada"], cor: "gray", ativo: true },
-    { id: 2, nome: "BÃ¡sico", preco: 15, descricao: "Para profissionais", recursos: ["Destaque na busca", "Contato visÃ­vel"], cor: "blue", ativo: true },
+    { id: 1, nome: "Grátis", preco: 0, descricao: "Acesso básico", recursos: ["Perfil público", "Busca limitada"], cor: "gray", ativo: true },
+    { id: 2, nome: "Básico", preco: 15, descricao: "Para profissionais", recursos: ["Destaque na busca", "Contato visível"], cor: "blue", ativo: true },
     { id: 3, nome: "Premium", preco: 49.90, descricao: "Para empresas", recursos: ["Destaque VIP", "Produtos ilimitados"], cor: "yellow", ativo: true },
-    { id: 4, nome: "Fisco", preco: 99.90, descricao: "MÃ³dulo fiscal completo", recursos: ["Nota fiscal", "RelatÃ³rios"], cor: "purple", ativo: true },
+    { id: 4, nome: "Fisco", preco: 99.90, descricao: "Módulo fiscal completo", recursos: ["Nota fiscal", "Relatórios"], cor: "purple", ativo: true },
   ]);
 
   const toggleAtivo = (id: number) => {
@@ -68,20 +68,20 @@ export default function AdminPlanosPage() {
           <h3 className="text-white font-bold mb-3">ðŸ“Š Assinaturas Ativas</h3>
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-gray-400">Plano GrÃ¡tis</span>
-              <span className="text-white">1.234 usuÃ¡rios</span>
+              <span className="text-gray-400">Plano Grátis</span>
+              <span className="text-white">1.234 usuários</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-400">Plano BÃ¡sico</span>
-              <span className="text-white">456 usuÃ¡rios</span>
+              <span className="text-gray-400">Plano Básico</span>
+              <span className="text-white">456 usuários</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-400">Plano Premium</span>
-              <span className="text-white">234 usuÃ¡rios</span>
+              <span className="text-white">234 usuários</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-400">Plano Fisco</span>
-              <span className="text-white">12 usuÃ¡rios</span>
+              <span className="text-white">12 usuários</span>
             </div>
           </div>
         </div>

@@ -80,7 +80,7 @@ export async function PUT(request: NextRequest) {
 
     if (!demandaId) {
       return NextResponse.json(
-        { success: false, message: 'ID da demanda Ã© obrigatÃ³rio' },
+        { success: false, message: 'ID da demanda é obrigatório' },
         { status: 400 }
       );
     }
@@ -90,7 +90,7 @@ export async function PUT(request: NextRequest) {
 
     if (!demanda) {
       return NextResponse.json(
-        { success: false, message: 'Demanda nÃ£o encontrada' },
+        { success: false, message: 'Demanda não encontrada' },
         { status: 404 }
       );
     }
@@ -104,13 +104,13 @@ export async function PUT(request: NextRequest) {
 
     salvarDemandas(demandas);
 
-    // Notificar usuÃ¡rio se houver resposta
+    // Notificar usuário se houver resposta
     if (resposta) {
       try {
-        // Aqui vocÃª pode enviar uma notificaÃ§Ã£o push ou email
+        // Aqui você pode enviar uma notificação push ou email
         // await enviarNotificacaoUsuario(demanda.userId, demanda.termo, resposta);
       } catch (error) {
-        console.error('Erro ao notificar usuÃ¡rio:', error);
+        console.error('Erro ao notificar usuário:', error);
       }
     }
 
@@ -136,7 +136,7 @@ export async function DELETE(request: NextRequest) {
 
     if (!demandaId) {
       return NextResponse.json(
-        { success: false, message: 'ID da demanda Ã© obrigatÃ³rio' },
+        { success: false, message: 'ID da demanda é obrigatório' },
         { status: 400 }
       );
     }

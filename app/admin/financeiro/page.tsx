@@ -69,7 +69,7 @@ export default function AdminFinanceiroPage() {
         setSaldo(JSON.parse(saldoSalvo));
       }
       
-      // Carregar transaÃ§Ãµes do localStorage
+      // Carregar transações do localStorage
       const transacoesSalvas = localStorage.getItem("wallet_transacoes");
       if (transacoesSalvas) {
         setTransacoes(JSON.parse(transacoesSalvas));
@@ -99,7 +99,7 @@ export default function AdminFinanceiroPage() {
             tipo: "indicacao",
             valor: 5,
             status: "concluido",
-            descricao: "BÃ´nus por indicaÃ§Ã£o - JoÃ£o Silva",
+            descricao: "Bônus por indicação - João Silva",
             data: new Date(Date.now() - 172800000).toISOString(),
             metodo: "wallet"
           },
@@ -108,7 +108,7 @@ export default function AdminFinanceiroPage() {
             tipo: "cashback",
             valor: 2.50,
             status: "concluido",
-            descricao: "Cashback - Compra na FarmÃ¡cia",
+            descricao: "Cashback - Compra na Farmácia",
             data: new Date(Date.now() - 259200000).toISOString(),
             metodo: "wallet"
           }
@@ -125,14 +125,14 @@ export default function AdminFinanceiroPage() {
 
   const gerarQRCodePIX = async () => {
     if (recargaValor < 1) {
-      toast.error("Valor mÃ­nimo de recarga Ã© R$ 1,00");
+      toast.error("Valor mínimo de recarga é R$ 1,00");
       return;
     }
     
     setLoading(true);
     try {
-      // Simular geraÃ§Ã£o de QR Code PIX
-      // Em produÃ§Ã£o, isso chamaria uma API real (Mercado Pago, Asaas, etc)
+      // Simular geração de QR Code PIX
+      // Em produção, isso chamaria uma API real (Mercado Pago, Asaas, etc)
       const qrCodeSimulado = `00020126360014BR.GOV.BCB.PIX0114${user?.email || "cliente@email.com"}5204000053039865405${recargaValor.toFixed(2)}5802BR5909ValenteConecta6008ValenteBA62240520RECARGA${Date.now()}6304XXXX`;
       
       setQrCodeGerado({
@@ -140,7 +140,7 @@ export default function AdminFinanceiroPage() {
         copiaCola: qrCodeSimulado
       });
       
-      toast.success("QR Code gerado! FaÃ§a o PIX para recarregar.");
+      toast.success("QR Code gerado! Faça o PIX para recarregar.");
     } catch (error) {
       console.error("Erro ao gerar QR Code:", error);
       toast.error("Erro ao gerar QR Code");
@@ -150,7 +150,7 @@ export default function AdminFinanceiroPage() {
   };
 
   const simularPagamentoPIX = (transacaoId: string) => {
-    // Simular confirmaÃ§Ã£o de pagamento
+    // Simular confirmação de pagamento
     const transacao = transacoes.find(t => t.id === transacaoId);
     if (transacao && transacao.status === "pendente") {
       const novas = transacoes.map(t =>
@@ -164,7 +164,7 @@ export default function AdminFinanceiroPage() {
       setSaldo(novoSaldo);
       localStorage.setItem("wallet_saldo", JSON.stringify(novoSaldo));
       
-      // Mostrar popup de confirmaÃ§Ã£o
+      // Mostrar popup de confirmação
       setShowPopupPagamento({ show: true, transacao });
       setTimeout(() => setShowPopupPagamento({ show: false }), 5000);
       
@@ -175,7 +175,7 @@ export default function AdminFinanceiroPage() {
   const copiarCopiaCola = () => {
     if (qrCodeGerado?.copiaCola) {
       navigator.clipboard.writeText(qrCodeGerado.copiaCola);
-      toast.success("CÃ³digo PIX copiado!");
+      toast.success("Código PIX copiado!");
     }
   };
 
@@ -196,7 +196,7 @@ export default function AdminFinanceiroPage() {
       pagamento: "Pagamento",
       saque: "Saque",
       cashback: "Cashback",
-      indicacao: "IndicaÃ§Ã£o"
+      indicacao: "Indicação"
     };
     return tipos[tipo] || tipo;
   };
@@ -213,10 +213,10 @@ export default function AdminFinanceiroPage() {
 
   const getStatusLabel = (status: string) => {
     const statuses: Record<string, string> = {
-      concluido: "âœ… ConcluÃ­do",
+      concluido: "✅ Concluído",
       pendente: "â³ Pendente",
       falhou: "âŒ Falhou",
-      cancelado: "ðŸš« Cancelado"
+      cancelado: "🚫 Cancelado"
     };
     return statuses[status] || status;
   };
@@ -247,7 +247,7 @@ export default function AdminFinanceiroPage() {
           <ArrowLeft className="w-6 h-6" />
         </button>
         <Wallet className="w-6 h-6 text-white" />
-        <h1 className="text-white font-bold text-xl">ðŸ’° Financeiro</h1>
+        <h1 className="text-white font-bold text-xl">💰 Financeiro</h1>
         <button onClick={carregarDados} className="ml-auto text-white/80 hover:text-white">
           <RefreshCw className="w-5 h-5" />
         </button>
@@ -261,7 +261,7 @@ export default function AdminFinanceiroPage() {
             <p className="text-2xl font-bold">R$ {saldo.total.toFixed(2)}</p>
           </div>
           <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl p-4 text-white">
-            <p className="text-sm opacity-90">DisponÃ­vel</p>
+            <p className="text-sm opacity-90">Disponível</p>
             <p className="text-2xl font-bold">R$ {saldo.disponivel.toFixed(2)}</p>
           </div>
           <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-4 text-white">
@@ -270,7 +270,7 @@ export default function AdminFinanceiroPage() {
           </div>
         </div>
 
-        {/* Cards de EstatÃ­sticas */}
+        {/* Cards de Estatísticas */}
         <div className="grid grid-cols-3 gap-4">
           <div className="bg-gray-800 rounded-2xl p-3 text-center">
             <p className="text-xs text-gray-400">Total Recargas</p>
@@ -286,7 +286,7 @@ export default function AdminFinanceiroPage() {
           </div>
         </div>
 
-        {/* AÃ§Ãµes RÃ¡pidas */}
+        {/* Ações Rápidas */}
         <div className="flex gap-3">
           <button
             onClick={() => setShowRecargaModal(true)}
@@ -314,7 +314,7 @@ export default function AdminFinanceiroPage() {
                 : "text-gray-400 hover:text-gray-300"
             }`}
           >
-            ðŸ“‹ Extrato
+            📋 Extrato
           </button>
           <button
             onClick={() => setActiveTab("recarga")}
@@ -324,7 +324,7 @@ export default function AdminFinanceiroPage() {
                 : "text-gray-400 hover:text-gray-300"
             }`}
           >
-            ðŸ’³ Recarga PIX
+            💳 Recarga PIX
           </button>
           <button
             onClick={() => setActiveTab("saque")}
@@ -342,7 +342,7 @@ export default function AdminFinanceiroPage() {
         {activeTab === "extrato" && (
           <div className="bg-gray-800 rounded-2xl p-6 space-y-4">
             <div className="flex justify-between items-center flex-wrap gap-3">
-              <h3 className="text-white font-bold text-lg">HistÃ³rico de TransaÃ§Ãµes</h3>
+              <h3 className="text-white font-bold text-lg">Histórico de Transações</h3>
               <div className="flex gap-2">
                 <select
                   value={filtroTipo}
@@ -353,7 +353,7 @@ export default function AdminFinanceiroPage() {
                   <option value="recarga">Recargas</option>
                   <option value="pagamento">Pagamentos</option>
                   <option value="cashback">Cashback</option>
-                  <option value="indicacao">IndicaÃ§Ãµes</option>
+                  <option value="indicacao">Indicações</option>
                 </select>
                 <select
                   value={filtroStatus}
@@ -361,7 +361,7 @@ export default function AdminFinanceiroPage() {
                   className="bg-gray-700 text-white px-3 py-1 rounded-lg text-sm border border-gray-600"
                 >
                   <option value="todos">Todos os status</option>
-                  <option value="concluido">ConcluÃ­dos</option>
+                  <option value="concluido">Concluídos</option>
                   <option value="pendente">Pendentes</option>
                   <option value="falhou">Falhas</option>
                 </select>
@@ -372,7 +372,7 @@ export default function AdminFinanceiroPage() {
               {transacoesFiltradas.length === 0 ? (
                 <div className="text-center py-8 text-gray-400">
                   <Wallet className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p>Nenhuma transaÃ§Ã£o encontrada</p>
+                  <p>Nenhuma transação encontrada</p>
                 </div>
               ) : (
                 transacoesFiltradas.map((transacao) => (
@@ -410,7 +410,7 @@ export default function AdminFinanceiroPage() {
                           className="text-xs text-green-400 hover:text-green-300 flex items-center gap-1"
                         >
                           <CheckCircle className="w-3 h-3" />
-                          Simular confirmaÃ§Ã£o de pagamento
+                          Simular confirmação de pagamento
                         </button>
                       </div>
                     )}
@@ -472,16 +472,16 @@ export default function AdminFinanceiroPage() {
             ) : (
               <div className="text-center space-y-4">
                 <div className="bg-white p-4 rounded-xl inline-block mx-auto">
-                  {/* SimulaÃ§Ã£o de QR Code - Em produÃ§Ã£o seria uma imagem real */}
+                  {/* Simulação de QR Code - Em produção seria uma imagem real */}
                   <div className="w-48 h-48 bg-black flex items-center justify-center rounded-xl">
                     <QrCode className="w-32 h-32 text-white" />
                   </div>
                 </div>
                 <p className="text-gray-300 text-sm">
-                  Escaneie o QR Code com seu banco ou use o cÃ³digo copia e cola
+                  Escaneie o QR Code com seu banco ou use o código copia e cola
                 </p>
                 <div className="bg-gray-700 rounded-xl p-3">
-                  <p className="text-gray-400 text-xs mb-2">CÃ³digo copia e cola:</p>
+                  <p className="text-gray-400 text-xs mb-2">Código copia e cola:</p>
                   <div className="flex gap-2">
                     <input
                       type="text"
@@ -511,8 +511,8 @@ export default function AdminFinanceiroPage() {
         {/* Saque */}
         {activeTab === "saque" && (
           <div className="bg-gray-800 rounded-2xl p-6 text-center">
-            <p className="text-gray-400">MÃ³dulo em desenvolvimento</p>
-            <p className="text-sm text-gray-500 mt-2">Em breve vocÃª poderÃ¡ solicitar saques</p>
+            <p className="text-gray-400">Módulo em desenvolvimento</p>
+            <p className="text-sm text-gray-500 mt-2">Em breve você poderá solicitar saques</p>
           </div>
         )}
       </main>
@@ -562,7 +562,7 @@ export default function AdminFinanceiroPage() {
                       setShowRecargaModal(false);
                       setTimeout(() => gerarQRCodePIX(), 100);
                     } else {
-                      toast.error("Valor mÃ­nimo Ã© R$ 1,00");
+                      toast.error("Valor mínimo é R$ 1,00");
                     }
                   }}
                   className="bg-green-600 text-white px-6 py-3 rounded-xl font-bold"
@@ -575,7 +575,7 @@ export default function AdminFinanceiroPage() {
         </div>
       )}
 
-      {/* Popup de ConfirmaÃ§Ã£o de Pagamento */}
+      {/* Popup de Confirmação de Pagamento */}
       {showPopupPagamento.show && showPopupPagamento.transacao && (
         <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 animate-in slide-in-from-top duration-300">
           <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-2xl p-4 shadow-2xl max-w-sm">
@@ -597,7 +597,7 @@ export default function AdminFinanceiroPage() {
   );
 }
 
-// Ãcone Users (nÃ£o estava no import)
+// Ícone Users (não estava no import)
 function Users(props: any) {
   return (
     <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
