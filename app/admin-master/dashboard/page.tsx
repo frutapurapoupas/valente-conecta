@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Bike, Coins, RefreshCw, CreditCard } from "lucide-react";
+import { Bike, Coins, RefreshCw, CreditCard, Users } from "lucide-react";
 
 interface MotoMetrics {
   activeDrivers: number;
@@ -41,7 +41,16 @@ interface RevenueProjection {
   totalMensal: number;
 }
 
+interface StatsUsuarios {
+  totalUsuarios: number;
+  usuariosAtivos: number;
+  totalIndicacoes: number;
+  indicacoesValidadas: number;
+  indicacoesPendentes: number;
+}
+
 export default function AdminDashboardPage() {
+  const [statsUsuarios, setStatsUsuarios] = useState<StatsUsuarios | null>(null);
   const [motoMetrics, setMotoMetrics] = useState<MotoMetrics | null>(null);
   const [mcMetrics, setMcMetrics] = useState({ entradas: 0, saidas: 0, liquido: 0, total: 0 });
   const [planosSnapshot, setPlanosSnapshot] = useState<PlanosConfigSnapshot | null>(null);
@@ -57,13 +66,17 @@ export default function AdminDashboardPage() {
   const load = async () => {
     setLoading(true);
     try {
-      const [motoRes, mcRes, planosRes, profissionaisRes, driversRes] = await Promise.all([
+      const [statsRes, motoRes, mcRes, planosRes, profissionaisRes, driversRes] = await Promise.all([
+        fetch("/api/admin-master/stats-usuarios", { cache: "no-store" }),
         fetch("/api/mototaxi?recurso=metrics", { cache: "no-store" }),
         fetch("/api/moeda-conecta/transactions?limit=400", { cache: "no-store" }),
         fetch("/api/planos-config", { cache: "no-store" }),
         fetch("/api/profissionais", { cache: "no-store" }),
         fetch("/api/mototaxi?recurso=drivers", { cache: "no-store" })
       ]);
+
+      const statsData = await statsRes.json();
+      setStatsUsuarios(statsData?.success ? statsData.data : null);
 
       const motoData = await motoRes.json();
       const mcData = await mcRes.json();
@@ -135,6 +148,23 @@ export default function AdminDashboardPage() {
         <div className="text-sm text-gray-500">Carregando métricas...</div>
       ) : (
         <>
+          <section className="bg-white border border-gray-200 rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-3 text-gray-800 font-semibold">
+              <Users size={16} /> Usuários e Indicações
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-sm">
+              <MetricCard label="Total de usuários" value={statsUsuarios?.totalUsuarios ?? 0} />
+              <MetricCard label="Usuários ativos" value={statsUsuarios?.usuariosAtivos ?? 0} />
+              <MetricCard label="Total de indicações" value={statsUsuarios?.totalIndicacoes ?? 0} />
+              <MetricCard label="Indicações validadas" value={statsUsuarios?.indicacoesValidadas ?? 0} />
+              <MetricCard label="Indicações pendentes" value={statsUsuarios?.indicacoesPendentes ?? 0} />
+            </div>
+            <p className="text-[11px] text-gray-400 mt-2">
+              "Ativo" = trial dentro do prazo, viral ativo dentro do prazo, ou admin. "Validada" = quem foi
+              indicado ainda está com acesso ativo (mesmo critério usado no extrato de indicações do usuário).
+            </p>
+          </section>
+
           <section className="bg-white border border-gray-200 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-3 text-gray-800 font-semibold">
               <Bike size={16} /> Moto Táxi

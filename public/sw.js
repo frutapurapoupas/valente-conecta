@@ -1,31 +1,39 @@
 ﻿// public/sw.js
-const CACHE_NAME = 'valente-conecta-v1';
+//
+// CACHE_NAME precisa subir de versao a cada mudanca de estrategia (o
+// listener de 'activate' so' apaga caches com nome diferente do atual) —
+// sem isso, quem ja tinha o PWA instalado fica preso na versao antiga do
+// app pra sempre, mesmo com deploys novos no servidor.
+const CACHE_NAME = 'valente-conecta-v2';
 const urlsToCache = [
   '/',
   '/offline',
   '/manifest.json'
 ];
 
-// Instalação
+// Instalação — skipWaiting faz o novo service worker assumir na hora, sem
+// esperar todas as abas antigas fecharem (senao um deploy so' "pega" depois
+// que a pessoa fechar o app inteiro, o que na pratica quase nunca acontece).
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => cache.addAll(urlsToCache))
   );
 });
 
-// Ativação
+// Ativação — apaga caches de versoes antigas e assume o controle das abas
+// que ja estavam abertas (clients.claim), sem precisar de F5.
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
+    Promise.all([
+      caches.keys().then((cacheNames) => Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
+          if (cacheName !== CACHE_NAME) return caches.delete(cacheName);
         })
-      );
-    })
+      )),
+      self.clients.claim(),
+    ])
   );
 });
 
@@ -57,25 +65,23 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-// Fetch
+// Fetch — network-first: tenta a rede sempre (pra nunca servir codigo
+// desatualizado enquanto o usuario esta online) e so' usa o cache como
+// fallback de verdade offline. A estrategia antiga (cache-first) fazia
+// qualquer correcao de bug ficar invisivel pra quem ja tinha o app aberto
+// antes, mesmo depois de um novo deploy.
 self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return; // nunca intercepta POST/PUT/DELETE (APIs)
+
   event.respondWith(
-    caches.match(event.request)
+    fetch(event.request)
       .then((response) => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request).then((response) => {
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
+        if (response && response.status === 200 && response.type === 'basic') {
           const responseToCache = response.clone();
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-          return response;
-        });
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
+        }
+        return response;
       })
+      .catch(() => caches.match(event.request).then((cached) => cached || caches.match('/offline')))
   );
 });
