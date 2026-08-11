@@ -54,6 +54,7 @@ import {
   Paintbrush,
   Calendar,
   ExternalLink,
+  Briefcase,
   type LucideIcon
 } from "lucide-react";
 
@@ -264,6 +265,8 @@ export const adminMenuFull: MenuGroup[] = [
     icon: Wrench,
     collapsible: true,
     items: [
+      { name: "Painel completo (todos)", path: "/admin-master/servicos", icon: Wrench, status: 'active' },
+      { name: "Página Pública", path: "/servicos", icon: ExternalLink, status: 'active' },
       { name: "Serralheiro", path: "/admin-master/servicos/serralheiro", icon: Wrench, status: 'construction' },
       { name: "Montador", path: "/admin-master/servicos/montador", icon: Hammer, status: 'construction' },
       { name: "Técnico informática", path: "/admin-master/servicos/tecnico-informatica", icon: Monitor, status: 'construction' },
@@ -281,6 +284,8 @@ export const adminMenuFull: MenuGroup[] = [
     icon: Store,
     collapsible: true,
     items: [
+      { name: "Painel completo (todos)", path: "/admin-master/mercados", icon: Store, status: 'active' },
+      { name: "Página Pública", path: "/mercados", icon: ExternalLink, status: 'active' },
       { name: "Mercados", path: "/admin-master/mercados/mercados", icon: Store, status: 'construction' },
       { name: "Mercadinhos", path: "/admin-master/mercados/mercadinhos", icon: Store, status: 'construction' },
       { name: "Atacadistas", path: "/admin-master/mercados/atacadistas", icon: Store, status: 'construction' },
@@ -297,6 +302,8 @@ export const adminMenuFull: MenuGroup[] = [
     icon: Home,
     collapsible: true,
     items: [
+      { name: "Painel completo (todos)", path: "/admin-master/imoveis", icon: Home, status: 'active' },
+      { name: "Página Pública", path: "/imoveis", icon: ExternalLink, status: 'active' },
       { name: "Venda de imóvel", path: "/admin-master/imovel/venda", icon: Home, status: 'construction' },
       { name: "Aluguel de imóvel", path: "/admin-master/imovel/aluguel", icon: Home, status: 'construction' },
       { name: "Hotel", path: "/admin-master/imovel/hotel", icon: Home, status: 'construction' },
@@ -328,6 +335,8 @@ export const adminMenuFull: MenuGroup[] = [
     icon: Hammer,
     collapsible: true,
     items: [
+      { name: "Painel completo (todos)", path: "/admin-master/construcao", icon: Hammer, status: 'active' },
+      { name: "Página Pública", path: "/construcao", icon: ExternalLink, status: 'active' },
       { name: "Eletricista", path: "/admin-master/construcao/eletricista", icon: Zap, status: 'construction' },
       { name: "Encanador", path: "/admin-master/construcao/encanador", icon: Droplet, status: 'construction' },
       { name: "Pedreiro", path: "/admin-master/construcao/pedreiro", icon: Hammer, status: 'construction' },
@@ -415,6 +424,8 @@ export const adminMenuFull: MenuGroup[] = [
     icon: Hospital,
     collapsible: true,
     items: [
+      { name: "Painel completo (todos)", path: "/admin-master/saude", icon: Hospital, status: 'active' },
+      { name: "Página Pública", path: "/saude", icon: ExternalLink, status: 'active' },
       { name: "Farmácias", path: "/admin-master/saude/farmacias", icon: Hospital, status: 'construction' },
       { name: "Clínicas", path: "/admin-master/saude/clinicas", icon: Hospital, status: 'construction' },
       { name: "Dentistas", path: "/admin-master/saude/dentistas", icon: Hospital, status: 'construction' },
@@ -495,11 +506,24 @@ export const adminMenuFull: MenuGroup[] = [
     icon: Dog,
     collapsible: true,
     items: [
+      { name: "Painel completo (todos)", path: "/admin-master/pet", icon: Dog, status: 'active' },
+      { name: "Página Pública", path: "/pet", icon: ExternalLink, status: 'active' },
       { name: "Pet shop", path: "/admin-master/pet/pet-shop", icon: Dog, status: 'construction' },
       { name: "Banho e tosa", path: "/admin-master/pet/banho-tosa", icon: Dog, status: 'construction' },
       { name: "Veterinário", path: "/admin-master/pet/veterinario", icon: Dog, status: 'construction' },
       { name: "Ração", path: "/admin-master/pet/racao", icon: Dog, status: 'construction' },
       { name: "Medicamentos animais", path: "/admin-master/pet/medicamentos", icon: Dog, status: 'construction' },
+    ]
+  },
+
+  // ==================== EMPREGO ====================
+  {
+    name: "💼 EMPREGO",
+    icon: Briefcase,
+    collapsible: true,
+    items: [
+      { name: "Painel completo (todos)", path: "/admin-master/emprego", icon: Briefcase, status: 'active' },
+      { name: "Página Pública", path: "/empregos", icon: ExternalLink, status: 'active' },
     ]
   },
 
@@ -509,6 +533,8 @@ export const adminMenuFull: MenuGroup[] = [
     icon: DollarSign,
     collapsible: true,
     items: [
+      { name: "Módulo Fiado (liberar por loja)", path: "/admin-master/fiado", icon: DollarSign, status: 'active' },
+      { name: "Módulo Agenda + Fila (liberar por loja)", path: "/admin-master/agenda", icon: Calendar, status: 'active' },
       { name: "Correspondente bancário", path: "/admin-master/financeiro/correspondente", icon: DollarSign, status: 'construction' },
       { name: "Empréstimos", path: "/admin-master/financeiro/emprestimos", icon: DollarSign, status: 'construction' },
       { name: "Seguros", path: "/admin-master/financeiro/seguros", icon: DollarSign, status: 'construction' },

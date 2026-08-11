@@ -14,11 +14,19 @@ export function InstallPrompt() {
   const [isInstalled, setIsInstalled] = useState(false);
   const [show, setShow] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const [isNavegadorEmbutido, setIsNavegadorEmbutido] = useState(false);
 
   useEffect(() => {
     // Detectar iOS
     const userAgent = window.navigator.userAgent.toLowerCase();
     setIsIOS(/iphone|ipad|ipod/.test(userAgent));
+
+    // Navegador embutido do WhatsApp/Instagram/Facebook (comum: o link de
+    // convite chega justamente pelo WhatsApp) nunca dispara
+    // beforeinstallprompt e a instalacao automatica nao funciona ali —
+    // precisa orientar "abrir no navegador" em vez de mostrar um botao
+    // "Instalar" que nao faz nada quando clicado.
+    setIsNavegadorEmbutido(/\bwv\b|instagram|fban|fbav|whatsapp/.test(userAgent));
 
     // Verificar se já está instalado
     if (window.matchMedia('(display-mode: standalone)').matches) {
@@ -69,7 +77,18 @@ export function InstallPrompt() {
       }
       setDeferredPrompt(null);
     } else if (isIOS) {
-      alert('📱 No iPhone: Toque no ícone "Compartilhar" e depois em "Adicionar à Tela de Início"');
+      alert('📱 No iPhone: toque no ícone "Compartilhar" e depois em "Adicionar à Tela de Início"');
+    } else if (isNavegadorEmbutido) {
+      alert('Para instalar o ícone, toque nos "⋮" (três pontinhos) no canto e escolha "Abrir no navegador" — depois toque em Instalar de novo.');
+    } else {
+      // Navegador nao ofereceu o prompt (Android mais antigo, outro
+      // navegador sem suporte etc). O app continua funcionando 100% pelo
+      // navegador mesmo assim — instalar e' so' um atalho, nunca bloqueia
+      // o uso, exatamente pra nao deixar quem tem um celular mais simples
+      // de fora.
+      alert('Seu navegador ainda não suporta instalação automática, mas você já pode usar o Valente Conecta normalmente por aqui. Dica: adicione esta página aos favoritos para achar rápido depois.');
+      setShow(false);
+      localStorage.setItem('install_prompt_shown', 'true');
     }
   };
 

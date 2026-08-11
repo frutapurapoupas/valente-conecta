@@ -6,6 +6,7 @@ import {
   MessageCircle, ChevronRight, Truck, Package, CheckCircle, Store
 } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
+import { obterUsuarioLocalId } from '@/lib/usuarioLocal';
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 interface Produto {
@@ -81,7 +82,7 @@ function CardFornecedor({ forn, onPedir }: { forn: Fornecedor; onPedir: (f: Forn
     <div className={`rounded-2xl border border-white/10 bg-slate-900 overflow-hidden ${forn.destaque ? 'ring-2 ring-blue-400/40' : ''}`}>
       {forn.destaque && (
         <div className="bg-blue-600 text-white text-center text-[11px] font-bold py-1 tracking-wide">
-          â­ DESTAQUE
+          ⭐ DESTAQUE
         </div>
       )}
 
@@ -186,7 +187,7 @@ function ModalPedido({ forn, onClose }: { forn: Fornecedor; onClose: () => void 
       const res = await fetch('/api/agua-gas?recurso=pedidos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fornecedorId: forn.id, fornecedorNome: forn.nome, ...form, quantidade: Number(form.quantidade || 1) })
+        body: JSON.stringify({ fornecedorId: forn.id, fornecedorNome: forn.nome, clienteId: obterUsuarioLocalId(), ...form, quantidade: Number(form.quantidade || 1) })
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
@@ -353,7 +354,7 @@ export default function AguaGasPage() {
               onClick={() => setTipoFiltro(f.id)}
               className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap ${tipoFiltro === f.id ? 'bg-white text-slate-900' : 'bg-white/10 text-gray-300'}`}
             >
-              {f.id.startsWith('gas') ? 'ðŸ”¥' : f.id ? 'ðŸ’§' : 'ðŸª'} {f.label}
+              {f.id.startsWith('gas') ? '🔥' : f.id ? '💧' : '🏪'} {f.label}
             </button>
           ))}
         </div>

@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import {
   Building2, Save, Users, Wrench, Wallet, UserCog,
-  ChevronRight, CreditCard, ShieldAlert, ShieldCheck, ArrowLeft,
+  ChevronRight, CreditCard, ShieldAlert, ShieldCheck, ArrowLeft, Navigation, CheckCircle,
 } from "lucide-react";
 import { useEmpresa, setEmpresaIdLocal, planoDaEmpresa } from "./_lib/useEmpresa";
 
@@ -16,12 +16,31 @@ const CIDADES = ["Valente", "Santa Luz", "Retirolândia", "Nordestina", "São Do
 
 function CadastroEmpresa({ onCriada }: { onCriada: () => void }) {
   const [salvando, setSalvando] = useState(false);
+  const [capturandoLocal, setCapturandoLocal] = useState(false);
   const [form, setForm] = useState({
     nome: "", responsavel: "", cidade: "Valente", contato: "", endereco: "",
     dono_nome: "", dono_email: "",
   });
+  const [coordenadas, setCoordenadas] = useState<{ lat: number; lng: number } | null>(null);
 
   const camposOk = form.nome && form.responsavel && form.cidade && form.contato && form.endereco;
+
+  const capturarLocalizacao = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocalização não suportada neste navegador.");
+      return;
+    }
+    setCapturandoLocal(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setCoordenadas({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setCapturandoLocal(false);
+        toast.success("Localização capturada!");
+      },
+      () => { setCapturandoLocal(false); toast.error("Erro ao capturar localização."); },
+      { enableHighAccuracy: true, timeout: 15000 }
+    );
+  };
 
   const handleSalvar = async () => {
     if (!camposOk) {
@@ -33,7 +52,11 @@ function CadastroEmpresa({ onCriada }: { onCriada: () => void }) {
       const res = await fetch("/api/academia", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recurso: "empresas", ...form }),
+        body: JSON.stringify({
+          recurso: "empresas", ...form,
+          latitude: coordenadas?.lat ?? null,
+          longitude: coordenadas?.lng ?? null,
+        }),
       });
       const data = await res.json();
       if (!data?.success) throw new Error(data?.error || "Erro ao cadastrar academia.");
@@ -76,6 +99,11 @@ function CadastroEmpresa({ onCriada }: { onCriada: () => void }) {
         <input type="text" placeholder="Endereço *" value={form.endereco}
           onChange={e => setForm({ ...form, endereco: e.target.value })}
           className="w-full px-4 py-3 bg-white/10 rounded-xl text-white placeholder:text-zinc-400" />
+        <button type="button" onClick={capturarLocalizacao} disabled={capturandoLocal}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600/20 border border-emerald-500/40 rounded-xl text-emerald-300 text-sm font-semibold disabled:opacity-50">
+          {coordenadas ? <CheckCircle className="w-4 h-4" /> : <Navigation className="w-4 h-4" />}
+          {capturandoLocal ? "Capturando..." : coordenadas ? "Localização capturada" : "Capturar localização (para check-in dos alunos)"}
+        </button>
         <input type="text" placeholder="Nome do dono (se diferente do responsável)" value={form.dono_nome}
           onChange={e => setForm({ ...form, dono_nome: e.target.value })}
           className="w-full px-4 py-3 bg-white/10 rounded-xl text-white placeholder:text-zinc-400" />

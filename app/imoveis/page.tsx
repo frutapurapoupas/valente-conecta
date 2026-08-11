@@ -25,6 +25,7 @@ import {
   Lock
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { obterUsuarioLocalId } from '@/lib/usuarioLocal';
 
 interface Imovel {
   id: string;
@@ -97,86 +98,14 @@ export default function ImoveisPage() {
   const carregarImoveis = async () => {
     setLoading(true);
     try {
-      setTimeout(() => {
-        const mockImoveis: Imovel[] = [
-          {
-            id: '1',
-            titulo: 'Casa com 3 quartos no Centro',
-            descricao: 'Casa espaçosa com área de lazer, 3 quartos sendo 1 suíte...',
-            tipo: 'casa',
-            operacao: 'venda',
-            preco: 250000,
-            area: 120,
-            quartos: 3,
-            banheiros: 2,
-            vagas: 2,
-            endereco: 'Rua Principal, 123',
-            cidade: 'Valente',
-            bairro: 'Centro',
-            imagens: [],
-            caracteristicas: ['Área de lazer', 'Churrasqueira', 'Jardim'],
-            contatoNome: 'Maria Silva',
-            contatoTelefone: '(75) 99999-1111',
-            contatoEmail: 'maria@imobiliaria.com',
-            dataPublicacao: new Date('2024-06-01'),
-            destaque: true,
-            status: 'disponivel'
-          },
-          {
-            id: '2',
-            titulo: 'Apartamento 2 quartos - Bairro Novo',
-            descricao: 'Apartamento novo, com vista panorâmica, 2 quartos...',
-            tipo: 'apartamento',
-            operacao: 'aluguel',
-            preco: 1200,
-            precoCondominio: 300,
-            area: 65,
-            quartos: 2,
-            banheiros: 1,
-            vagas: 1,
-            endereco: 'Rua das Flores, 456',
-            cidade: 'Valente',
-            bairro: 'Bairro Novo',
-            imagens: [],
-            caracteristicas: ['Portaria 24h', 'Academia', 'Piscina'],
-            contatoNome: 'João Santos',
-            contatoTelefone: '(75) 99999-2222',
-            contatoEmail: 'joao@imobiliaria.com',
-            dataPublicacao: new Date('2024-06-05'),
-            destaque: false,
-            status: 'disponivel'
-          },
-          {
-            id: '3',
-            titulo: 'Terreno em condomínio fechado',
-            descricao: 'Terreno plano com 500m², pronto para construir...',
-            tipo: 'terreno',
-            operacao: 'venda',
-            preco: 180000,
-            area: 500,
-            quartos: 0,
-            banheiros: 0,
-            vagas: 0,
-            endereco: 'Condomínio Vale Verde, Lote 15',
-            cidade: 'Valente',
-            bairro: 'Zona Rural',
-            imagens: [],
-            caracteristicas: ['Terreno plano', 'Infraestrutura completa', 'Segurança 24h'],
-            contatoNome: 'Carlos Oliveira',
-            contatoTelefone: '(75) 99999-3333',
-            contatoEmail: 'carlos@imobiliaria.com',
-            dataPublicacao: new Date('2024-06-03'),
-            destaque: true,
-            status: 'disponivel'
-          }
-        ];
-
-        setImoveis(mockImoveis);
-        setLoading(false);
-      }, 500);
+      const response = await fetch('/api/imoveis');
+      const data = await response.json();
+      setImoveis(data.success ? data.data : []);
     } catch (error) {
       console.error('Erro:', error);
       toast.error('Erro ao carregar imóveis');
+      setImoveis([]);
+    } finally {
       setLoading(false);
     }
   };
@@ -194,7 +123,8 @@ export default function ImoveisPage() {
         body: JSON.stringify({
           ...formImovel,
           caracteristicas: formImovel.caracteristicas.split(',').map(c => c.trim()),
-          valorPublicacao: formImovel.operacao === 'venda' ? 50 : 20
+          valorPublicacao: formImovel.operacao === 'venda' ? 50 : 20,
+          donoId: obterUsuarioLocalId()
         })
       });
 
@@ -250,6 +180,7 @@ export default function ImoveisPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           imovelId: selectedImovel?.id,
+          compradorId: obterUsuarioLocalId(),
           nome: formContato.nome,
           telefone: formContato.telefone,
           email: formContato.email,

@@ -1,8 +1,19 @@
-import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+// Caminho: C:\valente_conecta\app\api\planos-config\route.ts
+//
+// Reescrita sobre Supabase (admin_configuracoes, chave='planos_config') —
+// antes gravava em data/planos_config.json, que nao sobrevive a runtime
+// serverless. Mesmo formato de dados consumido por app/planos/page.tsx e
+// app/admin-master/usuarios/planos/page.tsx.
+//
+// Adiciona por plano: descontoPixRecorrenteAtivo / descontoPixRecorrentePercent
+// — desconto opcional para quem assina pagando via PIX parcelado por 12
+// meses (pedido do usuario do projeto). Sugestao de percentual baixo (5%)
+// como ponto de partida configuravel pelo admin master.
 
-const DATA_PATH = path.join(process.cwd(), 'data', 'planos_config.json');
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+
+const CHAVE = 'planos_config';
 
 type PlanId = 'gratis' | 'basico' | 'premium' | 'fisco';
 
@@ -88,7 +99,9 @@ const defaultConfig = {
         '1 foto por produto/servico',
         'Contato da loja borrado para o cliente',
         'Cliente pode desbloquear contato por R$ 0,50'
-      ]
+      ],
+      descontoPixRecorrenteAtivo: false,
+      descontoPixRecorrentePercent: 5
     },
     {
       id: 'basico',
@@ -104,7 +117,9 @@ const defaultConfig = {
         '1 foto por produto/servico',
         'Recebimento de contatos sem desbloqueio',
         'Prioridade normal de exibicao'
-      ]
+      ],
+      descontoPixRecorrenteAtivo: false,
+      descontoPixRecorrentePercent: 5
     },
     {
       id: 'premium',
@@ -120,7 +135,9 @@ const defaultConfig = {
         '5 fotos por produto/servico',
         'Destaque no topo das buscas',
         'Maior prioridade nas recomendacoes'
-      ]
+      ],
+      descontoPixRecorrenteAtivo: false,
+      descontoPixRecorrentePercent: 5
     },
     {
       id: 'fisco',
@@ -136,51 +153,46 @@ const defaultConfig = {
         'Integracao contabil e relatorios avancados',
         'Suporte de implantacao',
         'Valor sob consulta'
-      ]
+      ],
+      descontoPixRecorrenteAtivo: false,
+      descontoPixRecorrentePercent: 5
     }
   ],
   services: SERVICE_NAMES.map(buildService)
 };
 
-function ensureFile() {
-  if (!fs.existsSync(DATA_PATH)) {
-    fs.writeFileSync(DATA_PATH, JSON.stringify(defaultConfig, null, 2));
-  }
-}
+async function readConfig() {
+  const supabase = createClient();
+  const { data } = await supabase.from('admin_configuracoes').select('id, valor').eq('chave', CHAVE).maybeSingle();
+  if (!data?.valor) return defaultConfig;
 
-function readConfig() {
-  ensureFile();
   try {
-    const parsed = JSON.parse(fs.readFileSync(DATA_PATH, 'utf-8'));
+    const parsed = JSON.parse(data.valor);
     const services = Array.isArray(parsed?.services) ? parsed.services : [];
     const normalized = [...services];
-
     for (const serviceName of SERVICE_NAMES) {
       const exists = normalized.some((service: any) => service?.nome === serviceName);
-      if (!exists) {
-        normalized.push(buildService(serviceName));
-      }
+      if (!exists) normalized.push(buildService(serviceName));
     }
-
-    return {
-      ...parsed,
-      services: normalized
-    };
+    // Garante os campos novos de desconto PIX mesmo em config salva antes deles existirem.
+    const plans = (Array.isArray(parsed?.plans) ? parsed.plans : defaultConfig.plans).map((p: any) => ({
+      descontoPixRecorrenteAtivo: false,
+      descontoPixRecorrentePercent: 5,
+      ...p,
+    }));
+    return { ...parsed, plans, services: normalized };
   } catch {
     return defaultConfig;
   }
 }
 
-function writeConfig(data: any) {
-  fs.writeFileSync(
-    DATA_PATH,
-    JSON.stringify({ ...data, updatedAt: new Date().toISOString() }, null, 2)
-  );
-}
+// Sem isso, GET() sem argumentos e' tratado como estatico pelo Next.js e
+// fica cacheado pra sempre a partir da primeira resposta.
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const data = readConfig();
+    const data = await readConfig();
     return NextResponse.json({ success: true, data });
   } catch {
     return NextResponse.json({ success: false, error: 'Erro ao carregar configuracao de planos.' }, { status: 500 });
@@ -194,16 +206,28 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Payload invalido.' }, { status: 400 });
     }
 
-    writeConfig({
+    const next = {
       version: Number(body.version || 1),
       settings: body.settings || defaultConfig.settings,
       plans: body.plans,
-      services: body.services
-    });
+      services: body.services,
+      updatedAt: new Date().toISOString(),
+    };
+
+    const supabase = createClient();
+    const { data: atual } = await supabase.from('admin_configuracoes').select('id').eq('chave', CHAVE).maybeSingle();
+    if (atual) {
+      const { error } = await supabase.from('admin_configuracoes').update({ valor: JSON.stringify(next) }).eq('id', atual.id);
+      if (error) throw error;
+    } else {
+      const { error } = await supabase
+        .from('admin_configuracoes')
+        .insert({ chave: CHAVE, valor: JSON.stringify(next), descricao: 'Planos, preços e regras por serviço' });
+      if (error) throw error;
+    }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error?.message || 'Erro ao salvar.' }, { status: 500 });
   }
 }
-

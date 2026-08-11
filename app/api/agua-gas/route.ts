@@ -1,106 +1,184 @@
+// Caminho: C:\valente_conecta\app\api\agua-gas\route.ts
+//
+// Reescrita sobre Supabase (014_agua_gas_supabase.sql) — antes gravava em
+// data/agua_gas_*.json, que nao sobrevive a runtime serverless. Mantem
+// EXATAMENTE o mesmo contrato de request/response (campos em camelCase,
+// mesmos query params) para as 3 telas que ja consomem essa rota nao
+// precisarem mudar uma linha: app/agua-gas/page.tsx, app/agua-gas/fornecedor
+// /page.tsx e app/admin-master/agua-gas/page.tsx.
+
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { createClient } from '@/lib/supabase/server';
 
-const FORNECEDORES_PATH = path.join(process.cwd(), 'data', 'agua_gas_fornecedores.json');
-const PEDIDOS_PATH     = path.join(process.cwd(), 'data', 'agua_gas_pedidos.json');
+function fornecedorParaApi(f: any) {
+  return {
+    id: f.id,
+    nome: f.nome,
+    responsavel: f.responsavel || '',
+    telefone: f.telefone,
+    whatsapp: f.whatsapp || f.telefone,
+    bairro: f.bairro || '',
+    cidade: f.cidade || 'Valente',
+    descricao: f.descricao || '',
+    foto: f.foto || '',
+    horario: f.horario || '',
+    temEntrega: f.tem_entrega,
+    taxaEntrega: Number(f.taxa_entrega || 0),
+    freteGratisAcima: Number(f.frete_gratis_acima || 0),
+    produtos: f.produtos || [],
+    status: f.status,
+    destaque: f.destaque,
+    createdAt: f.created_at,
+    updatedAt: f.updated_at,
+  };
+}
 
-function ensureFile(p: string, def: any[] = []) {
-  if (!fs.existsSync(p)) fs.writeFileSync(p, JSON.stringify(def, null, 2));
-}
-function read(p: string): any[] {
-  ensureFile(p);
-  try { return JSON.parse(fs.readFileSync(p, 'utf-8')); } catch { return []; }
-}
-function write(p: string, data: any[]) {
-  fs.writeFileSync(p, JSON.stringify(data, null, 2));
+function pedidoParaApi(p: any) {
+  return {
+    id: p.id,
+    fornecedorId: p.fornecedor_id,
+    fornecedorNome: p.fornecedor_nome || '',
+    clienteNome: p.cliente_nome,
+    clienteTelefone: p.cliente_telefone,
+    produto: p.produto,
+    quantidade: p.quantidade,
+    valorTotal: p.valor_total,
+    endereco: p.endereco || '',
+    observacoes: p.observacoes || '',
+    status: p.status,
+    createdAt: p.created_at,
+    updatedAt: p.updated_at,
+  };
 }
 
-// â”€â”€ Fornecedores â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const recurso = searchParams.get('recurso') || 'fornecedores';
+  const supabase = createClient();
+
+  if (recurso === 'financeiro') {
+    // Movimentacoes financeiras do modulo, pro admin master ter visao
+    // completa (ver 014_agua_gas_supabase.sql) — pagamentos gerados quando
+    // um pedido e' confirmado, enriquecidos com dados do pedido/fornecedor.
+    const { data: pagamentos, error } = await supabase
+      .from('pagamentos')
+      .select('*')
+      .eq('origem', 'pedido')
+      .order('created_at', { ascending: false });
+    if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+
+    const idsPedidos = (pagamentos || []).map((p: any) => p.referencia_id);
+    const { data: pedidos } = idsPedidos.length
+      ? await supabase.from('agua_gas_pedidos').select('id, fornecedor_nome, produto, cliente_nome').in('id', idsPedidos)
+      : { data: [] as any[] };
+    const pedidosPorId = new Map((pedidos || []).map((p: any) => [p.id, p]));
+
+    const movimentacoes = (pagamentos || []).map((p: any) => ({
+      id: p.id,
+      valor: Number(p.valor || 0),
+      status: p.status,
+      createdAt: p.created_at,
+      pedido: pedidosPorId.get(p.referencia_id) || null,
+    }));
+    return NextResponse.json({ success: true, data: movimentacoes });
+  }
 
   if (recurso === 'pedidos') {
     const fornecedorId = searchParams.get('fornecedorId');
-    let items = read(PEDIDOS_PATH);
-    if (fornecedorId) items = items.filter((i) => i.fornecedorId === fornecedorId);
-    return NextResponse.json({ success: true, data: items });
+    let query = supabase.from('agua_gas_pedidos').select('*').order('created_at', { ascending: false });
+    if (fornecedorId) query = query.eq('fornecedor_id', fornecedorId);
+    const { data, error } = await query;
+    if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: true, data: (data || []).map(pedidoParaApi) });
   }
 
-  // fornecedores
-  const status  = searchParams.get('status');
-  const tipo    = searchParams.get('tipo');
-  const busca   = (searchParams.get('busca') || '').toLowerCase();
-  let items = read(FORNECEDORES_PATH);
-  if (status) items = items.filter((i) => i.status === status);
-  if (tipo)   items = items.filter((i) => Array.isArray(i.produtos) && i.produtos.some((p: any) => p.tipo === tipo));
-  if (busca)  items = items.filter((i) =>
-    i.nome?.toLowerCase().includes(busca) ||
-    i.bairro?.toLowerCase().includes(busca) ||
-    i.produtos?.some((p: any) => p.descricao?.toLowerCase().includes(busca))
-  );
-  return NextResponse.json({ success: true, data: items });
+  const status = searchParams.get('status');
+  const tipo = searchParams.get('tipo');
+  const busca = (searchParams.get('busca') || '').toLowerCase();
+  const donoId = searchParams.get('donoId');
+
+  let query = supabase.from('agua_gas_fornecedores').select('*').order('created_at', { ascending: false });
+  if (status) query = query.eq('status', status);
+  if (donoId) query = query.eq('dono_id', donoId);
+  const { data, error } = await query;
+  if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+
+  let items = data || [];
+  if (tipo) items = items.filter((i: any) => Array.isArray(i.produtos) && i.produtos.some((p: any) => p.tipo === tipo));
+  if (busca) {
+    items = items.filter((i: any) =>
+      i.nome?.toLowerCase().includes(busca) ||
+      i.bairro?.toLowerCase().includes(busca) ||
+      i.produtos?.some((p: any) => p.descricao?.toLowerCase().includes(busca))
+    );
+  }
+  return NextResponse.json({ success: true, data: items.map(fornecedorParaApi) });
 }
 
 export async function POST(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const recurso = searchParams.get('recurso') || 'fornecedores';
   const body = await request.json();
-  const now = new Date().toISOString();
+  const supabase = createClient();
 
   if (recurso === 'pedidos') {
     if (!body.fornecedorId || !body.clienteNome?.trim() || !body.clienteTelefone?.trim() || !body.produto?.trim()) {
       return NextResponse.json({ success: false, error: 'fornecedorId, clienteNome, clienteTelefone e produto são obrigatórios.' }, { status: 400 });
     }
-    const items = read(PEDIDOS_PATH);
-    const novo = {
-      id: `agpedido_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-      fornecedorId: String(body.fornecedorId),
-      fornecedorNome: String(body.fornecedorNome || ''),
-      clienteNome: String(body.clienteNome).trim(),
-      clienteTelefone: String(body.clienteTelefone).trim(),
-      produto: String(body.produto).trim(),
-      quantidade: Number(body.quantidade || 1),
-      endereco: String(body.endereco || '').trim(),
-      observacoes: String(body.observacoes || '').trim(),
-      status: 'pendente',
-      createdAt: now,
-      updatedAt: now
-    };
-    items.unshift(novo);
-    write(PEDIDOS_PATH, items);
-    return NextResponse.json({ success: true, data: novo });
+
+    const quantidade = Number(body.quantidade || 1);
+    let valorTotal: number | null = null;
+    const { data: fornecedor } = await supabase.from('agua_gas_fornecedores').select('produtos').eq('id', body.fornecedorId).maybeSingle();
+    if (fornecedor?.produtos) {
+      const produtoRef = (fornecedor.produtos as any[]).find((p) => p.descricao === body.produto);
+      if (produtoRef?.preco) valorTotal = Number(produtoRef.preco) * quantidade;
+    }
+
+    const { data, error } = await supabase
+      .from('agua_gas_pedidos')
+      .insert({
+        fornecedor_id: body.fornecedorId,
+        fornecedor_nome: body.fornecedorNome || '',
+        cliente_id: body.clienteId || null,
+        cliente_nome: String(body.clienteNome).trim(),
+        cliente_telefone: String(body.clienteTelefone).trim(),
+        produto: String(body.produto).trim(),
+        quantidade,
+        valor_total: valorTotal,
+        endereco: String(body.endereco || '').trim(),
+        observacoes: String(body.observacoes || '').trim(),
+      })
+      .select('*')
+      .single();
+    if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: true, data: pedidoParaApi(data) });
   }
 
-  // fornecedor
   if (!body.nome?.trim() || !body.telefone?.trim()) {
     return NextResponse.json({ success: false, error: 'Nome e telefone são obrigatórios.' }, { status: 400 });
   }
-  const items = read(FORNECEDORES_PATH);
-  const novo = {
-    id: `agforn_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-    nome: String(body.nome).trim(),
-    responsavel: String(body.responsavel || '').trim(),
-    telefone: String(body.telefone).trim(),
-    whatsapp: String(body.whatsapp || body.telefone).trim(),
-    bairro: String(body.bairro || '').trim(),
-    cidade: String(body.cidade || 'Valente').trim(),
-    descricao: String(body.descricao || '').trim(),
-    foto: String(body.foto || '').trim(),
-    horario: String(body.horario || '').trim(),
-    temEntrega: Boolean(body.temEntrega ?? true),
-    taxaEntrega: Number(body.taxaEntrega || 0),
-    freteGratisAcima: Number(body.freteGratisAcima || 0),
-    produtos: Array.isArray(body.produtos) ? body.produtos : [],
-    status: 'pendente',
-    destaque: false,
-    createdAt: now,
-    updatedAt: now
-  };
-  items.unshift(novo);
-  write(FORNECEDORES_PATH, items);
-  return NextResponse.json({ success: true, data: novo });
+  const { data, error } = await supabase
+    .from('agua_gas_fornecedores')
+    .insert({
+      dono_id: body.donoId || null,
+      nome: String(body.nome).trim(),
+      responsavel: String(body.responsavel || '').trim(),
+      telefone: String(body.telefone).trim(),
+      whatsapp: String(body.whatsapp || body.telefone).trim(),
+      bairro: String(body.bairro || '').trim(),
+      cidade: String(body.cidade || 'Valente').trim(),
+      descricao: String(body.descricao || '').trim(),
+      foto: String(body.foto || '').trim(),
+      horario: String(body.horario || '').trim(),
+      tem_entrega: Boolean(body.temEntrega ?? true),
+      taxa_entrega: Number(body.taxaEntrega || 0),
+      frete_gratis_acima: Number(body.freteGratisAcima || 0),
+      produtos: Array.isArray(body.produtos) ? body.produtos : [],
+    })
+    .select('*')
+    .single();
+  if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  return NextResponse.json({ success: true, data: fornecedorParaApi(data) });
 }
 
 export async function PUT(request: NextRequest) {
@@ -108,16 +186,54 @@ export async function PUT(request: NextRequest) {
   const recurso = searchParams.get('recurso') || 'fornecedores';
   const id = searchParams.get('id');
   if (!id) return NextResponse.json({ success: false, error: 'ID não informado.' }, { status: 400 });
-
-  const filePath = recurso === 'pedidos' ? PEDIDOS_PATH : FORNECEDORES_PATH;
   const body = await request.json();
-  const items = read(filePath);
-  const idx = items.findIndex((i) => i.id === id);
-  if (idx === -1) return NextResponse.json({ success: false, error: 'Registro não encontrado.' }, { status: 404 });
+  const supabase = createClient();
 
-  items[idx] = { ...items[idx], ...body, id, updatedAt: new Date().toISOString() };
-  write(filePath, items);
-  return NextResponse.json({ success: true, data: items[idx] });
+  if (recurso === 'pedidos') {
+    const patch: Record<string, any> = { updated_at: new Date().toISOString() };
+    if (body.status !== undefined) patch.status = body.status;
+    if (body.observacoes !== undefined) patch.observacoes = body.observacoes;
+
+    const { data: anterior } = await supabase.from('agua_gas_pedidos').select('*').eq('id', id).maybeSingle();
+    if (!anterior) return NextResponse.json({ success: false, error: 'Registro não encontrado.' }, { status: 404 });
+
+    const { data, error } = await supabase.from('agua_gas_pedidos').update(patch).eq('id', id).select('*').single();
+    if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+
+    // Movimentacao financeira: confirmar um pedido gera um registro em
+    // `pagamentos`, o que da' ao admin master visao completa (ver
+    // 014_agua_gas_supabase.sql). So' loga na transicao para 'confirmado',
+    // nunca duplica se o pedido ja' estava confirmado.
+    if (body.status === 'confirmado' && anterior.status !== 'confirmado' && anterior.cliente_id) {
+      await supabase.from('pagamentos').insert({
+        usuario_id: anterior.cliente_id,
+        origem: 'pedido',
+        referencia_id: id,
+        valor: data.valor_total || 0,
+        metodo: null,
+        status: 'aprovado',
+      });
+    }
+
+    return NextResponse.json({ success: true, data: pedidoParaApi(data) });
+  }
+
+  const patch: Record<string, any> = { updated_at: new Date().toISOString() };
+  if (body.status !== undefined) patch.status = body.status;
+  if (body.destaque !== undefined) patch.destaque = body.destaque;
+  if (body.nome !== undefined) patch.nome = body.nome;
+  if (body.responsavel !== undefined) patch.responsavel = body.responsavel;
+  if (body.telefone !== undefined) patch.telefone = body.telefone;
+  if (body.whatsapp !== undefined) patch.whatsapp = body.whatsapp;
+  if (body.bairro !== undefined) patch.bairro = body.bairro;
+  if (body.horario !== undefined) patch.horario = body.horario;
+  if (body.temEntrega !== undefined) patch.tem_entrega = body.temEntrega;
+  if (body.taxaEntrega !== undefined) patch.taxa_entrega = body.taxaEntrega;
+  if (body.produtos !== undefined) patch.produtos = body.produtos;
+
+  const { data, error } = await supabase.from('agua_gas_fornecedores').update(patch).eq('id', id).select('*').single();
+  if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  return NextResponse.json({ success: true, data: fornecedorParaApi(data) });
 }
 
 export async function DELETE(request: NextRequest) {
@@ -125,12 +241,10 @@ export async function DELETE(request: NextRequest) {
   const recurso = searchParams.get('recurso') || 'fornecedores';
   const id = searchParams.get('id');
   if (!id) return NextResponse.json({ success: false, error: 'ID não informado.' }, { status: 400 });
+  const supabase = createClient();
 
-  const filePath = recurso === 'pedidos' ? PEDIDOS_PATH : FORNECEDORES_PATH;
-  const items = read(filePath);
-  const filtered = items.filter((i) => i.id !== id);
-  if (filtered.length === items.length) return NextResponse.json({ success: false, error: 'Não encontrado.' }, { status: 404 });
-  write(filePath, filtered);
+  const tabela = recurso === 'pedidos' ? 'agua_gas_pedidos' : 'agua_gas_fornecedores';
+  const { error } = await supabase.from(tabela).delete().eq('id', id);
+  if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }
-

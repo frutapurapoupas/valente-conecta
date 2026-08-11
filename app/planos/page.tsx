@@ -13,6 +13,8 @@ interface PlanConfig {
   descricao: string;
   fotosPorItem: number;
   featuresPadrao: string[];
+  descontoPixRecorrenteAtivo?: boolean;
+  descontoPixRecorrentePercent?: number;
 }
 
 interface ServiceConfig {
@@ -165,6 +167,14 @@ export default function PlanosPage() {
                           <span className="text-xs text-slate-300">{plan.negociavel ? "A negociar" : `R$ ${Number(plan.preco || 0).toFixed(2)}/${plan.periodo}`}</span>
                         </div>
                         <p className="text-xs text-slate-400 mt-1">{plan.descricao}</p>
+                        {plan.descontoPixRecorrenteAtivo && !plan.negociavel && plan.preco ? (
+                          <p className="text-xs text-emerald-400 font-medium mt-2 flex items-center gap-1">
+                            💸 {plan.descontoPixRecorrentePercent}% de desconto pagando via PIX por 12 meses
+                            <span className="text-slate-400 font-normal">
+                              (R$ {(plan.preco * (1 - (plan.descontoPixRecorrentePercent || 0) / 100)).toFixed(2)}/mês)
+                            </span>
+                          </p>
+                        ) : null}
                         <ul className="mt-3 space-y-1">
                           {features.map((f, i) => (
                             <li key={i} className="text-xs text-slate-200 flex items-start gap-1.5">

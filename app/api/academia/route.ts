@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { enviarPushParaAluno } from '@/lib/push';
 
 export async function GET(request: NextRequest) {
   try {
@@ -299,6 +300,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, data });
     }
 
+    if (recurso === 'push_subscription') {
+      if (!body?.aluno_id || !body?.subscription) {
+        return NextResponse.json({ success: false, error: 'aluno_id e subscription obrigatorios' }, { status: 400 });
+      }
+      const { error } = await supabase
+        .from('academia_alunos')
+        .update({ push_subscription: body.subscription })
+        .eq('id', body.aluno_id);
+      if (error) throw error;
+      return NextResponse.json({ success: true });
+    }
+
     if (recurso === 'sessoes') {
       const obrigatorios = ['user_id', 'minutos'];
       for (const campo of obrigatorios) {
@@ -428,6 +441,8 @@ export async function POST(request: NextRequest) {
           contato: body.contato,
           endereco: body.endereco,
           localizador: body.localizador || '',
+          latitude: body.latitude ?? null,
+          longitude: body.longitude ?? null,
           alunos: 0,
           ativa: body.ativa ?? false, // fica inativa até admin master aprovar
           plano_id: body.plano_id || null,
@@ -561,6 +576,20 @@ export async function POST(request: NextRequest) {
         .select()
         .single();
       if (error) throw error;
+
+      if (data?.aluno_id) {
+        const { data: servico } = await supabase
+          .from('academia_servicos')
+          .select('nome')
+          .eq('id', body.servico_id)
+          .maybeSingle();
+        await enviarPushParaAluno(data.aluno_id, {
+          title: 'Nova cobrança na sua academia',
+          body: `${servico?.nome || 'Serviço'} — R$ ${Number(body.valor_cobrado).toFixed(2)} pendente.`,
+          url: '/academia/empresa/servicos',
+        });
+      }
+
       return NextResponse.json({ success: true, data });
     }
 

@@ -13,6 +13,8 @@ interface PlanConfig {
   descricao: string;
   fotosPorItem: number;
   featuresPadrao: string[];
+  descontoPixRecorrenteAtivo?: boolean;
+  descontoPixRecorrentePercent?: number;
 }
 
 interface ServiceConfig {
@@ -268,6 +270,31 @@ export default function AdminPlanosPage() {
                   />
                   Ativo
                 </label>
+
+                <div className="mt-3 pt-3 border-t border-gray-100">
+                  <label className="flex items-center gap-2 text-xs">
+                    <input
+                      type="checkbox"
+                      checked={!!p.descontoPixRecorrenteAtivo}
+                      onChange={(e) => updatePlan(p.id, { descontoPixRecorrenteAtivo: e.target.checked })}
+                    />
+                    Desconto para PIX recorrente (12 meses)
+                  </label>
+                  {p.descontoPixRecorrenteAtivo && (
+                    <label className="text-xs text-gray-600 block mt-2">
+                      % de desconto (sugestão: valores baixos, ex. 5%)
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        step="0.5"
+                        value={p.descontoPixRecorrentePercent ?? 5}
+                        onChange={(e) => updatePlan(p.id, { descontoPixRecorrentePercent: Number(e.target.value || 0) })}
+                        className="w-full mt-1 p-2 border rounded"
+                      />
+                    </label>
+                  )}
+                </div>
               </div>
             );
           })}

@@ -175,7 +175,7 @@ export function logout(): void {
 }
 
 // Verificar acesso do usuário (trial, viral, etc.)
-export async function checkUserAccess(userId: number): Promise<{
+export async function checkUserAccess(userId: string): Promise<{
   hasAccess: boolean;
   reason: 'trial' | 'viral' | 'paid' | 'expired';
   daysLeft: number;

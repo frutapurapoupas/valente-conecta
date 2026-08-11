@@ -3,17 +3,24 @@
 export const dynamic = 'force-dynamic';
 
 import { useRouter } from "next/navigation";
-import { useApp } from "@/app/context/AppContext";
 import toast from "react-hot-toast";
 import { useState, useEffect } from "react";
 import { ArrowLeft, Copy, Share2, Download, CheckCircle, Wallet, BellRing, Building2, Briefcase, Users, Info, X } from "lucide-react";
-import { getStableReferralCode } from '@/utils/referral';
 import { calculateReferralWallet, type ReferralConfig, type ReferralWalletSummary } from '@/utils/referralBonus';
 import { supabase } from '@/lib/supabase';
+import { getCurrentUser } from '@/lib/auth';
+import type { Usuario } from '@/lib/supabase';
+import { CadastroPopup } from '@/components/CadastroPopup';
 
 export default function QRCodePage() {
   const router = useRouter();
-  const { user, isAdmin } = useApp();
+  // getCurrentUser le' a sessao real (localStorage, gravada por
+  // lib/auth.ts::cadastroSimples) — useApp().user do AppContext nunca e'
+  // preenchido hoje (nao ha' login real ainda), o que deixava essa pagina
+  // sempre tratando qualquer visitante como anonimo.
+  const [user, setUser] = useState<Usuario | null>(null);
+  useEffect(() => { setUser(getCurrentUser()); }, []);
+  const isAdmin = user?.role === 'admin';
   const [copied, setCopied] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
   const [estatisticas, setEstatisticas] = useState({ total: 0, ativos: 0, pendentes: 0 });
@@ -37,8 +44,11 @@ export default function QRCodePage() {
     setBaseUrl(window.location.origin);
   }, []);
 
-  const codigoIndicacao = getStableReferralCode(user, isAdmin);
-  const linkIndicacao = `${baseUrl}/convite/${codigoIndicacao}`;
+  // Codigo real gravado no cadastro (cadastroSimples), nao mais recalculado —
+  // e' o mesmo valor que app/convite/[codigo]/page.tsx resolve de volta pro
+  // nome do indicador.
+  const codigoIndicacao = user?.codigo_indicacao || "";
+  const linkIndicacao = baseUrl && codigoIndicacao ? `${baseUrl}/convite/${codigoIndicacao}` : "";
 
   useEffect(() => {
     if (!baseUrl) return;
@@ -215,6 +225,20 @@ export default function QRCodePage() {
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500 mx-auto"></div>
           <p className="text-gray-400 mt-4">Carregando...</p>
         </div>
+      </div>
+    );
+  }
+
+  // Sem cadastro ainda: nao ha' codigo_indicacao pra gerar QR/link nenhum —
+  // pede o cadastro minimo (nome+whatsapp) em vez de mostrar um painel vazio.
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-6">
+        <div className="text-center max-w-sm">
+          <h2 className="text-white text-xl font-bold mb-2">Complete seu cadastro</h2>
+          <p className="text-gray-400 text-sm">Para gerar seu QR Code exclusivo de indicação, precisamos só do seu nome e WhatsApp.</p>
+        </div>
+        <CadastroPopup forceShow onSuccess={() => setUser(getCurrentUser())} />
       </div>
     );
   }

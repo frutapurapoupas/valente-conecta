@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   Droplets, Flame, Search, Plus, Edit3, Trash2, CheckCircle2, EyeOff,
-  Star, RefreshCw, Phone, Package, Truck, X, MessageCircle, ShoppingBag
+  Star, RefreshCw, Phone, Package, Truck, X, MessageCircle, ShoppingBag, DollarSign
 } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -38,9 +38,10 @@ const emptyForn = (): Partial<Fornecedor> => ({
 });
 
 export default function AdminAguaGasPage() {
-  const [aba, setAba] = useState<'fornecedores' | 'pedidos'>('fornecedores');
+  const [aba, setAba] = useState<'fornecedores' | 'pedidos' | 'financeiro'>('fornecedores');
   const [fornecedores, setFornecedores] = useState<Fornecedor[]>([]);
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
+  const [movimentacoes, setMovimentacoes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [busca, setBusca] = useState('');
   const [statusFiltro, setStatusFiltro] = useState('');
@@ -68,8 +69,17 @@ export default function AdminAguaGasPage() {
     } catch { /* silent */ }
   }, []);
 
+  const carregarFinanceiro = useCallback(async () => {
+    try {
+      const res = await fetch('/api/agua-gas?recurso=financeiro');
+      const data = await res.json();
+      setMovimentacoes(Array.isArray(data.data) ? data.data : []);
+    } catch { /* silent */ }
+  }, []);
+
   useEffect(() => { const t = setTimeout(carregarFornecedores, 300); return () => clearTimeout(t); }, [carregarFornecedores]);
   useEffect(() => { if (aba === 'pedidos') carregarPedidos(); }, [aba, carregarPedidos]);
+  useEffect(() => { if (aba === 'financeiro') carregarFinanceiro(); }, [aba, carregarFinanceiro]);
 
   const handlePublicar = async (f: Fornecedor) => {
     const novoStatus = f.status === 'publicado' ? 'pendente' : 'publicado';
@@ -165,14 +175,14 @@ export default function AdminAguaGasPage() {
 
       {/* Abas */}
       <div className="flex gap-2 mb-6">
-        {(['fornecedores', 'pedidos'] as const).map((a) => (
+        {(['fornecedores', 'pedidos', 'financeiro'] as const).map((a) => (
           <button key={a} onClick={() => setAba(a)} className={`px-5 py-2.5 rounded-xl font-semibold text-sm capitalize transition-colors ${aba === a ? 'bg-blue-600 text-white' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}>
-            {a === 'fornecedores' ? `Fornecedores (${resumo.total})` : `Pedidos (${pedidos.length})`}
+            {a === 'fornecedores' ? `Fornecedores (${resumo.total})` : a === 'pedidos' ? `Pedidos (${pedidos.length})` : `Financeiro (${movimentacoes.length})`}
           </button>
         ))}
       </div>
 
-      {/* â”€â”€ FORNECEDORES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── FORNECEDORES ─────────────────────────────────────────────────────── */}
       {aba === 'fornecedores' && (
         <>
           <div className="flex flex-wrap gap-3 mb-6">
@@ -267,7 +277,7 @@ export default function AdminAguaGasPage() {
         </>
       )}
 
-      {/* â”€â”€ PEDIDOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── PEDIDOS ───────────────────────────────────────────────────────────── */}
       {aba === 'pedidos' && (
         <div className="bg-slate-900 border border-white/10 rounded-2xl overflow-hidden">
           {pedidos.length === 0 ? (
@@ -298,7 +308,7 @@ export default function AdminAguaGasPage() {
                         <div className="text-xs text-gray-400">Qtd: {p.quantidade}</div>
                         {p.observacoes && <div className="text-xs text-gray-500 line-clamp-1 mt-0.5">{p.observacoes}</div>}
                       </td>
-                      <td className="px-5 py-4 text-sm text-gray-400">{p.endereco || 'â€”'}</td>
+                      <td className="px-5 py-4 text-sm text-gray-400">{p.endereco || '—'}</td>
                       <td className="px-5 py-4">
                         <span className={`text-xs font-semibold px-2 py-1 rounded-full ${p.status === 'confirmado' ? 'bg-green-500/20 text-green-400' : p.status === 'cancelado' ? 'bg-red-500/20 text-red-400' : 'bg-orange-500/20 text-orange-400'}`}>{p.status}</span>
                       </td>
@@ -330,7 +340,55 @@ export default function AdminAguaGasPage() {
         </div>
       )}
 
-      {/* â”€â”€ MODAL EDIÃ‡ÃƒO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── FINANCEIRO ─────────────────────────────────────────── */}
+      {aba === 'financeiro' && (
+        <div className="bg-slate-900 border border-white/10 rounded-2xl overflow-hidden">
+          {movimentacoes.length === 0 ? (
+            <div className="p-12 text-center">
+              <DollarSign className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+              <p className="text-gray-400">Nenhuma movimentação ainda.</p>
+              <p className="text-gray-500 text-xs mt-1">Aparece aqui quando um pedido é confirmado pelo fornecedor.</p>
+            </div>
+          ) : (
+            <>
+              <div className="p-5 border-b border-white/10 flex items-center justify-between">
+                <span className="text-sm text-gray-400">Total movimentado</span>
+                <span className="text-2xl font-bold text-green-400">
+                  R$ {movimentacoes.reduce((acc, m) => acc + m.valor, 0).toFixed(2)}
+                </span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="border-b border-white/10">
+                    <tr className="text-xs uppercase tracking-widest text-gray-500">
+                      <th className="px-5 py-4 text-left">Data</th>
+                      <th className="px-5 py-4 text-left">Fornecedor</th>
+                      <th className="px-5 py-4 text-left">Cliente / Produto</th>
+                      <th className="px-5 py-4 text-left">Valor</th>
+                      <th className="px-5 py-4 text-left">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {movimentacoes.map((m) => (
+                      <tr key={m.id} className="hover:bg-white/2">
+                        <td className="px-5 py-4 text-sm text-gray-300">{new Date(m.createdAt).toLocaleString('pt-BR')}</td>
+                        <td className="px-5 py-4 text-sm text-white">{m.pedido?.fornecedor_nome || '—'}</td>
+                        <td className="px-5 py-4 text-sm text-gray-300">{m.pedido?.cliente_nome || '—'} · {m.pedido?.produto || '—'}</td>
+                        <td className="px-5 py-4 text-sm font-semibold text-green-400">R$ {m.valor.toFixed(2)}</td>
+                        <td className="px-5 py-4">
+                          <span className="text-xs font-semibold px-2 py-1 rounded-full bg-green-500/20 text-green-400">{m.status}</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* ── MODAL EDIÇÃO ─────────────────────────────────────────────────────── */}
       {editando && (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-start sm:items-center justify-center p-4 overflow-y-auto">
           <div className="bg-slate-900 border border-white/10 rounded-2xl w-full max-w-2xl my-4">

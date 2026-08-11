@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
 import { Vaga, Curriculo, Candidatura, FiltrosVaga } from "../types";
+import { obterUsuarioLocalId } from "@/lib/usuarioLocal";
 
 // ============================================================================
 // HOOK PRINCIPAL - LÓGICA PURA
@@ -74,7 +75,7 @@ export function useEmpregos() {
       const response = await fetch('/api/empregos/vagas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(vaga),
+        body: JSON.stringify({ ...vaga, criadoPor: vaga.criadoPor || obterUsuarioLocalId() }),
       });
       const data = await response.json();
       if (data.success) {

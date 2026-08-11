@@ -73,7 +73,7 @@ export default function HomePage() {
   const categoriasPrincipais: CategoriaItem[] = [
     { nome: "Mercados", Icone: ShoppingBag, href: "/comercio" },
     { nome: "Alimentação", Icone: Utensils, href: "/cozinha" },
-    { nome: "Farmácias", Icone: Pill, href: "/servicos" },
+    { nome: "Farmácias", Icone: Pill, href: "/mercados" },
     { nome: "Moda", Icone: Shirt, href: "/servicos" },
     { nome: "Agro e Campo", Icone: Sprout, href: "/servicos" },
     { nome: "Utilidades", Icone: Wrench, href: "/agua-gas" },
@@ -83,18 +83,18 @@ export default function HomePage() {
   const categoriasExtras: CategoriaItem[] = [
     { nome: "Academias & Esportes", Icone: Dumbbell, href: "/academia" },
     { nome: "Transporte & Delivery", Icone: Bike, href: "/mototaxi" },
-    { nome: "Imóvel", Icone: HomeIcon, href: "/servicos" },
-    { nome: "Construção", Icone: Hammer, href: "/servicos" },
+    { nome: "Imóvel", Icone: HomeIcon, href: "/imoveis" },
+    { nome: "Construção", Icone: Hammer, href: "/construcao" },
     { nome: "Aluguel Máquinas", Icone: Wrench, href: "/publico/maquinas" },
     { nome: "Tecnologia", Icone: Laptop, href: "/servicos" },
     { nome: "Automotivo", Icone: Car, href: "/servicos" },
     { nome: "Educação", Icone: GraduationCap, href: "/servicos" },
-    { nome: "Saúde", Icone: HeartPulse, href: "/servicos" },
+    { nome: "Saúde", Icone: HeartPulse, href: "/saude" },
     { nome: "Moda Masculina", Icone: Shirt, href: "/servicos" },
     { nome: "Moda Feminina", Icone: Shirt, href: "/servicos" },
     { nome: "Beleza & Estética", Icone: Sparkles, href: "/servicos" },
     { nome: "Eventos", Icone: PartyPopper, href: "/servicos" },
-    { nome: "Pet Shop", Icone: PawPrint, href: "/servicos" },
+    { nome: "Pet Shop", Icone: PawPrint, href: "/pet" },
     { nome: "Financeiro", Icone: DollarSign, href: "/servicos" },
   ];
 

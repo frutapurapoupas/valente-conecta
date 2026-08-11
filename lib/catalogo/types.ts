@@ -87,4 +87,3 @@ export interface WizardConfig {
   titulo: string;
   subtitulo: string;
 }
-

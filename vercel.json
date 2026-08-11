@@ -9,6 +9,16 @@
       "permanent": false
     }
   ],
+  "crons": [
+    {
+      "path": "/api/academia/cron/frequencia",
+      "schedule": "0 21 * * *"
+    },
+    {
+      "path": "/api/fiado/cron/lembretes",
+      "schedule": "0 12 * * *"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

@@ -1,15 +1,19 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useApp } from '@/app/context/AppContext';
+import { obterUsuarioLocalId } from '@/lib/usuarioLocal';
 import { notificacaoService } from '@/services/notificacaoService';
 import { Bell } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function PushSubscriptionManager() {
-  const { user } = useApp();
+  const [usuarioId, setUsuarioId] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
+
+  useEffect(() => {
+    setUsuarioId(obterUsuarioLocalId());
+  }, []);
 
   useEffect(() => {
     if ('serviceWorker' in navigator && 'PushManager' in window) {
@@ -41,7 +45,7 @@ export default function PushSubscriptionManager() {
       });
 
       // Salvar no backend
-      const success = await notificacaoService.salvarPushSubscription(subscription, user?.id || '');
+      const success = await notificacaoService.salvarPushSubscription(subscription, usuarioId);
       
       if (success) {
         setIsSubscribed(true);
@@ -60,7 +64,7 @@ export default function PushSubscriptionManager() {
     }
   };
 
-  if (!isSupported || !user) return null;
+  if (!isSupported || !usuarioId) return null;
 
   return (
     <button

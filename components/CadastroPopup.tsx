@@ -9,33 +9,41 @@ import toast from 'react-hot-toast';
 interface CadastroPopupProps {
   onSuccess?: () => void;
   codigoIndicacao?: string;
+  /** Pula o timer/checagem de "já mostrou antes" e abre na hora — usado na
+   * página de convite, onde o visitante já veio com intenção de cadastro. */
+  forceShow?: boolean;
 }
 
-export function CadastroPopup({ onSuccess, codigoIndicacao }: CadastroPopupProps) {
+export function CadastroPopup({ onSuccess, codigoIndicacao, forceShow }: CadastroPopupProps) {
   const [show, setShow] = useState(false);
   const [nome, setNome] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    if (forceShow) {
+      if (!isUserLoggedIn()) setShow(true);
+      return;
+    }
+
     // Não mostrar se já logado
     if (isUserLoggedIn()) return;
-    
+
     // Verificar sessão temporária
     if (isSessaoTempValida()) return;
-    
+
     // Verificar se já mostrou antes
     const alreadyShown = localStorage.getItem('cadastro_popup_shown');
     if (alreadyShown) return;
-    
+
     // Mostrar popup após 2 segundos
     const timer = setTimeout(() => {
       setShow(true);
       localStorage.setItem('cadastro_popup_shown', 'true');
     }, 2000);
-    
+
     return () => clearTimeout(timer);
-  }, []);
+  }, [forceShow]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,8 +65,9 @@ export function CadastroPopup({ onSuccess, codigoIndicacao }: CadastroPopupProps
     if (result.success) {
       toast.success('✅ Cadastro realizado! Agora você tem acesso completo.');
       setShow(false);
+      localStorage.setItem('onboarding_pos_cadastro', '1');
       onSuccess?.();
-      
+
       // Recarregar para atualizar estado
       setTimeout(() => {
         window.location.reload();

@@ -10,8 +10,9 @@ import { useRouter } from "next/navigation";
 import {
   User, Dumbbell, Trophy, Target, Activity,
   Bell, ChevronRight, ArrowLeft,
-  BookOpen, TrendingUp, Brain,
+  BookOpen, TrendingUp, Brain, MapPin,
 } from "lucide-react";
+import PushOptIn from "./_lib/PushOptIn";
 
 export const dynamic = 'force-dynamic';
 
@@ -188,6 +189,17 @@ export default function AcademiaPage() {
       complemento: "Catálogo com vídeos e instruções",
     },
     {
+      id: "checkin",
+      icon: <MapPin className="w-6 h-6" />,
+      titulo: "Check-in por Proximidade",
+      descricao: "Confirme sua presença quando estiver na academia",
+      status: "Disponível",
+      statusCor: "text-emerald-400",
+      href: "/academia/aluno/checkin",
+      bgGradient: "from-cyan-500 to-blue-500",
+      complemento: "Usa sua localização para registrar presença",
+    },
+    {
       id: "historico",
       icon: <TrendingUp className="w-6 h-6" />,
       titulo: "Histórico de Cargas",
@@ -284,6 +296,7 @@ export default function AcademiaPage() {
         <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-3"><Bell className="w-5 h-5 text-yellow-400" /><h3 className="font-bold text-white">Alertas</h3></div>
           <div className="space-y-2">
+            <PushOptIn alunoId={alunoId} />
             {!perfilCompleto && (
               <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
                 <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />

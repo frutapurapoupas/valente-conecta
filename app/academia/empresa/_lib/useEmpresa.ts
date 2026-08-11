@@ -22,6 +22,8 @@ export interface GymUnit {
   contato: string;
   endereco: string;
   localizador: string;
+  latitude: number | null;
+  longitude: number | null;
   alunos: number;
   ativa: boolean;
   plano_id: string | null;

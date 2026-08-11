@@ -1,8 +1,7 @@
-﻿"use client";
-import { DemandView } from '@/components/DemandView';
+"use client";
+// Camada 3 (admin master) do módulo Mercados.
+import { AdminMasterModuloShell } from "@/components/catalogo/AdminMasterModuloShell";
 
 export default function Page() {
-  return <DemandView category="MERCADOS" title="Solicitação: mercados" />;
+  return <AdminMasterModuloShell modulo="mercados" labelModulo="Mercados" />;
 }
-
-

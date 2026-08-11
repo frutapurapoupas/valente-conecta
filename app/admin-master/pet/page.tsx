@@ -1,8 +1,7 @@
-﻿"use client";
-import { DemandView } from '@/components/DemandView';
+"use client";
+// Camada 3 (admin master) do módulo Pet Shop.
+import { AdminMasterModuloShell } from "@/components/catalogo/AdminMasterModuloShell";
 
 export default function Page() {
-  return <DemandView category="PET" title="Solicitação: pet" />;
+  return <AdminMasterModuloShell modulo="pet" labelModulo="Pet Shop" />;
 }
-
-

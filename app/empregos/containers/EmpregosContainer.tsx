@@ -25,8 +25,13 @@ import {
 
 export function EmpregosContainer() {
   const router = useRouter();
-  const { user, isAdmin } = useApp();
+  const { user } = useApp();
   const [mounted, setMounted] = useState(false);
+  // TODO: substituir por checagem real de "sou dono desta vaga" quando o
+  // login existir (ver MASTER_SPEC secao 9). Ate la, qualquer visitante pode
+  // se declarar empregador — o antigo gate por isAdmin (admin master) deixava
+  // essa area impossivel de alcançar, ja que isAdmin nunca fica true sem login.
+  const [souEmpregador, setSouEmpregador] = useState(false);
 
   // ==========================================================================
   // HOOKS DE NEGÃ“CIO
@@ -159,9 +164,17 @@ export function EmpregosContainer() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
+      <div className="bg-white border-b px-4 py-1.5 flex justify-end">
+        <button
+          onClick={() => setSouEmpregador((v) => !v)}
+          className="text-xs font-medium text-indigo-600 hover:text-indigo-700"
+        >
+          {souEmpregador ? "Voltar para busca de vagas" : "Sou empregador · publicar vaga"}
+        </button>
+      </div>
       {/* HEADER */}
       <EmpregosHeader
-        isAdmin={isAdmin}
+        isAdmin={souEmpregador}
         onNovaVaga={handleNovaVaga}
         onNovoCurriculo={() => setShowCurriculoModal(true)}
       />
@@ -181,7 +194,7 @@ export function EmpregosContainer() {
         <EmpregosList
           vagas={vagasFiltradas}
           loading={loading}
-          isAdmin={isAdmin}
+          isAdmin={souEmpregador}
           onEditar={handleEditarVaga}
           onExcluir={handleExcluirVaga}
           onCandidatar={handleCandidatar}
@@ -198,7 +211,7 @@ export function EmpregosContainer() {
               setEditandoVaga(null);
             }}
             onSave={handleSalvarVaga}
-            isAdmin={isAdmin}
+            isAdmin={souEmpregador}
           />
         )}
 
@@ -280,7 +293,7 @@ export function EmpregosContainer() {
                   <span>ðŸ“ {vagaSelecionada.localizacao}</span>
                   <span>ðŸ’° {formatarSalario(vagaSelecionada.salarioMin, vagaSelecionada.salarioMax)}</span>
                 </div>
-                {!isAdmin && (
+                {!souEmpregador && (
                   <button
                     onClick={() => {
                       handleFecharDetalhes();
