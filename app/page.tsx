@@ -110,8 +110,14 @@ export default function HomePage() {
       recognition.lang = "pt-BR";
       recognition.onresult = (event: any) => {
         if (event.results && event.results[0] && event.results[0][0]) {
-          setSearchTerm(event.results[0][0].transcript);
-          setTimeout(handleSearch, 500);
+          const transcript = event.results[0][0].transcript;
+          setSearchTerm(transcript);
+          // Busca direto com o texto reconhecido em vez de chamar
+          // handleSearch (que ficaria preso no searchTerm antigo, vazio,
+          // por causa da closure — a busca automatica nunca disparava).
+          if (transcript.trim()) {
+            router.push("/busca?q=" + encodeURIComponent(transcript));
+          }
         }
       };
       recognition.start();

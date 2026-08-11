@@ -10,9 +10,13 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Search, MapPin, MapPinOff } from "lucide-react";
+import { Search, MapPin, MapPinOff, BellRing, CheckCircle2 } from "lucide-react";
+import toast from "react-hot-toast";
 import { ItemCard } from "@/components/catalogo/ItemCard";
 import { LABEL_MODULO, type ModuloId, type ResultadoVitrine } from "@/lib/catalogo/marketplaceTypes";
+import { getCurrentUser, isUserLoggedIn } from "@/lib/auth";
+import { obterUsuarioLocalId } from "@/lib/usuarioLocal";
+import { CadastroPopup } from "@/components/CadastroPopup";
 
 const MODULOS = Object.keys(LABEL_MODULO) as ModuloId[];
 
@@ -27,6 +31,9 @@ export default function BuscaPage() {
   const [loading, setLoading] = useState(false);
   const [localizacao, setLocalizacao] = useState<{ lat: number; lng: number } | null>(null);
   const [pediuLocalizacao, setPediuLocalizacao] = useState(false);
+  const [demandaRegistrada, setDemandaRegistrada] = useState(false);
+  const [registrandoDemanda, setRegistrandoDemanda] = useState(false);
+  const [pedirCadastro, setPedirCadastro] = useState(false);
 
   useEffect(() => {
     if (!("geolocation" in navigator)) return;
@@ -36,6 +43,43 @@ export default function BuscaPage() {
       { timeout: 5000 }
     );
   }, []);
+
+  // O CadastroPopup recarrega a pagina inteira ~1.5s depois do cadastro
+  // (pra atualizar o estado de login em todo o app) — o que interromperia
+  // um fetch de registrarDemanda() em andamento. Por isso guardamos a
+  // intencao no localStorage antes de abrir o popup e retomamos aqui, ja
+  // logado, depois do reload.
+  useEffect(() => {
+    const pendente = localStorage.getItem("busca_demanda_pendente");
+    if (!pendente || !isUserLoggedIn()) return;
+    localStorage.removeItem("busca_demanda_pendente");
+    try {
+      const { termo: termoPendente, modulo } = JSON.parse(pendente);
+      if (!termoPendente) return;
+      const usuario = getCurrentUser();
+      fetch("/api/demandas-busca", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          termo: termoPendente,
+          modulo,
+          usuarioId: obterUsuarioLocalId(),
+          usuarioNome: usuario?.nome,
+          usuarioTelefone: usuario?.whatsapp,
+        }),
+      })
+        .then((r) => r.json())
+        .then((res) => {
+          if (res.success) {
+            toast.success("Prontinho! Vamos te avisar assim que aparecer.");
+            if (termoPendente === termo) setDemandaRegistrada(true);
+          }
+        })
+        .catch((err) => console.error("Erro ao registrar demanda pendente:", err));
+    } catch {
+      // ignora JSON invalido
+    }
+  }, []); // eslint-disable-line
 
   useEffect(() => {
     buscar();
@@ -64,8 +108,42 @@ export default function BuscaPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setDemandaRegistrada(false);
     router.replace(`/busca?q=${encodeURIComponent(termo)}`);
     buscar(termo);
+  };
+
+  const registrarDemanda = async () => {
+    if (!isUserLoggedIn()) {
+      localStorage.setItem("busca_demanda_pendente", JSON.stringify({ termo, modulo: moduloAtivo }));
+      setPedirCadastro(true);
+      return;
+    }
+    const usuario = getCurrentUser();
+    setRegistrandoDemanda(true);
+    try {
+      const resp = await fetch("/api/demandas-busca", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          termo,
+          modulo: moduloAtivo,
+          usuarioId: obterUsuarioLocalId(),
+          usuarioNome: usuario?.nome,
+          usuarioTelefone: usuario?.whatsapp,
+          latitude: localizacao?.lat,
+          longitude: localizacao?.lng,
+        }),
+      });
+      const resultado = await resp.json();
+      if (!resultado.success) throw new Error(resultado.error);
+      setDemandaRegistrada(true);
+      toast.success("Prontinho! Vamos te avisar assim que aparecer.");
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao registrar seu interesse");
+    } finally {
+      setRegistrandoDemanda(false);
+    }
   };
 
   return (
@@ -124,9 +202,25 @@ export default function BuscaPage() {
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500" />
         </div>
       ) : resultados.length === 0 ? (
-        <div className="text-center py-16 bg-gray-50 rounded-lg">
+        <div className="text-center py-16 bg-gray-50 rounded-lg px-6">
           <p className="text-gray-500 text-lg">Nenhum resultado encontrado</p>
-          <p className="text-gray-400 text-sm mt-1">Tente outro termo ou explore outra categoria</p>
+          <p className="text-gray-400 text-sm mt-1">Ainda não existe ninguém oferecendo isso na plataforma.</p>
+          {termo.trim() && (
+            demandaRegistrada ? (
+              <p className="mt-5 flex items-center justify-center gap-2 text-emerald-600 font-medium text-sm">
+                <CheckCircle2 className="w-4 h-4" /> Interesse registrado — vamos te avisar em até 24h se aparecer.
+              </p>
+            ) : (
+              <button
+                onClick={registrarDemanda}
+                disabled={registrandoDemanda}
+                className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-lg font-medium"
+              >
+                <BellRing className="w-4 h-4" />
+                {registrandoDemanda ? "Registrando..." : `Avise-me quando "${termo}" aparecer`}
+              </button>
+            )
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -134,6 +228,20 @@ export default function BuscaPage() {
             <ItemCard key={item.id} item={item} onClick={() => router.push(`/item/${item.id}`)} />
           ))}
         </div>
+      )}
+
+      {pedirCadastro && (
+        <CadastroPopup
+          forceShow
+          onSuccess={() => {
+            // Nao chama registrarDemanda() aqui: o CadastroPopup recarrega a
+            // pagina inteira ~1.5s depois, o que aborta esse fetch no meio
+            // do caminho na maioria das vezes. O useEffect de
+            // "busca_demanda_pendente" acima cuida disso depois do reload,
+            // ja com o login confirmado.
+            setPedirCadastro(false);
+          }}
+        />
       )}
     </div>
   );

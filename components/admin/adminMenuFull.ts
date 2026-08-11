@@ -55,6 +55,7 @@ import {
   Calendar,
   ExternalLink,
   Briefcase,
+  BellRing,
   type LucideIcon
 } from "lucide-react";
 
@@ -540,6 +541,16 @@ export const adminMenuFull: MenuGroup[] = [
       { name: "Seguros", path: "/admin-master/financeiro/seguros", icon: DollarSign, status: 'construction' },
       { name: "Contabilidade", path: "/admin-master/financeiro/contabilidade", icon: DollarSign, status: 'construction' },
       { name: "Consultoria financeira", path: "/admin-master/financeiro/consultoria", icon: DollarSign, status: 'construction' },
+    ]
+  },
+
+  // ==================== DEMANDA DE BUSCA ====================
+  {
+    name: "🔔 DEMANDAS DE BUSCA",
+    icon: BellRing,
+    collapsible: true,
+    items: [
+      { name: "Buscas sem resultado", path: "/admin-master/demandas", icon: BellRing, status: 'active' },
     ]
   },
 ];
