@@ -126,9 +126,17 @@ export default function ConvitePage() {
         )}
 
         {jaCadastrado ? (
-          <div className="bg-emerald-500/10 border border-emerald-500 rounded-2xl p-4 flex items-center gap-3">
-            <CheckCircle className="w-6 h-6 text-emerald-400 shrink-0" />
-            <p className="text-emerald-300 text-sm">Você já tem cadastro no Valente Conecta — aproveite!</p>
+          <div className="bg-emerald-500/10 border border-emerald-500 rounded-2xl p-4 space-y-3">
+            <div className="flex items-center gap-3">
+              <CheckCircle className="w-6 h-6 text-emerald-400 shrink-0" />
+              <p className="text-emerald-300 text-sm">Você já tem cadastro no Valente Conecta — aproveite!</p>
+            </div>
+            <a
+              href="/"
+              className="block w-full text-center bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl transition"
+            >
+              Entrar no Valente Conecta
+            </a>
           </div>
         ) : (
           <div className="bg-blue-500/10 border border-blue-500/40 rounded-2xl p-4 flex items-center gap-2 text-blue-200 text-sm">
@@ -142,7 +150,15 @@ export default function ConvitePage() {
         <CadastroPopup
           forceShow
           codigoIndicacao={codigo}
-          onSuccess={() => setJaCadastrado(true)}
+          onSuccess={() => {
+            // Cadastro concluido: leva pra dentro do app de verdade em vez
+            // de deixar a pessoa presa nesta pagina de convite (antes so'
+            // recarregava a propria /convite/[codigo]). Redireciona na hora
+            // (sem delay) porque o CadastroPopup tambem agenda o proprio
+            // location.reload() 1.5s depois — um setTimeout aqui competiria
+            // com aquele e as vezes perdia a corrida, voltando pro convite.
+            window.location.href = "/";
+          }}
         />
       )}
     </div>
