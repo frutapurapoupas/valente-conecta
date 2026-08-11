@@ -12,12 +12,15 @@ import type { CatalogoItem, MidiaItem, NovoCatalogoItem } from "@/lib/catalogo/m
 interface ItemFormProps {
   categorias: string[];
   itemInicial?: CatalogoItem;
+  /** Pre-preenche o titulo quando o cadastro comeca a partir de uma demanda
+   * de busca (alguem procurou isso e ninguem tinha) — ver LojaAdminShell. */
+  tituloSugerido?: string;
   onSalvar: (dados: Omit<NovoCatalogoItem, "dono_id" | "modulo">) => Promise<unknown>;
   onCancelar: () => void;
 }
 
-export function ItemForm({ categorias, itemInicial, onSalvar, onCancelar }: ItemFormProps) {
-  const [titulo, setTitulo] = useState(itemInicial?.titulo || "");
+export function ItemForm({ categorias, itemInicial, tituloSugerido, onSalvar, onCancelar }: ItemFormProps) {
+  const [titulo, setTitulo] = useState(itemInicial?.titulo || tituloSugerido || "");
   const [categoria, setCategoria] = useState(itemInicial?.categoria || categorias[0] || "");
   const [descricao, setDescricao] = useState(itemInicial?.descricao_publica || "");
   const [preco, setPreco] = useState(itemInicial?.preco?.toString() || "");

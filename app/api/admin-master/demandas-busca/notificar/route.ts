@@ -41,12 +41,18 @@ export async function POST(request: NextRequest) {
 
     const fornecedores = perfis || [];
 
+    // Rota do painel de cadastro certo pra esse modulo (sistema novo, com
+    // titulo pre-preenchido e fechamento automatico da demanda ao publicar
+    // — ver components/catalogo/LojaAdminShell.tsx). Sem modulo definido,
+    // cai no generico de servicos.
+    const linkCadastro = `/${demanda.modulo || 'servicos'}/admin?demanda=${demanda.id}&termo=${encodeURIComponent(demanda.termo)}`;
+
     await Promise.all(
       fornecedores.map((f: any) =>
         enviarPushParaUsuario(f.usuario_id, {
           titulo: 'Alguém está procurando isso no Valente Conecta',
           corpo: `Termo buscado: "${demanda.termo}". Publique seu produto/serviço pra atender essa demanda.`,
-          url: '/catalogo/publicar',
+          url: linkCadastro,
         }).catch(() => {})
       )
     );
@@ -55,6 +61,7 @@ export async function POST(request: NextRequest) {
       success: true,
       data: {
         totalNotificados: fornecedores.length,
+        linkCadastro,
         fornecedores: fornecedores.map((f: any) => ({ nome: f.nome_exibicao, whatsapp: f.whatsapp })),
       },
     });

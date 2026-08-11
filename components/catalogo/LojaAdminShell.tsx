@@ -12,8 +12,9 @@
 // modulos") e MODULO_MARKETPLACE_MONETIZACAO.md secao 2.
 
 import { useEffect, useState } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import toast from "react-hot-toast";
-import { Package, User, Bell, Plus, Pencil, Trash2, PauseCircle, PlayCircle } from "lucide-react";
+import { Package, User, Bell, Plus, Pencil, Trash2, PauseCircle, PlayCircle, Sparkles } from "lucide-react";
 import { useMeuCatalogo } from "@/lib/catalogo/useCatalogoModulo";
 import { ItemForm } from "./ItemForm";
 import type { CatalogoItem, Interesse, PerfilFornecedor } from "@/lib/catalogo/marketplaceTypes";
@@ -27,15 +28,60 @@ interface LojaAdminShellProps {
 type Aba = "catalogo" | "perfil" | "interesses";
 
 export function LojaAdminShell({ modulo, labelModulo, categorias }: LojaAdminShellProps) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const demandaId = searchParams?.get("demanda") || "";
+  const termoDemanda = searchParams?.get("termo") || "";
+
   const [aba, setAba] = useState<Aba>("catalogo");
   const { itens, loading, donoId, criar, atualizar, remover } = useMeuCatalogo(modulo);
   const [editando, setEditando] = useState<CatalogoItem | null>(null);
   const [criandoNovo, setCriandoNovo] = useState(false);
+  const [perfilExiste, setPerfilExiste] = useState<boolean | null>(null);
+
+  // Chegou aqui a partir do aviso de uma demanda de busca (push ou
+  // WhatsApp): confere se ja tem perfil de fornecedor salvo — se nao tiver
+  // (primeira vez usando o app), pede o cadastro da loja primeiro; se ja
+  // tiver, vai direto pro formulario do produto com o titulo pre-preenchido.
+  useEffect(() => {
+    if (!donoId) return;
+    if (!demandaId) { setPerfilExiste(true); return; }
+    fetch(`/api/catalogo/perfil-fornecedor?usuario_id=${donoId}`)
+      .then((r) => r.json())
+      .then((res) => {
+        const existe = !!(res.success && res.data);
+        setPerfilExiste(existe);
+        setAba(existe ? "catalogo" : "perfil");
+        if (existe) setCriandoNovo(true);
+      })
+      .catch(() => setPerfilExiste(true));
+  }, [donoId, demandaId]);
+
+  const limparContextoDemanda = () => {
+    router.replace(pathname || "");
+  };
 
   return (
     <div className="max-w-5xl mx-auto p-4 sm:p-6">
       <h1 className="text-2xl font-bold mb-1">Painel · {labelModulo}</h1>
       <p className="text-sm text-gray-500 mb-6">Gerencie seu catálogo, dados de contato e interesses recebidos.</p>
+
+      {demandaId && termoDemanda && (
+        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+          <Sparkles className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-semibold text-blue-900">
+              Alguém está procurando "{termoDemanda}" no Valente Conecta
+            </p>
+            <p className="text-xs text-blue-700 mt-0.5">
+              {perfilExiste === false
+                ? "Complete o cadastro da sua loja e depois publique esse produto/serviço pra atender essa pessoa."
+                : "Publique esse produto/serviço agora — quem buscou será avisado assim que aparecer."}
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="flex gap-1 border-b mb-6">
         <AbaBotao ativo={aba === "catalogo"} onClick={() => setAba("catalogo")} icone={<Package className="w-4 h-4" />} label="Meu catálogo" />
@@ -49,10 +95,24 @@ export function LojaAdminShell({ modulo, labelModulo, categorias }: LojaAdminShe
             <ItemForm
               categorias={categorias}
               itemInicial={editando || undefined}
+              tituloSugerido={!editando ? termoDemanda : undefined}
               onCancelar={() => { setCriandoNovo(false); setEditando(null); }}
               onSalvar={async (dados) => {
                 const resultado = editando ? await atualizar(editando.id, dados) : await criar(dados);
-                if (resultado) { setCriandoNovo(false); setEditando(null); }
+                if (resultado) {
+                  setCriandoNovo(false);
+                  setEditando(null);
+                  if (demandaId && !editando && (resultado as CatalogoItem).id) {
+                    fetch("/api/demandas-busca/atender", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ demandaId, itemId: (resultado as CatalogoItem).id }),
+                    })
+                      .then(() => toast.success("Você atendeu essa demanda! A pessoa que buscou foi avisada."))
+                      .catch(() => {});
+                    limparContextoDemanda();
+                  }
+                }
                 return resultado;
               }}
             />
@@ -108,7 +168,20 @@ export function LojaAdminShell({ modulo, labelModulo, categorias }: LojaAdminShe
         </div>
       )}
 
-      {aba === "perfil" && donoId && <PerfilFornecedorForm usuarioId={donoId} />}
+      {aba === "perfil" && donoId && (
+        <PerfilFornecedorForm
+          usuarioId={donoId}
+          onSalvo={
+            demandaId
+              ? () => {
+                  setPerfilExiste(true);
+                  setAba("catalogo");
+                  setCriandoNovo(true);
+                }
+              : undefined
+          }
+        />
+      )}
       {aba === "interesses" && donoId && <InteressesRecebidos fornecedorId={donoId} />}
     </div>
   );
@@ -127,7 +200,7 @@ function AbaBotao({ ativo, onClick, icone, label }: { ativo: boolean; onClick: (
   );
 }
 
-function PerfilFornecedorForm({ usuarioId }: { usuarioId: string }) {
+function PerfilFornecedorForm({ usuarioId, onSalvo }: { usuarioId: string; onSalvo?: () => void }) {
   const [perfil, setPerfil] = useState<Partial<PerfilFornecedor>>({});
   const [loading, setLoading] = useState(true);
   const [salvando, setSalvando] = useState(false);
@@ -151,6 +224,7 @@ function PerfilFornecedorForm({ usuarioId }: { usuarioId: string }) {
       const resultado = await resp.json();
       if (!resultado.success) throw new Error(resultado.error);
       toast.success("Perfil salvo!");
+      onSalvo?.();
     } catch {
       toast.error("Erro ao salvar perfil");
     } finally {

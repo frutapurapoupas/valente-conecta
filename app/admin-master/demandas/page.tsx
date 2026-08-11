@@ -26,7 +26,7 @@ export default function AdminDemandasPage() {
   const [itens, setItens] = useState<Demanda[]>([]);
   const [loading, setLoading] = useState(true);
   const [notificando, setNotificando] = useState<string | null>(null);
-  const [resultadoNotificacao, setResultadoNotificacao] = useState<Record<string, { totalNotificados: number; fornecedores: { nome: string; whatsapp: string }[] }>>({});
+  const [resultadoNotificacao, setResultadoNotificacao] = useState<Record<string, { totalNotificados: number; linkCadastro: string; fornecedores: { nome: string; whatsapp: string }[] }>>({});
 
   const carregar = () => {
     fetch("/api/admin-master/demandas-busca")
@@ -134,7 +134,7 @@ export default function AdminDemandasPage() {
                           f.whatsapp ? (
                             <a
                               key={i}
-                              href={`https://wa.me/55${f.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá ${f.nome}! Um cliente do Valente Conecta está procurando "${d.termo}" e ainda não achou ninguém oferecendo. Você tem esse produto/serviço?`)}`}
+                              href={`https://wa.me/55${f.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá ${f.nome}! Um cliente do Valente Conecta está procurando "${d.termo}" e ainda não achou ninguém oferecendo. Você tem esse produto/serviço? Cadastre em: ${typeof window !== "undefined" ? window.location.origin : ""}${resultado.linkCadastro}`)}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-full bg-green-50 text-green-700 border border-green-200"
