@@ -10,7 +10,7 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Search, MapPin, MapPinOff, BellRing, CheckCircle2 } from "lucide-react";
+import { Search, MapPin, MapPinOff, BellRing, CheckCircle2, ExternalLink, Globe } from "lucide-react";
 import toast from "react-hot-toast";
 import { ItemCard } from "@/components/catalogo/ItemCard";
 import { LABEL_MODULO, type ModuloId, type ResultadoVitrine } from "@/lib/catalogo/marketplaceTypes";
@@ -34,6 +34,8 @@ export default function BuscaPage() {
   const [demandaRegistrada, setDemandaRegistrada] = useState(false);
   const [registrandoDemanda, setRegistrandoDemanda] = useState(false);
   const [pedirCadastro, setPedirCadastro] = useState(false);
+  const [resultadosExternos, setResultadosExternos] = useState<{ titulo: string; trecho: string; link: string; fonte: string }[]>([]);
+  const [buscandoExterno, setBuscandoExterno] = useState(false);
 
   useEffect(() => {
     if (!("geolocation" in navigator)) return;
@@ -109,9 +111,30 @@ export default function BuscaPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setDemandaRegistrada(false);
+    setResultadosExternos([]);
     router.replace(`/busca?q=${encodeURIComponent(termo)}`);
     buscar(termo);
   };
+
+  // So busca fora da plataforma quando a busca interna terminou e nao achou
+  // nada — evita gastar cota da API em toda letra digitada.
+  useEffect(() => {
+    if (loading || resultados.length > 0 || !termo.trim()) {
+      setResultadosExternos([]);
+      return;
+    }
+    // cidade_base existe na tabela usuarios mas nao esta no tipo Usuario
+    // (campo adicionado depois, tipo nao foi atualizado).
+    const cidade = (getCurrentUser() as any)?.cidade_base || undefined;
+    setBuscandoExterno(true);
+    const params = new URLSearchParams({ q: termo });
+    if (cidade) params.set("cidade", cidade);
+    fetch(`/api/busca-externa?${params.toString()}`)
+      .then((r) => r.json())
+      .then((res) => setResultadosExternos(res.success ? res.data : []))
+      .catch(() => setResultadosExternos([]))
+      .finally(() => setBuscandoExterno(false));
+  }, [loading, resultados.length, termo]);
 
   const registrarDemanda = async () => {
     if (!isUserLoggedIn()) {
@@ -220,6 +243,38 @@ export default function BuscaPage() {
                 {registrandoDemanda ? "Registrando..." : `Avise-me quando "${termo}" aparecer`}
               </button>
             )
+          )}
+
+          {buscandoExterno && (
+            <p className="text-xs text-gray-400 mt-6">Procurando na internet perto de você...</p>
+          )}
+
+          {resultadosExternos.length > 0 && (
+            <div className="mt-8 text-left max-w-lg mx-auto">
+              <p className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                <Globe className="w-3.5 h-3.5" /> Encontrado na internet, fora da plataforma
+              </p>
+              <div className="space-y-2">
+                {resultadosExternos.map((r, i) => (
+                  <a
+                    key={i}
+                    href={r.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block bg-white border rounded-lg p-3 hover:border-blue-400 transition-colors"
+                  >
+                    <p className="text-sm font-medium text-blue-700 flex items-center gap-1.5">
+                      {r.titulo} <ExternalLink className="w-3 h-3 shrink-0" />
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1 line-clamp-2">{r.trecho}</p>
+                    <p className="text-[11px] text-gray-400 mt-1">{r.fonte}</p>
+                  </a>
+                ))}
+              </div>
+              <p className="text-[11px] text-gray-400 mt-2">
+                Resultado externo — o preço, se aparecer no texto, não é garantido pelo Valente Conecta.
+              </p>
+            </div>
           )}
         </div>
       ) : (
