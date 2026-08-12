@@ -58,6 +58,7 @@ import {
   BellRing,
   PlayCircle,
   Percent,
+  Timer,
   type LucideIcon
 } from "lucide-react";
 
@@ -555,6 +556,16 @@ export const adminMenuFull: MenuGroup[] = [
     collapsible: true,
     items: [
       { name: "Buscas sem resultado", path: "/admin-master/demandas", icon: BellRing, status: 'active' },
+    ]
+  },
+
+  // ==================== HOME ====================
+  {
+    name: "🏠 HOME",
+    icon: Timer,
+    collapsible: true,
+    items: [
+      { name: "Carrossel de destaques", path: "/admin-master/configuracoes/carrossel", icon: Timer, status: 'active' },
     ]
   },
 

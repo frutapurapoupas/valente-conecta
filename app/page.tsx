@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/app/context/AppContext";
 import toast from "react-hot-toast";
@@ -40,6 +40,7 @@ import {
   Store,
   ChefHat,
   ChevronRight,
+  Briefcase,
 } from "lucide-react";
 
 interface LocalUser {
@@ -65,6 +66,35 @@ export default function HomePage() {
   const [showAdminNotifications, setShowAdminNotifications] = useState(true);
   const [showTodasCategorias, setShowTodasCategorias] = useState(false);
 
+  const carrosselRef = useRef<HTMLDivElement>(null);
+  const [intervaloCarrossel, setIntervaloCarrossel] = useState(5);
+
+  useEffect(() => {
+    fetch("/api/config-carrossel")
+      .then((r) => r.json())
+      .then((res) => {
+        if (res.success && res.data?.intervaloSegundos) setIntervaloCarrossel(res.data.intervaloSegundos);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Avanca o carrossel de destaques sozinho, no intervalo configurado pelo
+  // admin master (padrao 5s) — cicla pro primeiro slide depois do ultimo.
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      const container = carrosselRef.current;
+      if (!container) return;
+      const slides = Array.from(container.children) as HTMLElement[];
+      if (slides.length < 2) return;
+      const indiceAtual = slides.findIndex(
+        (slide) => Math.abs(slide.offsetLeft - container.scrollLeft) < slide.offsetWidth / 2
+      );
+      const proximoIndice = (Math.max(indiceAtual, 0) + 1) % slides.length;
+      container.scrollTo({ left: slides[proximoIndice].offsetLeft, behavior: "smooth" });
+    }, intervaloCarrossel * 1000);
+    return () => clearInterval(intervalId);
+  }, [intervaloCarrossel]);
+
   const notificacoesAdmin = [
     { id: 1, mensagem: "Novas funcionalidades disponíveis! Confira o cardápio da Cozinha.", importancia: "alta", data: "Hoje" },
     { id: 2, mensagem: "Campanha de indicação: ganhe R$5 por amigo indicado!", importancia: "media", data: "Hoje" },
@@ -76,16 +106,17 @@ export default function HomePage() {
     { nome: "Mercados", Icone: ShoppingBag, href: "/mercados" },
     { nome: "Alimentação", Icone: Utensils, href: "/cozinha" },
     { nome: "Farmácias", Icone: Pill, href: "/saude" },
-    { nome: "Construção", Icone: Hammer, href: "/construcao" },
+    { nome: "Moto Táxi", Icone: Bike, href: "/mototaxi" },
     { nome: "Academias & Esportes", Icone: Dumbbell, href: "/academia" },
-    { nome: "Utilidades", Icone: Wrench, href: "/agua-gas" },
+    { nome: "Água e Gás", Icone: Wrench, href: "/agua-gas" },
     { nome: "Serviços", Icone: Wrench, href: "/servicos" },
   ];
 
   const categoriasExtras: CategoriaItem[] = [
     { nome: "Moda", Icone: Shirt, href: "/moda" },
     { nome: "Agro e Campo", Icone: Sprout, href: "/servicos" },
-    { nome: "Transporte & Delivery", Icone: Bike, href: "/mototaxi" },
+    { nome: "Construção", Icone: Hammer, href: "/construcao" },
+    { nome: "Emprego", Icone: Briefcase, href: "/empregos" },
     { nome: "Imóvel", Icone: HomeIcon, href: "/imoveis" },
     { nome: "Aluguel Máquinas", Icone: Wrench, href: "/publico/maquinas" },
     { nome: "Tecnologia", Icone: Laptop, href: "/servicos" },
@@ -283,7 +314,11 @@ export default function HomePage() {
             </button>
           </div>
 
-          <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-1 -mx-4 px-4" style={{ WebkitOverflowScrolling: "touch" }}>
+          <div
+            ref={carrosselRef}
+            className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-1 -mx-4 px-4"
+            style={{ WebkitOverflowScrolling: "touch" }}
+          >
             <div className="snap-center shrink-0 w-[calc(100%-1.5rem)] bg-white rounded-2xl p-6 border border-slate-100 shadow-sm text-center">
               <Store className="mx-auto mb-2 text-slate-300" size={32} />
               <p className="text-sm text-slate-500">Em breve, os comércios cadastrados aparecerão aqui.</p>
