@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { createClient } from '@/lib/supabase/server';
+import { enviarPushParaUsuario } from '@/lib/push';
 
 const pedidosPath = path.join(process.cwd(), 'data', 'pedidos.json');
 
@@ -46,6 +48,36 @@ async function fetchPaymentFromMP(paymentId: string) {
 	return data;
 }
 
+async function processWebhookPlano(assinaturaId: string, payment: any) {
+	const supabase = createClient();
+	const statusPedido = normalizeStatus(String(payment?.status || ''));
+
+	const { data: assinatura, error } = await supabase
+		.from('assinaturas_planos')
+		.update({
+			status: statusPedido === 'pago' ? 'pago' : statusPedido === 'cancelado' ? 'recusado' : 'pendente_pagamento',
+			mp_payment_id: String(payment?.id || ''),
+			atualizado_em: new Date().toISOString(),
+		})
+		.eq('id', assinaturaId)
+		.select('*')
+		.single();
+
+	if (error || !assinatura) {
+		return NextResponse.json({ success: true, ignored: true, reason: 'assinatura nao encontrada' });
+	}
+
+	if (statusPedido === 'pago' && assinatura.usuario_local_id) {
+		await enviarPushParaUsuario(assinatura.usuario_local_id, {
+			titulo: 'Pagamento confirmado!',
+			corpo: 'Falta só completar os dados do seu negócio pra ativar o plano.',
+			url: '/planos/dados',
+		});
+	}
+
+	return NextResponse.json({ success: true, assinaturaId, status: statusPedido });
+}
+
 async function processWebhook(request: NextRequest, payload: any) {
 	try {
 		const { searchParams } = new URL(request.url);
@@ -78,6 +110,10 @@ async function processWebhook(request: NextRequest, payload: any) {
 
 		if (!pedidoId) {
 			return NextResponse.json({ success: true, ignored: true, reason: 'external_reference ausente' });
+		}
+
+		if (pedidoId.startsWith('plano_')) {
+			return processWebhookPlano(pedidoId.replace('plano_', ''), payment);
 		}
 
 		const pedidos = readPedidos();

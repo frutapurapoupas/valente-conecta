@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ChevronDown, ChevronUp, CheckCircle2, CreditCard, Shield, Star, Building2 } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ChevronDown, ChevronUp, CheckCircle2, CreditCard, Shield, Star, Building2, ArrowLeft } from "lucide-react";
 
 interface PlanConfig {
   id: string;
@@ -53,6 +54,9 @@ const cardByPlan: Record<string, string> = {
 };
 
 export default function PlanosPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const servicoDestaque = searchParams?.get("servico");
   const [config, setConfig] = useState<PlanosConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [openServices, setOpenServices] = useState<Record<string, boolean>>({});
@@ -65,6 +69,7 @@ export default function PlanosPage() {
         const data = await res.json();
         if (data?.success && data?.data) {
           setConfig(data.data);
+          if (servicoDestaque) setOpenServices((prev) => ({ ...prev, [servicoDestaque]: true }));
         } else {
           setConfig(null);
         }
@@ -73,6 +78,7 @@ export default function PlanosPage() {
       }
     };
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const planById = useMemo(() => {
@@ -112,7 +118,10 @@ export default function PlanosPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white pb-24">
-      <header className="bg-gradient-to-r from-blue-700 to-cyan-600 p-4 sticky top-0 z-40 shadow-lg">
+      <header className="bg-gradient-to-r from-blue-700 to-cyan-600 p-4 sticky top-0 z-40 shadow-lg flex items-center gap-3">
+        <button onClick={() => router.push("/")} className="text-white flex-shrink-0">
+          <ArrowLeft className="w-5 h-5" />
+        </button>
         <div className="max-w-5xl mx-auto">
           <h1 className="text-white font-bold text-lg">PLANOS E ASSINATURA</h1>
           <p className="text-white/80 text-xs mt-1">Gratis, Basico, Premium e Fisco (quando aplicavel)</p>
@@ -134,14 +143,25 @@ export default function PlanosPage() {
 
         {(config.services || []).map((service) => {
           const isOpen = !!openServices[service.id];
+          const destaque = servicoDestaque === service.id;
           return (
-            <section key={service.id} className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+            <section
+              key={service.id}
+              className={`bg-slate-900 border rounded-2xl overflow-hidden ${destaque ? "border-cyan-400 ring-1 ring-cyan-400/50" : "border-slate-800"}`}
+            >
               <button
                 onClick={() => toggleService(service.id)}
                 className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors text-left"
               >
                 <div>
-                  <h2 className="text-base font-bold text-white">{service.nome}</h2>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-base font-bold text-white">{service.nome}</h2>
+                    {destaque && (
+                      <span className="text-[10px] bg-cyan-500 text-slate-950 font-bold px-2 py-0.5 rounded-full">
+                        Recomendado pra você
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs text-slate-400 mt-1">{service.enabledPlans.length} plano(s) disponivel(is)</p>
                 </div>
                 {isOpen ? <ChevronUp className="w-5 h-5 text-slate-300" /> : <ChevronDown className="w-5 h-5 text-slate-300" />}
@@ -158,7 +178,7 @@ export default function PlanosPage() {
                       : plan.featuresPadrao;
 
                     return (
-                      <div key={`${service.id}-${plan.id}`} className={`rounded-xl border p-3 ${cardByPlan[plan.id] || "border-slate-600 bg-slate-900"}`}>
+                      <div key={`${service.id}-${plan.id}`} className={`rounded-xl border p-3 flex flex-col ${cardByPlan[plan.id] || "border-slate-600 bg-slate-900"}`}>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <Icon className="w-4 h-4" />
@@ -175,7 +195,7 @@ export default function PlanosPage() {
                             </span>
                           </p>
                         ) : null}
-                        <ul className="mt-3 space-y-1">
+                        <ul className="mt-3 space-y-1 flex-1">
                           {features.map((f, i) => (
                             <li key={i} className="text-xs text-slate-200 flex items-start gap-1.5">
                               <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 text-green-400 shrink-0" />
@@ -183,6 +203,25 @@ export default function PlanosPage() {
                             </li>
                           ))}
                         </ul>
+                        {!plan.negociavel ? (
+                          <button
+                            onClick={() =>
+                              router.push(
+                                `/planos/checkout?servico=${service.id}&servicoNome=${encodeURIComponent(service.nome)}&plano=${plan.id}&planoNome=${encodeURIComponent(plan.nome)}&valor=${plan.preco || 0}`
+                              )
+                            }
+                            className="mt-3 w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold rounded-lg"
+                          >
+                            Escolher este plano
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => router.push("/chat")}
+                            className="mt-3 w-full py-2 bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold rounded-lg"
+                          >
+                            Falar com o suporte
+                          </button>
+                        )}
                       </div>
                     );
                   })}

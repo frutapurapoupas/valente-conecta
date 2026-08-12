@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Play, Youtube, Info, HelpCircle, Video, MessageCircle, Mail } from "lucide-react";
+import { ArrowLeft, Play, Youtube, Info, HelpCircle, Video, MessageCircle, Mail, MessagesSquare } from "lucide-react";
 
 // Adicionado para desabilitar renderização estática
 export const dynamic = 'force-dynamic';
@@ -77,9 +77,16 @@ export default function AjudaPage() {
         </div>
 
         {/* Fale com o suporte */}
-        {contatoSuporte && (contatoSuporte.whatsapp || contatoSuporte.email) && (
-          <div className="bg-gray-800 rounded-2xl p-4 mb-4 flex flex-wrap items-center gap-3">
-            <p className="text-sm text-gray-300 font-medium mr-auto">Não achou o que precisava? Fale com o suporte:</p>
+        <div className="bg-gray-800 rounded-2xl p-4 mb-4 flex flex-wrap items-center gap-3">
+          <p className="text-sm text-gray-300 font-medium mr-auto">Não achou o que precisava? Fale com o suporte:</p>
+          <button
+            onClick={() => router.push("/chat")}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+          >
+            <MessagesSquare className="w-4 h-4" /> Chat pelo app
+          </button>
+          {contatoSuporte && (contatoSuporte.whatsapp || contatoSuporte.email) && (
+            <>
             {contatoSuporte.whatsapp && (
               <a
                 href={`https://wa.me/55${contatoSuporte.whatsapp}`}
@@ -98,8 +105,9 @@ export default function AjudaPage() {
                 <Mail className="w-4 h-4" /> E-mail
               </a>
             )}
-          </div>
-        )}
+            </>
+          )}
+        </div>
 
         {/* Layout com vídeos à esquerda e detalhes à direita */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

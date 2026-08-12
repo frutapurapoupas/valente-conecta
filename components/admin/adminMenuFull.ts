@@ -11,6 +11,9 @@ import {
   Bot,
   DollarSign,
   Megaphone,
+  MessageCircle,
+  UserPlus,
+  MapPin,
   Settings,
   Wallet,
   Shield,
@@ -99,6 +102,8 @@ export const adminMenuFull: MenuGroup[] = [
     collapsible: true,
     items: [
       { name: "Usuários", path: "/admin-master/usuarios", icon: Users, status: 'active' },
+      { name: "Cidades adicionais (pedidos)", path: "/admin-master/usuarios/cidades-adicionais", icon: MapPin, status: 'active' },
+      { name: "Assinaturas de planos", path: "/admin-master/usuarios/assinaturas-planos", icon: CreditCard, status: 'active' },
       { name: "Planos", path: "/admin-master/planos", icon: CreditCard, status: 'active' },
       { name: "IA & Automação", path: "/admin-master/ia", icon: Bot, status: 'active' },
       { name: "Fábrica de Vídeos", path: "/admin-master/fabrica-videos", icon: Video, status: 'active' },
@@ -567,6 +572,9 @@ export const adminMenuFull: MenuGroup[] = [
     collapsible: true,
     items: [
       { name: "Contato de suporte (WhatsApp/email)", path: "/admin-master/configuracoes/suporte", icon: LifeBuoy, status: 'active' },
+      { name: "Aviso geral (push pra todos)", path: "/admin-master/configuracoes/aviso-geral", icon: Megaphone, status: 'active' },
+      { name: "Divulgação (convites em massa)", path: "/admin-master/configuracoes/divulgacao", icon: UserPlus, status: 'active' },
+      { name: "Chat com usuários", path: "/admin-master/chat", icon: MessageCircle, status: 'active' },
     ]
   },
 

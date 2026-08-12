@@ -62,11 +62,12 @@ export function getCurrentUser(): Usuario | null {
   }
 }
 
-// Cadastro simples (nome e WhatsApp)
+// Cadastro simples (nome, WhatsApp e cidade base)
 export async function cadastroSimples(
-  nome: string, 
-  whatsapp: string, 
-  codigoIndicacao?: string
+  nome: string,
+  whatsapp: string,
+  codigoIndicacao?: string,
+  cidadeBase?: string
 ): Promise<{ success: boolean; user?: Usuario; error?: string }> {
   try {
     // Limpar WhatsApp (remover espaços e caracteres especiais)
@@ -119,6 +120,7 @@ export async function cadastroSimples(
       .insert({
         nome,
         whatsapp: whatsappLimpo,
+        cidade_base: cidadeBase?.trim() || null,
         codigo_indicacao: codigo,
         convidado_por_id: convidadoPorId,
         trial_started_at: new Date().toISOString(),

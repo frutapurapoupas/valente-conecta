@@ -22,7 +22,8 @@ const SERVICE_NAMES = [
   'ACADEMIA - EMPRESA',
   'AMBULANTES',
   'SERVICOS COM AGENDAMENTO',
-  'MERCEARIA / MERCADOS',
+  'MERCEARIA PEQUENA',
+  'MERCADO GRANDE',
   'LOJAS',
   'PROFISSIONAIS LIBERAIS',
   'UTILIDADES',
@@ -35,13 +36,18 @@ const SERVICE_NAMES = [
   'PUBLICO GERAL'
 ];
 
+// Servicos de comercio: habilitam plano Fisco/Contabilidade e pedem
+// faturamento bruto (opcional) no formulario pos-pagamento.
+const SERVICOS_COMERCIO = ['MERCEARIA PEQUENA', 'MERCADO GRANDE', 'LOJAS', 'ALIMENTACAO', 'HOTEL / POUSADA'];
+
 function buildService(nome: string) {
-  const isComercio = nome === 'MERCEARIA / MERCADOS' || nome === 'LOJAS';
+  const isComercio = SERVICOS_COMERCIO.includes(nome);
   const enabledPlans: PlanId[] = isComercio ? ['gratis', 'basico', 'premium', 'fisco'] : ['gratis', 'basico', 'premium'];
 
   return {
     id: nome.toLowerCase().replace(/\s*\/\s*/g, '_').replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, ''),
     nome,
+    tipo: isComercio ? 'comercio' : 'servico',
     enabledPlans,
     planFeatures: {
       gratis: [
@@ -69,7 +75,12 @@ function buildService(nome: string) {
             'Valor a negociar'
           ]
         : []
-    }
+    },
+    // Modulo de fiado (PDV, ver app/pdv/fiado) como acrescimo opcional ao
+    // preco do plano escolhido — so' faz sentido pra quem vende de fato.
+    addonFiado: nome === 'MERCADO GRANDE' || nome === 'MERCEARIA PEQUENA'
+      ? { disponivel: true, precoAdicional: nome === 'MERCADO GRANDE' ? 15 : 10, descricao: 'Modulo de fiado (controle de clientes fiado direto no PDV)' }
+      : { disponivel: false, precoAdicional: 0, descricao: '' }
   };
 }
 
@@ -169,10 +180,18 @@ async function readConfig() {
   try {
     const parsed = JSON.parse(data.valor);
     const services = Array.isArray(parsed?.services) ? parsed.services : [];
-    const normalized = [...services];
+    // 'MERCEARIA / MERCADOS' virou dois servicos (MERCEARIA PEQUENA / MERCADO
+    // GRANDE) — remove a entrada antiga de configs salvas antes dessa mudanca.
+    const normalized = services.filter((service: any) => service?.nome !== 'MERCEARIA / MERCADOS');
     for (const serviceName of SERVICE_NAMES) {
       const exists = normalized.some((service: any) => service?.nome === serviceName);
       if (!exists) normalized.push(buildService(serviceName));
+    }
+    // Garante addonFiado/tipo mesmo em servicos salvos antes desses campos existirem.
+    for (const service of normalized) {
+      const fresh = SERVICE_NAMES.includes(service.nome) ? buildService(service.nome) : null;
+      if (!service.addonFiado) service.addonFiado = fresh?.addonFiado || { disponivel: false, precoAdicional: 0, descricao: '' };
+      if (!service.tipo) service.tipo = fresh?.tipo || 'servico';
     }
     // Garante os campos novos de desconto PIX mesmo em config salva antes deles existirem.
     const plans = (Array.isArray(parsed?.plans) ? parsed.plans : defaultConfig.plans).map((p: any) => ({

@@ -21,6 +21,7 @@ export interface Usuario {
   id: string;
   nome: string;
   whatsapp: string;
+  cidade_base?: string;
   email?: string;
   codigo_indicacao?: string;
   convidado_por_id?: string | null;

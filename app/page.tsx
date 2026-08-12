@@ -18,7 +18,7 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   Home as HomeIcon,
-  FileText,
+  CreditCard,
   User,
   Gift,
   PlayCircle,
@@ -392,9 +392,9 @@ export default function HomePage() {
           <HomeIcon size={20} />
           <span className="text-[10px] font-bold mt-1">Início</span>
         </button>
-        <button onClick={() => router.push("/extrato")} className="flex flex-col items-center text-slate-400 hover:text-slate-600">
-          <FileText size={20} />
-          <span className="text-[10px] font-medium mt-1">Pedidos</span>
+        <button onClick={() => router.push("/planos")} className="flex flex-col items-center text-slate-400 hover:text-slate-600">
+          <CreditCard size={20} />
+          <span className="text-[10px] font-medium mt-1">Planos</span>
         </button>
         <button onClick={() => router.push("/carteira")} className="flex flex-col items-center text-slate-400 hover:text-slate-600">
           <Wallet size={20} />

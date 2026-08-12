@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import {
   Wallet,
   ArrowUpCircle,
@@ -440,11 +441,14 @@ export default function CarteiraPage() {
 
         {/* Transacoes */}
         <div className="bg-white rounded-lg shadow">
-          <div className="p-4 border-b">
+          <div className="p-4 border-b flex items-center justify-between">
             <h2 className="font-bold text-gray-800 flex items-center gap-2">
               <History className="w-5 h-5 text-gray-500" />
               Ultimas Transacoes
             </h2>
+            <Link href="/extrato" className="text-xs text-blue-600 font-medium">
+              Ver extrato completo
+            </Link>
           </div>
           <div className="divide-y">
             {transacoes.length === 0 ? (

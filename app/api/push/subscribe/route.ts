@@ -13,9 +13,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'usuario_id e subscription são obrigatórios' }, { status: 400 });
     }
     const supabase = createClient();
+    // NOTA: a tabela real usa user_id (nao usuario_id) — ver nota de rodape em lib/push.ts
     const { error } = await supabase
       .from('push_subscriptions')
-      .upsert({ usuario_id, subscription, updated_at: new Date().toISOString() }, { onConflict: 'usuario_id' });
+      .upsert({ user_id: usuario_id, subscription, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
     if (error) throw error;
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, User, Phone, ArrowRight } from 'lucide-react';
+import { X, User, Phone, MapPin, ArrowRight } from 'lucide-react';
 import { cadastroSimples, isSessaoTempValida, isUserLoggedIn } from '@/lib/auth';
 import toast from 'react-hot-toast';
 
@@ -18,6 +18,7 @@ export function CadastroPopup({ onSuccess, codigoIndicacao, forceShow }: Cadastr
   const [show, setShow] = useState(false);
   const [nome, setNome] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
+  const [cidade, setCidade] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -57,10 +58,15 @@ export function CadastroPopup({ onSuccess, codigoIndicacao, forceShow }: Cadastr
       toast.error('Digite um WhatsApp válido (com DDD)');
       return;
     }
-    
+
+    if (!cidade.trim()) {
+      toast.error('Digite sua cidade');
+      return;
+    }
+
     setLoading(true);
-    
-    const result = await cadastroSimples(nome, whatsapp, codigoIndicacao);
+
+    const result = await cadastroSimples(nome, whatsapp, codigoIndicacao, cidade);
     
     if (result.success) {
       toast.success('✅ Cadastro realizado! Agora você tem acesso completo.');
@@ -124,7 +130,22 @@ export function CadastroPopup({ onSuccess, codigoIndicacao, forceShow }: Cadastr
               />
               <p className="text-gray-500 text-xs mt-1">✅ Número real para notificações</p>
             </div>
-            
+
+            <div>
+              <label className="block text-gray-400 text-sm mb-1">Sua cidade</label>
+              <div className="relative">
+                <MapPin className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={cidade}
+                  onChange={(e) => setCidade(e.target.value)}
+                  placeholder="Ex: Valente"
+                  className="w-full bg-gray-700 rounded-xl p-3 pl-9 text-white border border-gray-600 focus:border-green-500 outline-none"
+                  required
+                />
+              </div>
+            </div>
+
             <button
               type="submit"
               disabled={loading}
