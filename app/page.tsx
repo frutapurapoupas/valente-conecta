@@ -38,8 +38,6 @@ import {
   DollarSign,
   Mic,
   Store,
-  ChefHat,
-  ChevronRight,
   Briefcase,
 } from "lucide-react";
 
@@ -332,19 +330,13 @@ export default function HomePage() {
 
             <div
               onClick={() => router.push("/cozinha")}
-              className="snap-center shrink-0 w-[calc(100%-1.5rem)] bg-gradient-to-br from-emerald-700 to-green-900 rounded-2xl p-6 shadow-sm text-white cursor-pointer relative overflow-hidden"
+              className="snap-center shrink-0 w-[calc(100%-1.5rem)] rounded-2xl shadow-sm cursor-pointer overflow-hidden"
             >
-              <ChefHat className="absolute -right-4 -bottom-4 text-white/10" size={110} />
-              <span className="bg-amber-400 text-emerald-950 font-bold text-[9px] px-2 py-0.5 rounded-full uppercase">
-                Cardápio do dia
-              </span>
-              <h4 className="font-extrabold text-xl mt-2 leading-snug">Cozinha Chef Neide</h4>
-              <p className="text-emerald-100 text-xs mt-1 max-w-[75%]">
-                Pratos e sobremesas feitos com carinho, direto pra sua mesa.
-              </p>
-              <span className="inline-flex items-center gap-1.5 mt-4 bg-white text-emerald-800 font-bold text-xs px-4 py-2 rounded-xl">
-                Ver cardápio <ChevronRight size={14} />
-              </span>
+              <img
+                src="/banner-cozinha-chef-neide.png"
+                alt="Cozinha Chef Neide — Cardápio público do dia"
+                className="w-full h-full object-cover"
+              />
             </div>
           </div>
         </section>
