@@ -18,7 +18,8 @@ export type ModuloId =
   | 'emprego'
   | 'construcao'
   | 'saude'
-  | 'pet';
+  | 'pet'
+  | 'moda';
 
 export type Arquetipo = 'catalogo-carrinho' | 'agenda-profissional' | 'anuncio-contato';
 
@@ -26,6 +27,7 @@ export const ARQUETIPO_POR_MODULO: Record<ModuloId, Arquetipo> = {
   'agua-gas': 'catalogo-carrinho',
   mercados: 'catalogo-carrinho',
   pet: 'catalogo-carrinho',
+  moda: 'catalogo-carrinho',
   servicos: 'anuncio-contato',
   imoveis: 'anuncio-contato',
   emprego: 'anuncio-contato',
@@ -125,4 +127,5 @@ export const LABEL_MODULO: Record<ModuloId, string> = {
   construcao: 'Construção',
   saude: 'Saúde',
   pet: 'Pet Shop',
+  moda: 'Moda',
 };

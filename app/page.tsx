@@ -38,6 +38,8 @@ import {
   DollarSign,
   Mic,
   Store,
+  ChefHat,
+  ChevronRight,
 } from "lucide-react";
 
 interface LocalUser {
@@ -71,27 +73,27 @@ export default function HomePage() {
   ];
 
   const categoriasPrincipais: CategoriaItem[] = [
-    { nome: "Mercados", Icone: ShoppingBag, href: "/comercio" },
+    { nome: "Mercados", Icone: ShoppingBag, href: "/mercados" },
     { nome: "Alimentação", Icone: Utensils, href: "/cozinha" },
     { nome: "Farmácias", Icone: Pill, href: "/saude" },
-    { nome: "Moda", Icone: Shirt, href: "/servicos" },
-    { nome: "Agro e Campo", Icone: Sprout, href: "/servicos" },
+    { nome: "Construção", Icone: Hammer, href: "/construcao" },
+    { nome: "Academias & Esportes", Icone: Dumbbell, href: "/academia" },
     { nome: "Utilidades", Icone: Wrench, href: "/agua-gas" },
     { nome: "Serviços", Icone: Wrench, href: "/servicos" },
   ];
 
   const categoriasExtras: CategoriaItem[] = [
-    { nome: "Academias & Esportes", Icone: Dumbbell, href: "/academia" },
+    { nome: "Moda", Icone: Shirt, href: "/moda" },
+    { nome: "Agro e Campo", Icone: Sprout, href: "/servicos" },
     { nome: "Transporte & Delivery", Icone: Bike, href: "/mototaxi" },
     { nome: "Imóvel", Icone: HomeIcon, href: "/imoveis" },
-    { nome: "Construção", Icone: Hammer, href: "/construcao" },
     { nome: "Aluguel Máquinas", Icone: Wrench, href: "/publico/maquinas" },
     { nome: "Tecnologia", Icone: Laptop, href: "/servicos" },
     { nome: "Automotivo", Icone: Car, href: "/servicos" },
     { nome: "Educação", Icone: GraduationCap, href: "/servicos" },
     { nome: "Saúde", Icone: HeartPulse, href: "/saude" },
-    { nome: "Moda Masculina", Icone: Shirt, href: "/servicos" },
-    { nome: "Moda Feminina", Icone: Shirt, href: "/servicos" },
+    { nome: "Moda Masculina", Icone: Shirt, href: "/moda" },
+    { nome: "Moda Feminina", Icone: Shirt, href: "/moda" },
     { nome: "Beleza & Estética", Icone: Sparkles, href: "/servicos" },
     { nome: "Eventos", Icone: PartyPopper, href: "/servicos" },
     { nome: "Pet Shop", Icone: PawPrint, href: "/pet" },
@@ -281,15 +283,34 @@ export default function HomePage() {
             </button>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm text-center">
-            <Store className="mx-auto mb-2 text-slate-300" size={32} />
-            <p className="text-sm text-slate-500">Em breve, os comércios cadastrados aparecerão aqui.</p>
-            <button
-              onClick={() => router.push("/indicar-estabelecimento")}
-              className="mt-3 text-xs text-blue-600 font-medium underline"
+          <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-1 -mx-4 px-4" style={{ WebkitOverflowScrolling: "touch" }}>
+            <div className="snap-center shrink-0 w-[calc(100%-1.5rem)] bg-white rounded-2xl p-6 border border-slate-100 shadow-sm text-center">
+              <Store className="mx-auto mb-2 text-slate-300" size={32} />
+              <p className="text-sm text-slate-500">Em breve, os comércios cadastrados aparecerão aqui.</p>
+              <button
+                onClick={() => router.push("/indicar-estabelecimento")}
+                className="mt-3 text-xs text-blue-600 font-medium underline"
+              >
+                Quero cadastrar meu comércio
+              </button>
+            </div>
+
+            <div
+              onClick={() => router.push("/cozinha")}
+              className="snap-center shrink-0 w-[calc(100%-1.5rem)] bg-gradient-to-br from-emerald-700 to-green-900 rounded-2xl p-6 shadow-sm text-white cursor-pointer relative overflow-hidden"
             >
-              Quero cadastrar meu comércio
-            </button>
+              <ChefHat className="absolute -right-4 -bottom-4 text-white/10" size={110} />
+              <span className="bg-amber-400 text-emerald-950 font-bold text-[9px] px-2 py-0.5 rounded-full uppercase">
+                Cardápio do dia
+              </span>
+              <h4 className="font-extrabold text-xl mt-2 leading-snug">Cozinha Chef Neide</h4>
+              <p className="text-emerald-100 text-xs mt-1 max-w-[75%]">
+                Pratos e sobremesas feitos com carinho, direto pra sua mesa.
+              </p>
+              <span className="inline-flex items-center gap-1.5 mt-4 bg-white text-emerald-800 font-bold text-xs px-4 py-2 rounded-xl">
+                Ver cardápio <ChevronRight size={14} />
+              </span>
+            </div>
           </div>
         </section>
 

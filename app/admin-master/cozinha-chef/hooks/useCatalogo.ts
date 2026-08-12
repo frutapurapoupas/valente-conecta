@@ -40,16 +40,20 @@ export const useCatalogo = () => {
   const carregarCardapio = useCallback(async () => {
     setLoading(true);
     try {
-      let descontoAtual = 0;
-      if (perfil === 'assinante') descontoAtual = 15;
-      else if (perfil === 'revendedor') descontoAtual = 19;
-      setDesconto(descontoAtual);
-
       // Regra principal: catalogo publico usa Receita canonica + Cardapio publicado.
-      const [cardapioResp, receitasResp] = await Promise.all([
+      // Descontos vem da config do admin (nao mais fixos no codigo — ver
+      // app/api/cozinha/descontos/route.ts).
+      const [cardapioResp, receitasResp, descontosResp] = await Promise.all([
         fetch('/api/cozinha/cardapio').then((res) => res.json()).catch(() => ({ success: false, data: [] })),
-        fetch('/api/cozinha/receitas').then((res) => res.json()).catch(() => ({ success: false, data: [] }))
+        fetch('/api/cozinha/receitas').then((res) => res.json()).catch(() => ({ success: false, data: [] })),
+        fetch('/api/cozinha/descontos').then((res) => res.json()).catch(() => ({ success: false, data: null }))
       ]);
+
+      const descontosConfig = descontosResp?.success ? descontosResp.data : null;
+      let descontoAtual = 0;
+      if (perfil === 'assinante') descontoAtual = descontosConfig?.descontoAssinante ?? 15;
+      else if (perfil === 'revendedor') descontoAtual = descontosConfig?.descontoRevendedor ?? 19;
+      setDesconto(descontoAtual);
 
       const cardapioData = Array.isArray(cardapioResp?.data) ? cardapioResp.data : [];
       const receitasData = Array.isArray(receitasResp?.data) ? receitasResp.data : [];

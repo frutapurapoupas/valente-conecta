@@ -15,4 +15,5 @@ export const CATEGORIAS_POR_MODULO: Record<ModuloId, string[]> = {
   construcao: ["Materiais de construção", "Aluguel de máquinas", "Mão de obra", "Projetos e engenharia"],
   saude: ["Consulta médica", "Odontologia", "Fisioterapia", "Psicologia", "Exames", "Enfermagem", "Farmácia"],
   pet: ["Ração e produtos", "Banho e tosa", "Veterinário", "Adestramento"],
+  moda: ["Moda Feminina", "Moda Masculina", "Moda Infantil", "Calçados", "Acessórios"],
 };

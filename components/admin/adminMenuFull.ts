@@ -57,6 +57,7 @@ import {
   Briefcase,
   BellRing,
   PlayCircle,
+  Percent,
   type LucideIcon
 } from "lucide-react";
 
@@ -164,6 +165,8 @@ export const adminMenuFull: MenuGroup[] = [
       { name: "Pedidos", path: "/admin-master/cozinha-chef/pedidos", icon: ShoppingCart, status: 'active' },
       // ✅ 8º - PREVIEW
       { name: "Preview Cardápio", path: "/admin-master/cozinha-chef/preview", icon: Eye, status: 'active' },
+      // ✅ 9º - DESCONTOS POR PERFIL
+      { name: "Descontos por Perfil", path: "/admin-master/cozinha-chef/descontos", icon: Percent, status: 'active' },
     ]
   },
 
