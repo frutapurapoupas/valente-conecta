@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/app/context/AppContext";
 import toast from "react-hot-toast";
@@ -9,6 +10,14 @@ export const dynamic = 'force-dynamic';
 
 export default function LancamentoPage() {
   const router = useRouter();
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/admin-master/config-lancamento")
+      .then((r) => r.json())
+      .then((res) => setVideoUrl(res.success ? res.data?.url || null : null))
+      .catch(() => setVideoUrl(null));
+  }, []);
 
   const scrollToHome = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -30,9 +39,18 @@ export default function LancamentoPage() {
         
         <div className="bg-white/10 rounded-3xl p-6 mb-8">
           <h2 className="text-xl font-semibold mb-4">Vídeo de Apresentação</h2>
-          <div className="bg-gray-800 h-72 rounded-2xl flex items-center justify-center cursor-pointer hover:scale-105 transition-transform">
-            <i className="fas fa-play-circle text-6xl text-blue-400"></i>
-          </div>
+          {videoUrl ? (
+            <video
+              src={videoUrl}
+              controls
+              playsInline
+              className="w-full h-72 rounded-2xl bg-black object-contain"
+            />
+          ) : (
+            <div className="bg-gray-800 h-72 rounded-2xl flex items-center justify-center">
+              <i className="fas fa-play-circle text-6xl text-blue-400"></i>
+            </div>
+          )}
         </div>
 
         <div className="bg-gradient-to-r from-green-600/20 to-blue-600/20 border border-green-500 rounded-3xl p-8 text-center">

@@ -56,6 +56,7 @@ import {
   ExternalLink,
   Briefcase,
   BellRing,
+  PlayCircle,
   type LucideIcon
 } from "lucide-react";
 
@@ -551,6 +552,17 @@ export const adminMenuFull: MenuGroup[] = [
     collapsible: true,
     items: [
       { name: "Buscas sem resultado", path: "/admin-master/demandas", icon: BellRing, status: 'active' },
+    ]
+  },
+
+  // ==================== LANÇAMENTO ====================
+  {
+    name: "🎬 LANÇAMENTO",
+    icon: PlayCircle,
+    collapsible: true,
+    items: [
+      { name: "Vídeo de apresentação", path: "/admin-master/configuracoes/lancamento", icon: PlayCircle, status: 'active' },
+      { name: "Página Pública", path: "/lancamento", icon: ExternalLink, status: 'active' },
     ]
   },
 ];

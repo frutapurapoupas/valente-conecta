@@ -77,7 +77,7 @@ export default function ConvitePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 text-white pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-950/40 to-slate-900 text-white pb-20">
       <header className="bg-gradient-to-r from-green-400 to-green-700 p-4 text-center sticky top-0 z-40">
         <h1 className="text-white font-bold text-lg">Convite Valente Conecta</h1>
       </header>

@@ -131,9 +131,11 @@ export default function HomePage() {
       <header className="bg-white px-4 pt-4 pb-3 shadow-sm sticky top-0 z-40">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-amber-500 flex items-center justify-center text-white font-bold text-lg shadow-md">
-              VC
-            </div>
+            <img
+              src="/icons/logo-novo.png"
+              alt="Valente Conecta"
+              className="w-10 h-10 rounded-xl object-cover shadow-md"
+            />
             <div>
               <h1 className="font-extrabold text-lg leading-tight tracking-tight text-blue-900">VALENTE CONECTA</h1>
               <p className="text-[10px] text-slate-500 font-medium">A economia da cidade na palma da mão</p>
