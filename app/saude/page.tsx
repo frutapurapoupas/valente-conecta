@@ -16,7 +16,7 @@ export default function SaudePage() {
       modulo="saude"
       labelModulo="Saúde"
       categorias={CATEGORIAS_POR_MODULO.saude}
-      descricao="Consultas, odontologia, fisioterapia, psicologia e exames na sua região."
+      descricao="Consultas, odontologia, fisioterapia, psicologia, exames e farmácias na sua região."
     />
   );
 }

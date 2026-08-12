@@ -12,7 +12,7 @@ export default function MercadosPage() {
       modulo="mercados"
       labelModulo="Mercados"
       categorias={CATEGORIAS_POR_MODULO.mercados}
-      descricao="Mercearias, hortifrutis, açougues, padarias e farmácias perto de você."
+      descricao="Mercearias, hortifrutis, açougues, padarias e bebidas perto de você."
     />
   );
 }

@@ -73,7 +73,7 @@ export default function HomePage() {
   const categoriasPrincipais: CategoriaItem[] = [
     { nome: "Mercados", Icone: ShoppingBag, href: "/comercio" },
     { nome: "Alimentação", Icone: Utensils, href: "/cozinha" },
-    { nome: "Farmácias", Icone: Pill, href: "/mercados" },
+    { nome: "Farmácias", Icone: Pill, href: "/saude" },
     { nome: "Moda", Icone: Shirt, href: "/servicos" },
     { nome: "Agro e Campo", Icone: Sprout, href: "/servicos" },
     { nome: "Utilidades", Icone: Wrench, href: "/agua-gas" },
