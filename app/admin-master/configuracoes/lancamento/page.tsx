@@ -7,7 +7,14 @@
 
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { PlayCircle, Upload } from "lucide-react";
+import { PlayCircle, Upload, Save, Film } from "lucide-react";
+
+interface CardFuncionalidade {
+  id: string;
+  titulo: string;
+  video_url: string | null;
+  ordem: number;
+}
 
 export default function ConfigLancamentoPage() {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -107,6 +114,141 @@ export default function ConfigLancamentoPage() {
           </label>
         </div>
       )}
+
+      <CardsFuncionalidades />
+    </div>
+  );
+}
+
+function CardsFuncionalidades() {
+  const [cards, setCards] = useState<CardFuncionalidade[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const carregar = () => {
+    fetch("/api/lancamento-funcionalidades")
+      .then((r) => r.json())
+      .then((res) => setCards(res.success ? res.data : []))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { carregar(); }, []);
+
+  return (
+    <div className="mt-10">
+      <h2 className="text-xl font-bold mb-1 flex items-center gap-2">
+        <Film className="w-5 h-5 text-blue-600" /> Cards de Funcionalidades
+      </h2>
+      <p className="text-sm text-gray-500 mb-4">
+        Aparecem embaixo do botão "Indicar agora" em <code className="bg-gray-100 px-1 rounded">/lancamento</code>.
+        Cada um abre o vídeo em tela cheia quando tocado.
+      </p>
+
+      {loading ? (
+        <p className="text-gray-400 text-sm">Carregando...</p>
+      ) : (
+        <div className="space-y-3">
+          {cards.map((card) => (
+            <CardFuncionalidadeItem key={card.id} card={card} onAtualizado={carregar} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CardFuncionalidadeItem({ card, onAtualizado }: { card: CardFuncionalidade; onAtualizado: () => void }) {
+  const [titulo, setTitulo] = useState(card.titulo);
+  const [salvandoTitulo, setSalvandoTitulo] = useState(false);
+  const [enviandoVideo, setEnviandoVideo] = useState(false);
+
+  const salvarTitulo = async () => {
+    if (!titulo.trim() || titulo === card.titulo) return;
+    setSalvandoTitulo(true);
+    try {
+      const resp = await fetch(`/api/lancamento-funcionalidades?id=${card.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ titulo: titulo.trim() }),
+      });
+      const resultado = await resp.json();
+      if (!resultado.success) throw new Error(resultado.error);
+      toast.success("Título atualizado!");
+      onAtualizado();
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao salvar título");
+    } finally {
+      setSalvandoTitulo(false);
+    }
+  };
+
+  const handleArquivo = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const arquivo = e.target.files?.[0];
+    if (!arquivo) return;
+    if (!arquivo.type.startsWith("video/")) {
+      toast.error("Envie um arquivo de vídeo (mp4, webm...)");
+      return;
+    }
+    if (arquivo.size > 4 * 1024 * 1024) {
+      toast.error("Vídeo maior que 4MB — comprima antes de enviar.");
+      return;
+    }
+    setEnviandoVideo(true);
+    try {
+      const formData = new FormData();
+      formData.append("arquivo", arquivo);
+      const resp = await fetch("/api/upload/institucional", { method: "POST", body: formData });
+      const resultado = await resp.json();
+      if (!resultado.success) throw new Error(resultado.error);
+
+      const respPatch = await fetch(`/api/lancamento-funcionalidades?id=${card.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ videoUrl: resultado.url }),
+      });
+      const resultadoPatch = await respPatch.json();
+      if (!resultadoPatch.success) throw new Error(resultadoPatch.error);
+
+      toast.success("Vídeo do card atualizado!");
+      onAtualizado();
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao enviar vídeo");
+    } finally {
+      setEnviandoVideo(false);
+      e.target.value = "";
+    }
+  };
+
+  return (
+    <div className="bg-white border rounded-lg p-4 space-y-3">
+      <div className="flex gap-2">
+        <input
+          value={titulo}
+          onChange={(e) => setTitulo(e.target.value)}
+          className="flex-1 px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+        />
+        <button
+          onClick={salvarTitulo}
+          disabled={salvandoTitulo || titulo === card.titulo}
+          className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white rounded-lg text-sm font-medium"
+        >
+          <Save className="w-3.5 h-3.5" /> Salvar
+        </button>
+      </div>
+
+      <div className="flex items-center gap-3">
+        {card.video_url ? (
+          <span className="text-xs text-emerald-600 flex items-center gap-1">
+            <Film className="w-3.5 h-3.5" /> Vídeo publicado
+          </span>
+        ) : (
+          <span className="text-xs text-gray-400">Nenhum vídeo publicado ainda</span>
+        )}
+        <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-medium cursor-pointer ml-auto">
+          <Upload className="w-3.5 h-3.5" />
+          {enviandoVideo ? "Enviando..." : card.video_url ? "Trocar vídeo" : "Enviar vídeo"}
+          <input type="file" accept="video/*" className="hidden" onChange={handleArquivo} disabled={enviandoVideo} />
+        </label>
+      </div>
     </div>
   );
 }
