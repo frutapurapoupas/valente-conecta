@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useApp } from "@/app/context/AppContext";
 import toast from "react-hot-toast";
 
@@ -21,11 +21,23 @@ function ServicoIndisponivelContent() {
   const [telefone, setTelefone] = useState("");
   const [mensagem, setMensagem] = useState("");
   const [enviado, setEnviado] = useState(false);
+  const [whatsappSuporte, setWhatsappSuporte] = useState("");
+
+  useEffect(() => {
+    fetch("/api/config-suporte")
+      .then((r) => r.json())
+      .then((res) => setWhatsappSuporte(res.success ? res.data?.whatsapp || "" : ""))
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!whatsappSuporte) {
+      toast.error("Contato de suporte não configurado. Tente novamente mais tarde.");
+      return;
+    }
     const texto = `📢 *NOVO INTERESSE - VALENTE CONECTA* 📢%0A%0A🔹 *Serviço:* ${servico}%0A🔹 *Categoria:* ${categoria || "Não especificada"}%0A%0A📌 *Dados:*%0A👤 Nome: ${nome}%0A📧 Email: ${email}%0A📱 Telefone: ${telefone}%0A💬 ${mensagem || "Gostaria de mais informações"}`;
-    window.open(`https://wa.me/5575999999999?text=${texto}`, "_blank");
+    window.open(`https://wa.me/55${whatsappSuporte}?text=${texto}`, "_blank");
     setEnviado(true);
     toast.success("Solicitação enviada! Responderemos em até 24h.");
   };

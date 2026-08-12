@@ -59,6 +59,7 @@ import {
   PlayCircle,
   Percent,
   Timer,
+  LifeBuoy,
   type LucideIcon
 } from "lucide-react";
 
@@ -556,6 +557,16 @@ export const adminMenuFull: MenuGroup[] = [
     collapsible: true,
     items: [
       { name: "Buscas sem resultado", path: "/admin-master/demandas", icon: BellRing, status: 'active' },
+    ]
+  },
+
+  // ==================== SUPORTE ====================
+  {
+    name: "📞 SUPORTE",
+    icon: LifeBuoy,
+    collapsible: true,
+    items: [
+      { name: "Contato de suporte (WhatsApp/email)", path: "/admin-master/configuracoes/suporte", icon: LifeBuoy, status: 'active' },
     ]
   },
 

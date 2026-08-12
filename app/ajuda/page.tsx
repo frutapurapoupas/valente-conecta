@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Play, Youtube, Info, HelpCircle, Video } from "lucide-react";
+import { ArrowLeft, Play, Youtube, Info, HelpCircle, Video, MessageCircle, Mail } from "lucide-react";
 
 // Adicionado para desabilitar renderização estática
 export const dynamic = 'force-dynamic';
@@ -33,6 +33,14 @@ export default function AjudaPage() {
   const router = useRouter();
   const [videoSelecionado, setVideoSelecionado] = useState<VideoTutorial | null>(null);
   const [categoriaFiltro, setCategoriaFiltro] = useState("Todos");
+  const [contatoSuporte, setContatoSuporte] = useState<{ whatsapp: string; email: string } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/config-suporte")
+      .then((r) => r.json())
+      .then((res) => setContatoSuporte(res.success ? res.data : null))
+      .catch(() => {});
+  }, []);
 
   const categorias = ["Todos", "Primeiros Passos", "Indicação", "Cozinha", "Academia", "Transporte", "Comércio", "Financeiro", "Admin"];
 
@@ -67,6 +75,31 @@ export default function AjudaPage() {
             </button>
           ))}
         </div>
+
+        {/* Fale com o suporte */}
+        {contatoSuporte && (contatoSuporte.whatsapp || contatoSuporte.email) && (
+          <div className="bg-gray-800 rounded-2xl p-4 mb-4 flex flex-wrap items-center gap-3">
+            <p className="text-sm text-gray-300 font-medium mr-auto">Não achou o que precisava? Fale com o suporte:</p>
+            {contatoSuporte.whatsapp && (
+              <a
+                href={`https://wa.me/55${contatoSuporte.whatsapp}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+              >
+                <MessageCircle className="w-4 h-4" /> WhatsApp
+              </a>
+            )}
+            {contatoSuporte.email && (
+              <a
+                href={`mailto:${contatoSuporte.email}`}
+                className="flex items-center gap-2 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+              >
+                <Mail className="w-4 h-4" /> E-mail
+              </a>
+            )}
+          </div>
+        )}
 
         {/* Layout com vídeos à esquerda e detalhes à direita */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';  // ? ÚNICA LINHA ADICIONADA
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
@@ -10,6 +10,14 @@ export default function ComercioPage() {
   const router = useRouter();
   const [carrinho, setCarrinho] = useState<any[]>([]);
   const [activeCategory, setActiveCategory] = useState<"mercearia" | "farmacia" | "aguagas">("mercearia");
+  const [whatsappSuporte, setWhatsappSuporte] = useState("");
+
+  useEffect(() => {
+    fetch("/api/config-suporte")
+      .then((r) => r.json())
+      .then((res) => setWhatsappSuporte(res.success ? res.data?.whatsapp || "" : ""))
+      .catch(() => {});
+  }, []);
 
   const produtosMercearia = [
     { id: 1, nome: "Arroz 5kg", preco: 22.90, imagem: "🍚" },
@@ -43,8 +51,9 @@ export default function ComercioPage() {
 
   const finalizarCompra = () => {
     if (carrinho.length === 0) { toast.error("Carrinho vazio"); return; }
+    if (!whatsappSuporte) { toast.error("Contato não configurado. Tente novamente mais tarde."); return; }
     const mensagem = `🛒 *PEDIDO VALENTE CONECTA*%0A%0A${carrinho.map(i => `${i.quantidade}x ${i.nome} - R$ ${(i.preco * i.quantidade).toFixed(2)}`).join("%0A")}%0A%0A📦 *TOTAL: R$ ${totalCarrinho.toFixed(2)}*%0A📍 Entrega: Valente, BA`;
-    window.open(`https://wa.me/5575999999999?text=${mensagem}`, "_blank");
+    window.open(`https://wa.me/55${whatsappSuporte}?text=${mensagem}`, "_blank");
     setCarrinho([]);
   };
 
