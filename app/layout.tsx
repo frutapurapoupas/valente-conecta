@@ -19,6 +19,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="pt-BR" className="h-full">
+      <head>
+        {isAdminPage ? (
+          <>
+            <link rel="manifest" href="/manifest-admin.json" />
+            <link rel="apple-touch-icon" href="/icons/icon-admin-180x180.png" />
+            <meta name="theme-color" content="#DC2626" />
+            <meta name="apple-mobile-web-app-title" content="VC Admin" />
+          </>
+        ) : (
+          <>
+            <link rel="manifest" href="/manifest.json" />
+            <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+            <meta name="theme-color" content="#22c55e" />
+            <meta name="apple-mobile-web-app-title" content="Valente" />
+          </>
+        )}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+      </head>
       <body className={`${inter.className} h-full bg-gray-50 text-gray-900`}>
         <AppProvider>
           <Suspense fallback={<LoadingSpinner />}>

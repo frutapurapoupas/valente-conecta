@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import adminMenuFull, { MenuGroup, MenuItem } from "./adminMenuFull";
+import AdminInstallButton from "./AdminInstallButton";
 
 // ============================================================
 // COMPONENTE: MenuItem
@@ -138,8 +139,10 @@ export default function Sidebar() {
 
   return (
     <aside className="w-64 bg-gray-900 text-white min-h-screen p-4 overflow-y-auto">
-      <h2 className="text-xl font-bold mb-8 px-2">Valente Conecta</h2>
-      
+      <h2 className="text-xl font-bold mb-4 px-2">Valente Conecta</h2>
+
+      <AdminInstallButton />
+
       <nav className="space-y-4">
         {adminMenuFull.map((group) => {
           const isOpen = openGroups[group.name] ?? isGroupActive(group);
