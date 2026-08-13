@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/app/context/AppContext";
+import { obterUsuarioLocalId } from "@/lib/usuarioLocal";
+import { getCurrentUser } from "@/lib/auth";
 import toast from "react-hot-toast";
 import {
   Search,
@@ -63,6 +65,26 @@ export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showAdminNotifications, setShowAdminNotifications] = useState(true);
   const [showTodasCategorias, setShowTodasCategorias] = useState(false);
+  const [saldoMoedaConecta, setSaldoMoedaConecta] = useState(0);
+  const [siglaMoedaConecta, setSiglaMoedaConecta] = useState("MC");
+
+  useEffect(() => {
+    const usuarioReal = getCurrentUser();
+    if (!usuarioReal) return;
+    fetch(`/api/moeda-conecta/saldo?usuarioId=${usuarioReal.id}`)
+      .then((r) => r.json())
+      .then((res) => {
+        if (!res.success) return;
+        setSaldoMoedaConecta(Number(res.data.saldo || 0));
+        const cidade = res.data.cidade_base || (usuarioReal as any).cidade_base;
+        if (cidade) {
+          fetch(`/api/moeda-conecta/cidade-config?cidade=${encodeURIComponent(cidade)}`)
+            .then((r2) => r2.json())
+            .then((res2) => res2.success && setSiglaMoedaConecta(res2.data.moeda_prefixo));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const carrosselRef = useRef<HTMLDivElement>(null);
   const [intervaloCarrossel, setIntervaloCarrossel] = useState(5);
@@ -93,12 +115,53 @@ export default function HomePage() {
     return () => clearInterval(intervalId);
   }, [intervaloCarrossel]);
 
-  const notificacoesAdmin = [
-    { id: 1, mensagem: "Novas funcionalidades disponíveis! Confira o cardápio da Cozinha.", importancia: "alta", data: "Hoje" },
-    { id: 2, mensagem: "Campanha de indicação: ganhe R$5 por amigo indicado!", importancia: "media", data: "Hoje" },
-    { id: 3, mensagem: "Academia agora com geolocalização para registrar treinos!", importancia: "alta", data: "Ontem" },
-    { id: 4, mensagem: "Moto Táxi com novos motoristas cadastrados!", importancia: "baixa", data: "Ontem" },
-  ];
+  const [notificacoesAdmin, setNotificacoesAdmin] = useState<
+    { id: string; mensagem: string; titulo: string; data: string }[]
+  >([]);
+
+  useEffect(() => {
+    const carregarComunicados = async () => {
+      try {
+        const comunicadosRes = await fetch("/api/comunicados", { cache: "no-store" }).then((r) => r.json());
+        if (!comunicadosRes.success) return;
+
+        // Segmentacao: so' filtra se o visitante tiver uma inscricao de push
+        // com cidade/grupos preenchidos (ver PushSubscriptionManager). Sem
+        // inscricao, ve so' os comunicados nao-segmentados (grupos e
+        // cidades nulos = "todos").
+        let minhaCidade: string | null = null;
+        let meusGrupos: string[] = [];
+        try {
+          const usuarioLocalId = obterUsuarioLocalId();
+          const prefRes = await fetch(`/api/push/preferencias?usuarioId=${usuarioLocalId}`).then((r) => r.json());
+          if (prefRes.success) {
+            minhaCidade = prefRes.data.cidade || null;
+            meusGrupos = prefRes.data.grupos_interesse || [];
+          }
+        } catch {
+          // segue sem segmentacao
+        }
+
+        const filtrados = (comunicadosRes.data as any[]).filter((c) => {
+          const bateGrupo = !c.grupos?.length || c.grupos.some((g: string) => meusGrupos.includes(g));
+          const bateCidade = !c.cidades?.length || (minhaCidade && c.cidades.includes(minhaCidade));
+          return bateGrupo && bateCidade;
+        });
+
+        setNotificacoesAdmin(
+          filtrados.map((c) => ({
+            id: c.id,
+            titulo: c.titulo,
+            mensagem: c.mensagem,
+            data: new Date(c.publicado_em || c.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
+          }))
+        );
+      } catch {
+        // comunicado e' um extra, nunca deve quebrar a home
+      }
+    };
+    carregarComunicados();
+  }, []);
 
   const categoriasPrincipais: CategoriaItem[] = [
     { nome: "Mercados", Icone: ShoppingBag, href: "/mercados" },
@@ -212,13 +275,13 @@ export default function HomePage() {
           </div>
 
           <div className="flex items-baseline justify-between mb-3">
-            <h2 className="text-2xl font-black text-slate-900">R$ {(user?.wallet ?? 0).toFixed(2)}</h2>
-            <span className="text-xs text-slate-500 font-normal">Moeda Corrente: VCC</span>
+            <h2 className="text-2xl font-black text-slate-900">{saldoMoedaConecta.toFixed(2)} {siglaMoedaConecta}</h2>
+            <span className="text-xs text-slate-500 font-normal">Moeda Conecta</span>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <button
-              onClick={() => router.push("/carteira/recarga")}
+              onClick={() => router.push("/carteira")}
               className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-4 rounded-xl text-xs font-semibold shadow-sm transition-colors"
             >
               <ArrowDownLeft size={16} /> Receber
@@ -341,7 +404,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {showAdminNotifications && (
+        {showAdminNotifications && notificacoesAdmin.length > 0 && (
           <section className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
             <div className="flex justify-between items-center p-3 border-b border-slate-100 bg-blue-50/50">
               <div className="flex items-center gap-2">
@@ -360,14 +423,10 @@ export default function HomePage() {
             <div className="p-3 space-y-2 max-h-48 overflow-auto">
               {notificacoesAdmin.map((notif) => (
                 <div key={notif.id} className="flex items-start gap-2 p-2 rounded-lg hover:bg-slate-50 transition">
-                  <div
-                    className={
-                      "mt-1 w-2 h-2 rounded-full " +
-                      (notif.importancia === "alta" ? "bg-red-500" : notif.importancia === "media" ? "bg-amber-500" : "bg-blue-500")
-                    }
-                  ></div>
+                  <div className="mt-1 w-2 h-2 rounded-full bg-blue-500 shrink-0"></div>
                   <div className="flex-1">
-                    <p className="text-slate-700 text-sm">{notif.mensagem}</p>
+                    <p className="text-slate-800 text-sm font-medium">{notif.titulo}</p>
+                    <p className="text-slate-600 text-sm">{notif.mensagem}</p>
                     <p className="text-slate-400 text-[9px] mt-0.5">{notif.data}</p>
                   </div>
                 </div>

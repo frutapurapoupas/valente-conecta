@@ -127,13 +127,10 @@ export const adminMenuFull: MenuGroup[] = [
     name: "💱 Moeda Conecta",
     icon: Coins,
     collapsible: true,
-    description: "Gestão de usuários e adoção",
+    description: "Transações, moderação e nome por cidade",
     items: [
-      { name: "Gestão de usuários e adoção", path: "/admin-master/moeda-conecta/usuarios", icon: Users, status: 'active' },
-      { name: "Estatística das transações", path: "/admin-master/moeda-conecta/transacoes", icon: TrendingUp, status: 'active' },
-      { name: "Saldos", path: "/admin-master/moeda-conecta/saldos", icon: Wallet, status: 'active' },
-      { name: "Segurança", path: "/admin-master/moeda-conecta/seguranca", icon: Lock, status: 'active' },
-      { name: "Compensação/Moderação", path: "/admin-master/moeda-conecta/compensacao", icon: Shield, status: 'active' },
+      { name: "Transações e moderação", path: "/admin-master/moeda-conecta/transacoes", icon: TrendingUp, status: 'active' },
+      { name: "Nome da moeda por cidade", path: "/admin-master/moeda-conecta/cidades", icon: Coins, status: 'active' },
     ]
   },
 
@@ -586,6 +583,7 @@ export const adminMenuFull: MenuGroup[] = [
     items: [
       { name: "Contato de suporte (WhatsApp/email)", path: "/admin-master/configuracoes/suporte", icon: LifeBuoy, status: 'active' },
       { name: "Aviso geral (push pra todos)", path: "/admin-master/configuracoes/aviso-geral", icon: Megaphone, status: 'active' },
+      { name: "Comunicado oficial (card da home)", path: "/admin-master/configuracoes/comunicados", icon: Megaphone, status: 'active' },
       { name: "Divulgação (convites em massa)", path: "/admin-master/configuracoes/divulgacao", icon: UserPlus, status: 'active' },
       { name: "Chat com usuários", path: "/admin-master/chat", icon: MessageCircle, status: 'active' },
     ]

@@ -15,7 +15,8 @@ interface MotoMetrics {
 
 interface MCTransaction {
   valor: number;
-  tipo: "pagar" | "receber";
+  tipo: string;
+  status: string;
 }
 
 interface PlanConfig {
@@ -55,7 +56,7 @@ export default function AdminDashboardPage() {
   const [statsUsuarios, setStatsUsuarios] = useState<StatsUsuarios | null>(null);
   const [metricasUsuarios, setMetricasUsuarios] = useState<MetricasUsuarios | null>(null);
   const [motoMetrics, setMotoMetrics] = useState<MotoMetrics | null>(null);
-  const [mcMetrics, setMcMetrics] = useState({ entradas: 0, saidas: 0, liquido: 0, total: 0 });
+  const [mcMetrics, setMcMetrics] = useState({ circulando: 0, emitido: 0, pendentes: 0, total: 0 });
   const [planosSnapshot, setPlanosSnapshot] = useState<PlanosConfigSnapshot | null>(null);
   const [projection, setProjection] = useState<RevenueProjection>({
     basicoAssinantes: 0,
@@ -95,14 +96,11 @@ export default function AdminDashboardPage() {
       setPlanosSnapshot(planosData?.success ? planosData.data : null);
 
       const txs: MCTransaction[] = Array.isArray(mcData?.data) ? mcData.data : [];
-      const entradas = txs.filter((t) => t.tipo === "receber").reduce((sum, t) => sum + Number(t.valor || 0), 0);
-      const saidas = txs.filter((t) => t.tipo === "pagar").reduce((sum, t) => sum + Number(t.valor || 0), 0);
-      setMcMetrics({
-        entradas,
-        saidas,
-        liquido: entradas - saidas,
-        total: txs.length
-      });
+      const concluidas = txs.filter((t) => t.status === "concluida");
+      const circulando = concluidas.reduce((sum, t) => sum + Number(t.valor || 0), 0);
+      const emitido = concluidas.filter((t) => t.tipo === "ajuste_admin").reduce((sum, t) => sum + Number(t.valor || 0), 0);
+      const pendentes = txs.filter((t) => t.status === "pendente_moderacao").length;
+      setMcMetrics({ circulando, emitido, pendentes, total: txs.length });
 
       const profissionais = Array.isArray(profissionaisData?.data) ? profissionaisData.data : [];
       const drivers = Array.isArray(driversData?.data) ? driversData.data : [];
@@ -217,12 +215,12 @@ export default function AdminDashboardPage() {
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
               <MetricCard label="Transações" value={mcMetrics.total} />
-              <MetricCard label="Entradas" value={`R$ ${mcMetrics.entradas.toFixed(2)}`} />
-              <MetricCard label="Saídas" value={`R$ ${mcMetrics.saidas.toFixed(2)}`} />
-              <MetricCard label="Líquido" value={`R$ ${mcMetrics.liquido.toFixed(2)}`} />
+              <MetricCard label="MC circulando" value={`${mcMetrics.circulando.toFixed(2)} MC`} />
+              <MetricCard label="Emitido pelo admin" value={`${mcMetrics.emitido.toFixed(2)} MC`} />
+              <MetricCard label="Aguardando aprovação" value={mcMetrics.pendentes} />
             </div>
             <div className="mt-3">
-              <Link href="/admin-master/moeda-conecta/transacoes" className="text-xs text-blue-600 hover:underline">Abrir relatório com PDF</Link>
+              <Link href="/admin-master/moeda-conecta/transacoes" className="text-xs text-blue-600 hover:underline">Abrir moderação e relatório</Link>
             </div>
           </section>
 
