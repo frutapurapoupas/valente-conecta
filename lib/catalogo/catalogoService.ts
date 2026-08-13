@@ -60,7 +60,7 @@ export async function removerItem(id: string, donoId: string): Promise<void> {
 
 export async function buscarVitrine(filtros: FiltrosBusca): Promise<ResultadoVitrine[]> {
   const supabase = createClient();
-  const { data, error } = await supabase.rpc('catalogo_busca_vitrine_v2', {
+  const { data, error } = await supabase.rpc('catalogo_busca_vitrine_v3', {
     termo: filtros.termo || null,
     modulo_filtro: filtros.modulo || null,
     categoria_filtro: filtros.categoria || null,

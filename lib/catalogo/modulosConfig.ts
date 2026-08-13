@@ -16,4 +16,5 @@ export const CATEGORIAS_POR_MODULO: Record<ModuloId, string[]> = {
   saude: ["Consulta médica", "Odontologia", "Fisioterapia", "Psicologia", "Exames", "Enfermagem", "Farmácia"],
   pet: ["Ração e produtos", "Banho e tosa", "Veterinário", "Adestramento"],
   moda: ["Moda Feminina", "Moda Masculina", "Moda Infantil", "Calçados", "Acessórios"],
+  alimentacao: ["Restaurante", "Lanchonete", "Pizzaria", "Bar", "Cafeteria", "Doceria", "Food truck"],
 };

@@ -15,17 +15,22 @@ import { createClient } from '@/lib/supabase/server';
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const body = await request.json();
+    const patch: Record<string, any> = { updated_at: new Date().toISOString() };
+    if (body.status !== undefined) patch.status = body.status;
+    if (body.destaque_posicao !== undefined) patch.destaque_posicao = body.destaque_posicao;
+
     const supabase = createClient();
     const { data, error } = await supabase
       .from('catalogo_itens')
-      .update({ status: body.status, updated_at: new Date().toISOString() })
+      .update(patch)
       .eq('id', params.id)
       .select('*')
       .single();
     if (error) throw error;
     return NextResponse.json({ success: true, data });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Erro ao moderar item:', error);
-    return NextResponse.json({ success: false, error: 'Erro ao moderar item' }, { status: 500 });
+    const mensagem = error?.code === '23505' ? 'Já existe um item nessa posição de destaque' : 'Erro ao moderar item';
+    return NextResponse.json({ success: false, error: mensagem }, { status: 500 });
   }
 }

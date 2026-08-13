@@ -19,7 +19,8 @@ export type ModuloId =
   | 'construcao'
   | 'saude'
   | 'pet'
-  | 'moda';
+  | 'moda'
+  | 'alimentacao';
 
 export type Arquetipo = 'catalogo-carrinho' | 'agenda-profissional' | 'anuncio-contato';
 
@@ -28,6 +29,7 @@ export const ARQUETIPO_POR_MODULO: Record<ModuloId, Arquetipo> = {
   mercados: 'catalogo-carrinho',
   pet: 'catalogo-carrinho',
   moda: 'catalogo-carrinho',
+  alimentacao: 'catalogo-carrinho',
   servicos: 'anuncio-contato',
   imoveis: 'anuncio-contato',
   emprego: 'anuncio-contato',
@@ -57,13 +59,15 @@ export interface CatalogoItem {
   longitude: number | null;
   status: StatusItem;
   metadata: Record<string, any>;
+  destaque_posicao: number | null;
   created_at: string;
   updated_at: string;
 }
 
-export type NovoCatalogoItem = Omit<CatalogoItem, 'id' | 'created_at' | 'updated_at' | 'status' | 'metadata'> & {
+export type NovoCatalogoItem = Omit<CatalogoItem, 'id' | 'created_at' | 'updated_at' | 'status' | 'metadata' | 'destaque_posicao'> & {
   status?: StatusItem;
   metadata?: Record<string, any>;
+  destaque_posicao?: number | null;
 };
 
 export type StatusLiberacao = 'pendente_pagamento' | 'liberado' | 'isento_assinatura';
@@ -106,6 +110,8 @@ export interface ResultadoVitrine {
   distancia_km: number | null;
   interesses_recentes: number;
   menor_preco_categoria: boolean;
+  destaque_posicao: number | null;
+  metadata: Record<string, any>;
 }
 
 export interface FiltrosBusca {
@@ -128,4 +134,5 @@ export const LABEL_MODULO: Record<ModuloId, string> = {
   saude: 'Saúde',
   pet: 'Pet Shop',
   moda: 'Moda',
+  alimentacao: 'Alimentação',
 };

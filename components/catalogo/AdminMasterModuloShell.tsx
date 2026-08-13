@@ -9,7 +9,7 @@
 
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { Ban, CheckCircle2, DollarSign } from "lucide-react";
+import { Ban, CheckCircle2, DollarSign, Star } from "lucide-react";
 import type { CatalogoItem } from "@/lib/catalogo/marketplaceTypes";
 
 interface TaxaConfig {
@@ -54,6 +54,29 @@ export function AdminMasterModuloShell({ modulo, labelModulo }: { modulo: string
     }
   };
 
+  const destacar = async (id: string, destaque_posicao: number | null) => {
+    try {
+      const resp = await fetch(`/api/admin-master/catalogo/itens/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ destaque_posicao }),
+      });
+      const resultado = await resp.json();
+      if (!resultado.success) throw new Error(resultado.error);
+      setItens((prev) =>
+        prev.map((i) => {
+          if (i.id === id) return { ...i, destaque_posicao };
+          // so' um item por posicao dentro do modulo — solta quem estava la
+          if (destaque_posicao !== null && i.destaque_posicao === destaque_posicao) return { ...i, destaque_posicao: null };
+          return i;
+        })
+      );
+      toast.success(destaque_posicao ? `Fixado em ${destaque_posicao}º lugar` : "Destaque removido");
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao destacar item");
+    }
+  };
+
   return (
     <div className="p-4 sm:p-6 max-w-6xl mx-auto">
       <h1 className="text-2xl font-bold mb-1">{labelModulo}</h1>
@@ -61,7 +84,10 @@ export function AdminMasterModuloShell({ modulo, labelModulo }: { modulo: string
 
       <TaxasModuloPanel escopo={escopo} />
 
-      <h2 className="text-lg font-semibold mt-8 mb-3">Itens publicados ({itens.length})</h2>
+      <h2 className="text-lg font-semibold mt-8 mb-1">Itens publicados ({itens.length})</h2>
+      <p className="text-xs text-gray-400 mb-3">
+        Fixe até 3 itens no topo da vitrine pública deste módulo (independente de busca ou distância).
+      </p>
       {loading ? (
         <p className="text-gray-400 text-sm">Carregando...</p>
       ) : itens.length === 0 ? (
@@ -69,7 +95,7 @@ export function AdminMasterModuloShell({ modulo, labelModulo }: { modulo: string
       ) : (
         <div className="space-y-2">
           {itens.map((item) => (
-            <div key={item.id} className="bg-white border rounded-lg p-3 flex items-center gap-3">
+            <div key={item.id} className="bg-white border rounded-lg p-3 flex items-center gap-3 flex-wrap">
               <div className="w-12 h-12 bg-gray-100 rounded overflow-hidden shrink-0">
                 {item.midia?.[0] && <img src={item.midia[0].thumb_url || item.midia[0].url} alt="" className="w-full h-full object-cover" />}
               </div>
@@ -78,6 +104,22 @@ export function AdminMasterModuloShell({ modulo, labelModulo }: { modulo: string
                 <p className="text-xs text-gray-500">
                   {item.categoria} · dono {item.dono_id.slice(0, 8)} · {item.status}
                 </p>
+              </div>
+              <div className="flex items-center gap-1">
+                {[1, 2, 3].map((pos) => (
+                  <button
+                    key={pos}
+                    onClick={() => destacar(item.id, item.destaque_posicao === pos ? null : pos)}
+                    title={`Fixar em ${pos}º lugar`}
+                    className={`w-7 h-7 flex items-center justify-center rounded-full text-xs font-bold border ${
+                      item.destaque_posicao === pos
+                        ? "bg-yellow-500 text-white border-yellow-500"
+                        : "bg-white text-gray-400 border-gray-200 hover:border-yellow-400"
+                    }`}
+                  >
+                    {item.destaque_posicao === pos ? <Star className="w-3.5 h-3.5" /> : pos}
+                  </button>
+                ))}
               </div>
               {item.status !== "removido" && (
                 <button

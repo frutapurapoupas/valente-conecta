@@ -6,7 +6,7 @@
 // geral quanto nas paginas publicas de cada modulo. Ver
 // VALENTE_CONECTA_MODULO_MARKETPLACE_MONETIZACAO.md, secao 4.
 
-import { MapPin, Flame, Trophy, Image as ImageIcon } from "lucide-react";
+import { MapPin, Flame, Trophy, Star, Image as ImageIcon } from "lucide-react";
 import type { ResultadoVitrine } from "@/lib/catalogo/marketplaceTypes";
 
 interface ItemCardProps {
@@ -48,6 +48,11 @@ export function ItemCard({ item, onClick }: ItemCardProps) {
         )}
 
         <div className="absolute top-2 left-2 flex flex-col gap-1">
+          {item.destaque_posicao && (
+            <span className="flex items-center gap-1 bg-yellow-500 text-white text-[11px] px-2 py-0.5 rounded-full font-medium">
+              <Star className="w-3 h-3" /> Destaque #{item.destaque_posicao}
+            </span>
+          )}
           {item.menor_preco_categoria && (
             <span className="flex items-center gap-1 bg-emerald-600 text-white text-[11px] px-2 py-0.5 rounded-full font-medium">
               <Trophy className="w-3 h-3" /> Menor preço

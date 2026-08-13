@@ -1,8 +1,7 @@
-﻿"use client";
-import { DemandView } from '@/components/DemandView';
+"use client";
+// Camada 3 (admin master) do módulo Alimentação.
+import { AdminMasterModuloShell } from "@/components/catalogo/AdminMasterModuloShell";
 
 export default function Page() {
-  return <DemandView category="ALIMENTACAO" title="Solicitação: alimentacao" />;
+  return <AdminMasterModuloShell modulo="alimentacao" labelModulo="Alimentação" />;
 }
-
-

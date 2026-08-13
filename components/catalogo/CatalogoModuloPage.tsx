@@ -84,7 +84,11 @@ export function CatalogoModuloPage({ modulo, labelModulo, categorias, descricao 
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {itens.map((item) => (
-            <ItemCard key={item.id} item={item} onClick={() => router.push(`/item/${item.id}`)} />
+            <ItemCard
+              key={item.id}
+              item={item}
+              onClick={() => router.push(item.metadata?.link_externo || `/item/${item.id}`)}
+            />
           ))}
         </div>
       )}

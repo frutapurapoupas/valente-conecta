@@ -218,6 +218,8 @@ export const adminMenuFull: MenuGroup[] = [
     icon: Utensils,
     collapsible: true,
     items: [
+      { name: "Painel completo (todos)", path: "/admin-master/alimentacao", icon: Utensils, status: 'active' },
+      { name: "Página Pública", path: "/alimentacao", icon: ExternalLink, status: 'active' },
       { name: "Restaurantes", path: "/admin-master/restaurantes", icon: Utensils, status: 'construction' },
       { name: "Lanchonetes", path: "/admin-master/lanchonetes", icon: Utensils, status: 'construction' },
       { name: "Pizzarias", path: "/admin-master/pizzarias", icon: Pizza, status: 'construction' },
@@ -446,6 +448,17 @@ export const adminMenuFull: MenuGroup[] = [
       { name: "Laboratórios", path: "/admin-master/saude/laboratorios", icon: Hospital, status: 'construction' },
       { name: "Fisioterapia", path: "/admin-master/saude/fisioterapia", icon: Hospital, status: 'construction' },
       { name: "Óticas", path: "/admin-master/saude/oticas", icon: Hospital, status: 'construction' },
+    ]
+  },
+
+  // ==================== MODA (LOJA / MARKETPLACE) ====================
+  {
+    name: "👗 MODA (LOJA)",
+    icon: Scissors,
+    collapsible: true,
+    items: [
+      { name: "Painel completo (todos)", path: "/admin-master/moda", icon: Scissors, status: 'active' },
+      { name: "Página Pública", path: "/moda", icon: ExternalLink, status: 'active' },
     ]
   },
 
