@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { TrendingUp, TrendingDown, DollarSign, Package, ShoppingBag, Users, Calendar, ArrowUp, ArrowDown } from 'lucide-react';
+import { useCallback, useState, useEffect } from 'react';
+import { TrendingUp, TrendingDown, DollarSign, Package, ShoppingBag, Users, Calendar, ArrowUp, ArrowDown, Radio } from 'lucide-react';
+import { useUsuariosRealtime } from '@/lib/hooks/useUsuariosRealtime';
+import { CardsResumoUsuarios, GraficoCadastrosPorDia, GraficoPorCidade, GraficoPorStatus, type MetricasUsuarios } from '../components/GraficosUsuarios';
 
 type Metricas = {
   faturamentoHoje: number;
@@ -27,6 +29,18 @@ export default function DashboardMetricas() {
   const [metricas, setMetricas] = useState<Metricas | null>(null);
   const [loading, setLoading] = useState(true);
   const [periodo, setPeriodo] = useState<'hoje' | 'semana' | 'mes'>('hoje');
+  const [metricasUsuarios, setMetricasUsuarios] = useState<MetricasUsuarios | null>(null);
+
+  const carregarUsuarios = useCallback(async () => {
+    const res = await fetch('/api/admin-master/usuarios-metricas', { cache: 'no-store' }).then((r) => r.json());
+    if (res.success) setMetricasUsuarios(res.data);
+  }, []);
+
+  useEffect(() => {
+    carregarUsuarios();
+  }, [carregarUsuarios]);
+
+  useUsuariosRealtime(carregarUsuarios);
 
   const carregarMetricas = async () => {
     setLoading(true);
@@ -245,6 +259,24 @@ export default function DashboardMetricas() {
           </div>
         </div>
         
+        {/* Usuários */}
+        {metricasUsuarios && (
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold flex items-center gap-2"><Users size={18} /> Usuários</h2>
+              <span className="flex items-center gap-1 text-xs text-green-600 font-medium">
+                <Radio className="w-3 h-3 animate-pulse" /> Ao vivo
+              </span>
+            </div>
+            <CardsResumoUsuarios metricas={metricasUsuarios} />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+              <GraficoCadastrosPorDia dados={metricasUsuarios.cadastrosPorDia} />
+              <GraficoPorCidade dados={metricasUsuarios.porCidade} />
+              <GraficoPorStatus status={metricasUsuarios.porStatus} />
+            </div>
+          </div>
+        )}
+
         {/* Vendas por Dia da Semana */}
         <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm">
           <h2 className="text-lg font-bold mb-4">📅 Vendas por Dia da Semana</h2>

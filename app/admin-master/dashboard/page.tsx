@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Bike, Coins, RefreshCw, CreditCard, Users } from "lucide-react";
+import { Bike, Coins, RefreshCw, CreditCard, Users, Radio } from "lucide-react";
+import { useUsuariosRealtime } from "@/lib/hooks/useUsuariosRealtime";
+import { CardsResumoUsuarios, GraficoCadastrosPorDia, GraficoPorCidade, GraficoPorStatus, type MetricasUsuarios } from "../components/GraficosUsuarios";
 
 interface MotoMetrics {
   activeDrivers: number;
@@ -51,6 +53,7 @@ interface StatsUsuarios {
 
 export default function AdminDashboardPage() {
   const [statsUsuarios, setStatsUsuarios] = useState<StatsUsuarios | null>(null);
+  const [metricasUsuarios, setMetricasUsuarios] = useState<MetricasUsuarios | null>(null);
   const [motoMetrics, setMotoMetrics] = useState<MotoMetrics | null>(null);
   const [mcMetrics, setMcMetrics] = useState({ entradas: 0, saidas: 0, liquido: 0, total: 0 });
   const [planosSnapshot, setPlanosSnapshot] = useState<PlanosConfigSnapshot | null>(null);
@@ -63,20 +66,24 @@ export default function AdminDashboardPage() {
   });
   const [loading, setLoading] = useState(true);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [statsRes, motoRes, mcRes, planosRes, profissionaisRes, driversRes] = await Promise.all([
+      const [statsRes, motoRes, mcRes, planosRes, profissionaisRes, driversRes, metricasUsuariosRes] = await Promise.all([
         fetch("/api/admin-master/stats-usuarios", { cache: "no-store" }),
         fetch("/api/mototaxi?recurso=metrics", { cache: "no-store" }),
         fetch("/api/moeda-conecta/transactions?limit=400", { cache: "no-store" }),
         fetch("/api/planos-config", { cache: "no-store" }),
         fetch("/api/profissionais", { cache: "no-store" }),
-        fetch("/api/mototaxi?recurso=drivers", { cache: "no-store" })
+        fetch("/api/mototaxi?recurso=drivers", { cache: "no-store" }),
+        fetch("/api/admin-master/usuarios-metricas", { cache: "no-store" })
       ]);
 
       const statsData = await statsRes.json();
       setStatsUsuarios(statsData?.success ? statsData.data : null);
+
+      const metricasUsuariosData = await metricasUsuariosRes.json();
+      setMetricasUsuarios(metricasUsuariosData?.success ? metricasUsuariosData.data : null);
 
       const motoData = await motoRes.json();
       const mcData = await mcRes.json();
@@ -120,11 +127,13 @@ export default function AdminDashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     load();
-  }, []);
+  }, [load]);
+
+  useUsuariosRealtime(load);
 
   const planoById = (planId: string) => planosSnapshot?.plans?.find((p) => p.id === planId) || null;
   const basico = planoById("basico");
@@ -164,6 +173,28 @@ export default function AdminDashboardPage() {
               indicado ainda está com acesso ativo (mesmo critério usado no extrato de indicações do usuário).
             </p>
           </section>
+
+          {metricasUsuarios && (
+            <section className="bg-white border border-gray-200 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2 text-gray-800 font-semibold">
+                  <Users size={16} /> Cadastros em detalhe
+                </div>
+                <span className="flex items-center gap-1 text-xs text-green-600 font-medium">
+                  <Radio className="w-3 h-3 animate-pulse" /> Ao vivo
+                </span>
+              </div>
+              <CardsResumoUsuarios metricas={metricasUsuarios} />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                <GraficoCadastrosPorDia dados={metricasUsuarios.cadastrosPorDia} />
+                <GraficoPorCidade dados={metricasUsuarios.porCidade} />
+                <GraficoPorStatus status={metricasUsuarios.porStatus} />
+              </div>
+              <Link href="/admin-master/usuarios" className="text-xs text-blue-600 hover:underline mt-3 inline-block">
+                Ver lista completa de usuários
+              </Link>
+            </section>
+          )}
 
           <section className="bg-white border border-gray-200 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-3 text-gray-800 font-semibold">
