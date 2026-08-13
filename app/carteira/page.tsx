@@ -16,10 +16,27 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   Wallet, ArrowUpCircle, ArrowDownCircle, QrCode, History, Copy, Check,
-  Eye, EyeOff, Clock, Gift, Send, X, AlertTriangle
+  Eye, EyeOff, Clock, Gift, Send, X, AlertTriangle, Store
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { getCurrentUser } from '@/lib/auth';
+
+interface Compensacao {
+  id: string;
+  fornecedor_nome: string;
+  fornecedor_whatsapp: string | null;
+  valor: number;
+  descricao: string | null;
+  status: 'solicitada' | 'paga' | 'recusada';
+  mes_referencia: string;
+  created_at: string;
+}
+
+const COMPENSACAO_STATUS_LABEL: Record<string, string> = {
+  solicitada: 'Aguardando pagamento ao fornecedor',
+  paga: 'Fornecedor recebeu em real',
+  recusada: 'Recusada (saldo devolvido)',
+};
 
 interface Transacao {
   id: string;
@@ -52,12 +69,20 @@ export default function CarteiraPage() {
   const [showSaldo, setShowSaldo] = useState(true);
   const [showModalReceber, setShowModalReceber] = useState(false);
   const [showModalPagar, setShowModalPagar] = useState(false);
+  const [showModalCompensar, setShowModalCompensar] = useState(false);
   const [copiado, setCopiado] = useState(false);
 
   const [destinoCodigo, setDestinoCodigo] = useState('');
   const [valorPagar, setValorPagar] = useState(0);
   const [descricaoPagar, setDescricaoPagar] = useState('');
   const [enviando, setEnviando] = useState(false);
+
+  const [compensacoes, setCompensacoes] = useState<Compensacao[]>([]);
+  const [fornecedorNome, setFornecedorNome] = useState('');
+  const [fornecedorWhatsapp, setFornecedorWhatsapp] = useState('');
+  const [valorCompensar, setValorCompensar] = useState(0);
+  const [descricaoCompensar, setDescricaoCompensar] = useState('');
+  const [solicitandoCompensacao, setSolicitandoCompensacao] = useState(false);
 
   const meuCodigo = usuario ? `MC-${usuario.id}|${(usuario.cidade_base || cidadeBase || '').toUpperCase()}` : '';
   const sigla = moedaConfig?.moeda_prefixo || 'MC';
@@ -66,10 +91,12 @@ export default function CarteiraPage() {
   const carregarDados = async (u: any) => {
     setLoading(true);
     try {
-      const [saldoRes, transRes] = await Promise.all([
+      const [saldoRes, transRes, compRes] = await Promise.all([
         fetch(`/api/moeda-conecta/saldo?usuarioId=${u.id}`, { cache: 'no-store' }).then((r) => r.json()),
         fetch(`/api/moeda-conecta/transactions?userId=${u.id}&limit=5`, { cache: 'no-store' }).then((r) => r.json()),
+        fetch(`/api/moeda-conecta/compensacao-fornecedor?portadorId=${u.id}`, { cache: 'no-store' }).then((r) => r.json()),
       ]);
+      if (compRes.success) setCompensacoes(compRes.data);
       if (saldoRes.success) {
         setSaldo(Number(saldoRes.data.saldo || 0));
         const cidade = saldoRes.data.cidade_base || u.cidade_base || '';
@@ -143,6 +170,51 @@ export default function CarteiraPage() {
     }
   };
 
+  const enviarCompensacao = async () => {
+    if (!usuario) return;
+    if (!fornecedorNome.trim()) {
+      toast.error('Informe o nome do fornecedor');
+      return;
+    }
+    if (!Number.isFinite(valorCompensar) || valorCompensar <= 0) {
+      toast.error('Valor inválido');
+      return;
+    }
+    if (valorCompensar > saldo) {
+      toast.error('Saldo insuficiente');
+      return;
+    }
+
+    setSolicitandoCompensacao(true);
+    try {
+      const resp = await fetch('/api/moeda-conecta/compensacao-fornecedor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          portadorId: usuario.id,
+          fornecedorNome: fornecedorNome.trim(),
+          fornecedorWhatsapp: fornecedorWhatsapp.trim(),
+          valor: valorCompensar,
+          descricao: descricaoCompensar.trim(),
+        }),
+      });
+      const resultado = await resp.json();
+      if (!resultado.success) throw new Error(resultado.error);
+
+      toast.success('Solicitação enviada! O admin master repassa o valor em real ao fornecedor no fechamento do mês.');
+      setShowModalCompensar(false);
+      setFornecedorNome('');
+      setFornecedorWhatsapp('');
+      setValorCompensar(0);
+      setDescricaoCompensar('');
+      carregarDados(usuario);
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao solicitar compensação');
+    } finally {
+      setSolicitandoCompensacao(false);
+    }
+  };
+
   const copiarCodigo = () => {
     navigator.clipboard.writeText(meuCodigo);
     setCopiado(true);
@@ -212,6 +284,12 @@ export default function CarteiraPage() {
               <Send className="w-4 h-4" /> Pagar / Transferir
             </button>
           </div>
+          <button
+            onClick={() => setShowModalCompensar(true)}
+            className="w-full mt-3 bg-white/10 hover:bg-white/20 px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 text-sm font-medium border border-white/20"
+          >
+            <Store className="w-4 h-4" /> Comprei com fornecedor que não é usuário
+          </button>
         </div>
 
         <div className="bg-white rounded-lg shadow">
@@ -257,6 +335,30 @@ export default function CarteiraPage() {
             )}
           </div>
         </div>
+
+        {compensacoes.length > 0 && (
+          <div className="bg-white rounded-lg shadow mt-6">
+            <div className="p-4 border-b">
+              <h2 className="font-bold text-gray-800 flex items-center gap-2">
+                <Store className="w-5 h-5 text-gray-500" />
+                Compensações a fornecedores não-usuários
+              </h2>
+            </div>
+            <div className="divide-y">
+              {compensacoes.map((c) => (
+                <div key={c.id} className="p-4 flex justify-between items-center">
+                  <div>
+                    <p className="font-medium text-gray-800">{c.fornecedor_nome}</p>
+                    <p className="text-xs text-gray-500">{formatDate(c.created_at)} · {COMPENSACAO_STATUS_LABEL[c.status]}</p>
+                  </div>
+                  <div className={`text-right font-semibold ${c.status === 'recusada' ? 'text-gray-400 line-through' : 'text-red-600'}`}>
+                    {formatCurrency(c.valor)} {sigla}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {showModalReceber && (
@@ -347,6 +449,85 @@ export default function CarteiraPage() {
                   className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400"
                 >
                   {enviando ? 'Enviando...' : 'Confirmar'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showModalCompensar && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-md w-full">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-gray-800">Comprei com fornecedor não-usuário</h2>
+                <button onClick={() => setShowModalCompensar(false)} className="text-gray-400 hover:text-gray-600">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <p className="text-xs text-gray-500 mb-4">
+                Use quando o fornecedor aceitou receber em Moeda Conecta mas ainda não é usuário do app. O valor sai do seu saldo agora; o admin master paga o fornecedor em real (PIX) no fechamento do mês.
+              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Nome do fornecedor</label>
+                  <input
+                    type="text"
+                    value={fornecedorNome}
+                    onChange={(e) => setFornecedorNome(e.target.value)}
+                    placeholder="Nome de quem vendeu"
+                    className="w-full px-3 py-2 border rounded-lg"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">WhatsApp do fornecedor (opcional)</label>
+                  <input
+                    type="text"
+                    value={fornecedorWhatsapp}
+                    onChange={(e) => setFornecedorWhatsapp(e.target.value)}
+                    placeholder="(75) 99999-9999"
+                    className="w-full px-3 py-2 border rounded-lg"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Valor da compra</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">{sigla}</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0.01"
+                      max={saldo}
+                      value={valorCompensar || ''}
+                      onChange={(e) => setValorCompensar(parseFloat(e.target.value))}
+                      className="w-full pl-9 pr-3 py-2 border rounded-lg"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Saldo disponível: {formatCurrency(saldo)} {sigla}</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Descrição (opcional)</label>
+                  <input
+                    type="text"
+                    value={descricaoCompensar}
+                    onChange={(e) => setDescricaoCompensar(e.target.value)}
+                    placeholder="O que foi comprado"
+                    className="w-full px-3 py-2 border rounded-lg"
+                  />
+                </div>
+
+                <button
+                  onClick={enviarCompensacao}
+                  disabled={solicitandoCompensacao || valorCompensar <= 0 || valorCompensar > saldo || !fornecedorNome.trim()}
+                  className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400"
+                >
+                  {solicitandoCompensacao ? 'Enviando...' : 'Solicitar compensação'}
                 </button>
               </div>
             </div>

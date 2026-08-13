@@ -5,12 +5,20 @@ export const dynamic = 'force-dynamic';
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useState, useEffect } from "react";
-import { ArrowLeft, Copy, Share2, Download, CheckCircle, Wallet, BellRing, Building2, Briefcase, Users, Info, X } from "lucide-react";
-import { calculateReferralWallet, type ReferralConfig, type ReferralWalletSummary } from '@/utils/referralBonus';
+import { ArrowLeft, Copy, Share2, Download, CheckCircle, Wallet, BellRing, Building2, Briefcase, Users, Info, X, Coins } from "lucide-react";
 import { supabase } from '@/lib/supabase';
 import { getCurrentUser } from '@/lib/auth';
 import type { Usuario } from '@/lib/supabase';
 import { CadastroPopup } from '@/components/CadastroPopup';
+
+interface BonusRule {
+  categoria: string;
+  nome: string;
+  bonus: number;
+  meta: number;
+  ativo: boolean;
+  descricao?: string;
+}
 
 export default function QRCodePage() {
   const router = useRouter();
@@ -28,10 +36,8 @@ export default function QRCodePage() {
   const [isClient, setIsClient] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [baseUrl, setBaseUrl] = useState("");
-  const [config, setConfig] = useState<ReferralConfig | null>(null);
-  const [wallet, setWallet] = useState<ReferralWalletSummary>({ disponivel: 0, bloqueado: 0, pago: 0, totalLiberado: 0, lotes: { usuarios_gerais: 0, empresas_lojas: 0, profissionais_liberais: 0 } });
-  const [pixKey, setPixKey] = useState("");
-  const [solicitandoPix, setSolicitandoPix] = useState(false);
+  const [bonusRules, setBonusRules] = useState<BonusRule[]>([]);
+  const [contagens, setContagens] = useState({ usuarios_gerais: 0, empresas_lojas: 0, profissionais_liberais: 0 });
   const [indicadosUsuarios, setIndicadosUsuarios] = useState<any[]>([]);
   const [indicadosEmpresas, setIndicadosEmpresas] = useState<any[]>([]);
   const [indicadosProfissionais, setIndicadosProfissionais] = useState<any[]>([]);
@@ -54,7 +60,7 @@ export default function QRCodePage() {
     if (!baseUrl) return;
 
     localStorage.setItem('meu_codigo_indicacao', codigoIndicacao);
-    
+
     // Gerar QR Code usando API online (não precisa de biblioteca extra)
     const url = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(linkIndicacao)}`;
     setQrCodeUrl(url);
@@ -69,98 +75,71 @@ export default function QRCodePage() {
     async function carregarIndicacoes() {
       if (!user?.id) return;
 
-      const [configResp, payoutResp, usuariosResp, estabelecimentosResp] = await Promise.all([
-        fetch('/api/referrals/config').then((res) => res.json()).catch(() => ({ success: false })),
-        fetch(`/api/referrals/payout-requests?userId=${user.id}`).then((res) => res.json()).catch(() => ({ success: false, data: [] })),
+      const cidade = (user.cidade_base || '').trim().toUpperCase();
+
+      const [configResp, usuariosResp, estabelecimentosResp] = await Promise.all([
+        cidade
+          ? fetch(`/api/referrals/config-cidade?cidade=${encodeURIComponent(cidade)}`).then((res) => res.json()).catch(() => ({ success: false }))
+          : Promise.resolve({ success: false }),
         supabase.from('usuarios').select('id, nome, whatsapp, created_at, trial_end_at').eq('convidado_por_id', user.id).order('created_at', { ascending: false }),
         supabase.from('indicacoes_estabelecimentos').select('*').eq('usuario_id', user.id).order('created_at', { ascending: false })
       ]);
 
-      const cfg = configResp?.success ? configResp.data : null;
-      if (cfg) setConfig(cfg);
+      const rules: BonusRule[] = configResp?.success ? configResp.data.rules : [];
+      setBonusRules(rules);
 
       const usuarios = Array.isArray(usuariosResp.data) ? usuariosResp.data : [];
       const estabelecimentos = Array.isArray(estabelecimentosResp.data) ? estabelecimentosResp.data : [];
       const empresas = estabelecimentos.filter((item: any) => item.tipo === 'comercio');
       const profissionais = estabelecimentos.filter((item: any) => item.tipo === 'servico');
-      const payoutRequests = Array.isArray(payoutResp?.data) ? payoutResp.data : [];
 
       setIndicadosUsuarios(usuarios);
       setIndicadosEmpresas(empresas);
       setIndicadosProfissionais(profissionais);
 
       const usuariosValidados = usuarios.filter((item: any) => item.trial_end_at && new Date(item.trial_end_at) > new Date());
+      const empresasValidadas = empresas.filter((item: any) => item.status === 'aprovado' || item.status === 'pago');
+      const profissionaisValidados = profissionais.filter((item: any) => item.status === 'aprovado' || item.status === 'pago');
+
+      setContagens({
+        usuarios_gerais: usuariosValidados.length,
+        empresas_lojas: empresasValidadas.length,
+        profissionais_liberais: profissionaisValidados.length,
+      });
 
       setEstatisticas({
         total: usuarios.length + empresas.length + profissionais.length,
-        ativos: usuariosValidados.length + empresas.filter((item: any) => item.status === 'aprovado' || item.status === 'pago').length + profissionais.filter((item: any) => item.status === 'aprovado' || item.status === 'pago').length,
+        ativos: usuariosValidados.length + empresasValidadas.length + profissionaisValidados.length,
         pendentes: empresas.filter((item: any) => item.status === 'pendente').length + profissionais.filter((item: any) => item.status === 'pendente').length
       });
 
-      const walletCalc = calculateReferralWallet(
-        cfg || { rules: [] },
-        {
-          usuariosGerais: usuariosValidados.length,
-          empresasLojas: empresas.filter((item: any) => item.status === 'aprovado' || item.status === 'pago').length,
-          profissionaisLiberais: profissionais.filter((item: any) => item.status === 'aprovado' || item.status === 'pago').length
-        },
-        payoutRequests
-      );
-      setWallet(walletCalc);
+      // Credita automaticamente em Moeda Conecta qualquer lote batido e
+      // ainda nao pago — idempotente, seguro de chamar toda vez que a tela
+      // carrega (ver referral_processar_bonus_v1).
+      try {
+        const bonusResp = await fetch('/api/referrals/processar-bonus', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ usuarioId: user.id }),
+        }).then((res) => res.json());
 
-      const ultimaNotificacao = Number(localStorage.getItem(`referral_bonus_notified_${user.id}`) || 0);
-      if (walletCalc.disponivel > ultimaNotificacao) {
-        const mensagem = `Seu bônus por indicação liberou R$ ${walletCalc.disponivel.toFixed(2)}. Informe sua chave PIX para recebimento.`;
-        toast.success(mensagem, { duration: 7000 });
-        if ('Notification' in window && Notification.permission === 'granted') {
-          new Notification('Bônus liberado no Valente Conecta', { body: mensagem });
+        if (bonusResp?.success && Array.isArray(bonusResp.data) && bonusResp.data.length > 0) {
+          const totalNovo = bonusResp.data.reduce((soma: number, item: any) => soma + Number(item.valor || 0), 0);
+          const mensagem = `Você bateu a meta e ganhou ${totalNovo.toFixed(2)} Moeda Conecta! Já está disponível na sua carteira, para usar em qualquer estabelecimento da sua cidade base.`;
+          toast.success(mensagem, { duration: 8000 });
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('Bônus de indicação liberado', { body: mensagem });
+          }
         }
-        localStorage.setItem(`referral_bonus_notified_${user.id}`, String(walletCalc.disponivel));
+      } catch {
+        // silencioso: nao credita duas vezes, so' tenta de novo no proximo carregamento
       }
     }
 
     carregarIndicacoes();
 
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-  }, [isAdmin, linkIndicacao, baseUrl, user?.id]);
-
-  const solicitarPix = async () => {
-    if (!user?.id) return;
-    if (!pixKey.trim()) {
-      toast.error('Informe uma chave PIX para recebimento');
-      return;
-    }
-    if (wallet.disponivel <= 0) {
-      toast.error('Você ainda não tem saldo liberado para solicitar');
-      return;
-    }
-
-    setSolicitandoPix(true);
-    try {
-      const response = await fetch('/api/referrals/payout-requests', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user.id,
-          userName: user.nome || 'Usuário',
-          userWhatsapp: user.whatsapp || '',
-          pixKey,
-          amount: wallet.disponivel
-        })
-      });
-      const result = await response.json();
-      if (!result?.success) {
-        throw new Error(result?.error || 'Falha ao registrar solicitação PIX');
-      }
-      toast.success('Solicitação PIX enviada. O valor ficou bloqueado até o pagamento.');
-      setWallet((prev) => ({ ...prev, bloqueado: prev.bloqueado + prev.disponivel, disponivel: 0 }));
-      setPixKey('');
-    } catch (error: any) {
-      toast.error(error.message || 'Erro ao solicitar PIX');
-    } finally {
-      setSolicitandoPix(false);
-    }
-  };
+  }, [isAdmin, linkIndicacao, baseUrl, user?.id, user?.cidade_base]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(linkIndicacao);
@@ -177,10 +156,9 @@ export default function QRCodePage() {
   };
 
   const handleShare = () => {
-    const shareTemplate = config?.content?.shareTemplate || 'Use meu código {codigo}. Bônus por lotes validados no Valente Conecta. Link: {link}';
     const texto = isAdmin
       ? `Convite especial do Admin Master!\nCódigo: ${codigoIndicacao}\nLink: ${linkIndicacao}`
-      : shareTemplate.replace('{codigo}', codigoIndicacao).replace('{link}', linkIndicacao);
+      : `Use meu código ${codigoIndicacao} e venha pro Valente Conecta! Link: ${linkIndicacao}`;
 
     if (navigator.share) {
       navigator.share({ title: "Valente Conecta", text: texto, url: linkIndicacao });
@@ -243,6 +221,8 @@ export default function QRCodePage() {
     );
   }
 
+  const ICONES: Record<string, any> = { usuarios_gerais: Users, empresas_lojas: Building2, profissionais_liberais: Briefcase };
+
   return (
     <div className="min-h-screen bg-gray-900 pb-20">
       <header className="bg-gradient-to-r from-green-400 to-green-700 p-4 flex items-center gap-3 sticky top-0 z-40">
@@ -254,15 +234,15 @@ export default function QRCodePage() {
 
       <div className="p-6 text-center">
         <div className="bg-gradient-to-br from-yellow-300 to-amber-500 w-32 h-32 rounded-full flex items-center justify-center shadow-2xl border-8 border-yellow-200 text-5xl font-bold text-black mx-auto">
-          {isAdmin ? "👑" : "R$"}
+          {isAdmin ? "👑" : <Coins className="w-14 h-14" />}
         </div>
         <h2 className="text-2xl font-bold text-white mt-6">
-          {isAdmin ? "Convite Especial do Admin Master" : (config?.content?.publicHeadline || "Ganhe dinheiro indicando!")}
+          {isAdmin ? "Convite Especial do Admin Master" : "Indique e ganhe Moeda Conecta!"}
         </h2>
         <p className="text-gray-400 mt-2">
           {isAdmin
             ? "Compartilhe este código para novos usuários se cadastrarem"
-            : (config?.content?.publicSubtitle || "Receba bônus por lotes de indicações validadas.")}
+            : "Ao completar cada lote de indicações validadas, o bônus cai direto na sua carteira."}
         </p>
       </div>
 
@@ -276,58 +256,43 @@ export default function QRCodePage() {
 
       <div className="px-6 space-y-3">
         <div className="bg-white/10 rounded-2xl p-4 border border-white/10">
-          <div className="flex items-center gap-2 mb-3">
-            <Wallet className="w-5 h-5 text-yellow-400" />
-            <p className="text-white font-bold">Carteira de Indicações</p>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Wallet className="w-5 h-5 text-yellow-400" />
+              <p className="text-white font-bold">Bônus por lote (Moeda Conecta)</p>
+            </div>
+            <a href="/carteira" className="text-xs text-blue-300 font-medium">Ver carteira</a>
           </div>
-          <div className="grid grid-cols-2 gap-3 mb-3">
-            <div className="bg-white/5 rounded-xl p-3">
-              <p className="text-gray-400 text-xs">Saldo disponível</p>
-              <p className="text-green-400 font-bold text-xl">R$ {wallet.disponivel.toFixed(2)}</p>
-            </div>
-            <div className="bg-white/5 rounded-xl p-3">
-              <p className="text-gray-400 text-xs">Saldo bloqueado</p>
-              <p className="text-yellow-400 font-bold text-xl">R$ {wallet.bloqueado.toFixed(2)}</p>
-            </div>
+
+          <div className="space-y-2">
+            {bonusRules.filter((r) => r.ativo).length === 0 ? (
+              <p className="text-gray-400 text-sm">Nenhum bônus ativo pra sua cidade no momento.</p>
+            ) : (
+              bonusRules.filter((r) => r.ativo).map((r) => {
+                const Icon = ICONES[r.categoria] || Users;
+                const contagem = (contagens as any)[r.categoria] || 0;
+                const lotes = r.meta > 0 ? Math.floor(contagem / r.meta) : 0;
+                const restoAtual = r.meta > 0 ? contagem % r.meta : 0;
+                const progresso = r.meta > 0 ? Math.min(100, (restoAtual / r.meta) * 100) : 0;
+                return (
+                  <div key={r.categoria} className="bg-white/5 rounded-xl p-3">
+                    <div className="flex items-center justify-between text-sm mb-1">
+                      <span className="text-white font-medium flex items-center gap-1.5"><Icon className="w-4 h-4 text-cyan-400" /> {r.nome}</span>
+                      <span className="text-green-400 font-semibold">{lotes} lote{lotes === 1 ? '' : 's'} pago{lotes === 1 ? '' : 's'}</span>
+                    </div>
+                    <div className="w-full bg-white/10 rounded-full h-1.5 mb-1">
+                      <div className="bg-cyan-400 h-1.5 rounded-full" style={{ width: `${progresso}%` }} />
+                    </div>
+                    <p className="text-gray-400 text-xs">{restoAtual}/{r.meta} pro próximo lote · {r.bonus.toFixed(2)} MC por lote</p>
+                  </div>
+                );
+              })
+            )}
           </div>
-          <div className="grid grid-cols-3 gap-2 text-xs mb-3">
-            <div className="bg-white/5 rounded-lg p-2 text-center">
-              <Users className="w-4 h-4 mx-auto mb-1 text-blue-400" />
-              <p className="text-white font-semibold">{wallet.lotes.usuarios_gerais}</p>
-              <p className="text-gray-400">Lotes usuários</p>
-            </div>
-            <div className="bg-white/5 rounded-lg p-2 text-center">
-              <Building2 className="w-4 h-4 mx-auto mb-1 text-purple-400" />
-              <p className="text-white font-semibold">{wallet.lotes.empresas_lojas}</p>
-              <p className="text-gray-400">Lotes lojas</p>
-            </div>
-            <div className="bg-white/5 rounded-lg p-2 text-center">
-              <Briefcase className="w-4 h-4 mx-auto mb-1 text-cyan-400" />
-              <p className="text-white font-semibold">{wallet.lotes.profissionais_liberais}</p>
-              <p className="text-gray-400">Lotes profissionais</p>
-            </div>
-          </div>
-          <div className="bg-white/5 rounded-xl p-3 space-y-2">
-            <div className="flex items-center gap-2 text-sm text-gray-300">
-              <BellRing className="w-4 h-4 text-yellow-400" />
-              Quando um lote fecha, o sistema libera o valor e pede sua chave PIX.
-            </div>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={pixKey}
-                onChange={(e) => setPixKey(e.target.value)}
-                placeholder="Sua chave PIX para receber"
-                className="flex-1 bg-white/10 rounded-xl px-3 py-2 text-white text-sm outline-none"
-              />
-              <button
-                onClick={solicitarPix}
-                disabled={solicitandoPix || wallet.disponivel <= 0}
-                className="bg-green-500 text-black px-4 py-2 rounded-xl text-sm font-bold disabled:opacity-50"
-              >
-                {solicitandoPix ? 'Enviando...' : 'Solicitar'}
-              </button>
-            </div>
+
+          <div className="flex items-center gap-2 text-xs text-gray-300 bg-white/5 rounded-xl p-3 mt-3">
+            <BellRing className="w-4 h-4 text-yellow-400 shrink-0" />
+            O bônus é creditado automaticamente assim que o lote fecha — sem precisar solicitar nada.
           </div>
         </div>
 
@@ -437,19 +402,19 @@ export default function QRCodePage() {
         <div className="fixed inset-0 z-50 bg-black/70 flex items-end">
           <div className="w-full bg-gray-900 rounded-t-3xl p-5 border-t border-white/10 max-h-[75vh] overflow-auto">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-white font-bold text-lg">{config?.content?.explanationTitle || 'Como funcionam as bonificações'}</h3>
+              <h3 className="text-white font-bold text-lg">Como funcionam as bonificações</h3>
               <button onClick={() => setShowBonusInfo(false)} className="text-gray-300 hover:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <p className="text-gray-300 text-sm leading-relaxed mb-4">
-              {config?.content?.explanationText || 'Cada bônus é liberado por lote validado.'}
+              Cada bônus é liberado por lote validado (usuários gerais, empresas/lojas e profissionais liberais) e creditado automaticamente em Moeda Conecta — utilizável em qualquer estabelecimento da sua cidade base.
             </p>
             <div className="space-y-2 text-sm">
-              {(config?.rules || []).map((rule: any) => (
-                <div key={rule.id} className="bg-white/5 rounded-xl p-3 text-gray-200">
+              {bonusRules.map((rule) => (
+                <div key={rule.categoria} className="bg-white/5 rounded-xl p-3 text-gray-200">
                   <p className="font-semibold">{rule.nome}</p>
-                  <p className="text-gray-400 text-xs">{rule.meta} validações por lote • R$ {Number(rule.bonus || 0).toFixed(2)} por lote</p>
+                  <p className="text-gray-400 text-xs">{rule.meta} validações por lote • {Number(rule.bonus || 0).toFixed(2)} Moeda Conecta por lote {rule.ativo ? '' : '(inativo nessa cidade)'}</p>
                 </div>
               ))}
             </div>

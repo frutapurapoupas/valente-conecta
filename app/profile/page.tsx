@@ -1,127 +1,123 @@
 "use client";
 
+// Caminho: C:\valente_conecta\app\profile\page.tsx
+//
+// Reescrita sobre dados reais — useApp() do AppContext nunca e' preenchido
+// (sem login real no projeto), entao esta tela sempre mostrava usuario
+// vazio/Grátis/data de hoje. Agora usa getCurrentUser() (mesmo padrao ja
+// aplicado em /carteira, /extrato e /qr-code), plano vigente real de
+// assinaturas_planos (migration 028) e saldo real da Moeda Conecta. Nome e
+// WhatsApp ficam somente leitura porque nao ha' RPC real pra edita-los
+// ainda (so' email/pix/bairro/cidade via atualizar_meu_cadastro) — editar
+// e' fingir persistencia que nao existe.
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useApp } from "@/app/context/AppContext";
-import { User, Mail, Phone, Wallet, Copy, LogOut, ArrowLeft, CheckCircle, Edit2, Save, X, Calendar, Crown, Gift, History } from "lucide-react";
+import { User, Mail, Phone, Wallet, Copy, LogOut, ArrowLeft, Edit2, Save, X, Calendar, Crown, Gift, History, MapPin, Tag } from "lucide-react";
 import toast from "react-hot-toast";
+import { getCurrentUser, logout as logoutAuth } from "@/lib/auth";
+import type { Usuario } from "@/lib/supabase";
 
 export const dynamic = 'force-dynamic';
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, logout, updateWallet, isAdmin } = useApp();
+  const [user, setUser] = useState<Usuario | null>(null);
   const [loading, setLoading] = useState(true);
   const [editando, setEditando] = useState(false);
-  
-  const [perfil, setPerfil] = useState({
-    nome: "",
-    email: "",
-    telefone: "",
-    plano: "Grátis",
-    wallet: 0,
-    dataCadastro: ""
-  });
-  
-  const [formData, setFormData] = useState(perfil);
+  const [emailForm, setEmailForm] = useState("");
+  const [salvando, setSalvando] = useState(false);
+
+  const [planoNome, setPlanoNome] = useState("Grátis");
+  const [servicoNome, setServicoNome] = useState("");
+  const [saldoMoeda, setSaldoMoeda] = useState(0);
+  const [siglaMoeda, setSiglaMoeda] = useState("MC");
+
+  const isAdmin = user?.role === "admin";
 
   useEffect(() => {
-    carregarDadosPerfil();
+    const u = getCurrentUser();
+    setUser(u);
+    setEmailForm(u?.email || "");
+    if (!u) {
+      setLoading(false);
+      return;
+    }
+
+    async function carregar() {
+      try {
+        const [assinaturasRes, configRes, saldoRes] = await Promise.all([
+          fetch(`/api/planos/minhas-assinaturas?usuarioId=${u!.id}`, { cache: "no-store" }).then((r) => r.json()).catch(() => ({ success: false })),
+          fetch(`/api/planos-config`, { cache: "no-store" }).then((r) => r.json()).catch(() => ({ success: false })),
+          fetch(`/api/moeda-conecta/saldo?usuarioId=${u!.id}`, { cache: "no-store" }).then((r) => r.json()).catch(() => ({ success: false })),
+        ]);
+
+        if (assinaturasRes.success && configRes.success) {
+          const assinaturas = assinaturasRes.data || [];
+          const vigente = assinaturas.find((a: any) => a.status === "ativo") || assinaturas.find((a: any) => a.status === "pago");
+          if (vigente) {
+            const plano = configRes.data.plans.find((p: any) => p.id === vigente.plano_id);
+            const servico = configRes.data.services.find((s: any) => s.id === vigente.servico_id);
+            setPlanoNome(plano?.nome || vigente.plano_id);
+            setServicoNome(servico?.nome || "");
+          }
+        }
+
+        if (saldoRes.success) {
+          setSaldoMoeda(Number(saldoRes.data.saldo || 0));
+          const cidade = saldoRes.data.cidade_base || u!.cidade_base;
+          if (cidade) {
+            fetch(`/api/moeda-conecta/cidade-config?cidade=${encodeURIComponent(cidade)}`)
+              .then((r) => r.json())
+              .then((res) => res.success && setSiglaMoeda(res.data.moeda_prefixo || "MC"));
+          }
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    carregar();
   }, []);
 
-  const carregarDadosPerfil = () => {
-    let nome = "";
-    let email = "";
-    let telefone = "";
-    let wallet = 0;
-    
-    if (user) {
-      nome = user.nome || "";
-      email = user.email || "";
-      wallet = user.wallet || 0;
-    }
-    
-    const userSalvo = localStorage.getItem("valente_user");
-    if (userSalvo) {
-      const userData = JSON.parse(userSalvo);
-      nome = userData.name || nome;
-      email = userData.email || email;
-      telefone = userData.telefone || telefone;
-      wallet = userData.wallet || wallet;
-    }
-    
-    const perfilIA = localStorage.getItem("academia_perfil_ia");
-    if (perfilIA) {
-      const perfilData = JSON.parse(perfilIA);
-      nome = perfilData.nome || nome;
-      telefone = perfilData.telefone || telefone;
-    }
-    
-    const perfilInicial = localStorage.getItem("academia_perfil_inicial");
-    if (perfilInicial) {
-      const perfilData = JSON.parse(perfilInicial);
-      nome = perfilData.nome || nome;
-      telefone = perfilData.telefone || telefone;
-    }
-    
-    setPerfil({
-      nome: nome || "Usuário",
-      email: email || "nao.informado@email.com",
-      telefone: telefone || "Não informado",
-      plano: isAdmin ? "Admin Master" : "Grátis",
-      wallet: wallet,
-      dataCadastro: new Date().toLocaleDateString()
-    });
-    
-    setFormData({
-      nome: nome || "Usuário",
-      email: email || "nao.informado@email.com",
-      telefone: telefone || "Não informado",
-      plano: isAdmin ? "Admin Master" : "Grátis",
-      wallet: wallet,
-      dataCadastro: new Date().toLocaleDateString()
-    });
-    
-    setLoading(false);
-  };
+  const salvarEmail = async () => {
+    if (!user) return;
+    setSalvando(true);
+    try {
+      const resp = await fetch("/api/usuarios/atualizar-cadastro", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ usuarioId: user.id, email: emailForm.trim() || null }),
+      });
+      const resultado = await resp.json();
+      if (!resultado.success) throw new Error(resultado.error);
 
-  const salvarAlteracoes = () => {
-    const userSalvo = localStorage.getItem("valente_user");
-    if (userSalvo) {
-      const userData = JSON.parse(userSalvo);
-      userData.name = formData.nome;
-      userData.email = formData.email;
-      userData.telefone = formData.telefone;
-      localStorage.setItem("valente_user", JSON.stringify(userData));
+      const atualizado = { ...user, email: emailForm.trim() };
+      setUser(atualizado);
+      localStorage.setItem("user_data", JSON.stringify(atualizado));
+      setEditando(false);
+      toast.success("Perfil atualizado com sucesso!");
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao salvar e-mail");
+    } finally {
+      setSalvando(false);
     }
-    
-    const perfilIA = localStorage.getItem("academia_perfil_ia");
-    if (perfilIA) {
-      const perfilData = JSON.parse(perfilIA);
-      perfilData.nome = formData.nome;
-      perfilData.telefone = formData.telefone;
-      localStorage.setItem("academia_perfil_ia", JSON.stringify(perfilData));
-    }
-    
-    setPerfil(formData);
-    setEditando(false);
-    toast.success("? Perfil atualizado com sucesso!");
   };
 
   const cancelarEdicao = () => {
-    setFormData(perfil);
+    setEmailForm(user?.email || "");
     setEditando(false);
   };
 
   const handleLogout = () => {
-    logout();
-    localStorage.removeItem("valente_user");
+    logoutAuth();
     toast.success("👋 Logout realizado com sucesso!");
     router.push("/login");
   };
 
   const copiarLink = () => {
-    const link = "https://valenteconecta.com.br/convite/abc123";
+    if (!user?.codigo_indicacao) return;
+    const link = `${window.location.origin}/convite/${user.codigo_indicacao}`;
     navigator.clipboard.writeText(link);
     toast.success("Link copiado! Compartilhe com seus amigos.");
   };
@@ -134,7 +130,19 @@ export default function ProfilePage() {
     );
   }
 
-  const dadosExibicao = editando ? formData : perfil;
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-6 text-center">
+        <div>
+          <User className="w-12 h-12 text-gray-500 mx-auto mb-3" />
+          <p className="text-gray-300 mb-4">Complete seu cadastro para ver seu perfil.</p>
+          <button onClick={() => router.push("/")} className="bg-yellow-500 text-black px-4 py-2 rounded-xl font-semibold">Voltar</button>
+        </div>
+      </div>
+    );
+  }
+
+  const dataCadastro = user.trial_started_at ? new Date(user.trial_started_at).toLocaleDateString("pt-BR") : "—";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 text-white pb-20">
@@ -149,8 +157,8 @@ export default function ProfilePage() {
           {!editando ? (
             <div className="flex gap-2">
               {isAdmin && (
-                <button 
-                  onClick={() => router.push("/admin")} 
+                <button
+                  onClick={() => router.push("/admin")}
                   className="relative group bg-yellow-500/20 hover:bg-yellow-500/30 p-2 rounded-xl transition-all"
                   title="Admin Master"
                 >
@@ -163,7 +171,7 @@ export default function ProfilePage() {
             </div>
           ) : (
             <div className="flex gap-2">
-              <button onClick={salvarAlteracoes} className="p-1">
+              <button onClick={salvarEmail} disabled={salvando} className="p-1 disabled:opacity-50">
                 <Save className="w-5 h-5 text-green-400" />
               </button>
               <button onClick={cancelarEdicao} className="p-1">
@@ -177,25 +185,17 @@ export default function ProfilePage() {
       <main className="max-w-2xl mx-auto px-4 pt-8 space-y-6">
         <div className="text-center">
           <div className="w-24 h-24 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-4xl font-bold text-white">
-              {dadosExibicao.nome.charAt(0).toUpperCase()}
-            </span>
+            <span className="text-4xl font-bold text-white">{(user.nome || "U").charAt(0).toUpperCase()}</span>
           </div>
-          
-          {editando ? (
-            <input
-              type="text"
-              value={formData.nome}
-              onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-              className="text-center text-2xl font-bold bg-white/10 rounded-xl px-4 py-2 w-full max-w-xs mx-auto"
-            />
-          ) : (
-            <h2 className="text-2xl font-bold text-white">{dadosExibicao.nome}</h2>
-          )}
-          
+          <h2 className="text-2xl font-bold text-white">{user.nome}</h2>
           <p className={`text-sm mt-1 ${isAdmin ? "text-yellow-400" : "text-green-400"}`}>
-            Plano: {dadosExibicao.plano}
+            Plano: {isAdmin ? "Admin Master" : planoNome}{servicoNome ? ` · ${servicoNome}` : ""}
           </p>
+          {user.cidade_base && (
+            <p className="text-sm text-blue-300 mt-0.5 flex items-center justify-center gap-1">
+              <MapPin className="w-3.5 h-3.5" /> {user.cidade_base}
+            </p>
+          )}
         </div>
 
         <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl overflow-hidden">
@@ -208,53 +208,41 @@ export default function ProfilePage() {
           <div className="p-5 space-y-4">
             <div>
               <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide">Nome completo</label>
-              {editando ? (
-                <input
-                  type="text"
-                  value={formData.nome}
-                  onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                  className="mt-1 w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500 text-white"
-                />
-              ) : (
-                <p className="mt-1 text-white font-medium">{dadosExibicao.nome}</p>
-              )}
+              <p className="mt-1 text-white font-medium">{user.nome}</p>
             </div>
 
             <div>
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide">E-mail</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide flex items-center gap-1">
+                <Mail className="w-3.5 h-3.5" /> E-mail
+              </label>
               {editando ? (
                 <input
                   type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  value={emailForm}
+                  onChange={(e) => setEmailForm(e.target.value)}
+                  placeholder="seu@email.com"
                   className="mt-1 w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500 text-white"
                 />
               ) : (
-                <p className="mt-1 text-white font-medium">{dadosExibicao.email}</p>
+                <p className="mt-1 text-white font-medium">{user.email || "Não informado"}</p>
               )}
             </div>
 
             <div>
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide">WhatsApp</label>
-              {editando ? (
-                <input
-                  type="tel"
-                  value={formData.telefone}
-                  onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
-                  placeholder="(75) 99999-9999"
-                  className="mt-1 w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500 text-white"
-                />
-              ) : (
-                <p className="mt-1 text-white font-medium">
-                  {dadosExibicao.telefone !== "Não informado" ? dadosExibicao.telefone : "Não informado"}
-                </p>
-              )}
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide flex items-center gap-1">
+                <Phone className="w-3.5 h-3.5" /> WhatsApp
+              </label>
+              <p className="mt-1 text-white font-medium">{user.whatsapp || "Não informado"}</p>
             </div>
+
+            {editando && (
+              <p className="text-xs text-zinc-500">Nome e WhatsApp são os do seu cadastro e não podem ser trocados por aqui.</p>
+            )}
 
             <div className="pt-3 border-t border-white/10">
               <div className="flex items-center gap-2 text-zinc-400 text-sm">
                 <Calendar className="w-4 h-4" />
-                <span>Cadastrado em: {dadosExibicao.dataCadastro}</span>
+                <span>Cadastrado em: {dataCadastro}</span>
               </div>
             </div>
           </div>
@@ -268,56 +256,57 @@ export default function ProfilePage() {
             </h2>
           </div>
           <div className="p-5 text-center">
-            <p className="text-3xl font-bold text-green-400">R$ {dadosExibicao.wallet.toFixed(2)}</p>
-            <button 
-              onClick={() => router.push("/recarga")}
+            <p className="text-3xl font-bold text-green-400">{saldoMoeda.toFixed(2)} {siglaMoeda}</p>
+            <button
+              onClick={() => router.push("/carteira")}
               className="mt-3 bg-green-500 text-black px-6 py-2 rounded-xl font-semibold text-sm hover:bg-green-400 transition"
             >
-              Adicionar Saldo
+              Ir para a Carteira
             </button>
           </div>
         </div>
 
-        {/* BOTÃO EXTRATO - NOVO */}
         <button
           onClick={() => router.push("/extrato")}
           className="w-full py-4 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-3 hover:from-blue-700 hover:to-cyan-700 transition-all duration-300"
         >
           <History className="w-5 h-5" />
-          ?? Meu Extrato e Transações
+          Meu Extrato e Transações
         </button>
 
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl overflow-hidden">
-          <div className="bg-gradient-to-r from-purple-600/30 to-pink-600/30 px-5 py-3 border-b border-white/10">
-            <h2 className="font-bold text-white flex items-center gap-2">
-              <Copy className="w-5 h-5 text-purple-400" />
-              Indique amigos e ganhe!
-            </h2>
-          </div>
-          <div className="p-5">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value="https://valenteconecta.com.br/convite/abc123"
-                readOnly
-                className="flex-1 px-4 py-3 bg-white/20 rounded-xl text-white text-sm"
-              />
-              <button
-                onClick={copiarLink}
-                className="bg-blue-500 text-white px-4 py-3 rounded-xl hover:bg-blue-400 transition"
-              >
-                <Copy className="w-5 h-5" />
-              </button>
+        {user.codigo_indicacao && (
+          <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl overflow-hidden">
+            <div className="bg-gradient-to-r from-purple-600/30 to-pink-600/30 px-5 py-3 border-b border-white/10">
+              <h2 className="font-bold text-white flex items-center gap-2">
+                <Tag className="w-5 h-5 text-purple-400" />
+                Indique amigos e ganhe!
+              </h2>
+            </div>
+            <div className="p-5">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={`${typeof window !== "undefined" ? window.location.origin : ""}/convite/${user.codigo_indicacao}`}
+                  readOnly
+                  className="flex-1 px-4 py-3 bg-white/20 rounded-xl text-white text-sm"
+                />
+                <button
+                  onClick={copiarLink}
+                  className="bg-blue-500 text-white px-4 py-3 rounded-xl hover:bg-blue-400 transition"
+                >
+                  <Copy className="w-5 h-5" />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         <button
-          onClick={() => router.push("/indicacoes")}
+          onClick={() => router.push("/qr-code")}
           className="w-full py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-3 hover:from-purple-700 hover:to-indigo-700 transition-all duration-300"
         >
           <Gift className="w-5 h-5" />
-          ?? Minhas Indicações e Ganhos
+          Minhas Indicações e Ganhos
         </button>
 
         <button
@@ -331,10 +320,10 @@ export default function ProfilePage() {
         {isAdmin && (
           <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-3 text-center">
             <p className="text-yellow-400 text-sm">
-              ?? Você está logado como Administrador Master
+              Você está logado como Administrador Master
             </p>
             <p className="text-yellow-400/70 text-xs mt-1">
-              Clique no ícone ?? no topo da tela para acessar o painel administrativo
+              Toque no ícone de coroa no topo da tela para acessar o painel administrativo
             </p>
           </div>
         )}
@@ -342,4 +331,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-

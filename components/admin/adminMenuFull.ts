@@ -131,6 +131,8 @@ export const adminMenuFull: MenuGroup[] = [
     items: [
       { name: "Transações e moderação", path: "/admin-master/moeda-conecta/transacoes", icon: TrendingUp, status: 'active' },
       { name: "Nome da moeda por cidade", path: "/admin-master/moeda-conecta/cidades", icon: Coins, status: 'active' },
+      { name: "Compensações a fornecedores", path: "/admin-master/moeda-conecta/compensacoes", icon: Store, status: 'active' },
+      { name: "Bônus por indicação por cidade", path: "/admin-master/configuracoes/bonus", icon: UserPlus, status: 'active' },
     ]
   },
 
