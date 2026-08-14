@@ -16,6 +16,8 @@
         "@fortawesome/react-fontawesome": "^3.3.1",
         "@supabase/supabase-js": "^2.110.7",
         "@yudiel/react-qr-scanner": "^2.6.0",
+        "@zxing/browser": "^0.2.1",
+        "@zxing/library": "^0.23.0",
         "better-sqlite3": "^12.11.1",
         "browser-image-compression": "^2.0.2",
         "bull": "^4.16.5",
