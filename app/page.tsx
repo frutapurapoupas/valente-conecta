@@ -41,6 +41,7 @@ import {
   Mic,
   Store,
   Briefcase,
+  Users,
 } from "lucide-react";
 
 interface LocalUser {
@@ -190,6 +191,7 @@ export default function HomePage() {
     { nome: "Eventos", Icone: PartyPopper, href: "/servicos" },
     { nome: "Pet Shop", Icone: PawPrint, href: "/pet" },
     { nome: "Financeiro", Icone: DollarSign, href: "/servicos" },
+    { nome: "Carona Solidária", Icone: Users, href: "/carona" },
   ];
 
   const handleSearch = () => {

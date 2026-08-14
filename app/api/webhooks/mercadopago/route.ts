@@ -78,6 +78,54 @@ async function processWebhookPlano(assinaturaId: string, payment: any) {
 	return NextResponse.json({ success: true, assinaturaId, status: statusPedido });
 }
 
+// Motorista pagou a taxa pra ter a viagem de Carona Solidaria exibida na
+// vitrine — confirma o pagamento e publica a viagem.
+async function processWebhookCaronaListagem(viagemId: string, payment: any) {
+	const supabase = createClient();
+	const statusPagamento = normalizeStatus(String(payment?.status || ''));
+
+	const { data: viagem, error } = await supabase
+		.from('carona_viagens')
+		.update({
+			status: statusPagamento === 'pago' ? 'publicada' : statusPagamento === 'cancelado' ? 'cancelada' : 'aguardando_pagamento',
+			mp_payment_id: String(payment?.id || ''),
+			updated_at: new Date().toISOString(),
+		})
+		.eq('id', viagemId)
+		.select('*')
+		.single();
+
+	if (error || !viagem) {
+		return NextResponse.json({ success: true, ignored: true, reason: 'viagem nao encontrada' });
+	}
+
+	return NextResponse.json({ success: true, viagemId, status: statusPagamento });
+}
+
+// Caronista pagou a taxa pra desbloquear o contato do motorista numa
+// viagem especifica.
+async function processWebhookCaronaDesbloqueio(desbloqueioId: string, payment: any) {
+	const supabase = createClient();
+	const statusPagamento = normalizeStatus(String(payment?.status || ''));
+
+	const { data: desbloqueio, error } = await supabase
+		.from('carona_desbloqueios')
+		.update({
+			status: statusPagamento === 'pago' ? 'pago' : 'pendente',
+			mp_payment_id: String(payment?.id || ''),
+			updated_at: new Date().toISOString(),
+		})
+		.eq('id', desbloqueioId)
+		.select('*')
+		.single();
+
+	if (error || !desbloqueio) {
+		return NextResponse.json({ success: true, ignored: true, reason: 'desbloqueio nao encontrado' });
+	}
+
+	return NextResponse.json({ success: true, desbloqueioId, status: statusPagamento });
+}
+
 async function processWebhook(request: NextRequest, payload: any) {
 	try {
 		const { searchParams } = new URL(request.url);
@@ -114,6 +162,12 @@ async function processWebhook(request: NextRequest, payload: any) {
 
 		if (pedidoId.startsWith('plano_')) {
 			return processWebhookPlano(pedidoId.replace('plano_', ''), payment);
+		}
+		if (pedidoId.startsWith('carona_listagem_')) {
+			return processWebhookCaronaListagem(pedidoId.replace('carona_listagem_', ''), payment);
+		}
+		if (pedidoId.startsWith('carona_desbloqueio_')) {
+			return processWebhookCaronaDesbloqueio(pedidoId.replace('carona_desbloqueio_', ''), payment);
 		}
 
 		const pedidos = readPedidos();

@@ -136,6 +136,17 @@ export const adminMenuFull: MenuGroup[] = [
     ]
   },
 
+  // ==================== CARONA SOLIDARIA ====================
+  {
+    name: "🚗 Carona Solidária",
+    icon: Car,
+    collapsible: true,
+    description: "Taxas de exibição e desbloqueio de contato",
+    items: [
+      { name: "Taxas", path: "/admin-master/carona/config", icon: Car, status: 'active' },
+    ]
+  },
+
   // ==================== CRIPTOMOEDA CONECTA ====================
   {
     name: "🪙 CriptoMoeda Conecta",
