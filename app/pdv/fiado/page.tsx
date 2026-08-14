@@ -12,7 +12,7 @@
 import { useState, useEffect } from 'react';
 import {
   Users, Plus, Search, DollarSign, CheckCircle, XCircle, AlertCircle,
-  Phone, CreditCard, Send, Lock, Clock
+  Phone, CreditCard, Send, Lock, Clock, Printer, MessageCircle, Receipt
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { obterUsuarioLocalId } from '@/lib/usuarioLocal';
@@ -55,8 +55,19 @@ export default function FiadoPage() {
   const [formDivida, setFormDivida] = useState({ clienteId: '', valorTotal: '', dataVencimento: '', observacoes: '' });
   const [valorPagamento, setValorPagamento] = useState(0);
   const [metodoPagamento, setMetodoPagamento] = useState<'dinheiro' | 'pix' | 'cartao'>('dinheiro');
+  const [lojaNome, setLojaNome] = useState('');
+  const [lancandoDivida, setLancandoDivida] = useState(false);
+  const [recibo, setRecibo] = useState<{ cliente: ClienteFiado; valor: number; vencimento: string; saldoTotal: number; data: string } | null>(null);
 
-  useEffect(() => { setDonoId(obterUsuarioLocalId()); }, []);
+  useEffect(() => {
+    setDonoId(obterUsuarioLocalId());
+    setLojaNome(localStorage.getItem('pdv_fiado_loja_nome') || '');
+  }, []);
+
+  const salvarNomeLoja = (nome: string) => {
+    setLojaNome(nome);
+    localStorage.setItem('pdv_fiado_loja_nome', nome);
+  };
 
   useEffect(() => {
     if (!donoId) return;
@@ -115,31 +126,76 @@ export default function FiadoPage() {
     setFormCliente({ nome: '', telefone: '', limiteCredito: 500 });
   };
 
-  const lancarDivida = async () => {
+  const lancarDivida = async (forcarLimite = false) => {
     if (!formDivida.clienteId || !formDivida.valorTotal || !formDivida.dataVencimento) {
       toast.error('Selecione o cliente e preencha valor e vencimento');
       return;
     }
-    const resp = await fetch('/api/fiado/dividas', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        donoId,
-        clienteId: formDivida.clienteId,
-        valorTotal: Number(formDivida.valorTotal),
-        dataVencimento: formDivida.dataVencimento,
-        observacoes: formDivida.observacoes,
-      }),
-    });
-    const resultado = await resp.json();
-    if (!resultado.success) {
-      toast.error(resultado.error || 'Erro ao lançar débito');
-      return;
+    setLancandoDivida(true);
+    try {
+      const resp = await fetch('/api/fiado/dividas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          donoId,
+          clienteId: formDivida.clienteId,
+          valorTotal: Number(formDivida.valorTotal),
+          dataVencimento: formDivida.dataVencimento,
+          observacoes: formDivida.observacoes,
+          lojaNome,
+          forcarLimite,
+        }),
+      });
+      const resultado = await resp.json();
+
+      if (!resultado.success) {
+        if (resultado.limiteExcedido) {
+          const confirmou = confirm(
+            `Esse cliente já deve R$ ${Number(resultado.saldoAtual).toFixed(2)} e o limite de crédito dele é R$ ${Number(resultado.limite).toFixed(2)}. Essa compra estoura o limite. Lançar mesmo assim?`
+          );
+          if (confirmou) await lancarDivida(true);
+          return;
+        }
+        toast.error(resultado.error || 'Erro ao lançar débito');
+        return;
+      }
+
+      toast.success('Débito lançado! Cliente avisado por notificação (se já tiver instalado o app).');
+      setShowModalDivida(false);
+      const clienteDaCompra = clientes.find((c) => c.id === formDivida.clienteId);
+      if (clienteDaCompra) {
+        setRecibo({
+          cliente: clienteDaCompra,
+          valor: Number(formDivida.valorTotal),
+          vencimento: formDivida.dataVencimento,
+          saldoTotal: Number(resultado.data.saldoTotalCliente ?? formDivida.valorTotal),
+          data: new Date().toISOString(),
+        });
+      }
+      setFormDivida({ clienteId: '', valorTotal: '', dataVencimento: '', observacoes: '' });
+      carregarDados();
+    } finally {
+      setLancandoDivida(false);
     }
-    toast.success('Débito lançado! Cliente avisado por notificação (se já tiver instalado o app).');
-    setShowModalDivida(false);
-    setFormDivida({ clienteId: '', valorTotal: '', dataVencimento: '', observacoes: '' });
-    carregarDados();
+  };
+
+  const saldoDoCliente = (clienteId: string) =>
+    dividas
+      .filter((d) => d.cliente_id === clienteId && d.status !== 'pago')
+      .reduce((soma, d) => soma + (Number(d.valor_total) - Number(d.valor_pago)), 0);
+
+  const linkWhatsappCobranca = (cliente: ClienteFiado, mensagem: string) => {
+    const telefone = cliente.telefone.replace(/\D/g, '');
+    const numeroCompleto = telefone.startsWith('55') ? telefone : `55${telefone}`;
+    return `https://wa.me/${numeroCompleto}?text=${encodeURIComponent(mensagem)}`;
+  };
+
+  const cobrarPorWhatsapp = (divida: Divida) => {
+    const cliente = clientes.find((c) => c.id === divida.cliente_id);
+    if (!cliente) return;
+    const saldo = Number(divida.valor_total) - Number(divida.valor_pago);
+    const mensagem = `Olá, ${cliente.nome}! Aqui é ${lojaNome || 'a loja'}. Você tem uma conta em aberto de R$ ${saldo.toFixed(2)}, com vencimento em ${formatDate(divida.data_vencimento)}. Qualquer dúvida, é só chamar por aqui.`;
+    window.open(linkWhatsappCobranca(cliente, mensagem), '_blank');
   };
 
   const registrarPagamento = async () => {
@@ -239,6 +295,17 @@ export default function FiadoPage() {
           </div>
         </div>
 
+        <div className="mb-6">
+          <label className="block text-xs font-medium text-gray-500 mb-1">Nome da loja (aparece no recibo e nas cobranças por WhatsApp)</label>
+          <input
+            type="text"
+            value={lojaNome}
+            onChange={(e) => salvarNomeLoja(e.target.value)}
+            placeholder="Ex: Mercadinho da Dona Neide"
+            className="w-full max-w-md px-3 py-2 border rounded-lg text-sm"
+          />
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="bg-white rounded-lg shadow p-4 flex items-center justify-between">
             <div><p className="text-sm text-gray-500">Clientes</p><p className="text-2xl font-bold text-gray-800">{clientes.length}</p></div>
@@ -302,9 +369,14 @@ export default function FiadoPage() {
                         <td className="px-4 py-3"><span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(d.status)}`}>{d.status}</span></td>
                         <td className="px-4 py-3">
                           {d.status !== 'pago' && (
-                            <button onClick={() => { setSelectedDivida(d); setShowModalPagamento(true); }} className="p-1 text-green-600 hover:text-green-800" title="Registrar Pagamento">
-                              <DollarSign className="w-4 h-4" />
-                            </button>
+                            <div className="flex gap-2">
+                              <button onClick={() => { setSelectedDivida(d); setShowModalPagamento(true); }} className="p-1 text-green-600 hover:text-green-800" title="Registrar Pagamento">
+                                <DollarSign className="w-4 h-4" />
+                              </button>
+                              <button onClick={() => cobrarPorWhatsapp(d)} className="p-1 text-emerald-600 hover:text-emerald-800" title="Cobrar por WhatsApp">
+                                <MessageCircle className="w-4 h-4" />
+                              </button>
+                            </div>
                           )}
                         </td>
                       </tr>
@@ -322,17 +394,33 @@ export default function FiadoPage() {
             {clientes.length === 0 ? (
               <p className="p-4 text-sm text-gray-500">Nenhum cliente cadastrado ainda.</p>
             ) : (
-              clientes.map((c) => (
-                <div key={c.id} className="p-4 flex items-center justify-between">
-                  <div>
-                    <h3 className="font-semibold text-gray-800">{c.nome}</h3>
-                    <div className="flex items-center gap-1 text-gray-500 text-sm"><Phone className="w-3 h-3" />{c.telefone}</div>
+              clientes.map((c) => {
+                const saldo = saldoDoCliente(c.id);
+                return (
+                  <div key={c.id} className="p-4 flex items-center justify-between gap-3">
+                    <div>
+                      <h3 className="font-semibold text-gray-800">{c.nome}</h3>
+                      <div className="flex items-center gap-1 text-gray-500 text-sm"><Phone className="w-3 h-3" />{c.telefone}</div>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        Devendo {formatCurrency(saldo)} de {formatCurrency(c.limite_credito)} de limite
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      {!c.cliente_usuario_id && (
+                        <span className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded-full whitespace-nowrap">Sem app — avisar por fora</span>
+                      )}
+                      {saldo > 0 && (
+                        <button
+                          onClick={() => window.open(linkWhatsappCobranca(c, `Olá, ${c.nome}! Aqui é ${lojaNome || 'a loja'}. Seu saldo em aberto é de R$ ${saldo.toFixed(2)}.`), '_blank')}
+                          className="text-xs text-emerald-600 flex items-center gap-1 hover:underline"
+                        >
+                          <MessageCircle className="w-3 h-3" /> Avisar saldo
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  {!c.cliente_usuario_id && (
-                    <span className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded-full">Sem app instalado — avisar por fora</span>
-                  )}
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>
@@ -410,7 +498,9 @@ export default function FiadoPage() {
                 </p>
                 <div className="flex gap-3 pt-2">
                   <button onClick={() => setShowModalDivida(false)} className="flex-1 px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-50">Cancelar</button>
-                  <button onClick={lancarDivida} className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Lançar</button>
+                  <button onClick={() => lancarDivida()} disabled={lancandoDivida} className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-60">
+                    {lancandoDivida ? 'Lançando...' : 'Lançar'}
+                  </button>
                 </div>
               </div>
             </div>
@@ -451,6 +541,50 @@ export default function FiadoPage() {
                   <button onClick={() => setShowModalPagamento(false)} className="flex-1 px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-50">Cancelar</button>
                   <button onClick={registrarPagamento} disabled={valorPagamento <= 0} className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400">Confirmar Pagamento</button>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {recibo && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 print:bg-white print:p-0">
+          <style jsx global>{`
+            @media print {
+              body * { visibility: hidden; }
+              #recibo-fiado, #recibo-fiado * { visibility: visible; }
+              #recibo-fiado { position: fixed; top: 0; left: 0; width: 100%; }
+            }
+          `}</style>
+          <div className="bg-white rounded-xl max-w-sm w-full print:rounded-none print:max-w-full">
+            <div className="p-6" id="recibo-fiado">
+              <div className="flex justify-between items-center mb-4 print:hidden">
+                <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Receipt className="w-5 h-5" /> Recibo</h2>
+                <button onClick={() => setRecibo(null)} className="text-gray-400 hover:text-gray-600"><XCircle className="w-5 h-5" /></button>
+              </div>
+
+              <div className="text-center border-b pb-3 mb-3">
+                <p className="font-bold text-gray-800">{lojaNome || 'Recibo de compra fiado'}</p>
+                <p className="text-xs text-gray-400">{new Date(recibo.data).toLocaleString('pt-BR')}</p>
+              </div>
+
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between"><span className="text-gray-500">Cliente</span><span className="font-medium">{recibo.cliente.nome}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Valor da compra</span><span className="font-medium">{formatCurrency(recibo.valor)}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Vencimento</span><span className="font-medium">{formatDate(recibo.vencimento)}</span></div>
+                <div className="flex justify-between pt-2 border-t"><span className="text-gray-700 font-semibold">Saldo total em aberto</span><span className="font-bold text-red-600">{formatCurrency(recibo.saldoTotal)}</span></div>
+              </div>
+
+              <div className="flex gap-3 pt-5 print:hidden">
+                <button onClick={() => window.print()} className="flex-1 px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-2">
+                  <Printer className="w-4 h-4" /> Imprimir
+                </button>
+                <button
+                  onClick={() => window.open(linkWhatsappCobranca(recibo.cliente, `Olá, ${recibo.cliente.nome}! Recibo de compra em ${lojaNome || 'nossa loja'}: R$ ${recibo.valor.toFixed(2)}, vencimento em ${formatDate(recibo.vencimento)}. Saldo total em aberto: R$ ${recibo.saldoTotal.toFixed(2)}.`), '_blank')}
+                  className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 flex items-center justify-center gap-2"
+                >
+                  <MessageCircle className="w-4 h-4" /> WhatsApp
+                </button>
               </div>
             </div>
           </div>

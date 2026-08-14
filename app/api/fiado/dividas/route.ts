@@ -1,8 +1,11 @@
 // Caminho: C:\valente_conecta\app\api\fiado\dividas\route.ts
 //
-// Lançar um débito de fiado. Ao criar, dispara push pro cliente (se ele
-// tiver usuario+inscrição de push resolvidos) com total da compra, saldo
-// devedor e data de vencimento — pedido explícito do usuário do projeto.
+// Lançar um débito de fiado. Antes de criar, checa se o saldo em aberto do
+// cliente + a compra nova estoura o limite de crédito (fiado_clientes.limite_credito)
+// — bloqueia com 409 a menos que o lojista mande forcarLimite=true (ele
+// conhece o cliente, o sistema só avisa). Ao criar, dispara push pro
+// cliente (se ele tiver usuario+inscrição de push resolvidos) com o valor
+// da compra e o saldo total em aberto — pedido explícito do usuário do projeto.
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
@@ -32,7 +35,38 @@ export async function POST(request: NextRequest) {
     if (!body.donoId || !body.clienteId || !body.valorTotal || !body.dataVencimento) {
       return NextResponse.json({ success: false, error: 'donoId, clienteId, valorTotal e dataVencimento são obrigatórios' }, { status: 400 });
     }
+    const valorNovo = Number(body.valorTotal);
     const supabase = createClient();
+
+    // Limite de credito: soma o saldo devedor atual do cliente (dividas
+    // ainda nao quitadas) + a compra nova, e compara com fiado_clientes.limite_credito.
+    // O lojista pode conscientemente estourar o limite mandando forcarLimite=true
+    // (ele conhece o cliente, o sistema so' avisa, nao impede por regra rigida).
+    const { data: clienteLimite, error: erroCliente } = await supabase
+      .from('fiado_clientes')
+      .select('limite_credito')
+      .eq('id', body.clienteId)
+      .single();
+    if (erroCliente) throw erroCliente;
+
+    const limite = Number(clienteLimite?.limite_credito || 0);
+    const { data: dividasAbertas, error: erroAbertas } = await supabase
+      .from('fiado_dividas')
+      .select('valor_total, valor_pago')
+      .eq('cliente_id', body.clienteId)
+      .neq('status', 'pago');
+    if (erroAbertas) throw erroAbertas;
+    const saldoAntes = (dividasAbertas || []).reduce((soma, d) => soma + (Number(d.valor_total) - Number(d.valor_pago)), 0);
+
+    if (limite > 0 && !body.forcarLimite && saldoAntes + valorNovo > limite) {
+      return NextResponse.json({
+        success: false,
+        error: 'limite_excedido',
+        limiteExcedido: true,
+        saldoAtual: saldoAntes,
+        limite,
+      }, { status: 409 });
+    }
 
     const { data: divida, error } = await supabase
       .from('fiado_dividas')
@@ -48,12 +82,13 @@ export async function POST(request: NextRequest) {
       .single();
     if (error) throw error;
 
+    const saldoTotalCliente = saldoAntes + valorNovo;
     const cliente = (divida as any).fiado_clientes;
     if (cliente?.cliente_usuario_id) {
       try {
         await enviarPushParaUsuario(cliente.cliente_usuario_id, {
           titulo: `Nova conta fiado — ${body.lojaNome || 'Valente Conecta'}`,
-          corpo: `Total: R$ ${Number(body.valorTotal).toFixed(2)} · Saldo: R$ ${Number(body.valorTotal).toFixed(2)} · Vencimento: ${formatarData(body.dataVencimento)}`,
+          corpo: `Compra: R$ ${valorNovo.toFixed(2)} · Saldo total em aberto: R$ ${saldoTotalCliente.toFixed(2)} · Vencimento: ${formatarData(body.dataVencimento)}`,
           url: '/pdv/fiado',
         });
       } catch {
@@ -61,7 +96,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ success: true, data: divida });
+    return NextResponse.json({ success: true, data: { ...divida, saldoTotalCliente } });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message || 'Erro ao lançar débito' }, { status: 500 });
   }
