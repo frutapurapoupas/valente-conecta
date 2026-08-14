@@ -7,49 +7,34 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { DashboardUI } from '../components/DashboardUI'
 
-// Dados mockados para teste (enquanto não conectamos com hooks reais)
-const MOCK_STATS = {
-  receitas: 12,
-  estoque: 45,
-  compras: 3,
-  pedidos: 5
-}
-
-const MOCK_ATIVIDADES = [
-  { id: '1', descricao: 'Nova receita: Lasanha', data: 'Hoje, 14:30', status: 'concluido' as const },
-  { id: '2', descricao: 'Compra de tomates pendente', data: 'Hoje, 10:00', status: 'pendente' as const },
-  { id: '3', descricao: 'Estoque baixo: Azeite', data: 'Ontem, 16:45', status: 'alerta' as const }
-]
-
 export function DashboardContainer() {
   const router = useRouter()
-  const [stats, setStats] = useState(MOCK_STATS)
-  const [atividades, setAtividades] = useState(MOCK_ATIVIDADES)
+  const [stats, setStats] = useState({ receitas: 0, estoque: 0 })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Simular carregamento de dados
-    const timer = setTimeout(() => {
-      setLoading(false)
-    }, 500)
-
-    return () => clearTimeout(timer)
+    Promise.all([
+      fetch('/api/cozinha/receitas', { cache: 'no-store' }).then((r) => r.json()),
+      fetch('/api/cozinha/estoque', { cache: 'no-store' }).then((r) => r.json()),
+    ])
+      .then(([receitasRes, estoqueRes]) => {
+        setStats({
+          receitas: receitasRes?.success ? receitasRes.data.length : 0,
+          estoque: estoqueRes?.success ? estoqueRes.data.length : 0,
+        })
+      })
+      .finally(() => setLoading(false))
   }, [])
 
   const handleVerReceitas = () => router.push('/admin-master/cozinha-chef/receitas')
   const handleVerEstoque = () => router.push('/admin-master/cozinha-chef/estoque')
-  const handleVerCompras = () => router.push('/admin-master/cozinha-chef/compras')
-  const handleVerPedidos = () => router.push('/admin-master/cozinha-chef/pedidos')
 
   return (
     <DashboardUI
       stats={stats}
-      atividades={atividades}
       loading={loading}
       onVerReceitas={handleVerReceitas}
       onVerEstoque={handleVerEstoque}
-      onVerCompras={handleVerCompras}
-      onVerPedidos={handleVerPedidos}
     />
   )
 }
