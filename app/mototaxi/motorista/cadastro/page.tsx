@@ -1,10 +1,19 @@
-// Caminho sugerido: C:\valente_conecta\app\mototaxi\motorista\cadastro\page.tsx
+// Caminho: C:\valente_conecta\app\mototaxi\motorista\cadastro\page.tsx
 "use client";
+
+// Antes o cadastro so' pedia uma URL de texto livre e opcional pra "foto"
+// (nenhuma validacao, nenhum documento de verdade enviado) e o resto era
+// autodeclaracao em checkbox. Agora exige upload de verdade das 3 fotos
+// (rosto, veiculo, CNH) via MidiaUploader — mesmo padrao ja usado no
+// catalogo colaborativo do PDV — e a API rejeita o cadastro sem elas (ver
+// validarMotoristaPayload em app/api/mototaxi/route.ts).
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { AlertTriangle, Bike } from "lucide-react";
+import { MidiaUploader } from "@/components/catalogo/MidiaUploader";
+import type { MidiaItem } from "@/lib/catalogo/marketplaceTypes";
 
 export default function CadastroMotoristaPage() {
   const router = useRouter();
@@ -14,21 +23,33 @@ export default function CadastroMotoristaPage() {
     telefone: "",
     veiculo: "",
     placa: "",
-    foto_url: "",
     cnh_numero: "",
     cnh_valida: false,
     documento_veiculo_ok: false,
     licenciamento_vencimento: "",
     plano: "gratis",
   });
+  const [fotoRosto, setFotoRosto] = useState<MidiaItem[]>([]);
+  const [fotoVeiculo, setFotoVeiculo] = useState<MidiaItem[]>([]);
+  const [fotoCnh, setFotoCnh] = useState<MidiaItem[]>([]);
 
   const cadastrar = async () => {
+    if (!fotoRosto[0] || !fotoVeiculo[0] || !fotoCnh[0]) {
+      toast.error("Envie as 3 fotos: seu rosto, o veículo e a CNH.");
+      return;
+    }
     setEnviando(true);
     try {
       const res = await fetch("/api/mototaxi", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recurso: "motoristas", ...form }),
+        body: JSON.stringify({
+          recurso: "motoristas",
+          ...form,
+          foto_url: fotoRosto[0].url,
+          veiculo_foto_url: fotoVeiculo[0].url,
+          cnh_foto_url: fotoCnh[0].url,
+        }),
       });
       const data = await res.json();
       if (!data?.success) throw new Error(data?.error || "Falha no cadastro");
@@ -55,7 +76,7 @@ export default function CadastroMotoristaPage() {
       </header>
 
       <main className="max-w-lg mx-auto p-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             <input value={form.nome} onChange={(e) => setForm((p) => ({ ...p, nome: e.target.value }))} placeholder="Nome" className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2" />
             <input value={form.telefone} onChange={(e) => setForm((p) => ({ ...p, telefone: e.target.value }))} placeholder="Telefone" className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2" />
@@ -63,12 +84,32 @@ export default function CadastroMotoristaPage() {
             <input value={form.placa} onChange={(e) => setForm((p) => ({ ...p, placa: e.target.value }))} placeholder="Placa" className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2" />
             <input value={form.cnh_numero} onChange={(e) => setForm((p) => ({ ...p, cnh_numero: e.target.value }))} placeholder="Numero da CNH" className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2" />
             <input type="date" value={form.licenciamento_vencimento} onChange={(e) => setForm((p) => ({ ...p, licenciamento_vencimento: e.target.value }))} className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2" />
-            <input value={form.foto_url} onChange={(e) => setForm((p) => ({ ...p, foto_url: e.target.value }))} placeholder="URL da foto (opcional)" className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 md:col-span-2" />
             <select value={form.plano} onChange={(e) => setForm((p) => ({ ...p, plano: e.target.value }))} className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 md:col-span-2">
               <option value="gratis">Plano Gratis</option>
               <option value="basico">Plano Basico</option>
               <option value="premium">Plano Premium</option>
             </select>
+          </div>
+
+          <div>
+            <p className="text-sm font-medium mb-1.5">Sua foto (rosto) *</p>
+            <div className="bg-slate-800 rounded-xl p-2">
+              <MidiaUploader midia={fotoRosto} onChange={setFotoRosto} maximo={1} />
+            </div>
+          </div>
+
+          <div>
+            <p className="text-sm font-medium mb-1.5">Foto do veículo *</p>
+            <div className="bg-slate-800 rounded-xl p-2">
+              <MidiaUploader midia={fotoVeiculo} onChange={setFotoVeiculo} maximo={1} />
+            </div>
+          </div>
+
+          <div>
+            <p className="text-sm font-medium mb-1.5">Foto da CNH *</p>
+            <div className="bg-slate-800 rounded-xl p-2">
+              <MidiaUploader midia={fotoCnh} onChange={setFotoCnh} maximo={1} />
+            </div>
           </div>
 
           <div className="space-y-2 text-sm">
@@ -82,7 +123,7 @@ export default function CadastroMotoristaPage() {
 
           <div className="rounded-xl bg-amber-950/40 border border-amber-700/50 p-3 text-amber-200 text-xs flex items-start gap-2">
             <AlertTriangle size={14} className="mt-0.5" />
-            Somente motoristas com CNH valida e licenciamento em dia podem ser aprovados.
+            Somente motoristas com CNH valida, licenciamento em dia e as 3 fotos enviadas podem ser aprovados. Suas fotos ficam visíveis pros passageiros quando você aceitar uma corrida.
           </div>
 
           <button

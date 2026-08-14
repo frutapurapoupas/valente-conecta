@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
 function validarMotoristaPayload(payload: any) {
-  const obrigatorios = ['nome', 'telefone', 'veiculo', 'placa', 'cnh_numero', 'licenciamento_vencimento'];
+  const obrigatorios = ['nome', 'telefone', 'veiculo', 'placa', 'cnh_numero', 'licenciamento_vencimento', 'foto_url', 'veiculo_foto_url', 'cnh_foto_url'];
   for (const campo of obrigatorios) {
     if (!payload?.[campo]) return `Campo obrigatorio ausente: ${campo}`;
   }
@@ -209,6 +209,8 @@ export async function POST(request: NextRequest) {
           nome: body.nome,
           telefone: body.telefone,
           foto_url: body.foto_url || null,
+          veiculo_foto_url: body.veiculo_foto_url || null,
+          cnh_foto_url: body.cnh_foto_url || null,
           veiculo: body.veiculo,
           placa: String(body.placa).toUpperCase(),
           plano: body.plano || 'gratis',
@@ -245,6 +247,10 @@ export async function POST(request: NextRequest) {
           passageiro_plano: body.passageiro_plano || 'gratis',
           cidade_id: body.cidade_id || null,
           motorista_id: null,
+          tipo: body.tipo === 'encomenda' ? 'encomenda' : 'passageiro',
+          encomenda_descricao: body.encomenda_descricao || null,
+          destinatario_nome: body.destinatario_nome || null,
+          destinatario_telefone: body.destinatario_telefone || null,
           origem: body.origem,
           destino: body.destino,
           origem_lat: body.origem_lat,

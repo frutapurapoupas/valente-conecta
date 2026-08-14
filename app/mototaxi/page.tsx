@@ -7,7 +7,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/app/context/AppContext";
-import { Bike, CreditCard, ShieldCheck, Star, User, X } from "lucide-react";
+import { Bike, CreditCard, Package, ShieldCheck, Star, User, X } from "lucide-react";
 import toast from "react-hot-toast";
 import CampoEnderecoAutocomplete from "./_components/CampoEnderecoAutocomplete";
 
@@ -38,10 +38,13 @@ type MotoristaApi = {
   id: string;
   nome: string;
   foto_url?: string;
+  veiculo_foto_url?: string;
   veiculo: string;
   placa: string;
   avaliacao: number;
 };
+
+type TipoCorrida = "passageiro" | "encomenda";
 
 type AdsConfig = {
   enabled: boolean;
@@ -225,6 +228,11 @@ export default function MotoTaxiPage() {
   const [adsConfig, setAdsConfig] = useState<AdsConfig | null>(null);
   const [cidadeAtiva, setCidadeAtiva] = useState<Cidade | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const [tipoCorrida, setTipoCorrida] = useState<TipoCorrida | null>(null);
+  const [encomendaDescricao, setEncomendaDescricao] = useState("");
+  const [destinatarioNome, setDestinatarioNome] = useState("");
+  const [destinatarioTelefone, setDestinatarioTelefone] = useState("");
 
   const [origem, setOrigem] = useState("");
   const [destino, setDestino] = useState("");
@@ -416,6 +424,10 @@ export default function MotoTaxiPage() {
       toast.error("Informe origem e destino");
       return;
     }
+    if (tipoCorrida === "encomenda" && (!destinatarioNome.trim() || !encomendaDescricao.trim())) {
+      toast.error("Informe o que está sendo enviado e o nome de quem vai receber");
+      return;
+    }
 
     setSolicitando(true);
     try {
@@ -432,6 +444,10 @@ export default function MotoTaxiPage() {
         passageiro_nome: user?.nome || "Passageiro",
         passageiro_plano: passengerPlan,
         cidade_id: cidadeAtiva?.id || null,
+        tipo: tipoCorrida || "passageiro",
+        encomenda_descricao: tipoCorrida === "encomenda" ? encomendaDescricao : null,
+        destinatario_nome: tipoCorrida === "encomenda" ? destinatarioNome : null,
+        destinatario_telefone: tipoCorrida === "encomenda" ? destinatarioTelefone : null,
         origem,
         destino,
         origem_lat: userPosition.lat,
@@ -483,6 +499,7 @@ export default function MotoTaxiPage() {
   const cancelarBusca = () => {
     setCorridaAtiva(null);
     setMotoristaAtivo(null);
+    setTipoCorrida(null);
   };
 
   if (loading) {
@@ -502,19 +519,43 @@ export default function MotoTaxiPage() {
       </header>
 
       <main className="max-w-3xl mx-auto p-4 space-y-4">
-        {!corridaAtiva && (
+        {!corridaAtiva && !tipoCorrida && (
+          <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <button
+              onClick={() => setTipoCorrida("passageiro")}
+              className="bg-slate-900 border border-slate-800 hover:border-cyan-500 rounded-2xl p-6 text-left transition"
+            >
+              <User className="w-8 h-8 text-cyan-400 mb-3" />
+              <p className="font-bold text-lg">Viagem de passageiro</p>
+              <p className="text-sm text-slate-400 mt-1">Peça uma moto táxi pra te levar até o destino.</p>
+            </button>
+            <button
+              onClick={() => setTipoCorrida("encomenda")}
+              className="bg-slate-900 border border-slate-800 hover:border-cyan-500 rounded-2xl p-6 text-left transition"
+            >
+              <Package className="w-8 h-8 text-amber-400 mb-3" />
+              <p className="font-bold text-lg">Encomenda pequena</p>
+              <p className="text-sm text-slate-400 mt-1">Envie um pacote pequeno com entrega rápida.</p>
+            </button>
+          </section>
+        )}
+
+        {!corridaAtiva && tipoCorrida && (
           <section className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-            <h2 className="font-semibold mb-3">Solicitar corrida</h2>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-semibold">{tipoCorrida === "encomenda" ? "Enviar encomenda" : "Solicitar corrida"}</h2>
+              <button onClick={() => setTipoCorrida(null)} className="text-xs text-slate-400 hover:text-white">Trocar</button>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <CampoEnderecoAutocomplete
-                placeholder="Origem"
+                placeholder={tipoCorrida === "encomenda" ? "Onde retirar" : "Origem"}
                 value={origem}
                 cidadeId={cidadeAtiva?.id || null}
                 onChange={setOrigem}
                 onSelecionar={(s) => setUserPosition({ lat: s.lat, lng: s.lng })}
               />
               <CampoEnderecoAutocomplete
-                placeholder="Destino"
+                placeholder={tipoCorrida === "encomenda" ? "Onde entregar" : "Destino"}
                 value={destino}
                 cidadeId={cidadeAtiva?.id || null}
                 onChange={setDestino}
@@ -527,6 +568,29 @@ export default function MotoTaxiPage() {
               </button>
               {userPosition && <span className="text-cyan-300">Lat {userPosition.lat} · Lng {userPosition.lng}</span>}
             </div>
+
+            {tipoCorrida === "encomenda" && (
+              <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2">
+                <input
+                  value={encomendaDescricao}
+                  onChange={(e) => setEncomendaDescricao(e.target.value)}
+                  placeholder="O que está sendo enviado?"
+                  className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 md:col-span-2"
+                />
+                <input
+                  value={destinatarioNome}
+                  onChange={(e) => setDestinatarioNome(e.target.value)}
+                  placeholder="Nome de quem vai receber"
+                  className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"
+                />
+                <input
+                  value={destinatarioTelefone}
+                  onChange={(e) => setDestinatarioTelefone(e.target.value)}
+                  placeholder="Telefone de quem vai receber (opcional)"
+                  className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"
+                />
+              </div>
+            )}
 
             {calculandoPreco && (
               <p className="text-sm text-cyan-300 mt-3">Calculando rota e valor...</p>
@@ -542,7 +606,7 @@ export default function MotoTaxiPage() {
               disabled={solicitando}
               className="mt-4 w-full bg-green-500 text-black font-bold py-3 rounded-xl disabled:opacity-50"
             >
-              {solicitando ? "Solicitando..." : "Solicitar corrida"}
+              {solicitando ? "Solicitando..." : tipoCorrida === "encomenda" ? "Solicitar entrega" : "Solicitar corrida"}
             </button>
           </section>
         )}
@@ -566,10 +630,22 @@ export default function MotoTaxiPage() {
             {motoristaAtivo && corridaAtiva.status !== "aguardando_motorista" && (
               <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
                 <div className="rounded-xl bg-slate-800 p-3">
-                  <p className="text-slate-400">Motorista</p>
-                  <p className="font-semibold flex items-center gap-2"><User size={14} /> {motoristaAtivo.nome}</p>
-                  <p className="text-slate-300 text-xs">{motoristaAtivo.veiculo} · {motoristaAtivo.placa}</p>
-                  <p className="text-xs text-yellow-300 flex items-center gap-1"><Star size={12} /> {motoristaAtivo.avaliacao.toFixed(1)}</p>
+                  <p className="text-slate-400 mb-1.5">Motorista</p>
+                  <div className="flex items-center gap-2">
+                    {motoristaAtivo.foto_url ? (
+                      <img src={motoristaAtivo.foto_url} alt={motoristaAtivo.nome} className="w-12 h-12 rounded-full object-cover border-2 border-slate-700" />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center"><User size={18} /></div>
+                    )}
+                    <div>
+                      <p className="font-semibold">{motoristaAtivo.nome}</p>
+                      <p className="text-xs text-yellow-300 flex items-center gap-1"><Star size={12} /> {motoristaAtivo.avaliacao.toFixed(1)}</p>
+                    </div>
+                  </div>
+                  <p className="text-slate-300 text-xs mt-2">{motoristaAtivo.veiculo} · {motoristaAtivo.placa}</p>
+                  {motoristaAtivo.veiculo_foto_url && (
+                    <img src={motoristaAtivo.veiculo_foto_url} alt="Veículo" className="mt-2 w-full h-20 rounded-lg object-cover border border-slate-700" />
+                  )}
                 </div>
                 <div className="rounded-xl bg-slate-800 p-3">
                   <p className="text-slate-400">Deslocamento</p>
