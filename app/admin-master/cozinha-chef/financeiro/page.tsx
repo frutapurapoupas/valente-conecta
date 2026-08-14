@@ -2,14 +2,16 @@
 
 import { useState, useEffect } from 'react';
 
-// Definindo o tipo para os registros financeiros
+// Definindo o tipo para os registros financeiros — colunas reais da tabela
+// "financeiro" (criada fora do versionamento de migrations, ver
+// app/api/cozinha/financeiro/route.ts). status vem como 'pago'/'pendente'.
 interface RegistroFinanceiro {
-  id: number;
+  id: string;
   data: string;
   descricao: string;
   tipo: 'receita' | 'despesa';
   valor: number;
-  status: 'confirmado' | 'pendente';
+  status: string;
 }
 
 export default function FinanceiroPage() {
@@ -17,38 +19,19 @@ export default function FinanceiroPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const mockData: RegistroFinanceiro[] = [
-      { 
-        id: 1, 
-        data: new Date().toISOString(), 
-        descricao: 'Venda do dia', 
-        tipo: 'receita', 
-        valor: 150.00, 
-        status: 'confirmado' 
-      },
-      { 
-        id: 2, 
-        data: new Date(Date.now() - 86400000).toISOString(), 
-        descricao: 'Compra de ingredientes', 
-        tipo: 'despesa', 
-        valor: 45.50, 
-        status: 'confirmado' 
-      }
-    ];
-    
-    setTimeout(() => {
-      setRegistros(mockData);
-      setLoading(false);
-    }, 500);
+    fetch('/api/cozinha/financeiro', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((res) => setRegistros(res?.success ? res.data : []))
+      .finally(() => setLoading(false));
   }, []);
 
   const totalReceitas = registros
-    .filter(r => r.tipo === 'receita' && r.status === 'confirmado')
-    .reduce((sum, r) => sum + r.valor, 0);
+    .filter(r => r.tipo === 'receita' && r.status === 'pago')
+    .reduce((sum, r) => sum + Number(r.valor || 0), 0);
 
   const totalDespesas = registros
-    .filter(r => r.tipo === 'despesa' && r.status === 'confirmado')
-    .reduce((sum, r) => sum + r.valor, 0);
+    .filter(r => r.tipo === 'despesa' && r.status === 'pago')
+    .reduce((sum, r) => sum + Number(r.valor || 0), 0);
 
   const saldo = totalReceitas - totalDespesas;
 
@@ -64,7 +47,6 @@ export default function FinanceiroPage() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Financeiro</h1>
-        <span className="text-sm text-yellow-600 bg-yellow-100 px-3 py-1 rounded-full">Modo Teste</span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -114,8 +96,8 @@ export default function FinanceiroPage() {
                     R$ {registro.valor.toFixed(2)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${registro.status === 'confirmado' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                      {registro.status === 'confirmado' ? 'Confirmado' : 'Pendente'}
+                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${registro.status === 'pago' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                      {registro.status === 'pago' ? 'Pago' : 'Pendente'}
                     </span>
                   </td>
                 </tr>

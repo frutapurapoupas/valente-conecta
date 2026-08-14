@@ -89,7 +89,7 @@ export const adminMenuFull: MenuGroup[] = [
     collapsible: true,
     items: [
       { name: "Dashboard", path: "/admin-master", icon: LayoutDashboard, status: 'active' },
-      { name: "Dashboard Gráficos", path: "/admin-master/dashboard-graficos", icon: BarChart3, status: 'construction' },
+      { name: "Dashboard Gráficos", path: "/admin-master/dashboard-graficos", icon: BarChart3, status: 'active' },
       { name: "Métricas da Inteligência", path: "/admin-master/metricas-ia", icon: Brain, status: 'construction' },
       { name: "Relatórios", path: "/admin-master/relatorios", icon: FileText, status: 'construction' },
     ]
