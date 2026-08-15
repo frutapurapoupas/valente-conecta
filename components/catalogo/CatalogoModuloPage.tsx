@@ -18,9 +18,10 @@ interface CatalogoModuloPageProps {
   labelModulo: string;
   categorias: string[];
   descricao?: string;
+  linkExtra?: { href: string; label: string; icone: React.ReactNode };
 }
 
-export function CatalogoModuloPage({ modulo, labelModulo, categorias, descricao }: CatalogoModuloPageProps) {
+export function CatalogoModuloPage({ modulo, labelModulo, categorias, descricao, linkExtra }: CatalogoModuloPageProps) {
   const router = useRouter();
   const [categoria, setCategoria] = useState<string | undefined>(undefined);
   const { itens, loading, buscar, termo } = useCatalogoPublico(modulo, categoria);
@@ -29,12 +30,22 @@ export function CatalogoModuloPage({ modulo, labelModulo, categorias, descricao 
     <div className="max-w-6xl mx-auto p-4 sm:p-6">
       <div className="flex items-start justify-between gap-3 mb-1">
         <h1 className="text-2xl font-bold">{labelModulo}</h1>
-        <Link
-          href={`/${modulo}/admin`}
-          className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium whitespace-nowrap pt-1"
-        >
-          <Store className="w-4 h-4" /> Sou fornecedor
-        </Link>
+        <div className="flex items-center gap-3 pt-1">
+          {linkExtra && (
+            <Link
+              href={linkExtra.href}
+              className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium whitespace-nowrap"
+            >
+              {linkExtra.icone} {linkExtra.label}
+            </Link>
+          )}
+          <Link
+            href={`/${modulo}/admin`}
+            className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium whitespace-nowrap"
+          >
+            <Store className="w-4 h-4" /> Sou fornecedor
+          </Link>
+        </div>
       </div>
       {descricao && <p className="text-gray-500 text-sm mb-5">{descricao}</p>}
 

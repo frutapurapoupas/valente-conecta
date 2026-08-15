@@ -623,6 +623,16 @@ export const adminMenuFull: MenuGroup[] = [
     ]
   },
 
+  // ==================== FORUM CONSTRUCAO CIVIL ====================
+  {
+    name: "🛠️ FÓRUM CONSTRUÇÃO CIVIL",
+    icon: FileText,
+    collapsible: true,
+    items: [
+      { name: "Moderação de posts", path: "/admin-master/construcao-forum", icon: FileText, status: 'active' },
+    ]
+  },
+
   // ==================== LANÇAMENTO ====================
   {
     name: "🎬 LANÇAMENTO",
