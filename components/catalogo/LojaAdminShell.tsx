@@ -14,11 +14,12 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import toast from "react-hot-toast";
-import { Package, User, Bell, Plus, Pencil, Trash2, PauseCircle, PlayCircle, Sparkles } from "lucide-react";
+import { Package, User, Bell, Plus, Pencil, Trash2, PauseCircle, PlayCircle, Sparkles, Calendar } from "lucide-react";
 import { useMeuCatalogo } from "@/lib/catalogo/useCatalogoModulo";
 import { ItemForm } from "./ItemForm";
 import { HorarioSemanaEditor } from "./HorarioSemanaEditor";
 import { horariosPadrao } from "@/lib/catalogo/horarios";
+import { AgendaConstrucaoTab } from "@/components/construcao/AgendaConstrucaoTab";
 import type { CatalogoItem, Interesse, PerfilFornecedor } from "@/lib/catalogo/marketplaceTypes";
 
 interface LojaAdminShellProps {
@@ -27,7 +28,7 @@ interface LojaAdminShellProps {
   categorias: string[];
 }
 
-type Aba = "catalogo" | "perfil" | "interesses";
+type Aba = "catalogo" | "perfil" | "interesses" | "agenda";
 
 export function LojaAdminShell({ modulo, labelModulo, categorias }: LojaAdminShellProps) {
   const searchParams = useSearchParams();
@@ -89,6 +90,9 @@ export function LojaAdminShell({ modulo, labelModulo, categorias }: LojaAdminShe
         <AbaBotao ativo={aba === "catalogo"} onClick={() => setAba("catalogo")} icone={<Package className="w-4 h-4" />} label="Meu catálogo" />
         <AbaBotao ativo={aba === "perfil"} onClick={() => setAba("perfil")} icone={<User className="w-4 h-4" />} label="Perfil da loja" />
         <AbaBotao ativo={aba === "interesses"} onClick={() => setAba("interesses")} icone={<Bell className="w-4 h-4" />} label="Interesses recebidos" />
+        {modulo === "construcao" && (
+          <AbaBotao ativo={aba === "agenda"} onClick={() => setAba("agenda")} icone={<Calendar className="w-4 h-4" />} label="Agenda" />
+        )}
       </div>
 
       {aba === "catalogo" && (
@@ -185,6 +189,7 @@ export function LojaAdminShell({ modulo, labelModulo, categorias }: LojaAdminShe
         />
       )}
       {aba === "interesses" && donoId && <InteressesRecebidos fornecedorId={donoId} />}
+      {aba === "agenda" && donoId && modulo === "construcao" && <AgendaConstrucaoTab donoId={donoId} />}
     </div>
   );
 }

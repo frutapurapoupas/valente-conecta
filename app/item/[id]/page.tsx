@@ -12,6 +12,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, MapPin, Users } from "lucide-react";
 import { InteresseButton } from "@/components/catalogo/InteresseButton";
 import { BadgeAbertoAgora } from "@/components/catalogo/BadgeAbertoAgora";
+import { SolicitarAgendaItem } from "@/components/construcao/SolicitarAgendaItem";
 import { LABEL_MODULO, ARQUETIPO_POR_MODULO, type CatalogoItem, type ModuloId } from "@/lib/catalogo/marketplaceTypes";
 
 export default function ItemPublicoPage() {
@@ -129,6 +130,8 @@ export default function ItemPublicoPage() {
               <InteresseButton itemId={item.id} />
             )}
           </div>
+
+          {item.modulo === "construcao" && <SolicitarAgendaItem donoId={item.dono_id} />}
         </div>
       </div>
     </div>
