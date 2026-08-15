@@ -96,7 +96,7 @@ export async function PUT(request: NextRequest) {
       .eq('id', id)
       .eq('status', 'pendente')
       .select('*')
-      .single();
+      .maybeSingle();
     if (error) throw error;
     if (!solicitacao) return NextResponse.json({ success: false, error: 'Solicitação já respondida ou não encontrada.' }, { status: 409 });
 
