@@ -16,6 +16,7 @@ import { X } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 
 const CHAVE_CONTAGEM = "valente_conecta_boasvindas_contagem";
+const CHAVE_QUIZ_DISPENSADO = "valente_conecta_quiz_perfil_dispensado";
 const LIMITE_ABERTURAS = 2;
 
 export function BoasVindasVideoPopup() {
@@ -26,9 +27,22 @@ export function BoasVindasVideoPopup() {
     const usuario = getCurrentUser();
     if (!usuario) return;
 
-    fetch("/api/admin-master/config-boas-vindas", { cache: "no-store" })
-      .then((r) => r.json())
-      .then((res) => {
+    // O quiz de perfil tem prioridade — se ainda nao foi respondido nem
+    // dispensado, deixa ele aparecer primeiro (evita 2 pop-ups em cima um
+    // do outro). Se o quiz ja foi resolvido, ou esta desligado, segue normal.
+    Promise.all([
+      localStorage.getItem(`${CHAVE_QUIZ_DISPENSADO}_${usuario.id}`)
+        ? Promise.resolve({ resolvido: true })
+        : Promise.all([
+            fetch("/api/admin-master/config-quiz-perfil", { cache: "no-store" }).then((r) => r.json()),
+            fetch(`/api/quiz-perfil?usuarioId=${usuario.id}`, { cache: "no-store" }).then((r) => r.json()),
+          ]).then(([config, resposta]) => ({
+            resolvido: !(config.success && config.data?.ativo && resposta.success && !resposta.data),
+          })),
+      fetch("/api/admin-master/config-boas-vindas", { cache: "no-store" }).then((r) => r.json()),
+    ])
+      .then(([quiz, res]) => {
+        if (!quiz.resolvido) return;
         if (!res.success || !res.data?.ativo || !res.data?.url) return;
 
         const chave = `${CHAVE_CONTAGEM}_${usuario.id}`;

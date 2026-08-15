@@ -6,6 +6,7 @@ import { AppProvider } from './context/AppContext';
 import { Toaster } from 'react-hot-toast';
 import { CadastroPopupWrapper } from '@/components/CadastroPopupWrapper';
 import { BoasVindasVideoPopup } from '@/components/BoasVindasVideoPopup';
+import { QuizPerfilPopup } from '@/components/QuizPerfilPopup';
 import { InstallPrompt } from '@/components/InstallPrompt';
 import PushSubscriptionManager from '@/components/PushSubscriptionManager';
 import { Suspense } from 'react';
@@ -59,6 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </Suspense>
           <Toaster position="top-right" />
           <CadastroPopupWrapper />
+          <QuizPerfilPopup />
           <BoasVindasVideoPopup />
           <InstallPrompt />
           <PushSubscriptionManager />

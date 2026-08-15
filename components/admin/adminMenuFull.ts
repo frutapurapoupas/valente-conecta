@@ -632,6 +632,7 @@ export const adminMenuFull: MenuGroup[] = [
       { name: "Vídeo de apresentação", path: "/admin-master/configuracoes/lancamento", icon: PlayCircle, status: 'active' },
       { name: "Página Pública", path: "/lancamento", icon: ExternalLink, status: 'active' },
       { name: "Vídeo de boas-vindas", path: "/admin-master/configuracoes/boas-vindas", icon: PlayCircle, status: 'active' },
+      { name: "Quiz de perfil", path: "/admin-master/configuracoes/quiz-perfil", icon: PlayCircle, status: 'active' },
     ]
   },
 ];
