@@ -5,16 +5,17 @@
 // linkava pra outra antes, cada uma só era alcançável por URL direta.
 
 import Link from "next/link";
-import { Package, Receipt, Wallet, FileText } from "lucide-react";
+import { Package, Receipt, Wallet, FileText, Eye } from "lucide-react";
 
 const ABAS = [
   { href: "/pdv/estoque", label: "Estoque", icone: Package },
   { href: "/pdv/fiado", label: "Fiado", icone: Receipt },
   { href: "/pdv/caixa", label: "Caixa", icone: Wallet },
   { href: "/pdv/notas-fiscais", label: "Notas", icone: FileText },
+  { href: "/pdv/captura-externa", label: "Captura", icone: Eye },
 ];
 
-export function PdvSubNav({ ativa }: { ativa: "estoque" | "fiado" | "caixa" | "notas-fiscais" }) {
+export function PdvSubNav({ ativa }: { ativa: "estoque" | "fiado" | "caixa" | "notas-fiscais" | "captura-externa" }) {
   return (
     <div className="bg-white border-b px-4 flex gap-1 overflow-x-auto">
       {ABAS.map((aba) => {
