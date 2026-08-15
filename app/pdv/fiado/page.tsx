@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { obterUsuarioLocalId } from '@/lib/usuarioLocal';
+import { PdvSubNav } from '@/components/pdv/PdvSubNav';
 
 interface ClienteFiado {
   id: string;
@@ -276,6 +277,7 @@ export default function FiadoPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <PdvSubNav ativa="fiado" />
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-wrap justify-between items-center gap-3 mb-6">
           <div>

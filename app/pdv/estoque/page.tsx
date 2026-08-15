@@ -18,6 +18,7 @@ import {
 import { getCurrentUser } from "@/lib/auth";
 import { MidiaUploader } from "@/components/catalogo/MidiaUploader";
 import { BarcodeScanner } from "@/components/pdv/BarcodeScanner";
+import { PdvSubNav } from "@/components/pdv/PdvSubNav";
 import type { MidiaItem } from "@/lib/catalogo/marketplaceTypes";
 
 const SEGMENTOS = [
@@ -282,6 +283,7 @@ export default function PdvEstoquePage() {
         <button onClick={() => router.back()}><ArrowLeft className="w-5 h-5" /></button>
         <h1 className="font-bold text-gray-800 flex items-center gap-2"><Package className="w-5 h-5 text-blue-600" /> Meu Estoque</h1>
       </header>
+      <PdvSubNav ativa="estoque" />
 
       <div className="p-4 space-y-4">
         <div className="relative">
