@@ -612,6 +612,16 @@ export const adminMenuFull: MenuGroup[] = [
     ]
   },
 
+  // ==================== PDV COLABORATIVO ====================
+  {
+    name: "📦 PDV COLABORATIVO",
+    icon: Package,
+    collapsible: true,
+    items: [
+      { name: "Relatório do catálogo", path: "/admin-master/pdv/relatorios", icon: Package, status: 'active' },
+    ]
+  },
+
   // ==================== LANÇAMENTO ====================
   {
     name: "🎬 LANÇAMENTO",
