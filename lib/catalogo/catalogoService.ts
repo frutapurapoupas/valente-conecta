@@ -13,6 +13,7 @@ import type {
   ResultadoVitrine,
   Interesse,
   PerfilFornecedor,
+  HorarioDia,
 } from './marketplaceTypes';
 
 export async function listarItens(modulo?: string, donoId?: string): Promise<CatalogoItem[]> {
@@ -148,7 +149,7 @@ export async function obterMeuPerfilFornecedor(usuarioId: string): Promise<Perfi
 
 export async function salvarPerfilFornecedor(perfil: Omit<PerfilFornecedor, 'id' | 'created_at' | 'updated_at'>): Promise<PerfilFornecedor> {
   const supabase = createClient();
-  const { data, error } = await supabase.rpc('salvar_perfil_fornecedor_v1', {
+  const { data, error } = await supabase.rpc('salvar_perfil_fornecedor_v2', {
     p_usuario_id: perfil.usuario_id,
     p_nome_exibicao: perfil.nome_exibicao,
     p_telefone: perfil.telefone,
@@ -157,6 +158,7 @@ export async function salvarPerfilFornecedor(perfil: Omit<PerfilFornecedor, 'id'
     p_latitude: perfil.latitude,
     p_longitude: perfil.longitude,
     p_plano: perfil.plano,
+    p_horarios: perfil.horarios,
   });
   if (error) throw error;
   return data;
@@ -167,4 +169,14 @@ export async function obterContatoLiberado(interesseId: string) {
   const { data, error } = await supabase.rpc('contato_liberado_comprador', { p_interesse_id: interesseId });
   if (error) throw error;
   return (data && data[0]) || null;
+}
+
+// Horario e' publico (nao e' dado de contato) — RPC dedicada devolve so'
+// isso, sem vazar telefone/endereco de perfis_fornecedor (ver migration
+// 042_horario_funcionamento_fornecedor.sql).
+export async function obterHorarioPublico(usuarioId: string): Promise<HorarioDia[] | null> {
+  const supabase = createClient();
+  const { data, error } = await supabase.rpc('horario_publico_fornecedor_v1', { p_usuario_id: usuarioId });
+  if (error) throw error;
+  return data || null;
 }

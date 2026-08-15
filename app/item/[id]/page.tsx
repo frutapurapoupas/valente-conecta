@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, MapPin, Users } from "lucide-react";
 import { InteresseButton } from "@/components/catalogo/InteresseButton";
+import { BadgeAbertoAgora } from "@/components/catalogo/BadgeAbertoAgora";
 import { LABEL_MODULO, ARQUETIPO_POR_MODULO, type CatalogoItem, type ModuloId } from "@/lib/catalogo/marketplaceTypes";
 
 export default function ItemPublicoPage() {
@@ -95,9 +96,12 @@ export default function ItemPublicoPage() {
         )}
 
         <div className="p-5">
-          <span className="text-xs font-medium text-blue-600 uppercase tracking-wide">
-            {LABEL_MODULO[item.modulo as ModuloId] || item.modulo} · {item.categoria}
-          </span>
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <span className="text-xs font-medium text-blue-600 uppercase tracking-wide">
+              {LABEL_MODULO[item.modulo as ModuloId] || item.modulo} · {item.categoria}
+            </span>
+            <BadgeAbertoAgora usuarioId={item.dono_id} />
+          </div>
           <h1 className="text-2xl font-bold mt-1">{item.titulo}</h1>
           <p className="text-2xl font-bold text-blue-600 mt-2">
             {item.preco === null

@@ -21,8 +21,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Arquivo ausente' }, { status: 400 });
     }
 
+    const pasta = (formData.get('pasta') as string | null) || 'lancamento';
     const extensao = arquivo.name.split('.').pop() || 'mp4';
-    const caminho = `lancamento/${crypto.randomUUID()}.${extensao}`;
+    const caminho = `${pasta}/${crypto.randomUUID()}.${extensao}`;
 
     const supabase = createClient();
     const { error } = await supabase.storage

@@ -17,6 +17,8 @@ import toast from "react-hot-toast";
 import { Package, User, Bell, Plus, Pencil, Trash2, PauseCircle, PlayCircle, Sparkles } from "lucide-react";
 import { useMeuCatalogo } from "@/lib/catalogo/useCatalogoModulo";
 import { ItemForm } from "./ItemForm";
+import { HorarioSemanaEditor } from "./HorarioSemanaEditor";
+import { horariosPadrao } from "@/lib/catalogo/horarios";
 import type { CatalogoItem, Interesse, PerfilFornecedor } from "@/lib/catalogo/marketplaceTypes";
 
 interface LojaAdminShellProps {
@@ -216,10 +218,14 @@ function PerfilFornecedorForm({ usuarioId, onSalvo }: { usuarioId: string; onSal
     e.preventDefault();
     setSalvando(true);
     try {
+      // So' manda horarios se pelo menos um dia estiver ativo — evita
+      // gravar um horario "todo desligado" que faria o badge mostrar
+      // "Fechado agora" pra quem nunca configurou nada.
+      const horariosParaSalvar = perfil.horarios?.some((h) => h.ativo) ? perfil.horarios : null;
       const resp = await fetch("/api/catalogo/perfil-fornecedor", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...perfil, usuario_id: usuarioId, plano: perfil.plano || "gratis" }),
+        body: JSON.stringify({ ...perfil, usuario_id: usuarioId, plano: perfil.plano || "gratis", horarios: horariosParaSalvar }),
       });
       const resultado = await resp.json();
       if (!resultado.success) throw new Error(resultado.error);
@@ -272,6 +278,16 @@ function PerfilFornecedorForm({ usuarioId, onSalvo }: { usuarioId: string; onSal
           value={perfil.endereco || ""}
           onChange={(e) => setPerfil((p) => ({ ...p, endereco: e.target.value }))}
           className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+      <div className="pt-2 border-t">
+        <label className="block text-sm font-medium text-gray-700 mb-1">Horário de funcionamento</label>
+        <p className="text-xs text-gray-400 mb-2">
+          Público — aparece pra qualquer pessoa como "Aberto agora" quando bate com o horário marcado.
+        </p>
+        <HorarioSemanaEditor
+          horarios={perfil.horarios && perfil.horarios.length > 0 ? perfil.horarios : horariosPadrao()}
+          onChange={(horarios) => setPerfil((p) => ({ ...p, horarios }))}
         />
       </div>
       <button

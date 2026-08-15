@@ -85,6 +85,13 @@ export interface Interesse {
   created_at: string;
 }
 
+export interface HorarioDia {
+  dia: number; // 0 = domingo ... 6 = sábado
+  ativo: boolean;
+  abre: string; // "HH:MM"
+  fecha: string; // "HH:MM"
+}
+
 export interface PerfilFornecedor {
   id: string;
   usuario_id: string;
@@ -95,6 +102,7 @@ export interface PerfilFornecedor {
   latitude: number | null;
   longitude: number | null;
   plano: 'gratis' | 'profissional' | 'loja' | 'premium';
+  horarios: HorarioDia[] | null;
   created_at: string;
   updated_at: string;
 }
