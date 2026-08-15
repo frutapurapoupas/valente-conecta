@@ -13,7 +13,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { User, Mail, Phone, Wallet, Copy, LogOut, ArrowLeft, Edit2, Save, X, Calendar, Crown, Gift, History, MapPin, Tag } from "lucide-react";
+import { User, Mail, Phone, Wallet, Copy, LogOut, ArrowLeft, Edit2, Save, X, Calendar, Crown, Gift, History, MapPin, Tag, Receipt } from "lucide-react";
 import toast from "react-hot-toast";
 import { getCurrentUser, logout as logoutAuth } from "@/lib/auth";
 import type { Usuario } from "@/lib/supabase";
@@ -272,6 +272,14 @@ export default function ProfilePage() {
         >
           <History className="w-5 h-5" />
           Meu Extrato e Transações
+        </button>
+
+        <button
+          onClick={() => router.push("/meu-fiado")}
+          className="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-3 hover:from-emerald-700 hover:to-teal-700 transition-all duration-300"
+        >
+          <Receipt className="w-5 h-5" />
+          Meu Fiado
         </button>
 
         {user.codigo_indicacao && (

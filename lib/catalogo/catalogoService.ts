@@ -180,3 +180,13 @@ export async function obterHorarioPublico(usuarioId: string): Promise<HorarioDia
   if (error) throw error;
   return data || null;
 }
+
+export async function obterNomesFornecedoresPublico(usuarioIds: string[]): Promise<Record<string, string>> {
+  if (usuarioIds.length === 0) return {};
+  const supabase = createClient();
+  const { data, error } = await supabase.rpc('nomes_fornecedores_publico_v1', { p_usuario_ids: usuarioIds });
+  if (error) throw error;
+  const mapa: Record<string, string> = {};
+  for (const row of data || []) mapa[row.usuario_id] = row.nome_exibicao;
+  return mapa;
+}
