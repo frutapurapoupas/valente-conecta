@@ -14,12 +14,14 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import {
   Wallet, ArrowUpCircle, ArrowDownCircle, QrCode, History, Copy, Check,
   Eye, EyeOff, Clock, Gift, Send, X, AlertTriangle, Store
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { getCurrentUser } from '@/lib/auth';
+import { BarcodeScanner } from '@/components/pdv/BarcodeScanner';
 
 interface Compensacao {
   id: string;
@@ -60,6 +62,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export default function CarteiraPage() {
+  const searchParams = useSearchParams();
   const [usuario, setUsuario] = useState<any>(null);
   const [saldo, setSaldo] = useState(0);
   const [cidadeBase, setCidadeBase] = useState('');
@@ -70,6 +73,7 @@ export default function CarteiraPage() {
   const [showModalReceber, setShowModalReceber] = useState(false);
   const [showModalPagar, setShowModalPagar] = useState(false);
   const [showModalCompensar, setShowModalCompensar] = useState(false);
+  const [showScannerPagar, setShowScannerPagar] = useState(false);
   const [copiado, setCopiado] = useState(false);
 
   const [destinoCodigo, setDestinoCodigo] = useState('');
@@ -121,6 +125,14 @@ export default function CarteiraPage() {
     setUsuario(u);
     if (u) carregarDados(u);
     else setLoading(false);
+
+    // Home usa /carteira?abrir=receber|pagar pra levar direto pro modal
+    // certo — antes os dois botoes da home so' mandavam pra essa pagina
+    // sem diferenca nenhuma entre eles.
+    const abrir = searchParams?.get('abrir');
+    if (abrir === 'receber') setShowModalReceber(true);
+    if (abrir === 'pagar') setShowModalPagar(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const enviarPagamento = async () => {
@@ -401,13 +413,22 @@ export default function CarteiraPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Código de quem vai receber</label>
-                  <input
-                    type="text"
-                    value={destinoCodigo}
-                    onChange={(e) => setDestinoCodigo(e.target.value)}
-                    placeholder="Cole o código (MC-...)"
-                    className="w-full px-3 py-2 border rounded-lg font-mono text-sm"
-                  />
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={destinoCodigo}
+                      onChange={(e) => setDestinoCodigo(e.target.value)}
+                      placeholder="Cole o código (MC-...)"
+                      className="flex-1 px-3 py-2 border rounded-lg font-mono text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowScannerPagar(true)}
+                      className="shrink-0 flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium"
+                    >
+                      <QrCode className="w-4 h-4" /> Ler QR
+                    </button>
+                  </div>
                 </div>
 
                 <div>
@@ -454,6 +475,19 @@ export default function CarteiraPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {showScannerPagar && (
+        <BarcodeScanner
+          titulo="Ler QR Code de pagamento"
+          instrucaoCamera="Aponte a câmera pro QR Code de quem vai receber."
+          onDetected={(codigo) => {
+            setDestinoCodigo(codigo);
+            setShowScannerPagar(false);
+            toast.success('Código lido!');
+          }}
+          onClose={() => setShowScannerPagar(false)}
+        />
       )}
 
       {showModalCompensar && (

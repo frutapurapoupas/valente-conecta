@@ -24,9 +24,18 @@ import toast from "react-hot-toast";
 interface BarcodeScannerProps {
   onDetected: (codigo: string) => void;
   onClose: () => void;
+  titulo?: string;
+  instrucaoCamera?: string;
+  instrucaoLeitor?: string;
 }
 
-export function BarcodeScanner({ onDetected, onClose }: BarcodeScannerProps) {
+export function BarcodeScanner({
+  onDetected,
+  onClose,
+  titulo = "Escanear código de barras",
+  instrucaoCamera = "Centralize o código de barras no quadro.",
+  instrucaoLeitor = "Funciona com qualquer leitor USB ou Bluetooth configurado como teclado.",
+}: BarcodeScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const controlsRef = useRef<{ stop: () => void } | null>(null);
@@ -91,7 +100,7 @@ export function BarcodeScanner({ onDetected, onClose }: BarcodeScannerProps) {
   return (
     <div className="fixed inset-0 z-50 bg-black/90 flex flex-col">
       <div className="flex items-center justify-between p-4 text-white">
-        <p className="font-bold">Escanear código de barras</p>
+        <p className="font-bold">{titulo}</p>
         <button onClick={onClose} className="p-1">
           <X className="w-6 h-6" />
         </button>
@@ -139,7 +148,7 @@ export function BarcodeScanner({ onDetected, onClose }: BarcodeScannerProps) {
       </div>
 
       <p className="text-gray-400 text-xs text-center pb-6 px-6">
-        {modo === "camera" ? "Centralize o código de barras no quadro." : "Funciona com qualquer leitor USB ou Bluetooth configurado como teclado."}
+        {modo === "camera" ? instrucaoCamera : instrucaoLeitor}
       </p>
     </div>
   );

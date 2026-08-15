@@ -283,13 +283,13 @@ export default function HomePage() {
 
           <div className="grid grid-cols-2 gap-3">
             <button
-              onClick={() => router.push("/carteira")}
+              onClick={() => router.push("/carteira?abrir=receber")}
               className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-4 rounded-xl text-xs font-semibold shadow-sm transition-colors"
             >
               <ArrowDownLeft size={16} /> Receber
             </button>
             <button
-              onClick={() => router.push("/carteira")}
+              onClick={() => router.push("/carteira?abrir=pagar")}
               className="flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white py-2.5 px-4 rounded-xl text-xs font-semibold shadow-sm transition-colors"
             >
               <ArrowUpRight size={16} /> Pagar
