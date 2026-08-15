@@ -149,7 +149,7 @@ export async function obterMeuPerfilFornecedor(usuarioId: string): Promise<Perfi
 
 export async function salvarPerfilFornecedor(perfil: Omit<PerfilFornecedor, 'id' | 'created_at' | 'updated_at'>): Promise<PerfilFornecedor> {
   const supabase = createClient();
-  const { data, error } = await supabase.rpc('salvar_perfil_fornecedor_v2', {
+  const { data, error } = await supabase.rpc('salvar_perfil_fornecedor_v3', {
     p_usuario_id: perfil.usuario_id,
     p_nome_exibicao: perfil.nome_exibicao,
     p_telefone: perfil.telefone,
@@ -159,6 +159,9 @@ export async function salvarPerfilFornecedor(perfil: Omit<PerfilFornecedor, 'id'
     p_longitude: perfil.longitude,
     p_plano: perfil.plano,
     p_horarios: perfil.horarios,
+    p_cnpj_cpf: perfil.cnpj_cpf,
+    p_inscricao_estadual: perfil.inscricao_estadual,
+    p_regime_tributario: perfil.regime_tributario,
   });
   if (error) throw error;
   return data;

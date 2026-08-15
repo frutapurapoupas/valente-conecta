@@ -619,6 +619,7 @@ export const adminMenuFull: MenuGroup[] = [
     collapsible: true,
     items: [
       { name: "Relatório do catálogo", path: "/admin-master/pdv/relatorios", icon: Package, status: 'active' },
+      { name: "Base fiscal (NFe/NFC-e)", path: "/admin-master/pdv/fiscal", icon: FileText, status: 'active' },
     ]
   },
 

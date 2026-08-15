@@ -103,6 +103,9 @@ export interface PerfilFornecedor {
   longitude: number | null;
   plano: 'gratis' | 'profissional' | 'loja' | 'premium';
   horarios: HorarioDia[] | null;
+  cnpj_cpf: string | null;
+  inscricao_estadual: string | null;
+  regime_tributario: 'mei' | 'simples_nacional' | 'lucro_presumido' | 'lucro_real' | null;
   created_at: string;
   updated_at: string;
 }

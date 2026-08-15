@@ -281,6 +281,37 @@ function PerfilFornecedorForm({ usuarioId, onSalvo }: { usuarioId: string; onSal
         />
       </div>
       <div className="pt-2 border-t">
+        <label className="block text-sm font-medium text-gray-700 mb-1">Dados fiscais (opcional)</label>
+        <p className="text-xs text-gray-400 mb-2">
+          Guardado pra quando a emissão de nota fiscal estiver disponível — preencher agora não emite nada.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <input
+            value={perfil.cnpj_cpf || ""}
+            onChange={(e) => setPerfil((p) => ({ ...p, cnpj_cpf: e.target.value }))}
+            placeholder="CNPJ ou CPF"
+            className="px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+          />
+          <input
+            value={perfil.inscricao_estadual || ""}
+            onChange={(e) => setPerfil((p) => ({ ...p, inscricao_estadual: e.target.value }))}
+            placeholder="Inscrição estadual"
+            className="px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+          />
+          <select
+            value={perfil.regime_tributario || ""}
+            onChange={(e) => setPerfil((p) => ({ ...p, regime_tributario: (e.target.value || null) as any }))}
+            className="px-3 py-2 border rounded-lg text-sm sm:col-span-2"
+          >
+            <option value="">Regime tributário (opcional)</option>
+            <option value="mei">MEI</option>
+            <option value="simples_nacional">Simples Nacional</option>
+            <option value="lucro_presumido">Lucro Presumido</option>
+            <option value="lucro_real">Lucro Real</option>
+          </select>
+        </div>
+      </div>
+      <div className="pt-2 border-t">
         <label className="block text-sm font-medium text-gray-700 mb-1">Horário de funcionamento</label>
         <p className="text-xs text-gray-400 mb-2">
           Público — aparece pra qualquer pessoa como "Aberto agora" quando bate com o horário marcado.
