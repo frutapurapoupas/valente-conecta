@@ -7,6 +7,7 @@ import { Toaster } from 'react-hot-toast';
 import { CadastroPopupWrapper } from '@/components/CadastroPopupWrapper';
 import { BoasVindasVideoPopup } from '@/components/BoasVindasVideoPopup';
 import { QuizPerfilPopup } from '@/components/QuizPerfilPopup';
+import { InteressesPopup } from '@/components/InteressesPopup';
 import { InstallPrompt } from '@/components/InstallPrompt';
 import PushSubscriptionManager from '@/components/PushSubscriptionManager';
 import { Suspense } from 'react';
@@ -62,6 +63,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <CadastroPopupWrapper />
           <QuizPerfilPopup />
           <BoasVindasVideoPopup />
+          <InteressesPopup />
           <InstallPrompt />
           <PushSubscriptionManager />
         </AppProvider>
