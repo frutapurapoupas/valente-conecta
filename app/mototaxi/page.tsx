@@ -209,6 +209,47 @@ function buildRideMapHtml(corrida: CorridaApi, motorista: MotoristaApi | null) {
 </html>`;
 }
 
+function buildPreviewMapHtml(origem: { lat: number; lng: number }, destino: { lat: number; lng: number }) {
+  const payload = { origin: origem, destination: destino };
+
+  return `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>html, body, #map { height: 100%; margin: 0; }</style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+      const data = ${JSON.stringify(payload)};
+      const map = L.map('map', { zoomControl: true });
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
+
+      const origem = [data.origin.lat, data.origin.lng];
+      const destino = [data.destination.lat, data.destination.lng];
+
+      L.circleMarker(origem, { radius: 7, color: '#1d4ed8', fillColor: '#60a5fa', fillOpacity: 0.95, weight: 2 }).addTo(map).bindTooltip('Origem', { permanent: true, direction: 'top' });
+      L.circleMarker(destino, { radius: 7, color: '#9a3412', fillColor: '#f97316', fillOpacity: 0.95, weight: 2 }).addTo(map).bindTooltip('Destino', { permanent: true, direction: 'top' });
+
+      fetch('https://router.project-osrm.org/route/v1/driving/' + data.origin.lng + ',' + data.origin.lat + ';' + data.destination.lng + ',' + data.destination.lat + '?overview=full&geometries=geojson')
+        .then((r) => r.json())
+        .then((json) => {
+          if (json?.routes?.[0]?.geometry?.coordinates) {
+            const coords = json.routes[0].geometry.coordinates.map((p) => [p[1], p[0]]);
+            L.polyline(coords, { color: '#22d3ee', weight: 5, opacity: 0.95 }).addTo(map);
+          }
+        })
+        .catch(() => null);
+
+      map.fitBounds([origem, destino], { padding: [24, 24] });
+    </script>
+  </body>
+</html>`;
+}
+
 function getStoredUserPlan(user: any) {
   const fromContext = String(user?.plan || "").toLowerCase();
   if (fromContext) return fromContext;
@@ -267,6 +308,11 @@ export default function MotoTaxiPage() {
     if (!corridaAtiva) return "";
     return buildRideMapHtml(corridaAtiva, motoristaAtivo);
   }, [corridaAtiva, motoristaAtivo]);
+
+  const previewMapHtml = useMemo(() => {
+    if (!userPosition || !destinationPosition) return "";
+    return buildPreviewMapHtml(userPosition, destinationPosition);
+  }, [userPosition, destinationPosition]);
 
   const progresso = useMemo(() => {
     if (!corridaAtiva || corridaAtiva.motorista_lat == null || corridaAtiva.motorista_lng == null) return 0;
@@ -568,6 +614,12 @@ export default function MotoTaxiPage() {
               </button>
               {userPosition && <span className="text-cyan-300">Lat {userPosition.lat} · Lng {userPosition.lng}</span>}
             </div>
+
+            {previewMapHtml && (
+              <div className="mt-3 rounded-xl overflow-hidden border border-slate-800">
+                <iframe title="prévia do trajeto" className="w-full h-56" srcDoc={previewMapHtml} />
+              </div>
+            )}
 
             {tipoCorrida === "encomenda" && (
               <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2">
