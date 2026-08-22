@@ -3,6 +3,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createClient } from '@/lib/supabase/server';
 
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
+
 type CardapioSchema = 'cardapio' | 'cozinha_cardapio' | 'file_fallback';
 type CardapioPayload = {
   id: string;

@@ -13,6 +13,8 @@ import { createClient } from '@/lib/supabase/server';
 // fica cacheado pra sempre a partir da primeira resposta — vagas novas
 // nunca apareceriam na listagem sem reiniciar o servidor.
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
 import type { CatalogoItem } from '@/lib/catalogo/marketplaceTypes';
 
 function itemParaVaga(item: CatalogoItem) {

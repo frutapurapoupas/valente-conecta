@@ -9,6 +9,8 @@ import { createClient } from '@/lib/supabase/server';
 import { enviarPushParaUsuario } from '@/lib/push';
 
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
 
 export async function GET() {
   const supabase = createClient();

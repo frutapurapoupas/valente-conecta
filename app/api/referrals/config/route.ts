@@ -11,6 +11,8 @@ import { createClient } from '@/lib/supabase/server';
 // Sem isso, GET() sem argumentos e' tratado como estatico pelo Next.js e
 // fica cacheado pra sempre a partir da primeira resposta.
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
 
 const CHAVE = 'referral_config';
 

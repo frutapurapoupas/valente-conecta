@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
 
 const BASE_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000';
 

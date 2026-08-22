@@ -8,6 +8,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
 
 const CHAVE = 'preco_cidade_adicional';
 const DEFAULT_PRECO = 0;

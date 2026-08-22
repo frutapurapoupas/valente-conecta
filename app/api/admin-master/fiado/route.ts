@@ -8,6 +8,8 @@ import { createClient } from '@/lib/supabase/server';
 // PRIMEIRA resposta para sempre — foi a causa real de "Liberar" parecer nao
 // persistir (o PUT gravava certo, o GET seguinte servia cache antigo).
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
 
 export async function GET() {
   const supabase = createClient();
