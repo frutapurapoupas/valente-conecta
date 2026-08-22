@@ -11,10 +11,10 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import toast from "react-hot-toast";
-import { Users, Clock, CheckCircle2, XCircle, Loader2, Ticket, Bell } from "lucide-react";
+import { Users, Clock, CheckCircle2, XCircle, Loader2, Ticket, Bell, User } from "lucide-react";
 import { obterUsuarioLocalId } from "@/lib/usuarioLocal";
 
-interface Profissional { id: string; nome: string; especialidade: string | null }
+interface Profissional { id: string; nome: string; especialidade: string | null; foto_url: string | null }
 interface Agendamento {
   id: string;
   senha_fila: string;
@@ -169,17 +169,29 @@ export default function AgendaClientePage() {
       ) : (
         <div className="bg-white rounded-lg shadow p-5 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Profissional</label>
-            <select
-              value={form.profissionalId}
-              onChange={(e) => setForm((p) => ({ ...p, profissionalId: e.target.value }))}
-              className="w-full px-3 py-2 border rounded-lg"
-            >
-              <option value="">Selecione...</option>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Escolha o profissional</label>
+            <div className="grid grid-cols-2 gap-2">
               {profissionais.map((p) => (
-                <option key={p.id} value={p.id}>{p.nome}{p.especialidade ? ` — ${p.especialidade}` : ""}</option>
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setForm((prev) => ({ ...prev, profissionalId: p.id }))}
+                  className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-colors ${
+                    form.profissionalId === p.id ? "border-blue-600 bg-blue-50" : "border-gray-200 bg-white"
+                  }`}
+                >
+                  {p.foto_url ? (
+                    <img src={p.foto_url} alt={p.nome} className="w-14 h-14 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
+                      <User className="w-6 h-6 text-gray-400" />
+                    </div>
+                  )}
+                  <p className="text-sm font-medium text-gray-800 text-center leading-tight">{p.nome}</p>
+                  {p.especialidade && <p className="text-xs text-gray-500 text-center leading-tight">{p.especialidade}</p>}
+                </button>
               ))}
-            </select>
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Seu nome</label>

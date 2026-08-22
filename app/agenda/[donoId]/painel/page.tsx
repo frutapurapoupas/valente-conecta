@@ -12,10 +12,12 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import toast from "react-hot-toast";
-import { Users, Lock, Plus, PhoneCall, CheckCircle2, XCircle, Loader2, Settings, UserPlus, MessageSquare, Send } from "lucide-react";
+import { Users, Lock, Plus, PhoneCall, CheckCircle2, XCircle, Loader2, Settings, UserPlus, MessageSquare, Send, Camera, X } from "lucide-react";
 import { obterUsuarioLocalId } from "@/lib/usuarioLocal";
+import { MidiaUploader } from "@/components/catalogo/MidiaUploader";
+import type { MidiaItem } from "@/lib/catalogo/marketplaceTypes";
 
-interface Profissional { id: string; nome: string; especialidade: string | null }
+interface Profissional { id: string; nome: string; especialidade: string | null; foto_url?: string | null }
 interface Agendamento {
   id: string; senha_fila: string; cliente_nome: string; cliente_telefone: string;
   servico: string | null; status: string; created_at: string;
@@ -118,9 +120,18 @@ function SeletorFuncionario({ profissional, onEntrar }: { profissional: Profissi
   return (
     <div className="bg-white border rounded-lg p-3">
       <button onClick={() => setMostrarPin((v) => !v)} className="w-full text-left flex items-center justify-between">
-        <div>
-          <p className="font-medium">{profissional.nome}</p>
-          {profissional.especialidade && <p className="text-xs text-gray-500">{profissional.especialidade}</p>}
+        <div className="flex items-center gap-2.5">
+          {profissional.foto_url ? (
+            <img src={profissional.foto_url} alt={profissional.nome} className="w-9 h-9 rounded-full object-cover" />
+          ) : (
+            <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
+              <Camera className="w-3.5 h-3.5 text-gray-400" />
+            </div>
+          )}
+          <div>
+            <p className="font-medium">{profissional.nome}</p>
+            {profissional.especialidade && <p className="text-xs text-gray-500">{profissional.especialidade}</p>}
+          </div>
         </div>
         <Lock className="w-4 h-4 text-gray-400" />
       </button>
@@ -148,6 +159,8 @@ function FilaDoDia({ profissional, donoId, onSair, onAbrirPacientes }: { profiss
   const [fila, setFila] = useState<Agendamento[]>([]);
   const [loading, setLoading] = useState(true);
   const [avisoAbertoId, setAvisoAbertoId] = useState<string | null>(null);
+  const [fotoAtual, setFotoAtual] = useState(profissional.foto_url || "");
+  const [mostrarFotoModal, setMostrarFotoModal] = useState(false);
 
   const carregar = () => {
     fetch(`/api/agenda/agendamentos?profissionalId=${profissional.id}`)
@@ -194,9 +207,21 @@ function FilaDoDia({ profissional, donoId, onSair, onAbrirPacientes }: { profiss
   return (
     <div className="max-w-lg mx-auto p-4 sm:p-6">
       <div className="flex items-center justify-between mb-4">
-        <div>
-          <h1 className="text-xl font-bold">{profissional.nome}</h1>
-          <p className="text-sm text-gray-500">Fila de hoje</p>
+        <div className="flex items-center gap-3">
+          <button onClick={() => setMostrarFotoModal(true)} className="relative shrink-0">
+            {fotoAtual ? (
+              <img src={fotoAtual} alt={profissional.nome} className="w-11 h-11 rounded-full object-cover border" />
+            ) : (
+              <div className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center border">
+                <Camera className="w-4 h-4 text-gray-400" />
+              </div>
+            )}
+            <span className="absolute -bottom-1 -right-1 bg-blue-600 text-white rounded-full p-0.5"><Camera className="w-2.5 h-2.5" /></span>
+          </button>
+          <div>
+            <h1 className="text-xl font-bold">{profissional.nome}</h1>
+            <p className="text-sm text-gray-500">Fila de hoje</p>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <button onClick={onAbrirPacientes} className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1">
@@ -205,6 +230,15 @@ function FilaDoDia({ profissional, donoId, onSair, onAbrirPacientes }: { profiss
           <button onClick={onSair} className="text-sm text-gray-500 hover:text-gray-700">Sair</button>
         </div>
       </div>
+
+      {mostrarFotoModal && (
+        <ModalMinhaFoto
+          profissionalId={profissional.id}
+          fotoAtual={fotoAtual}
+          onSalvo={(url) => { setFotoAtual(url); setMostrarFotoModal(false); }}
+          onFechar={() => setMostrarFotoModal(false)}
+        />
+      )}
 
       {emAtendimento.length > 0 && (
         <div className="mb-4 space-y-2">
@@ -264,6 +298,52 @@ function FilaDoDia({ profissional, donoId, onSair, onAbrirPacientes }: { profiss
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function ModalMinhaFoto({ profissionalId, fotoAtual, onSalvo, onFechar }: {
+  profissionalId: string; fotoAtual: string; onSalvo: (url: string) => void; onFechar: () => void;
+}) {
+  const [midia, setMidia] = useState<MidiaItem[]>(fotoAtual ? [{ tipo: "imagem", url: fotoAtual, ordem: 0 }] : []);
+  const [salvando, setSalvando] = useState(false);
+
+  const salvar = async () => {
+    if (!midia[0]?.url) {
+      toast.error("Envie uma foto");
+      return;
+    }
+    setSalvando(true);
+    try {
+      const resp = await fetch(`/api/agenda/profissionais?id=${profissionalId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fotoUrl: midia[0].url }),
+      });
+      const resultado = await resp.json();
+      if (!resultado.success) throw new Error(resultado.error);
+      toast.success("Foto atualizada! Já aparece pros clientes na hora de escolher.");
+      onSalvo(midia[0].url);
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao salvar foto");
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl w-full max-w-sm p-5">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-bold text-lg">Minha foto</h2>
+          <button onClick={onFechar} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+        </div>
+        <p className="text-sm text-gray-500 mb-3">Essa foto aparece pro cliente na hora de escolher quem vai atender.</p>
+        <MidiaUploader midia={midia} onChange={setMidia} maximo={1} />
+        <button onClick={salvar} disabled={salvando} className="w-full mt-4 bg-blue-600 text-white py-2.5 rounded-xl font-bold disabled:opacity-60">
+          {salvando ? "Salvando..." : "Salvar foto"}
+        </button>
+      </div>
     </div>
   );
 }

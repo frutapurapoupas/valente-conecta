@@ -8,6 +8,7 @@ import {
   FileText,
   Users,
   CreditCard,
+  Sparkles,
   Bot,
   DollarSign,
   Megaphone,
@@ -33,6 +34,7 @@ import {
   Truck,
   Wrench,
   Store,
+  UserCheck,
   Home,
   Smartphone,
   Car,
@@ -133,6 +135,7 @@ export const adminMenuFull: MenuGroup[] = [
       { name: "Nome da moeda por cidade", path: "/admin-master/moeda-conecta/cidades", icon: Coins, status: 'active' },
       { name: "Compensações a fornecedores", path: "/admin-master/moeda-conecta/compensacoes", icon: Store, status: 'active' },
       { name: "Bônus por indicação por cidade", path: "/admin-master/configuracoes/bonus", icon: UserPlus, status: 'active' },
+      { name: "Plano Geral (limites e preço)", path: "/admin-master/configuracoes/plano-geral", icon: Sparkles, status: 'active' },
     ]
   },
 
@@ -267,6 +270,7 @@ export const adminMenuFull: MenuGroup[] = [
     items: [
       { name: "Gerenciar Fornecedores", path: "/admin-master/agua-gas", icon: Store },
       { name: "Pedidos Recebidos",      path: "/admin-master/agua-gas?aba=pedidos", icon: ShoppingCart },
+      { name: "Reivindicações (Sou proprietário)", path: "/admin-master/agua-gas/reivindicacoes", icon: UserCheck },
       { name: "Página Pública",         path: "/agua-gas", icon: ExternalLink },
     ]
   },
@@ -449,6 +453,8 @@ export const adminMenuFull: MenuGroup[] = [
     collapsible: true,
     items: [
       { name: "Painel completo (todos)", path: "/admin-master/saude", icon: Hospital, status: 'active' },
+      { name: "Hospitais e Clínicas (diretório grátis)", path: "/admin-master/saude/estabelecimentos", icon: Hospital, status: 'active' },
+      { name: "Reivindicações (Sou proprietário)", path: "/admin-master/saude/reivindicacoes", icon: UserCheck, status: 'active' },
       { name: "Página Pública", path: "/saude", icon: ExternalLink, status: 'active' },
       { name: "Farmácias", path: "/admin-master/saude/farmacias", icon: Hospital, status: 'construction' },
       { name: "Clínicas", path: "/admin-master/saude/clinicas", icon: Hospital, status: 'construction' },
@@ -458,6 +464,16 @@ export const adminMenuFull: MenuGroup[] = [
       { name: "Laboratórios", path: "/admin-master/saude/laboratorios", icon: Hospital, status: 'construction' },
       { name: "Fisioterapia", path: "/admin-master/saude/fisioterapia", icon: Hospital, status: 'construction' },
       { name: "Óticas", path: "/admin-master/saude/oticas", icon: Hospital, status: 'construction' },
+    ]
+  },
+
+  {
+    name: "🏪 DIRETÓRIO DE COMÉRCIOS",
+    icon: Store,
+    collapsible: true,
+    items: [
+      { name: "Importar do Google (por módulo)", path: "/admin-master/comercios/importar", icon: Store, status: 'active' },
+      { name: "Reivindicações (Sou proprietário)", path: "/admin-master/comercios/reivindicacoes", icon: UserCheck, status: 'active' },
     ]
   },
 

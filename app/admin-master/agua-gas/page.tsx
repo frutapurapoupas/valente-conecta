@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   Droplets, Flame, Search, Plus, Edit3, Trash2, CheckCircle2, EyeOff,
-  Star, RefreshCw, Phone, Package, Truck, X, MessageCircle, ShoppingBag, DollarSign
+  Star, RefreshCw, Phone, Package, Truck, X, MessageCircle, ShoppingBag, DollarSign, MapPin
 } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -47,6 +47,9 @@ export default function AdminAguaGasPage() {
   const [statusFiltro, setStatusFiltro] = useState('');
   const [editando, setEditando] = useState<Partial<Fornecedor> | null>(null);
   const [salvando, setSalvando] = useState(false);
+  const [cidades, setCidades] = useState<{ id: string; nome: string }[]>([]);
+  const [cidadeId, setCidadeId] = useState('');
+  const [importando, setImportando] = useState(false);
 
   const carregarFornecedores = useCallback(async () => {
     setLoading(true);
@@ -76,6 +79,33 @@ export default function AdminAguaGasPage() {
       setMovimentacoes(Array.isArray(data.data) ? data.data : []);
     } catch { /* silent */ }
   }, []);
+
+  useEffect(() => {
+    fetch('/api/mototaxi?recurso=cidades').then((r) => r.json()).then((res) => {
+      if (res.success) {
+        setCidades(res.data);
+        if (res.data.length > 0) setCidadeId((prev: string) => prev || res.data[0].id);
+      }
+    }).catch(() => {});
+  }, []);
+
+  const importarDoGoogle = async () => {
+    if (!cidadeId) { toast.error('Escolha uma cidade primeiro'); return; }
+    setImportando(true);
+    try {
+      const resp = await fetch('/api/admin-master/importar-google-places-agua-gas', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cidade_id: cidadeId }),
+      });
+      const resultado = await resp.json();
+      if (!resultado.success) throw new Error(resultado.error);
+      toast.success(`${resultado.novos} fornecedor(es) novo(s) importado(s) de ${resultado.encontrados} encontrado(s)`);
+      carregarFornecedores();
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao importar do Google Maps');
+    } finally {
+      setImportando(false);
+    }
+  };
 
   useEffect(() => { const t = setTimeout(carregarFornecedores, 300); return () => clearTimeout(t); }, [carregarFornecedores]);
   useEffect(() => { if (aba === 'pedidos') carregarPedidos(); }, [aba, carregarPedidos]);
@@ -148,7 +178,14 @@ export default function AdminAguaGasPage() {
             <p className="text-gray-400 text-sm">Gerencie fornecedores e pedidos</p>
           </div>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
+          <select value={cidadeId} onChange={(e) => setCidadeId(e.target.value)} className="bg-slate-900 border border-white/10 text-white rounded-xl px-3 py-2 text-sm outline-none">
+            {cidades.length === 0 && <option value="">Nenhuma cidade ativa</option>}
+            {cidades.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
+          </select>
+          <button onClick={importarDoGoogle} disabled={importando || !cidadeId} className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 px-4 py-2 rounded-xl text-sm font-semibold transition-colors">
+            <MapPin className="w-4 h-4" />{importando ? 'Buscando...' : 'Importar do Google'}
+          </button>
           <button onClick={aba === 'fornecedores' ? carregarFornecedores : carregarPedidos} className="flex items-center gap-2 bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl text-sm transition-colors">
             <RefreshCw className="w-4 h-4" />Atualizar
           </button>

@@ -12,15 +12,22 @@
 
 import { useEffect, useState, useRef } from "react";
 import toast from "react-hot-toast";
-import { UserPlus, Upload, Trash2, MessageCircle, Check, Users } from "lucide-react";
+import { UserPlus, Upload, Trash2, MessageCircle, Check, Users, MapPin } from "lucide-react";
 
 interface Contato {
   id: string;
   nome: string | null;
   telefone: string;
-  origem: "manual" | "planilha";
+  origem: "manual" | "planilha" | "google_places";
   status: "pendente" | "enviado";
   criado_em: string;
+  categoria?: string | null;
+  endereco?: string | null;
+}
+
+interface Cidade {
+  id: string;
+  nome: string;
 }
 
 const MENSAGEM_PADRAO =
@@ -37,6 +44,11 @@ export default function DivulgacaoPage() {
   const [importando, setImportando] = useState(false);
   const inputArquivoRef = useRef<HTMLInputElement>(null);
 
+  const [cidades, setCidades] = useState<Cidade[]>([]);
+  const [cidadeId, setCidadeId] = useState("");
+  const [importandoGoogle, setImportandoGoogle] = useState(false);
+  const [resumoGoogle, setResumoGoogle] = useState<string | null>(null);
+
   const carregar = async () => {
     try {
       const resp = await fetch("/api/admin-master/contatos-divulgacao");
@@ -47,9 +59,50 @@ export default function DivulgacaoPage() {
     }
   };
 
+  const carregarCidades = async () => {
+    try {
+      const resp = await fetch("/api/mototaxi?recurso=cidades");
+      const resultado = await resp.json();
+      if (resultado.success) {
+        setCidades(resultado.data);
+        if (resultado.data.length > 0) setCidadeId((prev) => prev || resultado.data[0].id);
+      }
+    } catch {
+      // silencioso — o seletor so fica vazio, importacao do Google exige escolher cidade
+    }
+  };
+
   useEffect(() => {
     carregar();
+    carregarCidades();
   }, []);
+
+  const importarDoGoogle = async () => {
+    if (!cidadeId) {
+      toast.error("Escolha uma cidade primeiro");
+      return;
+    }
+    setImportandoGoogle(true);
+    setResumoGoogle(null);
+    try {
+      const resp = await fetch("/api/admin-master/importar-google-places", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cidade_id: cidadeId }),
+      });
+      const resultado = await resp.json();
+      if (!resultado.success) throw new Error(resultado.error);
+      setResumoGoogle(
+        `${resultado.encontrados} comércio(s) encontrado(s), ${resultado.comTelefone} com telefone, ${resultado.novos} novo(s) adicionado(s) à lista.`
+      );
+      toast.success(`${resultado.novos} contato(s) novo(s) importado(s)`);
+      carregar();
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao importar do Google Maps");
+    } finally {
+      setImportandoGoogle(false);
+    }
+  };
 
   const adicionarManual = async () => {
     const telefoneLimpo = telefone.replace(/\D/g, "");
@@ -177,6 +230,36 @@ export default function DivulgacaoPage() {
         </div>
       </div>
 
+      <div className="bg-white border rounded-lg p-5 mb-4 space-y-3">
+        <p className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+          <MapPin className="w-4 h-4 text-gray-400" /> Importar comércios do Google Maps
+        </p>
+        <p className="text-xs text-gray-400">
+          Busca nome, categoria, endereço e telefone dos comércios cadastrados no Google Maps dentro da
+          cidade escolhida, e adiciona à lista abaixo (sem duplicar quem já está aqui).
+        </p>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <select
+            value={cidadeId}
+            onChange={(e) => setCidadeId(e.target.value)}
+            className="flex-1 px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 bg-white"
+          >
+            {cidades.length === 0 && <option value="">Nenhuma cidade ativa</option>}
+            {cidades.map((c) => (
+              <option key={c.id} value={c.id}>{c.nome}</option>
+            ))}
+          </select>
+          <button
+            onClick={importarDoGoogle}
+            disabled={importandoGoogle || !cidadeId}
+            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white rounded-lg text-sm font-medium whitespace-nowrap"
+          >
+            {importandoGoogle ? "Buscando..." : "Importar do Google Maps"}
+          </button>
+        </div>
+        {resumoGoogle && <p className="text-xs text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2">{resumoGoogle}</p>}
+      </div>
+
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-1 text-sm">
           <Users className="w-4 h-4 text-gray-400" />
@@ -207,7 +290,12 @@ export default function DivulgacaoPage() {
             <div key={c.id} className="flex items-center justify-between gap-2 p-3">
               <div className="min-w-0">
                 <p className="text-sm font-medium text-gray-800 truncate">{c.nome || "(sem nome)"}</p>
-                <p className="text-xs text-gray-400">{c.telefone} · {c.origem === "planilha" ? "planilha" : "manual"}</p>
+                <p className="text-xs text-gray-400 truncate">
+                  {c.telefone} ·{" "}
+                  {c.origem === "planilha" ? "planilha" : c.origem === "google_places" ? "Google Maps" : "manual"}
+                  {c.categoria ? ` · ${c.categoria}` : ""}
+                </p>
+                {c.endereco && <p className="text-xs text-gray-300 truncate">{c.endereco}</p>}
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 {c.status === "enviado" && (

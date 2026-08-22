@@ -334,43 +334,69 @@ export default function QRCodePage() {
         </div>
 
         <div className="bg-white/5 rounded-2xl p-4">
-          <p className="text-white font-bold mb-3">WhatsApps indicados e validados</p>
+          <p className="text-white font-bold mb-1">WhatsApps indicados e validados</p>
+          <p className="text-gray-500 text-xs mb-3">
+            Cada indicado conta pro seu bônus enquanto o teste grátis dele (2 dias após se cadastrar pelo seu link) ainda estiver ativo.
+          </p>
           <div className="space-y-2 max-h-56 overflow-auto">
             {indicadosUsuarios.length === 0 ? (
               <p className="text-gray-500 text-sm">Nenhum usuário indicado ainda.</p>
             ) : (
-              indicadosUsuarios.map((item) => (
-                <div key={item.id} className="bg-white/5 rounded-xl px-3 py-2 flex items-center justify-between gap-2 text-sm">
-                  <div>
-                    <p className="text-white font-medium">{item.nome}</p>
-                    <p className="text-gray-400 text-xs">{item.whatsapp || 'WhatsApp não informado'}</p>
+              indicadosUsuarios.map((item) => {
+                const validado = Boolean(item.trial_end_at && new Date(item.trial_end_at) > new Date());
+                return (
+                  <div key={item.id} className="bg-white/5 rounded-xl px-3 py-2 text-sm">
+                    <div className="flex items-center justify-between gap-2">
+                      <div>
+                        <p className="text-white font-medium">{item.nome}</p>
+                        <p className="text-gray-400 text-xs">{item.whatsapp || 'WhatsApp não informado'}</p>
+                      </div>
+                      <span className={`text-xs font-semibold shrink-0 ${validado ? 'text-green-400' : 'text-yellow-400'}`}>
+                        {validado ? 'Validado' : 'Pendente'}
+                      </span>
+                    </div>
+                    <p className={`text-xs mt-1 ${validado ? 'text-green-300/70' : 'text-yellow-300/70'}`}>
+                      {validado
+                        ? `Já conta pro seu bônus — teste dele vence em ${new Date(item.trial_end_at).toLocaleDateString('pt-BR')}.`
+                        : item.trial_end_at
+                          ? `Teste grátis venceu em ${new Date(item.trial_end_at).toLocaleDateString('pt-BR')} sem virar assinante — essa indicação não conta mais pro seu bônus.`
+                          : 'Ainda sem data de teste registrada.'}
+                    </p>
                   </div>
-                  <span className={`text-xs font-semibold ${item.trial_end_at && new Date(item.trial_end_at) > new Date() ? 'text-green-400' : 'text-yellow-400'}`}>
-                    {item.trial_end_at && new Date(item.trial_end_at) > new Date() ? 'Validado' : 'Pendente'}
-                  </span>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>
 
         <div className="bg-white/5 rounded-2xl p-4">
-          <p className="text-white font-bold mb-3">Lojas e profissionais indicados</p>
+          <p className="text-white font-bold mb-1">Lojas e profissionais indicados</p>
+          <p className="text-gray-500 text-xs mb-3">Conta pro seu bônus quando o admin master aprova o cadastro do estabelecimento indicado.</p>
           <div className="space-y-2 max-h-64 overflow-auto">
             {[...indicadosEmpresas, ...indicadosProfissionais].length === 0 ? (
               <p className="text-gray-500 text-sm">Nenhuma empresa, loja ou profissional indicado ainda.</p>
             ) : (
-              [...indicadosEmpresas, ...indicadosProfissionais].map((item: any) => (
-                <div key={item.id} className="bg-white/5 rounded-xl px-3 py-2 flex items-center justify-between gap-2 text-sm">
-                  <div>
-                    <p className="text-white font-medium">{item.nome_estabelecimento || item.nome}</p>
-                    <p className="text-gray-400 text-xs">{item.telefone || 'Telefone não informado'} • {item.tipo === 'comercio' ? 'Loja/Empresa' : 'Profissional liberal'}</p>
+              [...indicadosEmpresas, ...indicadosProfissionais].map((item: any) => {
+                const validado = item.status === 'aprovado' || item.status === 'pago';
+                return (
+                  <div key={item.id} className="bg-white/5 rounded-xl px-3 py-2 text-sm">
+                    <div className="flex items-center justify-between gap-2">
+                      <div>
+                        <p className="text-white font-medium">{item.nome_estabelecimento || item.nome}</p>
+                        <p className="text-gray-400 text-xs">{item.telefone || 'Telefone não informado'} • {item.tipo === 'comercio' ? 'Loja/Empresa' : 'Profissional liberal'}</p>
+                      </div>
+                      <span className={`text-xs font-semibold shrink-0 ${validado ? 'text-green-400' : 'text-yellow-400'}`}>
+                        {validado ? 'Validado' : 'Pendente'}
+                      </span>
+                    </div>
+                    <p className={`text-xs mt-1 ${validado ? 'text-green-300/70' : 'text-yellow-300/70'}`}>
+                      {validado
+                        ? 'Já conta pro seu bônus.'
+                        : 'Avise seu indicado que precisa aprovar/completar o cadastro do estabelecimento pra essa indicação começar a contar.'}
+                    </p>
                   </div>
-                  <span className={`text-xs font-semibold ${item.status === 'aprovado' || item.status === 'pago' ? 'text-green-400' : 'text-yellow-400'}`}>
-                    {item.status === 'aprovado' || item.status === 'pago' ? 'Validado' : 'Pendente'}
-                  </span>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>

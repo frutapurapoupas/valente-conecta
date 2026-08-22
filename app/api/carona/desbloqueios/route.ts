@@ -8,6 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { verificarECConsumirPlanoGeral } from '@/lib/planoGeral';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,6 +56,33 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
     if (existente?.status === 'pago') {
       return NextResponse.json({ success: true, data: existente, precisaPagamento: false });
+    }
+
+    // Plano Geral cobre o desbloqueio (decisao confirmada com o dono do
+    // projeto — ver 055_plano_geral.sql): se o usuario ainda tem cota no
+    // nivel dele, libera na hora, sem cobrar a taxa avulsa.
+    const cota = await verificarECConsumirPlanoGeral(body.usuarioId, 'carona_desbloqueio');
+    if (cota.permitido) {
+      let desbloqueioPlano = existente;
+      if (!desbloqueioPlano) {
+        const { data, error } = await supabase
+          .from('carona_desbloqueios')
+          .insert({ viagem_id: body.viagemId, usuario_id: body.usuarioId, valor: 0, status: 'pago' })
+          .select('*')
+          .single();
+        if (error) throw error;
+        desbloqueioPlano = data;
+      } else {
+        const { data, error } = await supabase
+          .from('carona_desbloqueios')
+          .update({ status: 'pago', updated_at: new Date().toISOString() })
+          .eq('id', desbloqueioPlano.id)
+          .select('*')
+          .single();
+        if (error) throw error;
+        desbloqueioPlano = data;
+      }
+      return NextResponse.json({ success: true, data: desbloqueioPlano, precisaPagamento: false, cobertoPeloPlano: true });
     }
 
     const { data: configData } = await supabase.from('admin_configuracoes').select('valor').eq('chave', 'carona_config').maybeSingle();

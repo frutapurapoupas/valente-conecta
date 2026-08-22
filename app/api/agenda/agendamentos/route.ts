@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { enviarPushParaUsuario } from '@/lib/push';
+import { verificarECConsumirPlanoGeral } from '@/lib/planoGeral';
 
 export const dynamic = 'force-dynamic';
 
@@ -90,6 +91,18 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           { success: false, error: 'Este estabelecimento exige cadastro presencial antes do agendamento virtual. Procure a recepção para se cadastrar.' },
           { status: 403 }
+        );
+      }
+    }
+
+    // Limite mensal de entradas na fila do Plano Geral (055_plano_geral.sql)
+    // — so' checa quando o cliente veio identificado (fluxo normal da tela).
+    if (body.clienteId) {
+      const cota = await verificarECConsumirPlanoGeral(body.clienteId, 'fila_hospital');
+      if (!cota.permitido) {
+        return NextResponse.json(
+          { success: false, limiteAtingido: true, tier: cota.tier, error: 'Você atingiu seu limite mensal de entradas em fila pro seu plano.' },
+          { status: 402 }
         );
       }
     }

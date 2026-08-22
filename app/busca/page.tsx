@@ -125,16 +125,21 @@ export default function BuscaPage() {
     }
     // cidade_base existe na tabela usuarios mas nao esta no tipo Usuario
     // (campo adicionado depois, tipo nao foi atualizado).
-    const cidade = (getCurrentUser() as any)?.cidade_base || undefined;
+    const usuario = getCurrentUser();
+    const cidade = (usuario as any)?.cidade_base || undefined;
     setBuscandoExterno(true);
-    const params = new URLSearchParams({ q: termo });
+    const params = new URLSearchParams({ q: termo, usuarioId: usuario?.id || obterUsuarioLocalId() });
     if (cidade) params.set("cidade", cidade);
+    if (localizacao) {
+      params.set("lat", String(localizacao.lat));
+      params.set("lng", String(localizacao.lng));
+    }
     fetch(`/api/busca-externa?${params.toString()}`)
       .then((r) => r.json())
       .then((res) => setResultadosExternos(res.success ? res.data : []))
       .catch(() => setResultadosExternos([]))
       .finally(() => setBuscandoExterno(false));
-  }, [loading, resultados.length, termo]);
+  }, [loading, resultados.length, termo, localizacao]);
 
   const registrarDemanda = async () => {
     if (!isUserLoggedIn()) {

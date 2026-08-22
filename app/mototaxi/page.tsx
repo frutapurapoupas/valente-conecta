@@ -10,6 +10,8 @@ import { useApp } from "@/app/context/AppContext";
 import { Bike, CreditCard, Package, ShieldCheck, Star, User, X } from "lucide-react";
 import toast from "react-hot-toast";
 import CampoEnderecoAutocomplete from "./_components/CampoEnderecoAutocomplete";
+import { getCurrentUser } from "@/lib/auth";
+import { obterUsuarioLocalId } from "@/lib/usuarioLocal";
 
 export const dynamic = "force-dynamic";
 
@@ -484,10 +486,16 @@ export default function MotoTaxiPage() {
         return;
       }
 
+      const perfilReal = getCurrentUser();
       const payload = {
         recurso: "corridas",
-        passageiro_id: user?.id ? String(user.id) : null,
-        passageiro_nome: user?.nome || "Passageiro",
+        // useApp().user nunca fica preenchido hoje (login real ainda nao
+        // existe — ver AppContext.tsx), entao cai pro cadastro simples
+        // (lib/auth.ts) e, na falta desse tambem, pro id anonimo do
+        // dispositivo — assim o limite do Plano Geral sempre tem alguem pra
+        // contar, mesmo sem cadastro completo.
+        passageiro_id: user?.id ? String(user.id) : perfilReal?.id || obterUsuarioLocalId(),
+        passageiro_nome: user?.nome || perfilReal?.nome || "Passageiro",
         passageiro_plano: passengerPlan,
         cidade_id: cidadeAtiva?.id || null,
         tipo: tipoCorrida || "passageiro",

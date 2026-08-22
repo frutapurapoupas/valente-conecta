@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Droplets, Flame, Phone, MapPin, Clock, Star, ShoppingCart, X,
-  MessageCircle, ChevronRight, Truck, Package, CheckCircle, Store
+  MessageCircle, ChevronRight, Truck, Package, CheckCircle, Store, Navigation
 } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 import { obterUsuarioLocalId } from '@/lib/usuarioLocal';
+import { getCurrentUser } from '@/lib/auth';
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 interface Produto {
@@ -19,11 +20,13 @@ interface Produto {
 
 interface Fornecedor {
   id: string;
+  donoId: string | null;
   nome: string;
   responsavel: string;
   telefone: string;
   whatsapp: string;
   bairro: string;
+  endereco: string;
   cidade: string;
   descricao: string;
   foto: string;
@@ -34,7 +37,22 @@ interface Fornecedor {
   produtos: Produto[];
   status: string;
   destaque: boolean;
+  latitude: number | null;
+  longitude: number | null;
+  aceitaDinheiro: boolean;
+  aceitaCartao: boolean;
+  aceitaPix: boolean;
+  aceitaValeGas: boolean;
+  aceitaFiado: boolean;
 }
+
+const FORMAS_PAGAMENTO_CLIENTE: { chave: keyof Pick<Fornecedor, 'aceitaDinheiro' | 'aceitaCartao' | 'aceitaPix' | 'aceitaValeGas' | 'aceitaFiado'>; label: string }[] = [
+  { chave: 'aceitaDinheiro', label: 'Dinheiro' },
+  { chave: 'aceitaCartao', label: 'Cartão' },
+  { chave: 'aceitaPix', label: 'PIX' },
+  { chave: 'aceitaValeGas', label: 'Vale-Gás' },
+  { chave: 'aceitaFiado', label: 'Fiado' },
+];
 
 // ─── Configuração de tipos ────────────────────────────────────────────────────
 const TIPO_CONFIG: Record<string, { label: string; icon: typeof Droplets; cor: string; bg: string }> = {
@@ -46,6 +64,19 @@ const TIPO_CONFIG: Record<string, { label: string; icon: typeof Droplets; cor: s
   gas_granel:    { label: 'Gás Granel',      icon: Flame,    cor: 'text-rose-400',   bg: 'bg-rose-500/20'   },
   outro:         { label: 'Outros',          icon: Package,  cor: 'text-gray-400',   bg: 'bg-gray-500/20'   },
 };
+
+const CATEGORIAS: Record<'agua' | 'gas', { label: string; tipos: string[] }> = {
+  agua: { label: 'Água', tipos: ['agua_garrafao', 'agua_mineral'] },
+  gas: { label: 'Gás', tipos: ['gas_p13', 'gas_p20', 'gas_p45', 'gas_granel'] },
+};
+
+function distanciaKm(lat1: number, lng1: number, lat2: number, lng2: number) {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
 const FILTROS = [
   { id: '',              label: 'Todos'       },
@@ -75,7 +106,7 @@ function BadgeProduto({ p }: { p: Produto }) {
 }
 
 // ─── Card de fornecedor ───────────────────────────────────────────────────────
-function CardFornecedor({ forn, onPedir }: { forn: Fornecedor; onPedir: (f: Fornecedor) => void }) {
+function CardFornecedor({ forn, onPedir, onReivindicar, distanciaKm: distancia }: { forn: Fornecedor; onPedir: (f: Fornecedor) => void; onReivindicar: (f: Fornecedor) => void; distanciaKm?: number | null }) {
   const produtosVisiveis = forn.produtos?.filter((p) => p.disponivel !== false).slice(0, 4) || [];
 
   return (
@@ -116,15 +147,35 @@ function CardFornecedor({ forn, onPedir }: { forn: Fornecedor; onPedir: (f: Forn
                 </span>
               )}
             </div>
+            {(forn.aceitaValeGas || forn.aceitaFiado || forn.aceitaPix || forn.aceitaCartao) && (
+              <div className="flex flex-wrap gap-1.5 mt-1.5">
+                {FORMAS_PAGAMENTO_CLIENTE.filter((f) => forn[f.chave]).map((f) => (
+                  <span key={f.chave} className="text-[11px] bg-white/5 text-gray-300 border border-white/10 px-2 py-0.5 rounded-full">
+                    {f.label}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
         {/* Info */}
         <div className="mt-3 space-y-1 text-sm text-gray-400">
-          {(forn.bairro || forn.cidade) && (
+          {forn.endereco && (
+            <div className="flex items-start gap-1.5">
+              <MapPin className="w-4 h-4 shrink-0 mt-0.5" />
+              <span>{forn.endereco}</span>
+            </div>
+          )}
+          {(forn.bairro || (!forn.endereco && forn.cidade) || distancia != null) && (
             <div className="flex items-center gap-1.5">
-              <MapPin className="w-4 h-4 shrink-0" />
-              {[forn.bairro, forn.cidade].filter(Boolean).join(' – ')}
+              {!forn.endereco && <MapPin className="w-4 h-4 shrink-0" />}
+              {[forn.bairro, !forn.endereco ? forn.cidade : ''].filter(Boolean).join(' – ')}
+              {distancia != null && (
+                <span className="text-cyan-400 font-medium">
+                  {[forn.bairro, forn.cidade].some(Boolean) ? ' · ' : ''}{distancia < 1 ? `${Math.round(distancia * 1000)} m` : `${distancia.toFixed(1)} km`}
+                </span>
+              )}
             </div>
           )}
           {forn.horario && (
@@ -164,6 +215,15 @@ function CardFornecedor({ forn, onPedir }: { forn: Fornecedor; onPedir: (f: Forn
             <ShoppingCart className="w-4 h-4" />Pedir
           </button>
         </div>
+
+        {!forn.donoId && (
+          <button
+            onClick={() => onReivindicar(forn)}
+            className="mt-2 w-full flex items-center justify-center gap-1.5 border border-amber-500/30 text-amber-400 hover:bg-amber-500/10 rounded-xl py-2 text-sm font-semibold"
+          >
+            <Store className="w-4 h-4" />Sou proprietário
+          </button>
+        )}
       </div>
     </div>
   );
@@ -172,9 +232,22 @@ function CardFornecedor({ forn, onPedir }: { forn: Fornecedor; onPedir: (f: Forn
 // ─── Modal de pedido ──────────────────────────────────────────────────────────
 function ModalPedido({ forn, onClose }: { forn: Fornecedor; onClose: () => void }) {
   const produtosDisponiveis = forn.produtos?.filter((p) => p.disponivel !== false) || [];
-  const [form, setForm] = useState({ clienteNome: '', clienteTelefone: '', produto: '', quantidade: '1', endereco: '', observacoes: '' });
+  const formasAceitas = FORMAS_PAGAMENTO_CLIENTE.filter((f) => forn[f.chave]);
+  const [form, setForm] = useState({ clienteNome: '', clienteTelefone: '', produto: '', quantidade: '1', endereco: '', observacoes: '', formaPagamento: '' });
   const [enviando, setEnviando] = useState(false);
+  const [pedidoCriadoId, setPedidoCriadoId] = useState('');
   const set = (k: string, v: string) => setForm((prev) => ({ ...prev, [k]: v }));
+
+  // Se o cliente já se cadastrou no app (CadastroPopup/lib/auth), reaproveita
+  // nome e WhatsApp dele — não faz sentido pedir de novo o que já sabemos.
+  // Sem cadastro salvo, cai pro formulário completo (fallback abaixo).
+  const perfil = typeof window !== 'undefined' ? getCurrentUser() : null;
+  const perfilCompleto = Boolean(perfil?.nome && perfil?.whatsapp);
+  useEffect(() => {
+    if (perfilCompleto && perfil) {
+      setForm((prev) => ({ ...prev, clienteNome: perfil.nome, clienteTelefone: perfil.whatsapp }));
+    }
+  }, [perfilCompleto]); // eslint-disable-line
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -193,6 +266,7 @@ function ModalPedido({ forn, onClose }: { forn: Fornecedor; onClose: () => void 
       if (!data.success) throw new Error(data.error);
 
       toast.success('Pedido enviado! O fornecedor entrará em contato.');
+      setPedidoCriadoId(data.data.id);
 
       // WhatsApp direto
       if (forn.whatsapp) {
@@ -201,17 +275,36 @@ function ModalPedido({ forn, onClose }: { forn: Fornecedor; onClose: () => void 
           `Produto: ${form.produto}\n` +
           `Quantidade: ${form.quantidade}\n` +
           (form.endereco ? `Endereço: ${form.endereco}\n` : '') +
+          (form.formaPagamento ? `Pagamento: ${form.formaPagamento}\n` : '') +
           (form.observacoes ? `Obs: ${form.observacoes}` : '')
         );
         window.open(`https://wa.me/55${forn.whatsapp.replace(/\D/g, '')}?text=${msg}`, '_blank');
       }
-      onClose();
     } catch (err: any) {
       toast.error(err.message || 'Erro ao enviar pedido.');
     } finally {
       setEnviando(false);
     }
   };
+
+  if (pedidoCriadoId) {
+    return (
+      <div className="fixed inset-0 z-50 bg-black/70 flex items-end sm:items-center justify-center p-4">
+        <div className="bg-slate-900 border border-white/10 rounded-2xl w-full max-w-md p-6 text-center">
+          <CheckCircle className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
+          <h2 className="text-white font-bold text-lg mb-1">Pedido enviado!</h2>
+          <p className="text-gray-400 text-sm mb-5">{forn.nome} vai confirmar seu pedido em breve.</p>
+          <a
+            href={`/agua-gas/pedido/${pedidoCriadoId}`}
+            className="block w-full bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-3 text-sm font-semibold mb-2"
+          >
+            Acompanhar meu pedido
+          </a>
+          <button onClick={onClose} className="w-full text-gray-400 text-sm py-2">Fechar</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 flex items-end sm:items-center justify-center p-4">
@@ -225,19 +318,27 @@ function ModalPedido({ forn, onClose }: { forn: Fornecedor; onClose: () => void 
         </div>
 
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          <div>
-            <label className="text-sm text-gray-400">Seu nome *</label>
-            <input value={form.clienteNome} onChange={(e) => set('clienteNome', e.target.value)}
-              className="w-full mt-1 bg-slate-800 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400"
-              placeholder="Nome completo" />
-          </div>
+          {perfilCompleto ? (
+            <p className="text-sm text-gray-400">
+              Pedindo como <span className="text-white font-medium">{form.clienteNome}</span> · {form.clienteTelefone}
+            </p>
+          ) : (
+            <>
+              <div>
+                <label className="text-sm text-gray-400">Seu nome *</label>
+                <input value={form.clienteNome} onChange={(e) => set('clienteNome', e.target.value)}
+                  className="w-full mt-1 bg-slate-800 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400"
+                  placeholder="Nome completo" />
+              </div>
 
-          <div>
-            <label className="text-sm text-gray-400">WhatsApp / Telefone *</label>
-            <input value={form.clienteTelefone} onChange={(e) => set('clienteTelefone', e.target.value)}
-              className="w-full mt-1 bg-slate-800 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400"
-              placeholder="(75) 99999-0000" />
-          </div>
+              <div>
+                <label className="text-sm text-gray-400">WhatsApp / Telefone *</label>
+                <input value={form.clienteTelefone} onChange={(e) => set('clienteTelefone', e.target.value)}
+                  className="w-full mt-1 bg-slate-800 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400"
+                  placeholder="(75) 99999-0000" />
+              </div>
+            </>
+          )}
 
           <div>
             <label className="text-sm text-gray-400">Produto *</label>
@@ -259,26 +360,44 @@ function ModalPedido({ forn, onClose }: { forn: Fornecedor; onClose: () => void 
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className={perfilCompleto ? '' : 'grid grid-cols-2 gap-3'}>
             <div>
               <label className="text-sm text-gray-400">Quantidade</label>
               <input type="number" min="1" value={form.quantidade} onChange={(e) => set('quantidade', e.target.value)}
                 className="w-full mt-1 bg-slate-800 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400" />
             </div>
-            <div>
-              <label className="text-sm text-gray-400">Endereço de entrega</label>
-              <input value={form.endereco} onChange={(e) => set('endereco', e.target.value)}
-                className="w-full mt-1 bg-slate-800 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400"
-                placeholder="Rua, número..." />
-            </div>
+            {!perfilCompleto && (
+              <div>
+                <label className="text-sm text-gray-400">Endereço de entrega</label>
+                <input value={form.endereco} onChange={(e) => set('endereco', e.target.value)}
+                  className="w-full mt-1 bg-slate-800 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400"
+                  placeholder="Rua, número..." />
+              </div>
+            )}
           </div>
+          {perfilCompleto && (
+            <p className="text-xs text-gray-500">O fornecedor vai combinar o endereço de entrega direto pelo telefone.</p>
+          )}
 
-          <div>
-            <label className="text-sm text-gray-400">Observações</label>
-            <textarea value={form.observacoes} onChange={(e) => set('observacoes', e.target.value)} rows={2}
-              className="w-full mt-1 bg-slate-800 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 resize-none"
-              placeholder="Ponto de referência, horário preferido..." />
-          </div>
+          {formasAceitas.length > 0 && (
+            <div>
+              <label className="text-sm text-gray-400">Forma de pagamento</label>
+              <select value={form.formaPagamento} onChange={(e) => set('formaPagamento', e.target.value)}
+                className="w-full mt-1 bg-slate-800 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400">
+                <option value="">Selecione...</option>
+                {formasAceitas.map((f) => <option key={f.chave} value={f.label}>{f.label}</option>)}
+              </select>
+            </div>
+          )}
+
+          {!perfilCompleto && (
+            <div>
+              <label className="text-sm text-gray-400">Observações</label>
+              <textarea value={form.observacoes} onChange={(e) => set('observacoes', e.target.value)} rows={2}
+                className="w-full mt-1 bg-slate-800 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 resize-none"
+                placeholder="Ponto de referência, horário preferido..." />
+            </div>
+          )}
 
           <button type="submit" disabled={enviando}
             className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2">
@@ -294,13 +413,170 @@ function ModalPedido({ forn, onClose }: { forn: Fornecedor; onClose: () => void 
   );
 }
 
+// ─── Modal "Sou proprietário" ─────────────────────────────────────────────────
+function ModalReivindicarAguaGas({ forn, onFechar, onEnviado }: {
+  forn: Fornecedor; onFechar: () => void; onEnviado: () => void;
+}) {
+  const perfil = getCurrentUser();
+  const [form, setForm] = useState({
+    nomeProprietario: perfil?.nome || '',
+    whatsappProprietario: perfil?.whatsapp || '',
+    nome: forn.nome,
+    responsavel: forn.responsavel,
+    telefone: forn.telefone,
+    whatsapp: forn.whatsapp || forn.telefone,
+    endereco: forn.endereco,
+    horario: forn.horario,
+  });
+  const [enviando, setEnviando] = useState(false);
+  const [enviado, setEnviado] = useState<{ auto: boolean } | null>(null);
+  const set = (k: string, v: string) => setForm((p) => ({ ...p, [k]: v }));
+
+  const enviar = async () => {
+    if (!form.nomeProprietario.trim() || !form.whatsappProprietario.trim()) {
+      toast.error('Preencha seu nome e WhatsApp — precisamos saber quem está reivindicando o fornecedor.');
+      return;
+    }
+    if (!form.nome.trim() || !form.telefone.trim()) {
+      toast.error('Preencha nome e telefone da empresa');
+      return;
+    }
+    if (!form.horario.trim()) {
+      toast.error('Confirme o horário de funcionamento');
+      return;
+    }
+    setEnviando(true);
+    try {
+      const usuarioId = perfil?.id || obterUsuarioLocalId();
+      const resp = await fetch('/api/agua-gas/reivindicar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fornecedorId: forn.id,
+          usuarioId,
+          nomeSolicitante: form.nomeProprietario,
+          telefoneSolicitante: form.whatsappProprietario,
+          dadosNovos: form,
+        }),
+      });
+      const resultado = await resp.json();
+      if (!resultado.success) throw new Error(resultado.error);
+      setEnviado({ auto: Boolean(resultado.aprovadaAutomaticamente) });
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao enviar solicitação');
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  if (enviado) {
+    return (
+      <div className="fixed inset-0 z-50 bg-black/70 flex items-end sm:items-center justify-center p-4">
+        <div className="bg-slate-900 border border-white/10 rounded-2xl w-full max-w-sm p-6 text-center">
+          <CheckCircle className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
+          <h2 className="text-white font-bold text-lg mb-1">{enviado.auto ? 'Cadastro atualizado!' : 'Solicitação enviada!'}</h2>
+          <p className="text-gray-400 text-sm mb-5">
+            {enviado.auto
+              ? 'Agora complete com produtos, preços e foto no seu painel de fornecedor.'
+              : 'Nossa equipe vai revisar e liberar em breve. Depois de aprovado, complete com produtos, preços e foto no seu painel de fornecedor.'}
+          </p>
+          {enviado.auto && (
+            <a href="/agua-gas/fornecedor" className="block w-full bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-3 text-sm font-semibold mb-2">
+              Completar meu cadastro
+            </a>
+          )}
+          <button onClick={() => { setEnviado(null); onEnviado(); }} className="w-full text-gray-400 text-sm py-2">Fechar</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/70 flex items-end sm:items-center justify-center p-4">
+      <div className="bg-slate-900 border border-white/10 rounded-2xl w-full max-w-md max-h-[85dvh] flex flex-col overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 shrink-0">
+          <h2 className="text-white font-bold text-lg">Sou proprietário</h2>
+          <button onClick={onFechar} className="text-gray-400 hover:text-white"><X className="w-5 h-5" /></button>
+        </div>
+
+        <div className="overflow-y-auto flex-1 px-5 py-4 space-y-3">
+          <p className="text-sm text-gray-400">Confirme e atualize os dados do seu fornecedor. Sua solicitação passa por uma revisão antes de valer.</p>
+
+          <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3 space-y-3">
+            <p className="text-xs font-semibold text-blue-400">Quem está reivindicando</p>
+            <div>
+              <label className="text-sm text-gray-400">Seu nome (proprietário) *</label>
+              <input value={form.nomeProprietario} onChange={(e) => set('nomeProprietario', e.target.value)} className="w-full mt-1 bg-slate-800 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400" />
+            </div>
+            <div>
+              <label className="text-sm text-gray-400">Seu WhatsApp *</label>
+              <input value={form.whatsappProprietario} onChange={(e) => set('whatsappProprietario', e.target.value)} className="w-full mt-1 bg-slate-800 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400" />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-sm text-gray-400">Nome da empresa *</label>
+            <input value={form.nome} onChange={(e) => set('nome', e.target.value)} className="w-full mt-1 bg-slate-800 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400" />
+          </div>
+          <div>
+            <label className="text-sm text-gray-400">Responsável</label>
+            <input value={form.responsavel} onChange={(e) => set('responsavel', e.target.value)} className="w-full mt-1 bg-slate-800 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400" />
+          </div>
+          <div>
+            <label className="text-sm text-gray-400">Telefone *</label>
+            <input value={form.telefone} onChange={(e) => set('telefone', e.target.value)} className="w-full mt-1 bg-slate-800 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400" />
+          </div>
+          <div>
+            <label className="text-sm text-gray-400">WhatsApp</label>
+            <input value={form.whatsapp} onChange={(e) => set('whatsapp', e.target.value)} className="w-full mt-1 bg-slate-800 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400" />
+          </div>
+          <div>
+            <label className="text-sm text-gray-400">Endereço</label>
+            <input value={form.endereco} onChange={(e) => set('endereco', e.target.value)} className="w-full mt-1 bg-slate-800 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400" />
+          </div>
+          <div>
+            <label className="text-sm text-gray-400">Horário de funcionamento *</label>
+            <textarea value={form.horario} onChange={(e) => set('horario', e.target.value)} rows={2} className="w-full mt-1 bg-slate-800 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 resize-none" />
+          </div>
+        </div>
+
+        <div className="px-5 py-4 border-t border-white/10 shrink-0">
+          <button onClick={enviar} disabled={enviando} className="w-full bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-xl font-bold disabled:opacity-60">
+            {enviando ? 'Enviando...' : 'Enviar solicitação'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Página pública ───────────────────────────────────────────────────────────
 export default function AguaGasPage() {
   const [fornecedores, setFornecedores] = useState<Fornecedor[]>([]);
   const [primeiraVez, setPrimeiraVez] = useState(true);
   const [atualizando, setAtualizando] = useState(false);
   const [tipoFiltro, setTipoFiltro] = useState('');
+  const [categoria, setCategoria] = useState<'agua' | 'gas' | null>(null);
   const [modalForn, setModalForn] = useState<Fornecedor | null>(null);
+  const [fornReivindicar, setFornReivindicar] = useState<Fornecedor | null>(null);
+  const [recarregarChave, setRecarregarChave] = useState(0);
+  const [userPosition, setUserPosition] = useState<{ lat: number; lng: number } | null>(null);
+  const [buscandoLocalizacao, setBuscandoLocalizacao] = useState(false);
+
+  const escolherCategoria = (cat: 'agua' | 'gas') => {
+    setCategoria(cat);
+    setTipoFiltro('');
+    if (!navigator.geolocation) return;
+    setBuscandoLocalizacao(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setBuscandoLocalizacao(false);
+      },
+      () => setBuscandoLocalizacao(false),
+      { enableHighAccuracy: true, maximumAge: 30000 }
+    );
+  };
 
   useEffect(() => {
     const controller = new AbortController();
@@ -317,9 +593,29 @@ export default function AguaGasPage() {
       } finally { setAtualizando(false); setPrimeiraVez(false); }
     }, 300);
     return () => { clearTimeout(t); controller.abort(); };
-  }, [tipoFiltro]); // eslint-disable-line
+  }, [tipoFiltro, recarregarChave]); // eslint-disable-line
 
-  const ordenados = [...fornecedores.filter((f) => f.destaque), ...fornecedores.filter((f) => !f.destaque)];
+  const doCategoria = categoria
+    ? fornecedores.filter((f) => f.produtos?.some((p) => CATEGORIAS[categoria].tipos.includes(p.tipo)))
+    : fornecedores;
+
+  const comDistancia = useMemo(() => {
+    return doCategoria.map((f) => ({
+      forn: f,
+      distancia: userPosition && f.latitude != null && f.longitude != null
+        ? distanciaKm(userPosition.lat, userPosition.lng, f.latitude, f.longitude)
+        : null,
+    }));
+  }, [doCategoria, userPosition]);
+
+  const ordenados = categoria && userPosition
+    ? [...comDistancia].sort((a, b) => {
+        if (a.distancia == null && b.distancia == null) return 0;
+        if (a.distancia == null) return 1;
+        if (b.distancia == null) return -1;
+        return a.distancia - b.distancia;
+      })
+    : [...comDistancia.filter((c) => c.forn.destaque), ...comDistancia.filter((c) => !c.forn.destaque)];
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
@@ -346,9 +642,41 @@ export default function AguaGasPage() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* Escolha rápida: 2 botões */}
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <button
+            onClick={() => escolherCategoria('agua')}
+            className={`flex flex-col items-center justify-center gap-2 rounded-2xl py-6 border transition-colors ${
+              categoria === 'agua' ? 'bg-blue-600 border-blue-400' : 'bg-slate-900 border-white/10 hover:border-blue-500/40'
+            }`}
+          >
+            <Droplets className={`w-8 h-8 ${categoria === 'agua' ? 'text-white' : 'text-blue-400'}`} />
+            <span className="font-bold text-white">Água</span>
+          </button>
+          <button
+            onClick={() => escolherCategoria('gas')}
+            className={`flex flex-col items-center justify-center gap-2 rounded-2xl py-6 border transition-colors ${
+              categoria === 'gas' ? 'bg-orange-600 border-orange-400' : 'bg-slate-900 border-white/10 hover:border-orange-500/40'
+            }`}
+          >
+            <Flame className={`w-8 h-8 ${categoria === 'gas' ? 'text-white' : 'text-orange-400'}`} />
+            <span className="font-bold text-white">Gás</span>
+          </button>
+        </div>
+
+        {categoria && (
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm text-gray-400 flex items-center gap-1.5">
+              <Navigation className="w-3.5 h-3.5" />
+              {buscandoLocalizacao ? 'Localizando você...' : userPosition ? 'Ordenado por proximidade' : 'Localização indisponível — ordem padrão'}
+            </p>
+            <button onClick={() => setCategoria(null)} className="text-xs text-gray-500 hover:text-gray-300 underline">Ver tudo</button>
+          </div>
+        )}
+
         {/* Filtros */}
         <div className="flex gap-2 overflow-x-auto pb-2" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-x' }}>
-          {FILTROS.map((f) => (
+          {(categoria ? FILTROS.filter((f) => !f.id || CATEGORIAS[categoria].tipos.includes(f.id)) : FILTROS).map((f) => (
             <button
               key={f.id}
               onClick={() => setTipoFiltro(f.id)}
@@ -382,7 +710,7 @@ export default function AguaGasPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {ordenados.map((f) => <CardFornecedor key={f.id} forn={f} onPedir={setModalForn} />)}
+            {ordenados.map(({ forn, distancia }) => <CardFornecedor key={forn.id} forn={forn} onPedir={setModalForn} onReivindicar={setFornReivindicar} distanciaKm={distancia} />)}
           </div>
         )}
 
@@ -398,6 +726,13 @@ export default function AguaGasPage() {
       </div>
 
       {modalForn && <ModalPedido forn={modalForn} onClose={() => setModalForn(null)} />}
+      {fornReivindicar && (
+        <ModalReivindicarAguaGas
+          forn={fornReivindicar}
+          onFechar={() => setFornReivindicar(null)}
+          onEnviado={() => { setFornReivindicar(null); setRecarregarChave((k) => k + 1); }}
+        />
+      )}
     </div>
   );
 }

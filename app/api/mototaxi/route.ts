@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { verificarECConsumirPlanoGeral } from '@/lib/planoGeral';
 
 function validarMotoristaPayload(payload: any) {
   const obrigatorios = ['nome', 'telefone', 'veiculo', 'placa', 'cnh_numero', 'licenciamento_vencimento', 'foto_url', 'veiculo_foto_url', 'cnh_foto_url'];
@@ -236,6 +237,16 @@ export async function POST(request: NextRequest) {
       for (const campo of obrigatorios) {
         if (body?.[campo] === undefined || body?.[campo] === null || body?.[campo] === '') {
           return NextResponse.json({ success: false, error: `Campo obrigatorio: ${campo}` }, { status: 400 });
+        }
+      }
+
+      if (body.passageiro_id) {
+        const cota = await verificarECConsumirPlanoGeral(body.passageiro_id, 'mototaxi');
+        if (!cota.permitido) {
+          return NextResponse.json(
+            { success: false, limiteAtingido: true, tier: cota.tier, error: 'Você atingiu seu limite mensal de corridas/encomendas pro seu plano.' },
+            { status: 402 }
+          );
         }
       }
 

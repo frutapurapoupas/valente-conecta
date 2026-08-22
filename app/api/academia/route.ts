@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { enviarPushParaAluno } from '@/lib/push';
+import { verificarECConsumirPlanoGeral } from '@/lib/planoGeral';
 
 export async function GET(request: NextRequest) {
   try {
@@ -273,6 +274,17 @@ export async function POST(request: NextRequest) {
 
     if (recurso === 'checkins') {
       if (!body?.aluno_id) return NextResponse.json({ success: false, error: 'aluno_id obrigatorio' }, { status: 400 });
+
+      // Limite mensal de check-ins do Plano Geral (055_plano_geral.sql) —
+      // usa o aluno_id como identidade quando nao ha' user_id vinculado.
+      const cota = await verificarECConsumirPlanoGeral(body.user_id || body.aluno_id, 'academia');
+      if (!cota.permitido) {
+        return NextResponse.json(
+          { success: false, limiteAtingido: true, tier: cota.tier, error: 'Você atingiu seu limite mensal de check-ins pro seu plano.' },
+          { status: 402 }
+        );
+      }
+
       const { data, error } = await supabase
         .from('academia_checkins')
         .insert([{ aluno_id: body.aluno_id, qr_code: body.qr_code || null, checkin_time: new Date().toISOString() }])

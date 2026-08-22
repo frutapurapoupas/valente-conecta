@@ -24,8 +24,22 @@ export async function GET(request: NextRequest) {
   const cidadeOrigem = searchParams.get('cidadeOrigem');
   const cidadeDestino = searchParams.get('cidadeDestino');
   const motoristaId = searchParams.get('motoristaId');
+  const id = searchParams.get('id');
 
   const supabase = createClient();
+
+  // Busca uma viagem especifica por id, independente do status — usada pelo
+  // passageiro pra acompanhar o proprio pedido aceito, mesmo antes da
+  // viagem aparecer na vitrine publica (taxa do motorista ainda nao paga).
+  if (id) {
+    const { data, error } = await supabase
+      .from('carona_viagens')
+      .select('*, motorista:carona_motoristas(id, nome, foto_url, veiculo_foto_url, veiculo, placa)')
+      .eq('id', id)
+      .maybeSingle();
+    if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: true, data });
+  }
   // NUNCA inclui telefone aqui — a listagem publica e' de graca, o contato
   // so' pode ser lido depois que o desbloqueio daquela viagem foi pago (ver
   // GET /api/carona/desbloqueios). Se telefone entrasse nessa resposta,
@@ -57,6 +71,9 @@ export async function POST(request: NextRequest) {
     for (const campo of obrigatorios) {
       if (!body?.[campo]) return NextResponse.json({ success: false, error: `Campo obrigatório: ${campo}` }, { status: 400 });
     }
+    if (!body.precoSugeridoVaga || Number(body.precoSugeridoVaga) <= 0) {
+      return NextResponse.json({ success: false, error: 'Informe o valor da passagem por vaga.' }, { status: 400 });
+    }
 
     const supabase = createClient();
     const taxa = await taxaMotoristaAtual(supabase);
@@ -78,6 +95,17 @@ export async function POST(request: NextRequest) {
       .select('*')
       .single();
     if (error) throw error;
+
+    // Aceite de um pedido de passageiro (carona_solicitacoes, ver
+    // 060_carona_solicitacoes.sql) — marca como atendida e liga a' viagem
+    // criada, independente de pagamento ja' ter sido confirmado ou nao: o
+    // "aceite" e' o motorista se comprometer a fazer a viagem.
+    if (body.solicitacaoId) {
+      await supabase
+        .from('carona_solicitacoes')
+        .update({ status: 'atendida', viagem_id: viagem.id, atendida_em: new Date().toISOString() })
+        .eq('id', body.solicitacaoId);
+    }
 
     // Taxa zerada (admin desligou): publica direto, sem cobranca.
     if (taxa <= 0) {

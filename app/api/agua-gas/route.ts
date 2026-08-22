@@ -9,15 +9,18 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { verificarECConsumirPlanoGeral } from '@/lib/planoGeral';
 
 function fornecedorParaApi(f: any) {
   return {
     id: f.id,
+    donoId: f.dono_id || null,
     nome: f.nome,
     responsavel: f.responsavel || '',
     telefone: f.telefone,
     whatsapp: f.whatsapp || f.telefone,
     bairro: f.bairro || '',
+    endereco: f.endereco || '',
     cidade: f.cidade || 'Valente',
     descricao: f.descricao || '',
     foto: f.foto || '',
@@ -28,6 +31,13 @@ function fornecedorParaApi(f: any) {
     produtos: f.produtos || [],
     status: f.status,
     destaque: f.destaque,
+    latitude: f.latitude,
+    longitude: f.longitude,
+    aceitaDinheiro: f.aceita_dinheiro ?? true,
+    aceitaCartao: f.aceita_cartao ?? false,
+    aceitaPix: f.aceita_pix ?? false,
+    aceitaValeGas: f.aceita_vale_gas ?? false,
+    aceitaFiado: f.aceita_fiado ?? false,
     createdAt: f.created_at,
     updatedAt: f.updated_at,
   };
@@ -45,9 +55,27 @@ function pedidoParaApi(p: any) {
     valorTotal: p.valor_total,
     endereco: p.endereco || '',
     observacoes: p.observacoes || '',
+    formaPagamento: p.forma_pagamento || '',
+    entregadorId: p.entregador_id || null,
     status: p.status,
     createdAt: p.created_at,
     updatedAt: p.updated_at,
+  };
+}
+
+function entregadorParaApi(e: any) {
+  return {
+    id: e.id,
+    fornecedorId: e.fornecedor_id,
+    nome: e.nome,
+    telefone: e.telefone,
+    fotoUrl: e.foto_url || '',
+    veiculo: e.veiculo || '',
+    ativo: e.ativo,
+    latitude: e.latitude,
+    longitude: e.longitude,
+    createdAt: e.created_at,
+    updatedAt: e.updated_at,
   };
 }
 
@@ -85,21 +113,50 @@ export async function GET(request: NextRequest) {
 
   if (recurso === 'pedidos') {
     const fornecedorId = searchParams.get('fornecedorId');
+    const id = searchParams.get('id');
     let query = supabase.from('agua_gas_pedidos').select('*').order('created_at', { ascending: false });
     if (fornecedorId) query = query.eq('fornecedor_id', fornecedorId);
+    if (id) query = query.eq('id', id);
     const { data, error } = await query;
     if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+
+    // Pedido unico (tela de rastreio do cliente): anexa dados do entregador
+    // designado, incluindo a localizacao ao vivo pro mapa.
+    if (id) {
+      const pedido = (data || [])[0];
+      if (!pedido) return NextResponse.json({ success: false, error: 'Pedido não encontrado.' }, { status: 404 });
+      let entregador: ReturnType<typeof entregadorParaApi> | null = null;
+      if (pedido.entregador_id) {
+        const { data: e } = await supabase.from('agua_gas_entregadores').select('*').eq('id', pedido.entregador_id).maybeSingle();
+        if (e) entregador = entregadorParaApi(e);
+      }
+      return NextResponse.json({ success: true, data: { ...pedidoParaApi(pedido), entregador } });
+    }
+
     return NextResponse.json({ success: true, data: (data || []).map(pedidoParaApi) });
+  }
+
+  if (recurso === 'entregadores') {
+    const fornecedorId = searchParams.get('fornecedorId');
+    const id = searchParams.get('id');
+    let query = supabase.from('agua_gas_entregadores').select('*').order('created_at', { ascending: false });
+    if (fornecedorId) query = query.eq('fornecedor_id', fornecedorId);
+    if (id) query = query.eq('id', id);
+    const { data, error } = await query;
+    if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: true, data: (data || []).map(entregadorParaApi) });
   }
 
   const status = searchParams.get('status');
   const tipo = searchParams.get('tipo');
   const busca = (searchParams.get('busca') || '').toLowerCase();
   const donoId = searchParams.get('donoId');
+  const fornecedorId = searchParams.get('id');
 
   let query = supabase.from('agua_gas_fornecedores').select('*').order('created_at', { ascending: false });
   if (status) query = query.eq('status', status);
   if (donoId) query = query.eq('dono_id', donoId);
+  if (fornecedorId) query = query.eq('id', fornecedorId);
   const { data, error } = await query;
   if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
 
@@ -121,9 +178,38 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const supabase = createClient();
 
+  if (recurso === 'entregadores') {
+    if (!body.fornecedorId || !body.nome?.trim() || !body.telefone?.trim()) {
+      return NextResponse.json({ success: false, error: 'fornecedorId, nome e telefone são obrigatórios.' }, { status: 400 });
+    }
+    const { data, error } = await supabase
+      .from('agua_gas_entregadores')
+      .insert({
+        fornecedor_id: body.fornecedorId,
+        nome: String(body.nome).trim(),
+        telefone: String(body.telefone).trim(),
+        foto_url: String(body.fotoUrl || '').trim(),
+        veiculo: String(body.veiculo || '').trim(),
+      })
+      .select('*')
+      .single();
+    if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: true, data: entregadorParaApi(data) });
+  }
+
   if (recurso === 'pedidos') {
     if (!body.fornecedorId || !body.clienteNome?.trim() || !body.clienteTelefone?.trim() || !body.produto?.trim()) {
       return NextResponse.json({ success: false, error: 'fornecedorId, clienteNome, clienteTelefone e produto são obrigatórios.' }, { status: 400 });
+    }
+
+    if (body.clienteId) {
+      const cota = await verificarECConsumirPlanoGeral(body.clienteId, 'agua_gas');
+      if (!cota.permitido) {
+        return NextResponse.json(
+          { success: false, limiteAtingido: true, tier: cota.tier, error: 'Você atingiu seu limite mensal de pedidos de água/gás pro seu plano.' },
+          { status: 402 }
+        );
+      }
     }
 
     const quantidade = Number(body.quantidade || 1);
@@ -147,6 +233,7 @@ export async function POST(request: NextRequest) {
         valor_total: valorTotal,
         endereco: String(body.endereco || '').trim(),
         observacoes: String(body.observacoes || '').trim(),
+        forma_pagamento: String(body.formaPagamento || '').trim(),
       })
       .select('*')
       .single();
@@ -166,6 +253,7 @@ export async function POST(request: NextRequest) {
       telefone: String(body.telefone).trim(),
       whatsapp: String(body.whatsapp || body.telefone).trim(),
       bairro: String(body.bairro || '').trim(),
+      endereco: String(body.endereco || '').trim(),
       cidade: String(body.cidade || 'Valente').trim(),
       descricao: String(body.descricao || '').trim(),
       foto: String(body.foto || '').trim(),
@@ -174,6 +262,13 @@ export async function POST(request: NextRequest) {
       taxa_entrega: Number(body.taxaEntrega || 0),
       frete_gratis_acima: Number(body.freteGratisAcima || 0),
       produtos: Array.isArray(body.produtos) ? body.produtos : [],
+      latitude: body.latitude ?? null,
+      longitude: body.longitude ?? null,
+      aceita_dinheiro: Boolean(body.aceitaDinheiro ?? true),
+      aceita_cartao: Boolean(body.aceitaCartao ?? false),
+      aceita_pix: Boolean(body.aceitaPix ?? false),
+      aceita_vale_gas: Boolean(body.aceitaValeGas ?? false),
+      aceita_fiado: Boolean(body.aceitaFiado ?? false),
     })
     .select('*')
     .single();
@@ -189,10 +284,26 @@ export async function PUT(request: NextRequest) {
   const body = await request.json();
   const supabase = createClient();
 
+  if (recurso === 'entregadores') {
+    const patch: Record<string, any> = { updated_at: new Date().toISOString() };
+    if (body.nome !== undefined) patch.nome = body.nome;
+    if (body.telefone !== undefined) patch.telefone = body.telefone;
+    if (body.fotoUrl !== undefined) patch.foto_url = body.fotoUrl;
+    if (body.veiculo !== undefined) patch.veiculo = body.veiculo;
+    if (body.ativo !== undefined) patch.ativo = body.ativo;
+    if (body.latitude !== undefined) patch.latitude = body.latitude;
+    if (body.longitude !== undefined) patch.longitude = body.longitude;
+
+    const { data, error } = await supabase.from('agua_gas_entregadores').update(patch).eq('id', id).select('*').single();
+    if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: true, data: entregadorParaApi(data) });
+  }
+
   if (recurso === 'pedidos') {
     const patch: Record<string, any> = { updated_at: new Date().toISOString() };
     if (body.status !== undefined) patch.status = body.status;
     if (body.observacoes !== undefined) patch.observacoes = body.observacoes;
+    if (body.entregadorId !== undefined) patch.entregador_id = body.entregadorId;
 
     const { data: anterior } = await supabase.from('agua_gas_pedidos').select('*').eq('id', id).maybeSingle();
     if (!anterior) return NextResponse.json({ success: false, error: 'Registro não encontrado.' }, { status: 404 });
@@ -226,10 +337,18 @@ export async function PUT(request: NextRequest) {
   if (body.telefone !== undefined) patch.telefone = body.telefone;
   if (body.whatsapp !== undefined) patch.whatsapp = body.whatsapp;
   if (body.bairro !== undefined) patch.bairro = body.bairro;
+  if (body.endereco !== undefined) patch.endereco = body.endereco;
   if (body.horario !== undefined) patch.horario = body.horario;
   if (body.temEntrega !== undefined) patch.tem_entrega = body.temEntrega;
   if (body.taxaEntrega !== undefined) patch.taxa_entrega = body.taxaEntrega;
   if (body.produtos !== undefined) patch.produtos = body.produtos;
+  if (body.latitude !== undefined) patch.latitude = body.latitude;
+  if (body.longitude !== undefined) patch.longitude = body.longitude;
+  if (body.aceitaDinheiro !== undefined) patch.aceita_dinheiro = body.aceitaDinheiro;
+  if (body.aceitaCartao !== undefined) patch.aceita_cartao = body.aceitaCartao;
+  if (body.aceitaPix !== undefined) patch.aceita_pix = body.aceitaPix;
+  if (body.aceitaValeGas !== undefined) patch.aceita_vale_gas = body.aceitaValeGas;
+  if (body.aceitaFiado !== undefined) patch.aceita_fiado = body.aceitaFiado;
 
   const { data, error } = await supabase.from('agua_gas_fornecedores').update(patch).eq('id', id).select('*').single();
   if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
@@ -243,7 +362,7 @@ export async function DELETE(request: NextRequest) {
   if (!id) return NextResponse.json({ success: false, error: 'ID não informado.' }, { status: 400 });
   const supabase = createClient();
 
-  const tabela = recurso === 'pedidos' ? 'agua_gas_pedidos' : 'agua_gas_fornecedores';
+  const tabela = recurso === 'pedidos' ? 'agua_gas_pedidos' : recurso === 'entregadores' ? 'agua_gas_entregadores' : 'agua_gas_fornecedores';
   const { error } = await supabase.from(tabela).delete().eq('id', id);
   if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });

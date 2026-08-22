@@ -6,6 +6,7 @@
 // separacao Design/Logica exigida pelo MASTER_SPEC, secao 2.
 
 import { createClient } from '@/lib/supabase/server';
+import { calcularDistanciaMetros } from '@/utils/geo';
 import type {
   CatalogoItem,
   NovoCatalogoItem,
@@ -15,6 +16,103 @@ import type {
   PerfilFornecedor,
   HorarioDia,
 } from './marketplaceTypes';
+
+function distanciaKm(lat: number | null, lng: number | null, latUsuario?: number, lngUsuario?: number): number | null {
+  if (lat == null || lng == null || latUsuario == null || lngUsuario == null) return null;
+  return calcularDistanciaMetros(latUsuario, lngUsuario, lat, lng) / 1000;
+}
+
+// Busca nos diretorios gratuitos (056/053/014) que a busca inteligente da
+// home nunca alcancava — so' consultava catalogo_itens (o marketplace pago,
+// quase vazio hoje). Sem RPC dedicada: sao 3 tabelas com schema bem
+// diferente, mais simples mapear cada uma pro formato ResultadoVitrine aqui
+// do que forcar todas num RPC generico so' pra isso.
+export async function buscarDiretoriosLivres(filtros: FiltrosBusca): Promise<ResultadoVitrine[]> {
+  const supabase = createClient();
+  const termo = filtros.termo?.trim();
+  if (!termo) return [];
+  const padrao = `%${termo}%`;
+
+  const [comercios, saude, aguaGas] = await Promise.all([
+    supabase
+      .from('comercios_diretorio')
+      .select('id, modulo, categoria, nome, endereco, foto, latitude, longitude')
+      .eq('status', 'publicado')
+      .or(`nome.ilike.${padrao},categoria.ilike.${padrao}`)
+      .limit(15),
+    supabase
+      .from('saude_estabelecimentos')
+      .select('id, tipo, nome, endereco, foto, latitude, longitude')
+      .eq('status', 'publicado')
+      .or(`nome.ilike.${padrao},tipo.ilike.${padrao}`)
+      .limit(15),
+    supabase
+      .from('agua_gas_fornecedores')
+      .select('id, nome, bairro, endereco, foto, latitude, longitude')
+      .eq('status', 'publicado')
+      .or(`nome.ilike.${padrao},responsavel.ilike.${padrao}`)
+      .limit(15),
+  ]);
+
+  const resultados: ResultadoVitrine[] = [];
+
+  for (const c of comercios.data || []) {
+    if (filtros.modulo && filtros.modulo !== c.modulo) continue;
+    resultados.push({
+      id: c.id,
+      modulo: c.modulo,
+      categoria: c.categoria,
+      titulo: c.nome,
+      descricao_publica: c.endereco,
+      preco: null,
+      midia: c.foto ? [{ tipo: 'imagem', url: c.foto, thumb_url: c.foto, ordem: 0 }] : [],
+      distancia_km: distanciaKm(c.latitude, c.longitude, filtros.latUsuario, filtros.lngUsuario),
+      interesses_recentes: 0,
+      menor_preco_categoria: false,
+      destaque_posicao: null,
+      metadata: { link_externo: `/${c.modulo}?busca=${encodeURIComponent(c.nome)}` },
+    });
+  }
+
+  for (const e of saude.data || []) {
+    if (filtros.modulo && filtros.modulo !== 'saude') continue;
+    resultados.push({
+      id: e.id,
+      modulo: 'saude',
+      categoria: e.tipo,
+      titulo: e.nome,
+      descricao_publica: e.endereco,
+      preco: null,
+      midia: e.foto ? [{ tipo: 'imagem', url: e.foto, thumb_url: e.foto, ordem: 0 }] : [],
+      distancia_km: distanciaKm(e.latitude, e.longitude, filtros.latUsuario, filtros.lngUsuario),
+      interesses_recentes: 0,
+      menor_preco_categoria: false,
+      destaque_posicao: null,
+      metadata: { link_externo: `/saude?busca=${encodeURIComponent(e.nome)}` },
+    });
+  }
+
+  for (const f of aguaGas.data || []) {
+    if (filtros.modulo && filtros.modulo !== 'agua-gas') continue;
+    resultados.push({
+      id: f.id,
+      modulo: 'agua-gas',
+      categoria: 'Água e Gás',
+      titulo: f.nome,
+      descricao_publica: f.endereco || f.bairro,
+      preco: null,
+      midia: f.foto ? [{ tipo: 'imagem', url: f.foto, thumb_url: f.foto, ordem: 0 }] : [],
+      distancia_km: distanciaKm(f.latitude, f.longitude, filtros.latUsuario, filtros.lngUsuario),
+      interesses_recentes: 0,
+      menor_preco_categoria: false,
+      destaque_posicao: null,
+      metadata: { link_externo: '/agua-gas' },
+    });
+  }
+
+  resultados.sort((a, b) => (a.distancia_km ?? Infinity) - (b.distancia_km ?? Infinity));
+  return resultados;
+}
 
 export async function listarItens(modulo?: string, donoId?: string): Promise<CatalogoItem[]> {
   const supabase = createClient();

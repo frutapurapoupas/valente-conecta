@@ -78,6 +78,47 @@ async function processWebhookPlano(assinaturaId: string, payment: any) {
 	return NextResponse.json({ success: true, assinaturaId, status: statusPedido });
 }
 
+// Usuario pagou a assinatura do Plano Geral (basico/ilimitado) — confirma
+// e ativa o nivel dele por 30 dias a partir de agora (ver 055_plano_geral.sql).
+async function processWebhookPlanoGeral(assinaturaId: string, payment: any) {
+	const supabase = createClient();
+	const statusPagamento = normalizeStatus(String(payment?.status || ''));
+
+	const { data: assinatura, error } = await supabase
+		.from('plano_geral_assinaturas')
+		.select('*')
+		.eq('id', assinaturaId)
+		.maybeSingle();
+	if (error || !assinatura) {
+		return NextResponse.json({ success: true, ignored: true, reason: 'assinatura nao encontrada' });
+	}
+
+	if (statusPagamento === 'pago') {
+		const validoAte = new Date();
+		validoAte.setDate(validoAte.getDate() + 30);
+
+		await supabase.from('plano_geral_assinaturas').update({
+			status: 'pago',
+			mp_payment_id: String(payment?.id || ''),
+			valido_ate: validoAte.toISOString(),
+			updated_at: new Date().toISOString(),
+		}).eq('id', assinaturaId);
+
+		await supabase.from('usuarios').update({
+			plano_geral: assinatura.tier,
+			plano_geral_valido_ate: validoAte.toISOString(),
+		}).eq('id', assinatura.usuario_id);
+	} else if (statusPagamento === 'cancelado') {
+		await supabase.from('plano_geral_assinaturas').update({
+			status: 'cancelado',
+			mp_payment_id: String(payment?.id || ''),
+			updated_at: new Date().toISOString(),
+		}).eq('id', assinaturaId);
+	}
+
+	return NextResponse.json({ success: true, assinaturaId, status: statusPagamento });
+}
+
 // Motorista pagou a taxa pra ter a viagem de Carona Solidaria exibida na
 // vitrine — confirma o pagamento e publica a viagem.
 async function processWebhookCaronaListagem(viagemId: string, payment: any) {
@@ -160,6 +201,11 @@ async function processWebhook(request: NextRequest, payload: any) {
 			return NextResponse.json({ success: true, ignored: true, reason: 'external_reference ausente' });
 		}
 
+		// Checa o prefixo mais especifico ("plano_geral_") ANTES do mais curto
+		// ("plano_") — senao "plano_geral_XXX" ia cair sempre no primeiro if.
+		if (pedidoId.startsWith('plano_geral_')) {
+			return processWebhookPlanoGeral(pedidoId.replace('plano_geral_', ''), payment);
+		}
 		if (pedidoId.startsWith('plano_')) {
 			return processWebhookPlano(pedidoId.replace('plano_', ''), payment);
 		}
