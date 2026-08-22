@@ -1,40 +1,73 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Bell, X, Package } from 'lucide-react';
-import { toast } from 'react-hot-toast';
+import { obterUsuarioLocalId } from '@/lib/usuarioLocal';
 
 interface Notificacao {
-  id: number;
+  id: string;
   titulo: string;
   mensagem: string;
-  produtoId: string;
+  link: string | null;
   lida: boolean;
-  data: string;
+  created_at: string;
+}
+
+// Beep curto sintetizado via Web Audio API — sem depender de arquivo de audio.
+function tocarBipNotificacao() {
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    const ctx = new AudioCtx();
+    const oscillator = ctx.createOscillator();
+    const gain = ctx.createGain();
+    oscillator.connect(gain);
+    gain.connect(ctx.destination);
+    oscillator.type = 'sine';
+    oscillator.frequency.value = 880;
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+    oscillator.start();
+    oscillator.stop(ctx.currentTime + 0.25);
+    oscillator.onended = () => ctx.close();
+  } catch {
+    // navegador sem suporte a Web Audio — segue sem som
+  }
 }
 
 export default function NotificacaoSininho() {
+  const [usuarioId, setUsuarioId] = useState('');
   const [notificacoes, setNotificacoes] = useState<Notificacao[]>([]);
   const [mostrarMenu, setMostrarMenu] = useState(false);
   const [naoLidas, setNaoLidas] = useState(0);
+  const naoLidasAnteriorRef = useRef(0);
 
   useEffect(() => {
+    setUsuarioId(obterUsuarioLocalId());
+  }, []);
+
+  useEffect(() => {
+    if (!usuarioId) return;
+
     carregarNotificacoes();
-    
+
     // Verificar notificações a cada 30 segundos
     const interval = setInterval(carregarNotificacoes, 30000);
-    
+
     return () => clearInterval(interval);
-  }, []);
+  }, [usuarioId]);
 
   const carregarNotificacoes = async () => {
     try {
-      const response = await fetch('/api/notificacoes');
+      const response = await fetch(`/api/notificacoes?usuarioId=${usuarioId}`);
       const data = await response.json();
-      
+
       if (data.success) {
         setNotificacoes(data.notificacoes);
         const naoLidasCount = data.notificacoes.filter((n: Notificacao) => !n.lida).length;
+        if (naoLidasCount > naoLidasAnteriorRef.current) {
+          tocarBipNotificacao();
+        }
+        naoLidasAnteriorRef.current = naoLidasCount;
         setNaoLidas(naoLidasCount);
       }
     } catch (error) {
@@ -42,7 +75,7 @@ export default function NotificacaoSininho() {
     }
   };
 
-  const marcarComoLida = async (id: number) => {
+  const marcarComoLida = async (id: string) => {
     try {
       await fetch(`/api/notificacoes?id=${id}`, { method: 'PUT' });
       carregarNotificacoes();
@@ -54,10 +87,9 @@ export default function NotificacaoSininho() {
   const handleNotificacaoClick = (notificacao: Notificacao) => {
     marcarComoLida(notificacao.id);
     setMostrarMenu(false);
-    
-    // Redirecionar para o produto encontrado
-    if (notificacao.produtoId) {
-      window.location.href = `/catalogo/produto/${notificacao.produtoId}`;
+
+    if (notificacao.link) {
+      window.location.href = notificacao.link;
     }
   };
 
@@ -109,7 +141,7 @@ export default function NotificacaoSininho() {
                       <p className="text-sm font-medium text-gray-800">{notificacao.titulo}</p>
                       <p className="text-xs text-gray-500 mt-1">{notificacao.mensagem}</p>
                       <p className="text-xs text-gray-400 mt-1">
-                        {new Date(notificacao.data).toLocaleDateString('pt-BR')}
+                        {new Date(notificacao.created_at).toLocaleDateString('pt-BR')}
                       </p>
                     </div>
                     {!notificacao.lida && (

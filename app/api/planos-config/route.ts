@@ -208,6 +208,8 @@ async function readConfig() {
 // Sem isso, GET() sem argumentos e' tratado como estatico pelo Next.js e
 // fica cacheado pra sempre a partir da primeira resposta.
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
 
 export async function GET() {
   try {

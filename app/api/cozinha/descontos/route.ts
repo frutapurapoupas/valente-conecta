@@ -12,6 +12,8 @@ import { createClient } from '@/lib/supabase/server';
 import { DESCONTO_ASSINANTE, DESCONTO_REVENDEDOR, MINIMO_PORCOES_ASSINANTE } from '@/constants/cozinhaConstants';
 
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
 
 const CHAVE = 'cozinha_descontos';
 

@@ -11,6 +11,8 @@ import { createClient } from '@/lib/supabase/server';
 import * as XLSX from 'xlsx';
 
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
 
 const TAMANHO_MAX_ARQUIVO = 4 * 1024 * 1024; // limite de corpo de requisicao da Vercel (~4.5MB)
 const MAX_LINHAS_PLANILHA = 5000;

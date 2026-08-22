@@ -10,6 +10,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
 
 const CHAVE = 'carona_config';
 const defaultConfig = { taxaMotorista: 10, taxaPassageiro: 5, updatedAt: new Date().toISOString() };
