@@ -30,7 +30,7 @@ export async function buscarFotoPorEan(ean: string): Promise<FotoEncontrada | nu
 
   const { data: existente } = await supabase
     .from('pdv_produtos_catalogo')
-    .select('foto_url')
+    .select('id, foto_url')
     .eq('ean', ean)
     .maybeSingle();
   if (existente?.foto_url) {
@@ -54,23 +54,40 @@ export async function buscarFotoPorEan(ean: string): Promise<FotoEncontrada | nu
     const url = await baixarConverterESubir(produto.thumbnail, ean);
     if (!url) return null;
 
-    await supabase.from('pdv_produtos_catalogo').upsert(
-      {
-        ean,
-        sku: `KDB-${ean}`,
-        nome: produto.nome || `Produto ${ean}`,
-        segmento: 'geral',
-        foto_url: url,
-        criado_por: null,
-      },
-      { onConflict: 'ean', ignoreDuplicates: true }
-    );
+    await gravarNoCatalogoInterno(existente?.id ?? null, ean, produto.nome, url);
 
     return { url, origem: 'kodebar' };
   } catch (error) {
     console.error('Erro ao consultar Kodebar:', error);
     return null;
   }
+}
+
+// pdv_produtos_catalogo.ean tem indice unico PARCIAL (so' quando nao-nulo,
+// ver 038_pdv_catalogo_colaborativo.sql) — Postgres nao aceita ON CONFLICT
+// contra indice parcial pela API do PostgREST, entao aqui e' select-depois-
+// decide em vez de upsert (mesmo padrao ja usado em app/api/pdv/catalogo/route.ts).
+async function gravarNoCatalogoInterno(idExistente: string | null, ean: string, nome: string | undefined, fotoUrl: string): Promise<void> {
+  const supabase = createClient();
+
+  if (idExistente) {
+    const { error } = await supabase.from('pdv_produtos_catalogo').update({ foto_url: fotoUrl }).eq('id', idExistente);
+    if (error) console.error('Erro ao atualizar foto no catálogo interno:', error);
+    return;
+  }
+
+  const { error } = await supabase.from('pdv_produtos_catalogo').insert({
+    ean,
+    sku: `KDB-${ean}`,
+    nome: nome || `Produto ${ean}`,
+    segmento: 'geral',
+    foto_url: fotoUrl,
+    criado_por: null,
+  });
+  // 23505 = unique_violation (corrida com outra importacao cadastrando o
+  // mesmo EAN entre o select e este insert) — a foto ja foi aplicada no
+  // item que estamos publicando de qualquer jeito, nao vale travar por isso.
+  if (error && (error as any).code !== '23505') console.error('Erro ao gravar produto novo no catálogo interno:', error);
 }
 
 async function baixarConverterESubir(urlOrigem: string, ean: string): Promise<string | null> {
