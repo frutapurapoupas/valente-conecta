@@ -150,7 +150,14 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
   const adicionarPorCodigo = (valor: string) => {
     const cod = valor.trim();
     if (!cod) return;
-    const grupo = produtosPorEan.get(cod);
+    // Etiqueta impressa (/pdv/etiquetas) usa o estoqueId como codigo pra
+    // produto com variacao, ja' que o EAN e' compartilhado entre variantes
+    // e nao identificaria qual delas foi escaneada (ver lib/pdv/agruparPorCatalogo.ts).
+    let grupo = produtosPorEan.get(cod);
+    if (!grupo) {
+      const porId = produtos.find((p) => p.estoqueId === cod);
+      if (porId) grupo = [porId];
+    }
     if (!grupo || grupo.length === 0) {
       toast.error(`Nenhum produto com o código "${cod}"`);
       setCodigo("");

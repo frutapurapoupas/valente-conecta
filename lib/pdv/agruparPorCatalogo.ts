@@ -23,3 +23,14 @@ export function agruparPorCatalogo(produtos: ProdutoPDV[]): Map<string, ProdutoP
   }
   return grupos;
 }
+
+// Qual codigo imprimir/escanear pra um item especifico. O EAN fica no
+// catalogo, compartilhado entre variantes (ver 069_pdv_estoque_variante.sql)
+// -- so' e' seguro usar o EAN quando o produto NAO tem variacao (grupo com
+// 1 linha so'). Com variacao, duas etiquetas com o mesmo EAN identificariam
+// o produto errado na hora de escanear; o id da propria linha de estoque
+// (unico por variante) resolve isso sem precisar de EAN por variante, que
+// esse sistema nao tem.
+export function codigoParaEtiqueta(produto: ProdutoPDV, tamanhoGrupo: number): string {
+  return produto.ean && tamanhoGrupo === 1 ? produto.ean : produto.estoqueId;
+}
