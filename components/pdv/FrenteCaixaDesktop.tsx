@@ -755,9 +755,12 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
                   key={grupo[0].catalogoId || grupo[0].estoqueId}
                   onClick={() => { adicionarOuEscolher(grupo, qtdEntrada || 1); setQtdEntrada(1); setShowBusca(false); setBuscaTexto(""); }}
                   onMouseEnter={() => setBuscaIndiceAtivo(idx)}
-                  className={`w-full text-left px-3 py-2 rounded-lg flex justify-between items-center text-sm ${idx === buscaIndiceAtivo ? "bg-blue-50 ring-1 ring-blue-300" : "hover:bg-gray-50"}`}
+                  className={`w-full text-left px-3 py-2 rounded-lg flex justify-between items-center text-sm border-2 transition-colors ${idx === buscaIndiceAtivo ? "bg-blue-100 border-blue-500" : "border-transparent hover:bg-gray-50"}`}
                 >
-                  <span className="text-gray-800">{grupo[0].nome}{grupo.length > 1 && <span className="ml-1.5 text-xs text-blue-600 font-medium">{grupo.length} opções</span>}</span>
+                  <span className="text-gray-800 flex items-center gap-1.5">
+                    {idx === buscaIndiceAtivo && <span className="text-blue-600">▶</span>}
+                    {grupo[0].nome}{grupo.length > 1 && <span className="ml-1.5 text-xs text-blue-600 font-medium">{grupo.length} opções</span>}
+                  </span>
                   <span className="text-emerald-600 font-medium">{formatarMoeda(grupo[0].preco)}</span>
                 </button>
               ))}
