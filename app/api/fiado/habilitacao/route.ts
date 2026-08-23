@@ -41,3 +41,30 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: error.message || 'Erro ao solicitar módulo' }, { status: 500 });
   }
 }
+
+// Lojista define os proprios juros/multa de atraso (0 por padrao, sem
+// cobranca nenhuma) -- ver 071_fiado_juros_multa.sql.
+export async function PUT(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const donoId = searchParams.get('donoId');
+    if (!donoId) return NextResponse.json({ success: false, error: 'donoId é obrigatório' }, { status: 400 });
+    const body = await request.json();
+
+    const patch: Record<string, any> = {};
+    if (body.jurosMensalPct !== undefined) patch.juros_mensal_pct = Math.max(0, Number(body.jurosMensalPct) || 0);
+    if (body.multaPct !== undefined) patch.multa_pct = Math.max(0, Number(body.multaPct) || 0);
+
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('fiado_habilitacoes')
+      .update(patch)
+      .eq('dono_id', donoId)
+      .select('*')
+      .single();
+    if (error) throw error;
+    return NextResponse.json({ success: true, data });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message || 'Erro ao atualizar configuração' }, { status: 500 });
+  }
+}

@@ -56,7 +56,10 @@ type FiltroStatus = 'todos' | 'pendente' | 'vencido' | 'pago';
 
 export default function FiadoPage() {
   const [donoId, setDonoId] = useState('');
-  const [habilitacao, setHabilitacao] = useState<{ ativo: boolean } | null | undefined>(undefined);
+  const [habilitacao, setHabilitacao] = useState<{ ativo: boolean; juros_mensal_pct: number; multa_pct: number } | null | undefined>(undefined);
+  const [jurosMensalPct, setJurosMensalPct] = useState(0);
+  const [multaPct, setMultaPct] = useState(0);
+  const [salvandoJurosMulta, setSalvandoJurosMulta] = useState(false);
   const [clientes, setClientes] = useState<ClienteFiado[]>([]);
   const [dividas, setDividas] = useState<Divida[]>([]);
   const [loading, setLoading] = useState(true);
@@ -93,9 +96,52 @@ export default function FiadoPage() {
     if (!donoId) return;
     fetch(`/api/fiado/habilitacao?donoId=${donoId}`)
       .then((r) => r.json())
-      .then((res) => setHabilitacao(res.success ? res.data : null))
+      .then((res) => {
+        const dados = res.success ? res.data : null;
+        setHabilitacao(dados);
+        if (dados) {
+          setJurosMensalPct(Number(dados.juros_mensal_pct) || 0);
+          setMultaPct(Number(dados.multa_pct) || 0);
+        }
+      })
       .finally(() => setLoading(false));
   }, [donoId]);
+
+  const salvarJurosMulta = async () => {
+    setSalvandoJurosMulta(true);
+    try {
+      const resp = await fetch(`/api/fiado/habilitacao?donoId=${donoId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jurosMensalPct, multaPct }),
+      });
+      const resultado = await resp.json();
+      if (!resultado.success) throw new Error(resultado.error);
+      toast.success('Configuração de juros/multa salva!');
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao salvar');
+    } finally {
+      setSalvandoJurosMulta(false);
+    }
+  };
+
+  // Juros simples ao mes (proporcional aos dias em atraso) + multa unica
+  // assim que vence -- convencao decidida com o dono do produto. So'
+  // calcula, nunca reescreve valor_total sozinho: o lojista ve o valor
+  // sugerido e decide o que cobrar de fato (ver registrarPagamento, que
+  // continua aceitando o valor digitado manualmente).
+  const calcularValorAtualizado = (divida: Divida) => {
+    const saldo = Number(divida.valor_total) - Number(divida.valor_pago);
+    if (divida.status !== 'vencido' || saldo <= 0) return null;
+    const diasAtraso = Math.max(0, Math.floor((Date.now() - new Date(divida.data_vencimento + 'T00:00:00').getTime()) / (1000 * 60 * 60 * 24)));
+    if (diasAtraso <= 0) return null;
+    const jurosPct = Number(habilitacao?.juros_mensal_pct) || 0;
+    const multaPctAtual = Number(habilitacao?.multa_pct) || 0;
+    if (jurosPct === 0 && multaPctAtual === 0) return null;
+    const multa = saldo * (multaPctAtual / 100);
+    const juros = saldo * (jurosPct / 100) * (diasAtraso / 30);
+    return { diasAtraso, multa, juros, total: saldo + multa + juros };
+  };
 
   const carregarDados = async () => {
     const [clientesResp, dividasResp] = await Promise.all([
@@ -247,7 +293,10 @@ export default function FiadoPage() {
     const cliente = clientes.find((c) => c.id === divida.cliente_id);
     if (!cliente) return;
     const saldo = Number(divida.valor_total) - Number(divida.valor_pago);
-    const mensagem = `Olá, ${cliente.nome}! Aqui é ${lojaNome || 'a loja'}. Você tem uma conta em aberto de R$ ${saldo.toFixed(2)}, com vencimento em ${formatDate(divida.data_vencimento)}. Qualquer dúvida, é só chamar por aqui.`;
+    const atualizado = calcularValorAtualizado(divida);
+    const mensagem = atualizado
+      ? `Olá, ${cliente.nome}! Aqui é ${lojaNome || 'a loja'}. Você tem uma conta em aberto de R$ ${saldo.toFixed(2)}, vencida em ${formatDate(divida.data_vencimento)} (${atualizado.diasAtraso} dias em atraso). Com juros e multa, o valor atualizado é R$ ${atualizado.total.toFixed(2)}. Qualquer dúvida, é só chamar por aqui.`
+      : `Olá, ${cliente.nome}! Aqui é ${lojaNome || 'a loja'}. Você tem uma conta em aberto de R$ ${saldo.toFixed(2)}, com vencimento em ${formatDate(divida.data_vencimento)}. Qualquer dúvida, é só chamar por aqui.`;
     window.open(linkWhatsappCobranca(cliente, mensagem), '_blank');
   };
 
@@ -368,6 +417,24 @@ export default function FiadoPage() {
           />
         </div>
 
+        <div className="mb-6 bg-white rounded-lg shadow p-4 max-w-md">
+          <p className="text-sm font-semibold text-gray-700 mb-1">Juros e multa por atraso</p>
+          <p className="text-xs text-gray-400 mb-3">Opcional — deixe em 0 pra não cobrar nada extra em conta atrasada (é assim que fica hoje).</p>
+          <div className="flex gap-3 items-end">
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Juros ao mês (%)</label>
+              <input type="number" step="0.1" min="0" value={jurosMensalPct} onChange={(e) => setJurosMensalPct(parseFloat(e.target.value) || 0)} className="w-24 px-2 py-1.5 border rounded-lg text-sm" />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Multa por atraso (%)</label>
+              <input type="number" step="0.1" min="0" value={multaPct} onChange={(e) => setMultaPct(parseFloat(e.target.value) || 0)} className="w-24 px-2 py-1.5 border rounded-lg text-sm" />
+            </div>
+            <button onClick={salvarJurosMulta} disabled={salvandoJurosMulta} className="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-medium disabled:opacity-60">
+              {salvandoJurosMulta ? 'Salvando...' : 'Salvar'}
+            </button>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="bg-white rounded-lg shadow p-4 flex items-center justify-between">
             <div><p className="text-sm text-gray-500">Clientes</p><p className="text-2xl font-bold text-gray-800">{clientes.length}</p></div>
@@ -419,6 +486,7 @@ export default function FiadoPage() {
                 ) : (
                   dividasFiltradas.map((d) => {
                     const saldo = Number(d.valor_total) - Number(d.valor_pago);
+                    const atualizado = calcularValorAtualizado(d);
                     return (
                       <tr key={d.id} className="hover:bg-gray-50">
                         <td className="px-4 py-3">
@@ -426,7 +494,14 @@ export default function FiadoPage() {
                           <p className="text-xs text-gray-500">{formatDate(d.data_venda)}</p>
                         </td>
                         <td className="px-4 py-3 font-medium">{formatCurrency(Number(d.valor_total))}</td>
-                        <td className="px-4 py-3 font-bold text-red-600">{formatCurrency(saldo)}</td>
+                        <td className="px-4 py-3">
+                          <p className="font-bold text-red-600">{formatCurrency(saldo)}</p>
+                          {atualizado && (
+                            <p className="text-xs text-amber-600" title={`${atualizado.diasAtraso} dias em atraso · juros ${formatCurrency(atualizado.juros)} + multa ${formatCurrency(atualizado.multa)}`}>
+                              Com juros/multa: {formatCurrency(atualizado.total)}
+                            </p>
+                          )}
+                        </td>
                         <td className="px-4 py-3">{formatDate(d.data_vencimento)}</td>
                         <td className="px-4 py-3"><span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(d.status)}`}>{d.status}</span></td>
                         <td className="px-4 py-3">
