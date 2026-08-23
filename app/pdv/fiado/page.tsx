@@ -6,8 +6,17 @@
 // sem nenhuma persistencia, sem push real, sem lancar divida nova de
 // verdade). Agora e' o modulo Fiado de verdade — opcional por loja, liberado
 // pelo admin master sob solicitacao (ver 017_fiado.sql), escopado por
-// dono_id (mesmo id local usado no resto do catalogo), com push real ao
-// lancar um debito e lembretes automaticos (app/api/fiado/cron/lembretes).
+// dono_id, com push real ao lancar um debito e lembretes automaticos
+// (app/api/fiado/cron/lembretes).
+//
+// dono_id usa getCurrentUser().id (o mesmo usuario_id real usado no
+// resto do PDV -- estoque, caixa, frente de venda). Antes usava
+// obterUsuarioLocalId() (um uuid aleatorio por navegador, sem nenhuma
+// ligacao com o cadastro real do lojista) -- bug encontrado testando o
+// cadastro de cliente: o dono_id gravado nunca batia com o usuario_id
+// que a frente de caixa usa pra buscar clientes de fiado, entao cliente
+// cadastrado aqui nunca aparecia na hora de vender fiado, e vice-versa.
+// So' havia 1 registro de teste em producao quando isso foi corrigido.
 
 import { useState, useEffect } from 'react';
 import {
@@ -15,7 +24,7 @@ import {
   Phone, CreditCard, Send, Lock, Clock, Printer, MessageCircle, Receipt, MapPin, Edit2
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { obterUsuarioLocalId } from '@/lib/usuarioLocal';
+import { getCurrentUser } from '@/lib/auth';
 import { PdvSubNav } from '@/components/pdv/PdvSubNav';
 import { MidiaUploader } from '@/components/catalogo/MidiaUploader';
 import type { MidiaItem } from '@/lib/catalogo/marketplaceTypes';
@@ -69,7 +78,9 @@ export default function FiadoPage() {
   const [recibo, setRecibo] = useState<{ cliente: ClienteFiado; valor: number; vencimento: string; saldoTotal: number; data: string } | null>(null);
 
   useEffect(() => {
-    setDonoId(obterUsuarioLocalId());
+    const usuario = getCurrentUser();
+    if (usuario) setDonoId(usuario.id);
+    else setLoading(false);
     setLojaNome(localStorage.getItem('pdv_fiado_loja_nome') || '');
   }, []);
 
@@ -280,6 +291,14 @@ export default function FiadoPage() {
 
   const totalReceber = dividas.reduce((sum, d) => sum + (Number(d.valor_total) - Number(d.valor_pago)), 0);
   const totalVencido = dividas.filter((d) => d.status === 'vencido').reduce((sum, d) => sum + (Number(d.valor_total) - Number(d.valor_pago)), 0);
+
+  if (!loading && !donoId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6 text-center">
+        <p className="text-gray-600">Complete seu cadastro pra usar o módulo de fiado.</p>
+      </div>
+    );
+  }
 
   if (loading || habilitacao === undefined) {
     return (

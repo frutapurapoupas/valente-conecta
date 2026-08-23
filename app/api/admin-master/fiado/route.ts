@@ -15,7 +15,24 @@ export async function GET() {
   const supabase = createClient();
   const { data, error } = await supabase.from('fiado_habilitacoes').select('*').order('solicitado_em', { ascending: false });
   if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
-  return NextResponse.json({ success: true, data: data || [] });
+
+  // dono_id nao tem FK pra usuarios (fiado_habilitacoes nao referencia a
+  // tabela, ver 017_fiado.sql) -- resolve o nome da loja numa segunda
+  // consulta em vez de nested select, pra essa tela parar de mostrar so'
+  // o uuid cortado (so' fez sentido depois de dono_id virar o usuario_id
+  // real, ver app/pdv/fiado/page.tsx).
+  const itens = data || [];
+  const donoIds = Array.from(new Set(itens.map((i) => i.dono_id)));
+  const nomesPorDono = new Map<string, string>();
+  if (donoIds.length > 0) {
+    const { data: usuarios } = await supabase.from('usuarios').select('id, nome').in('id', donoIds);
+    for (const u of usuarios || []) nomesPorDono.set(u.id, u.nome);
+  }
+
+  return NextResponse.json({
+    success: true,
+    data: itens.map((i) => ({ ...i, nome_loja: nomesPorDono.get(i.dono_id) || null })),
+  });
 }
 
 export async function PUT(request: NextRequest) {

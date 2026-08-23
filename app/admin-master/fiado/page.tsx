@@ -13,6 +13,7 @@ interface Habilitacao {
   ativo: boolean;
   solicitado_em: string;
   liberado_em: string | null;
+  nome_loja: string | null;
 }
 
 export default function AdminFiadoPage() {
@@ -61,7 +62,7 @@ export default function AdminFiadoPage() {
           {itens.map((item) => (
             <div key={item.id} className="bg-white border rounded-lg p-4 flex items-center justify-between">
               <div>
-                <p className="font-medium">Loja {item.dono_id.slice(0, 8)}</p>
+                <p className="font-medium">{item.nome_loja || `Loja ${item.dono_id.slice(0, 8)}`}</p>
                 <p className="text-xs text-gray-500">
                   Solicitado em {new Date(item.solicitado_em).toLocaleString("pt-BR")}
                   {item.liberado_em && ` · Liberado em ${new Date(item.liberado_em).toLocaleString("pt-BR")}`}
