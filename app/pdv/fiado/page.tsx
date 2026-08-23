@@ -12,11 +12,13 @@
 import { useState, useEffect } from 'react';
 import {
   Users, Plus, Search, DollarSign, CheckCircle, XCircle, AlertCircle,
-  Phone, CreditCard, Send, Lock, Clock, Printer, MessageCircle, Receipt
+  Phone, CreditCard, Send, Lock, Clock, Printer, MessageCircle, Receipt, MapPin, Edit2
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { obterUsuarioLocalId } from '@/lib/usuarioLocal';
 import { PdvSubNav } from '@/components/pdv/PdvSubNav';
+import { MidiaUploader } from '@/components/catalogo/MidiaUploader';
+import type { MidiaItem } from '@/lib/catalogo/marketplaceTypes';
 
 interface ClienteFiado {
   id: string;
@@ -24,6 +26,9 @@ interface ClienteFiado {
   telefone: string;
   cliente_usuario_id: string | null;
   limite_credito: number;
+  cpf: string | null;
+  endereco: string | null;
+  foto_url: string | null;
 }
 
 interface Divida {
@@ -52,7 +57,10 @@ export default function FiadoPage() {
   const [showModalDivida, setShowModalDivida] = useState(false);
   const [showModalPagamento, setShowModalPagamento] = useState(false);
   const [selectedDivida, setSelectedDivida] = useState<Divida | null>(null);
-  const [formCliente, setFormCliente] = useState({ nome: '', telefone: '', limiteCredito: 500 });
+  const [formCliente, setFormCliente] = useState({ nome: '', telefone: '', limiteCredito: 500, cpf: '', endereco: '' });
+  const [fotoCliente, setFotoCliente] = useState<MidiaItem[]>([]);
+  const [editandoClienteId, setEditandoClienteId] = useState<string | null>(null);
+  const [salvandoCliente, setSalvandoCliente] = useState(false);
   const [formDivida, setFormDivida] = useState({ clienteId: '', valorTotal: '', dataVencimento: '', observacoes: '' });
   const [valorPagamento, setValorPagamento] = useState(0);
   const [metodoPagamento, setMetodoPagamento] = useState<'dinheiro' | 'pix' | 'cartao'>('dinheiro');
@@ -106,25 +114,58 @@ export default function FiadoPage() {
     }
   };
 
+  const abrirNovoCliente = () => {
+    setEditandoClienteId(null);
+    setFormCliente({ nome: '', telefone: '', limiteCredito: 500, cpf: '', endereco: '' });
+    setFotoCliente([]);
+    setShowModalCliente(true);
+  };
+
+  const abrirEdicaoCliente = (c: ClienteFiado) => {
+    setEditandoClienteId(c.id);
+    setFormCliente({ nome: c.nome, telefone: c.telefone, limiteCredito: c.limite_credito, cpf: c.cpf || '', endereco: c.endereco || '' });
+    setFotoCliente(c.foto_url ? [{ url: c.foto_url, tipo: 'imagem', ordem: 0 }] : []);
+    setShowModalCliente(true);
+  };
+
   const salvarCliente = async () => {
     if (!formCliente.nome.trim() || !formCliente.telefone.trim()) {
       toast.error('Preencha nome e telefone');
       return;
     }
-    const resp = await fetch('/api/fiado/clientes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ donoId, ...formCliente }),
-    });
-    const resultado = await resp.json();
-    if (!resultado.success) {
-      toast.error(resultado.error || 'Erro ao cadastrar cliente');
-      return;
+    setSalvandoCliente(true);
+    try {
+      const payload = { ...formCliente, fotoUrl: fotoCliente[0]?.url || null };
+      const resp = editandoClienteId
+        ? await fetch(`/api/fiado/clientes?id=${editandoClienteId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          })
+        : await fetch('/api/fiado/clientes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ donoId, ...payload }),
+          });
+      const resultado = await resp.json();
+      if (!resultado.success) {
+        toast.error(resultado.error || 'Erro ao salvar cliente');
+        return;
+      }
+      if (editandoClienteId) {
+        setClientes((prev) => prev.map((c) => (c.id === editandoClienteId ? resultado.data : c)));
+        toast.success('Cliente atualizado!');
+      } else {
+        setClientes((prev) => [...prev, resultado.data]);
+        toast.success('Cliente cadastrado!');
+      }
+      setShowModalCliente(false);
+      setEditandoClienteId(null);
+      setFormCliente({ nome: '', telefone: '', limiteCredito: 500, cpf: '', endereco: '' });
+      setFotoCliente([]);
+    } finally {
+      setSalvandoCliente(false);
     }
-    setClientes((prev) => [...prev, resultado.data]);
-    toast.success('Cliente cadastrado!');
-    setShowModalCliente(false);
-    setFormCliente({ nome: '', telefone: '', limiteCredito: 500 });
   };
 
   const lancarDivida = async (forcarLimite = false) => {
@@ -288,7 +329,7 @@ export default function FiadoPage() {
             <p className="text-sm text-gray-500">Gerencie crédito e cobranças</p>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => setShowModalCliente(true)} className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-200 text-sm font-medium">
+            <button onClick={abrirNovoCliente} className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-200 text-sm font-medium">
               <Users className="w-4 h-4" /> Novo Cliente
             </button>
             <button onClick={() => setShowModalDivida(true)} className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 text-sm font-medium">
@@ -400,14 +441,25 @@ export default function FiadoPage() {
                 const saldo = saldoDoCliente(c.id);
                 return (
                   <div key={c.id} className="p-4 flex items-center justify-between gap-3">
-                    <div>
-                      <h3 className="font-semibold text-gray-800">{c.nome}</h3>
-                      <div className="flex items-center gap-1 text-gray-500 text-sm"><Phone className="w-3 h-3" />{c.telefone}</div>
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        Devendo {formatCurrency(saldo)} de {formatCurrency(c.limite_credito)} de limite
-                      </p>
+                    <div className="flex items-center gap-3">
+                      {c.foto_url ? (
+                        <img src={c.foto_url} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center shrink-0"><Users className="w-4 h-4 text-gray-300" /></div>
+                      )}
+                      <div>
+                        <h3 className="font-semibold text-gray-800">{c.nome}</h3>
+                        <div className="flex items-center gap-1 text-gray-500 text-sm"><Phone className="w-3 h-3" />{c.telefone}</div>
+                        {c.endereco && <div className="flex items-center gap-1 text-gray-400 text-xs"><MapPin className="w-3 h-3" />{c.endereco}</div>}
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          Devendo {formatCurrency(saldo)} de {formatCurrency(c.limite_credito)} de limite
+                        </p>
+                      </div>
                     </div>
                     <div className="flex flex-col items-end gap-1">
+                      <button onClick={() => abrirEdicaoCliente(c)} className="text-xs text-gray-400 flex items-center gap-1 hover:text-blue-600">
+                        <Edit2 className="w-3 h-3" /> Editar
+                      </button>
                       {!c.cliente_usuario_id && (
                         <span className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded-full whitespace-nowrap">Sem app — avisar por fora</span>
                       )}
@@ -430,13 +482,17 @@ export default function FiadoPage() {
 
       {showModalCliente && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full">
+          <div className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-gray-800">Novo Cliente</h2>
+                <h2 className="text-xl font-bold text-gray-800">{editandoClienteId ? 'Editar Cliente' : 'Novo Cliente'}</h2>
                 <button onClick={() => setShowModalCliente(false)} className="text-gray-400 hover:text-gray-600"><XCircle className="w-5 h-5" /></button>
               </div>
               <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Foto (opcional)</label>
+                  <MidiaUploader midia={fotoCliente} onChange={setFotoCliente} maximo={1} />
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Nome *</label>
                   <input type="text" value={formCliente.nome} onChange={(e) => setFormCliente({ ...formCliente, nome: e.target.value })} className="w-full px-3 py-2 border rounded-lg" />
@@ -444,6 +500,14 @@ export default function FiadoPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Telefone/WhatsApp *</label>
                   <input type="tel" value={formCliente.telefone} onChange={(e) => setFormCliente({ ...formCliente, telefone: e.target.value })} placeholder="(75) 99999-9999" className="w-full px-3 py-2 border rounded-lg" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">CPF (opcional)</label>
+                  <input type="text" value={formCliente.cpf} onChange={(e) => setFormCliente({ ...formCliente, cpf: e.target.value })} placeholder="000.000.000-00" className="w-full px-3 py-2 border rounded-lg" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Endereço (opcional)</label>
+                  <input type="text" value={formCliente.endereco} onChange={(e) => setFormCliente({ ...formCliente, endereco: e.target.value })} placeholder="Rua, número, bairro" className="w-full px-3 py-2 border rounded-lg" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Limite de Crédito</label>
@@ -454,7 +518,9 @@ export default function FiadoPage() {
                 </div>
                 <div className="flex gap-3 pt-4">
                   <button onClick={() => setShowModalCliente(false)} className="flex-1 px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-50">Cancelar</button>
-                  <button onClick={salvarCliente} className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Cadastrar</button>
+                  <button onClick={salvarCliente} disabled={salvandoCliente} className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-60">
+                    {salvandoCliente ? 'Salvando...' : editandoClienteId ? 'Salvar' : 'Cadastrar'}
+                  </button>
                 </div>
               </div>
             </div>

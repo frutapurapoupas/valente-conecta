@@ -44,6 +44,9 @@ export async function POST(request: NextRequest) {
         telefone: body.telefone.trim(),
         cliente_usuario_id: usuarioExistente?.id || null,
         limite_credito: Number(body.limiteCredito || 0),
+        cpf: body.cpf?.trim() || null,
+        endereco: body.endereco?.trim() || null,
+        foto_url: body.fotoUrl || null,
       })
       .select('*')
       .single();
@@ -51,5 +54,34 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, data });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message || 'Erro ao cadastrar cliente' }, { status: 500 });
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    if (!id) return NextResponse.json({ success: false, error: 'id é obrigatório' }, { status: 400 });
+    const body = await request.json();
+
+    const patch: Record<string, any> = {};
+    if (body.nome !== undefined) patch.nome = body.nome.trim();
+    if (body.telefone !== undefined) patch.telefone = body.telefone.trim();
+    if (body.limiteCredito !== undefined) patch.limite_credito = Number(body.limiteCredito || 0);
+    if (body.cpf !== undefined) patch.cpf = body.cpf?.trim() || null;
+    if (body.endereco !== undefined) patch.endereco = body.endereco?.trim() || null;
+    if (body.fotoUrl !== undefined) patch.foto_url = body.fotoUrl || null;
+
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('fiado_clientes')
+      .update(patch)
+      .eq('id', id)
+      .select('*')
+      .single();
+    if (error) throw error;
+    return NextResponse.json({ success: true, data });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message || 'Erro ao atualizar cliente' }, { status: 500 });
   }
 }
