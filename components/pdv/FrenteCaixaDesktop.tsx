@@ -17,12 +17,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import {
   Trash2, CreditCard, QrCode, DollarSign, Receipt, X, Search, ScanBarcode, User, Plus, Minus,
-  AlertTriangle, TrendingUp, History, IdCard, CalendarClock,
+  AlertTriangle, TrendingUp, History, IdCard, CalendarClock, Settings, FileText,
 } from "lucide-react";
 import { BarcodeScanner } from "@/components/pdv/BarcodeScanner";
 import { useCarrinhoPdv } from "@/lib/pdv/useCarrinhoPdv";
 import { agruparPorCatalogo } from "@/lib/pdv/agruparPorCatalogo";
-import type { ClienteFiado, FormaPagamento, ProdutoPDV, PropsFrenteCaixa } from "@/lib/pdv/frenteCaixaTypes";
+import { obterDadosEmpresa, salvarDadosEmpresa, type DadosEmpresa } from "@/lib/pdv/dadosEmpresa";
+import type { ClienteFiado, FormaPagamento, ItemCarrinho, ProdutoPDV, PropsFrenteCaixa } from "@/lib/pdv/frenteCaixaTypes";
 
 function formatarMoeda(v: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
@@ -35,7 +36,7 @@ function diasParaVencer(validade: string | null): number | null {
   return Math.round((dataValidade.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
 }
 
-function imprimirComprovante(itens: { nome: string; preco: number; quantidade: number }[], subtotal: number, desconto: number, total: number, cliente: ClienteFiado | null) {
+function imprimirComprovante(itens: { nome: string; preco: number; quantidade: number }[], subtotal: number, desconto: number, total: number, cliente: ClienteFiado | null, nomeEmpresa: string) {
   const win = window.open("", "_blank");
   if (!win) return;
   win.document.write(`
@@ -47,7 +48,7 @@ function imprimirComprovante(itens: { nome: string; preco: number; quantidade: n
       .total{border-top:1px dashed #000;padding-top:10px;margin-top:10px;font-weight:bold}
       .footer{text-align:center;border-top:1px dashed #000;padding-top:10px;margin-top:10px;font-size:10px}
     </style></head><body>
-      <div class="header"><h2>VALENTE CONECTA</h2><p>Valente - BA<br>${new Date().toLocaleString("pt-BR")}</p></div>
+      <div class="header"><h2>${(nomeEmpresa || "VALENTE CONECTA").toUpperCase()}</h2><p>${new Date().toLocaleString("pt-BR")}</p></div>
       <div>${itens.map((i) => `<div class="item"><span>${i.nome}</span><span>${i.quantidade}x ${formatarMoeda(i.preco)}</span></div>`).join("")}</div>
       <div class="total">
         <div class="item"><span>SUBTOTAL:</span><span>${formatarMoeda(subtotal)}</span></div>
@@ -59,6 +60,97 @@ function imprimirComprovante(itens: { nome: string; preco: number; quantidade: n
   `);
   win.print();
   win.close();
+}
+
+interface DadosNotaVenda {
+  vendaNumero: number;
+  itens: ItemCarrinho[];
+  subtotal: number;
+  desconto: number;
+  total: number;
+  formaPagamento: FormaPagamento;
+  valorPago: number | null;
+  troco: number;
+  cliente: ClienteFiado | null;
+  empresa: DadosEmpresa;
+}
+
+const LABEL_FORMA_PAGAMENTO: Record<FormaPagamento, string> = { dinheiro: "Dinheiro", pix: "PIX", cartao: "Cartão", fiado: "Fiado (a prazo)" };
+
+function imprimirNotaVenda(dados: DadosNotaVenda) {
+  const win = window.open("", "_blank");
+  if (!win) return;
+  const { vendaNumero, itens, subtotal, desconto, total, formaPagamento, valorPago, troco, cliente, empresa } = dados;
+  const linhasItens = itens.map((i) => `
+    <tr>
+      <td>${i.ean || "—"}</td>
+      <td>${i.nome}</td>
+      <td class="center">${i.unidade || "un"}</td>
+      <td class="center">${i.quantidade}</td>
+      <td class="right">${formatarMoeda(i.preco)}</td>
+      <td class="right">${formatarMoeda(i.preco * i.quantidade)}</td>
+    </tr>`).join("");
+
+  win.document.write(`
+    <!DOCTYPE html><html><head><title>Nota de Venda</title><style>
+      * { box-sizing: border-box; }
+      body { font-family: Arial, sans-serif; font-size: 13px; color: #222; padding: 15mm; max-width: 210mm; margin: 0 auto; }
+      h1 { font-size: 18px; margin: 0 0 4px; }
+      .cabecalho { display: flex; justify-content: space-between; border-bottom: 2px solid #222; padding-bottom: 10px; margin-bottom: 12px; }
+      .cabecalho p { margin: 1px 0; font-size: 11px; color: #555; }
+      .venda-info { text-align: right; }
+      .bloco-cliente { border: 1px solid #ddd; border-radius: 4px; padding: 8px 10px; margin-bottom: 12px; font-size: 12px; }
+      .bloco-cliente p { margin: 1px 0; }
+      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+      th { background: #f3f3f3; text-align: left; font-size: 10px; text-transform: uppercase; padding: 6px; border-bottom: 1px solid #ccc; }
+      td { padding: 6px; border-bottom: 1px solid #eee; font-size: 12px; }
+      .center { text-align: center; } .right { text-align: right; }
+      .totais { width: 260px; margin-left: auto; }
+      .totais div { display: flex; justify-content: space-between; padding: 3px 0; font-size: 13px; }
+      .totais .final { font-weight: bold; font-size: 16px; border-top: 2px solid #222; padding-top: 6px; margin-top: 4px; }
+      .rodape { margin-top: 20px; padding-top: 10px; border-top: 1px dashed #999; font-size: 10px; color: #777; text-align: center; }
+      @media print { body { padding: 10mm; } }
+    </style></head><body>
+      <div class="cabecalho">
+        <div>
+          <h1>${empresa.nome || "Nota de Venda"}</h1>
+          ${empresa.cnpj ? `<p>CNPJ: ${empresa.cnpj}</p>` : ""}
+          ${empresa.endereco ? `<p>${empresa.endereco}</p>` : ""}
+          ${empresa.telefone ? `<p>Tel: ${empresa.telefone}</p>` : ""}
+        </div>
+        <div class="venda-info">
+          <p><strong>Venda nº ${vendaNumero}</strong></p>
+          <p>${new Date().toLocaleString("pt-BR")}</p>
+        </div>
+      </div>
+
+      <div class="bloco-cliente">
+        <p><strong>Cliente:</strong> ${cliente?.nome || "Consumidor final"}</p>
+        ${cliente?.telefone ? `<p>Telefone: ${cliente.telefone}</p>` : ""}
+        ${cliente?.cpf ? `<p>CPF: ${cliente.cpf}</p>` : ""}
+        ${cliente?.endereco ? `<p>Endereço: ${cliente.endereco}</p>` : ""}
+      </div>
+
+      <table>
+        <thead><tr><th>Código</th><th>Produto</th><th class="center">Un</th><th class="center">Qtd</th><th class="right">Preço un.</th><th class="right">Subtotal</th></tr></thead>
+        <tbody>${linhasItens}</tbody>
+      </table>
+
+      <div class="totais">
+        <div><span>Subtotal</span><span>${formatarMoeda(subtotal)}</span></div>
+        ${desconto > 0 ? `<div><span>Desconto</span><span>-${formatarMoeda(desconto)}</span></div>` : ""}
+        <div class="final"><span>Total</span><span>${formatarMoeda(total)}</span></div>
+        <div><span>Forma de pagamento</span><span>${LABEL_FORMA_PAGAMENTO[formaPagamento]}</span></div>
+        ${valorPago !== null ? `<div><span>Valor pago</span><span>${formatarMoeda(valorPago)}</span></div>` : ""}
+        ${troco > 0 ? `<div><span>Troco</span><span>${formatarMoeda(troco)}</span></div>` : ""}
+      </div>
+
+      <div class="rodape">Documento sem valor fiscal — não substitui nota fiscal eletrônica.</div>
+    </body></html>
+  `);
+  win.document.close();
+  win.focus();
+  win.print();
 }
 
 const FORMAS: { id: FormaPagamento; label: string; Icone: typeof DollarSign }[] = [
@@ -89,7 +181,23 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
   const [metodoPagamento, setMetodoPagamento] = useState<FormaPagamento>("dinheiro");
   const [valorPago, setValorPago] = useState<number | "">("");
   const [lancamentosHoje, setLancamentosHoje] = useState<LancamentoCaixa[]>([]);
+  const [tipoImpressao, setTipoImpressao] = useState<"cupom" | "nota">("cupom");
+  const [empresa, setEmpresa] = useState<DadosEmpresa>({ nome: "", cnpj: "", endereco: "", telefone: "" });
+  const [showConfig, setShowConfig] = useState(false);
   const inputCodigoRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setEmpresa(obterDadosEmpresa());
+    const tipo = localStorage.getItem("pdv_tipo_impressao");
+    if (tipo === "nota") setTipoImpressao("nota");
+  }, []);
+
+  const salvarConfig = () => {
+    salvarDadosEmpresa(empresa);
+    localStorage.setItem("pdv_tipo_impressao", tipoImpressao);
+    setShowConfig(false);
+    toast.success("Configurações salvas!");
+  };
 
   const carregarResumoHoje = () => {
     fetch(`/api/pdv/caixa?usuarioId=${usuarioId}`, { cache: "no-store" })
@@ -181,6 +289,7 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
         else if (showBusca) { setShowBusca(false); setBuscaTexto(""); }
         else if (grupoParaEscolher) setGrupoParaEscolher(null);
         else if (showModalCliente) setShowModalCliente(false);
+        else if (showConfig) setShowConfig(false);
         return;
       }
       if (e.key === "F2") { e.preventDefault(); inputCodigoRef.current?.focus(); return; }
@@ -195,18 +304,21 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
     window.addEventListener("keydown", aoTeclar);
     return () => window.removeEventListener("keydown", aoTeclar);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showScanner, showBusca, grupoParaEscolher, showModalCliente, podeFinalizar]);
+  }, [showScanner, showBusca, grupoParaEscolher, showModalCliente, showConfig, podeFinalizar]);
 
   const confirmar = async (forcarLimite = false) => {
     if (metodoPagamento === "fiado" && !clienteSelecionado) {
       setShowModalCliente(true);
       return;
     }
-    const itensParaImprimir = carrinho.map((i) => ({ nome: i.nome, preco: i.preco, quantidade: i.quantidade }));
+    const itensAntes = carrinho;
     const subtotalAntes = subtotal;
     const descontoAntes = desconto;
     const totalAntes = total;
     const clienteAntes = clienteSelecionado;
+    const formaAntes = metodoPagamento;
+    const valorPagoAntes = valorPago;
+    const vendaNumeroAntes = vendasHoje.length + 1;
 
     const resultado = await finalizarVenda({
       formaPagamento: metodoPagamento,
@@ -232,7 +344,25 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
     }
 
     toast.success("Venda finalizada!");
-    imprimirComprovante(itensParaImprimir, subtotalAntes, descontoAntes, totalAntes, clienteAntes);
+    if (tipoImpressao === "nota") {
+      imprimirNotaVenda({
+        vendaNumero: vendaNumeroAntes,
+        itens: itensAntes,
+        subtotal: subtotalAntes,
+        desconto: descontoAntes,
+        total: totalAntes,
+        formaPagamento: formaAntes,
+        valorPago: formaAntes === "dinheiro" ? Number(valorPagoAntes || totalAntes) : null,
+        troco: resultado.troco || 0,
+        cliente: clienteAntes,
+        empresa,
+      });
+    } else {
+      imprimirComprovante(
+        itensAntes.map((i) => ({ nome: i.nome, preco: i.preco, quantidade: i.quantidade })),
+        subtotalAntes, descontoAntes, totalAntes, clienteAntes, empresa.nome
+      );
+    }
     setClienteSelecionado(null);
     setValorPago("");
     setMetodoPagamento("dinheiro");
@@ -251,9 +381,14 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
             <span className="hidden md:inline">· {new Date().toLocaleDateString("pt-BR")} {new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
             {usuarioNome && <span className="hidden lg:flex items-center gap-1"><IdCard className="w-3.5 h-3.5" /> {usuarioNome}</span>}
           </div>
-          <button onClick={() => setShowModalCliente(true)} className="flex items-center gap-1.5 text-gray-600 hover:text-blue-600 font-medium" title="Selecionar cliente (F9)">
-            <User className="w-4 h-4" /> {clienteSelecionado?.nome || "Consumidor final"}
-          </button>
+          <div className="flex items-center gap-3">
+            <button onClick={() => setShowModalCliente(true)} className="flex items-center gap-1.5 text-gray-600 hover:text-blue-600 font-medium" title="Selecionar cliente (F9)">
+              <User className="w-4 h-4" /> {clienteSelecionado?.nome || "Consumidor final"}
+            </button>
+            <button onClick={() => setShowConfig(true)} className="text-gray-400 hover:text-gray-600" title="Dados da empresa e tipo de recibo">
+              <Settings className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Entrada de código de barras */}
@@ -532,6 +667,53 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
                   <span className="text-xs text-gray-400">{v.estoque} {v.unidade || "un"} em estoque</span>
                 </button>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showConfig && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full max-h-[85vh] overflow-y-auto p-5">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="font-bold text-gray-800 flex items-center gap-2"><FileText className="w-4 h-4" /> Dados da empresa</h2>
+              <button onClick={() => setShowConfig(false)}><X className="w-5 h-5 text-gray-400" /></button>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-medium text-gray-500">Nome da empresa</label>
+                <input value={empresa.nome} onChange={(e) => setEmpresa({ ...empresa, nome: e.target.value })} placeholder="Ex: Mercadinho da Dona Neide" className="w-full mt-1 px-3 py-2 border rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-500">CNPJ (opcional)</label>
+                <input value={empresa.cnpj} onChange={(e) => setEmpresa({ ...empresa, cnpj: e.target.value })} placeholder="00.000.000/0000-00" className="w-full mt-1 px-3 py-2 border rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-500">Endereço (opcional)</label>
+                <input value={empresa.endereco} onChange={(e) => setEmpresa({ ...empresa, endereco: e.target.value })} placeholder="Rua, número, bairro — Valente/BA" className="w-full mt-1 px-3 py-2 border rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-500">Telefone (opcional)</label>
+                <input value={empresa.telefone} onChange={(e) => setEmpresa({ ...empresa, telefone: e.target.value })} placeholder="(75) 99999-9999" className="w-full mt-1 px-3 py-2 border rounded-lg text-sm" />
+              </div>
+              <div className="pt-2 border-t">
+                <label className="text-xs font-medium text-gray-500 mb-1.5 block">O que imprime ao finalizar a venda</label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setTipoImpressao("cupom")}
+                    className={`flex-1 py-2 rounded-xl text-sm font-medium border ${tipoImpressao === "cupom" ? "border-blue-500 bg-blue-50 text-blue-700" : "text-gray-500"}`}
+                  >
+                    Cupom simples
+                  </button>
+                  <button
+                    onClick={() => setTipoImpressao("nota")}
+                    className={`flex-1 py-2 rounded-xl text-sm font-medium border ${tipoImpressao === "nota" ? "border-blue-500 bg-blue-50 text-blue-700" : "text-gray-500"}`}
+                  >
+                    Nota completa (A4)
+                  </button>
+                </div>
+              </div>
+              <button onClick={salvarConfig} className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold mt-2">Salvar</button>
             </div>
           </div>
         </div>

@@ -37,6 +37,8 @@ export interface ClienteFiado {
   nome: string;
   telefone: string;
   limite_credito: number;
+  cpf?: string | null;
+  endereco?: string | null;
 }
 
 export type FormaPagamento = "dinheiro" | "pix" | "cartao" | "fiado";
