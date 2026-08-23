@@ -22,13 +22,13 @@ function formatarDataBR(iso: string) {
   return new Date(iso + "T00:00:00").toLocaleDateString("pt-BR");
 }
 
-// Mesmo padrao de link "wa.me" ja usado em app/pdv/fiado/page.tsx e no
-// FrenteCaixaDesktop.tsx -- so' abre uma mensagem pronta, o lojista quem
-// manda.
+// Protocolo direto do WhatsApp (nao wa.me) -- abre o app na hora, sem
+// passar pela pagina intermediaria "Compartilhar no WhatsApp". Mesmo
+// padrao usado em app/pdv/fiado/page.tsx e no FrenteCaixaDesktop.tsx.
 function linkWhatsappCobranca(telefone: string, mensagem: string) {
   const digitos = telefone.replace(/\D/g, "");
   const numeroCompleto = digitos.startsWith("55") ? digitos : `55${digitos}`;
-  return `https://wa.me/${numeroCompleto}?text=${encodeURIComponent(mensagem)}`;
+  return `whatsapp://send?phone=${numeroCompleto}&text=${encodeURIComponent(mensagem)}`;
 }
 
 interface ResumoFiado {
@@ -336,7 +336,7 @@ export function FrenteCaixaMobile({ usuarioId, produtos, clientes, carregandoPro
             <div className="flex gap-3 pt-5">
               <button onClick={() => setResumoFiado(null)} className="flex-1 px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-50">Fechar</button>
               <button
-                onClick={() => window.open(linkWhatsappCobranca(resumoFiado.cliente.telefone, `Olá, ${resumoFiado.cliente.nome}! Compra de ${formatarMoeda(resumoFiado.valor)} no fiado, vencimento em ${formatarDataBR(resumoFiado.vencimento)}. Saldo total em aberto: ${formatarMoeda(resumoFiado.saldoTotal)}.`), "_blank")}
+                onClick={() => { window.location.href = linkWhatsappCobranca(resumoFiado.cliente.telefone, `Olá, ${resumoFiado.cliente.nome}! Compra de ${formatarMoeda(resumoFiado.valor)} no fiado, vencimento em ${formatarDataBR(resumoFiado.vencimento)}. Saldo total em aberto: ${formatarMoeda(resumoFiado.saldoTotal)}.`); }}
                 className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 flex items-center justify-center gap-2"
               >
                 <MessageCircle className="w-4 h-4" /> WhatsApp
