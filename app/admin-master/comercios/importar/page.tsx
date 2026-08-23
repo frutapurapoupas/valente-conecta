@@ -20,6 +20,7 @@ const MODULOS = [
   { id: "pet", label: "Pet Shop" },
   { id: "construcao", label: "Construção" },
   { id: "servicos", label: "Serviços" },
+  { id: "imoveis", label: "Imóveis (imobiliárias)" },
 ];
 
 export default function ImportarComerciosAdminPage() {
@@ -98,7 +99,7 @@ export default function ImportarComerciosAdminPage() {
         <Store className="w-6 h-6 text-blue-600" /> Importar Comércios
       </h1>
       <p className="text-sm text-gray-500 mb-6">
-        Diretório público e gratuito, por módulo — alimentação, mercados, moda, pet, construção e serviços.
+        Diretório público e gratuito, por módulo — alimentação, mercados, moda, pet, construção, serviços e imóveis (imobiliárias).
       </p>
 
       <div className="bg-white border rounded-lg p-5 mb-4 space-y-3">

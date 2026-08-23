@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { obterUsuarioLocalId } from '@/lib/usuarioLocal';
+import { DiretorioComercios } from '@/components/comercios/DiretorioComercios';
 
 interface Imovel {
   id: string;
@@ -242,6 +243,10 @@ export default function ImoveisPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <div className="max-w-6xl mx-auto px-4 pt-4">
+        <DiretorioComercios modulo="imoveis" titulo="Imobiliárias" categorias={["Imobiliária"]} />
+      </div>
+      <div className="border-t mt-2" />
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">

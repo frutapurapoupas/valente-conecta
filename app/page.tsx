@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useApp } from "@/app/context/AppContext";
 import { obterUsuarioLocalId } from "@/lib/usuarioLocal";
 import { getCurrentUser } from "@/lib/auth";
+import { ContadorUsuarios } from "@/components/home/ContadorUsuarios";
 import toast from "react-hot-toast";
 import {
   Search,
@@ -235,6 +236,7 @@ export default function HomePage() {
             <div>
               <h1 className="font-extrabold text-lg leading-tight tracking-tight text-blue-900">VALENTE CONECTA</h1>
               <p className="text-[10px] text-slate-500 font-medium">A economia da cidade na palma da mão</p>
+              <ContadorUsuarios />
             </div>
           </div>
           <button

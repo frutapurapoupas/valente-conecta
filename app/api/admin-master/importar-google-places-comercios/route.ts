@@ -2,7 +2,8 @@
 //
 // Mesmo padrao ja usado em importar-google-places-saude, generalizado pra
 // varios modulos de uma vez (alimentacao, mercados, moda, pet, construcao,
-// servicos) — grava em comercios_diretorio (056_comercios_diretorio.sql),
+// servicos, imoveis) — grava em comercios_diretorio (056_comercios_diretorio.sql,
+// modulo 'imoveis' liberado em 065_comercios_diretorio_imoveis.sql),
 // diretorio PUBLICO E GRATUITO. Confirmado com o dono do projeto: nao ha'
 // fornecedor real cadastrado nesses modulos ainda (excecao: Cozinha Chef
 // Neide, que e' um sistema totalmente separado e nao e' afetado por isso).
@@ -50,6 +51,11 @@ const TIPOS_POR_MODULO: Record<string, Record<string, string>> = {
     beauty_salon: 'Beleza e estética',
     spa: 'Beleza e estética',
     laundry: 'Outros serviços',
+  },
+  // So' a imobiliaria em si (a empresa) -- os anuncios de imovel por venda/
+  // aluguel continuam em app/imoveis/page.tsx, marketplace separado.
+  imoveis: {
+    real_estate_agency: 'Imobiliária',
   },
 };
 
