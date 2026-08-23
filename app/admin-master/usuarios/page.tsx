@@ -10,6 +10,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Search, Radio, MapPin, CreditCard, ChevronDown, ChevronUp, Mail, Phone, Gift, Wallet } from "lucide-react";
 import { useUsuariosRealtime } from "@/lib/hooks/useUsuariosRealtime";
 import { CardsResumoUsuarios, GraficoCadastrosPorDia, GraficoPorCidade, GraficoPorStatus, type MetricasUsuarios } from "../components/GraficosUsuarios";
+import { PainelPlanoUsuario } from "@/components/admin/PainelPlanoUsuario";
 
 interface UsuarioLinha {
   id: string;
@@ -200,6 +201,7 @@ export default function AdminUsuariosPage() {
                       <p>Planos ativos: {u.planos_ativos.map((p) => p.servico_id).join(", ")}</p>
                     )}
                     {u.cidades_adicionais.length > 0 && <p>Cidades adicionais: {u.cidades_adicionais.join(", ")}</p>}
+                    <PainelPlanoUsuario usuarioId={u.id} />
                   </div>
                 )}
               </div>
