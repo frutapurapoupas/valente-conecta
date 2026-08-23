@@ -41,11 +41,16 @@ export default function PDVPage() {
             .map((item: any) => ({
               estoqueId: item.id,
               catalogoId: item.catalogo_id,
+              ean: item.produto?.ean || null,
               nome: item.produto?.nome || "Produto",
+              variante: item.variante || "",
               preco: Number(item.preco_venda) || 0,
               fotoUrl: item.produto?.foto_url || null,
               categoria: item.produto?.categoria || item.produto?.segmento || "Geral",
+              unidade: item.produto?.unidade || null,
               estoque: Number(item.quantidade) || 0,
+              estoqueMinimo: Number(item.estoque_minimo) || 0,
+              validade: item.validade || null,
             }))
         );
       }
@@ -105,6 +110,7 @@ export default function PDVPage() {
         layout === "desktop" ? (
           <FrenteCaixaDesktop
             usuarioId={usuario.id}
+            usuarioNome={usuario.nome}
             produtos={produtos}
             clientes={clientes}
             carregandoProdutos={carregandoProdutos}

@@ -43,10 +43,12 @@ export async function POST(request: NextRequest) {
           preco_custo: body.precoCusto !== undefined && body.precoCusto !== null ? Number(body.precoCusto) : null,
           preco_venda: Number(body.precoVenda || 0),
           estoque_minimo: Number(body.estoqueMinimo || 0),
+          validade: body.validade || null,
+          variante: String(body.variante || '').trim(),
           ativo: body.ativo !== undefined ? !!body.ativo : true,
           updated_at: new Date().toISOString(),
         },
-        { onConflict: 'usuario_id,catalogo_id' }
+        { onConflict: 'usuario_id,catalogo_id,variante' }
       )
       .select('*, produto:pdv_produtos_catalogo(id, nome, ean, sku, segmento, categoria, unidade, foto_url)')
       .single();
@@ -70,6 +72,7 @@ export async function PUT(request: NextRequest) {
     if (body.precoCusto !== undefined) patch.preco_custo = body.precoCusto === null ? null : Number(body.precoCusto);
     if (body.precoVenda !== undefined) patch.preco_venda = Number(body.precoVenda);
     if (body.estoqueMinimo !== undefined) patch.estoque_minimo = Number(body.estoqueMinimo);
+    if (body.validade !== undefined) patch.validade = body.validade || null;
     if (body.ativo !== undefined) patch.ativo = !!body.ativo;
 
     const supabase = createClient();

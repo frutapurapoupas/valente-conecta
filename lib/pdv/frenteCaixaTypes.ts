@@ -6,17 +6,25 @@
 export interface ProdutoPDV {
   estoqueId: string;
   catalogoId: string | null;
+  ean: string | null;
   nome: string;
+  variante: string; // vazio = produto sem variacao de tamanho/cor
   preco: number;
   fotoUrl: string | null;
   categoria: string;
+  unidade: string | null;
   estoque: number;
+  estoqueMinimo: number;
+  validade: string | null;
 }
 
 export interface ItemCarrinho {
   chave: string; // estoqueId, so' pra key do React e agrupar quantidade
   estoqueId: string;
   catalogoId: string | null;
+  ean: string | null;
+  variante: string;
+  unidade: string | null;
   nome: string;
   preco: number;
   quantidade: number;
@@ -35,6 +43,7 @@ export type FormaPagamento = "dinheiro" | "pix" | "cartao" | "fiado";
 
 export interface PropsFrenteCaixa {
   usuarioId: string;
+  usuarioNome?: string;
   produtos: ProdutoPDV[];
   clientes: ClienteFiado[];
   carregandoProdutos: boolean;

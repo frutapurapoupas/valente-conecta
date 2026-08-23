@@ -5,7 +5,15 @@
 // apresentação, a lógica de estado/finalização fica num lugar só.
 
 import { useState } from "react";
+import toast from "react-hot-toast";
 import type { ClienteFiado, FormaPagamento, ItemCarrinho, ProdutoPDV } from "./frenteCaixaTypes";
+
+function diasParaVencer(validade: string | null): number | null {
+  if (!validade) return null;
+  const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+  const dataValidade = new Date(validade + "T00:00:00");
+  return Math.round((dataValidade.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
+}
 
 interface ResultadoVenda {
   sucesso: boolean;
@@ -19,12 +27,20 @@ export function useCarrinhoPdv(usuarioId: string) {
   const [desconto, setDesconto] = useState(0);
   const [finalizando, setFinalizando] = useState(false);
 
-  const adicionar = (produto: ProdutoPDV) => {
+  const adicionar = (produto: ProdutoPDV, quantidade = 1) => {
+    const dias = diasParaVencer(produto.validade);
+    if (dias !== null && dias < 0) {
+      toast.error(`${produto.nome} está vencido (venceu há ${Math.abs(dias)} dia${Math.abs(dias) === 1 ? "" : "s"})`);
+    } else if (dias !== null && dias <= 7) {
+      toast(`${produto.nome} vence em ${dias} dia${dias === 1 ? "" : "s"}`, { icon: "⚠️" });
+    }
+
     setCarrinho((prev) => {
       const existente = prev.find((i) => i.estoqueId === produto.estoqueId);
       if (existente) {
-        if (existente.quantidade + 1 > produto.estoque) return prev;
-        return prev.map((i) => (i.estoqueId === produto.estoqueId ? { ...i, quantidade: i.quantidade + 1 } : i));
+        const nova = Math.min(existente.quantidade + quantidade, produto.estoque);
+        if (nova === existente.quantidade) return prev;
+        return prev.map((i) => (i.estoqueId === produto.estoqueId ? { ...i, quantidade: nova } : i));
       }
       if (produto.estoque < 1) return prev;
       return [
@@ -33,9 +49,12 @@ export function useCarrinhoPdv(usuarioId: string) {
           chave: produto.estoqueId,
           estoqueId: produto.estoqueId,
           catalogoId: produto.catalogoId,
-          nome: produto.nome,
+          ean: produto.ean,
+          variante: produto.variante,
+          unidade: produto.unidade,
+          nome: produto.variante ? `${produto.nome} (${produto.variante})` : produto.nome,
           preco: produto.preco,
-          quantidade: 1,
+          quantidade: Math.min(quantidade, produto.estoque),
           fotoUrl: produto.fotoUrl,
           estoqueDisponivel: produto.estoque,
         },
