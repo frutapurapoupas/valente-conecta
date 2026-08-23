@@ -7,10 +7,10 @@
 // em /pdv/estoque). Ver app/api/pdv/caixa/route.ts e migration
 // 044_pdv_caixa.sql.
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { ArrowLeft, Plus, TrendingUp, TrendingDown, Wallet, Trash2, Calendar, X } from "lucide-react";
+import { ArrowLeft, Plus, TrendingUp, TrendingDown, Wallet, Trash2, Calendar, X, LayoutList, ChartColumn } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { PdvSubNav } from "@/components/pdv/PdvSubNav";
 
@@ -33,6 +33,23 @@ const FORMAS_PAGAMENTO = [
   { id: "outro", nome: "Outro" },
 ];
 
+const CATEGORIAS_ENTRADA = [
+  { id: "outra_entrada", nome: "Outra entrada" },
+  { id: "reforco_caixa", nome: "Reforço de caixa" },
+];
+const CATEGORIAS_SAIDA = [
+  { id: "despesa", nome: "Despesa" },
+  { id: "sangria", nome: "Sangria" },
+];
+
+const LABEL_CATEGORIA: Record<string, string> = {
+  venda: "Vendas",
+  despesa: "Despesas",
+  sangria: "Sangria",
+  reforco_caixa: "Reforço de caixa",
+  outra_entrada: "Outra entrada",
+};
+
 function hojeISO() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -54,7 +71,37 @@ export default function PdvCaixaPage() {
   const [descricao, setDescricao] = useState("");
   const [valor, setValor] = useState<number | "">("");
   const [formaPagamento, setFormaPagamento] = useState("dinheiro");
+  const [categoria, setCategoria] = useState("");
   const [salvando, setSalvando] = useState(false);
+  const [visualizacao, setVisualizacao] = useState<"detalhado" | "resumo">("detalhado");
+
+  const resumoPorCategoria = useMemo(() => {
+    const grupos = new Map<string, { tipo: "entrada" | "saida"; total: number; qtd: number }>();
+    for (const l of lancamentos) {
+      const chave = l.categoria || (l.tipo === "entrada" ? "outra_entrada" : "despesa");
+      const grupo = grupos.get(chave) || { tipo: l.tipo, total: 0, qtd: 0 };
+      grupo.total += Number(l.valor);
+      grupo.qtd += 1;
+      grupos.set(chave, grupo);
+    }
+    return Array.from(grupos.entries())
+      .map(([categoria, dado]) => ({ categoria, ...dado, label: LABEL_CATEGORIA[categoria] || categoria }))
+      .sort((a, b) => b.total - a.total);
+  }, [lancamentos]);
+
+  const resumoPorFormaPagamento = useMemo(() => {
+    const grupos = new Map<string, { total: number; qtd: number }>();
+    for (const l of lancamentos) {
+      if (l.tipo !== "entrada") continue;
+      const grupo = grupos.get(l.forma_pagamento) || { total: 0, qtd: 0 };
+      grupo.total += Number(l.valor);
+      grupo.qtd += 1;
+      grupos.set(l.forma_pagamento, grupo);
+    }
+    return Array.from(grupos.entries())
+      .map(([forma, dado]) => ({ forma, ...dado, label: FORMAS_PAGAMENTO.find((f) => f.id === forma)?.nome || forma }))
+      .sort((a, b) => b.total - a.total);
+  }, [lancamentos]);
 
   const carregar = async (usuarioId: string, inicio: string, fim: string) => {
     setLoading(true);
@@ -107,6 +154,7 @@ export default function PdvCaixaPage() {
           descricao: descricao.trim(),
           valor: Number(valor),
           formaPagamento,
+          categoria: categoria || null,
         }),
       });
       const resultado = await resp.json();
@@ -115,6 +163,7 @@ export default function PdvCaixaPage() {
       setDescricao("");
       setValor("");
       setFormaPagamento("dinheiro");
+      setCategoria("");
       setFormAberto(null);
       carregar(usuario.id, dataInicio, dataFim);
     } catch (err: any) {
@@ -179,11 +228,26 @@ export default function PdvCaixaPage() {
         </div>
 
         <div className="flex gap-2">
-          <button onClick={() => setFormAberto("entrada")} className="flex-1 bg-emerald-600 text-white py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
+          <button onClick={() => { setCategoria(""); setFormAberto("entrada"); }} className="flex-1 bg-emerald-600 text-white py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
             <Plus className="w-4 h-4" /> Entrada
           </button>
-          <button onClick={() => setFormAberto("saida")} className="flex-1 bg-red-600 text-white py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
+          <button onClick={() => { setCategoria(""); setFormAberto("saida"); }} className="flex-1 bg-red-600 text-white py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
             <Plus className="w-4 h-4" /> Saída
+          </button>
+        </div>
+
+        <div className="flex bg-gray-100 rounded-xl p-1 w-fit mx-auto sm:mx-0">
+          <button
+            onClick={() => setVisualizacao("detalhado")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition ${visualizacao === "detalhado" ? "bg-white shadow-sm text-gray-800" : "text-gray-500"}`}
+          >
+            <LayoutList className="w-3.5 h-3.5" /> Detalhado
+          </button>
+          <button
+            onClick={() => setVisualizacao("resumo")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition ${visualizacao === "resumo" ? "bg-white shadow-sm text-gray-800" : "text-gray-500"}`}
+          >
+            <ChartColumn className="w-3.5 h-3.5" /> Resumo
           </button>
         </div>
 
@@ -191,6 +255,37 @@ export default function PdvCaixaPage() {
           <p className="text-center text-sm text-gray-400 py-8">Carregando...</p>
         ) : lancamentos.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-2xl shadow text-gray-400">Nenhum lançamento no período.</div>
+        ) : visualizacao === "resumo" ? (
+          <div className="space-y-4">
+            <div className="bg-white rounded-2xl shadow p-4">
+              <p className="text-sm font-semibold text-gray-700 mb-3">Por categoria</p>
+              <div className="space-y-2">
+                {resumoPorCategoria.map((r) => (
+                  <div key={r.categoria} className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">{r.label} <span className="text-gray-400">({r.qtd})</span></span>
+                    <span className={`font-semibold ${r.tipo === "entrada" ? "text-emerald-600" : "text-red-600"}`}>
+                      {r.tipo === "entrada" ? "+" : "-"} {formatarMoeda(r.total)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="bg-white rounded-2xl shadow p-4">
+              <p className="text-sm font-semibold text-gray-700 mb-3">Vendas por forma de pagamento</p>
+              {resumoPorFormaPagamento.length === 0 ? (
+                <p className="text-xs text-gray-400">Nenhuma entrada no período.</p>
+              ) : (
+                <div className="space-y-2">
+                  {resumoPorFormaPagamento.map((r) => (
+                    <div key={r.forma} className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">{r.label} <span className="text-gray-400">({r.qtd})</span></span>
+                      <span className="font-semibold text-emerald-600">{formatarMoeda(r.total)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         ) : (
           <div className="bg-white rounded-2xl shadow divide-y">
             {lancamentos.map((l) => (
@@ -202,6 +297,7 @@ export default function PdvCaixaPage() {
                   <p className="text-sm font-medium text-gray-800 truncate">{l.descricao}</p>
                   <p className="text-xs text-gray-400">
                     {new Date(l.data + "T00:00:00").toLocaleDateString("pt-BR")} · {FORMAS_PAGAMENTO.find((f) => f.id === l.forma_pagamento)?.nome || l.forma_pagamento}
+                    {l.categoria && ` · ${LABEL_CATEGORIA[l.categoria] || l.categoria}`}
                   </p>
                 </div>
                 <p className={`font-bold text-sm ${l.tipo === "entrada" ? "text-emerald-600" : "text-red-600"}`}>
@@ -234,6 +330,13 @@ export default function PdvCaixaPage() {
                 <label className="block text-xs font-medium text-gray-500 mb-1">Forma de pagamento</label>
                 <select value={formaPagamento} onChange={(e) => setFormaPagamento(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm">
                   {FORMAS_PAGAMENTO.map((f) => <option key={f.id} value={f.id}>{f.nome}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Categoria (opcional)</label>
+                <select value={categoria} onChange={(e) => setCategoria(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm">
+                  <option value="">Sem categoria</option>
+                  {(formAberto === "entrada" ? CATEGORIAS_ENTRADA : CATEGORIAS_SAIDA).map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
                 </select>
               </div>
               <button
