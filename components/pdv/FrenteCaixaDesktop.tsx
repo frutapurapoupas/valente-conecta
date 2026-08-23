@@ -162,6 +162,34 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
     inputCodigoRef.current?.focus();
   };
 
+  const podeFinalizar = carrinho.length > 0 && !finalizando && !(metodoPagamento === "dinheiro" && (typeof valorPago !== "number" || valorPago < total));
+
+  // Atalhos de teclado -- quem opera caixa o dia todo ganha velocidade sem
+  // precisar do mouse (mesmo espirito dos F2/F3/F4/F9 do sistema de
+  // referencia, adaptados pras acoes que a nossa tela realmente tem).
+  useEffect(() => {
+    const aoTeclar = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (showScanner) setShowScanner(false);
+        else if (showBusca) { setShowBusca(false); setBuscaTexto(""); }
+        else if (grupoParaEscolher) setGrupoParaEscolher(null);
+        else if (showModalCliente) setShowModalCliente(false);
+        return;
+      }
+      if (e.key === "F2") { e.preventDefault(); inputCodigoRef.current?.focus(); return; }
+      if (e.key === "F3") { e.preventDefault(); setShowBusca(true); return; }
+      if (e.key === "F9") { e.preventDefault(); setShowModalCliente(true); return; }
+      if (e.key === "F4") {
+        e.preventDefault();
+        if (podeFinalizar) confirmar(false);
+        return;
+      }
+    };
+    window.addEventListener("keydown", aoTeclar);
+    return () => window.removeEventListener("keydown", aoTeclar);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showScanner, showBusca, grupoParaEscolher, showModalCliente, podeFinalizar]);
+
   const confirmar = async (forcarLimite = false) => {
     if (metodoPagamento === "fiado" && !clienteSelecionado) {
       setShowModalCliente(true);
@@ -216,7 +244,7 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
             <span className="hidden md:inline">· {new Date().toLocaleDateString("pt-BR")} {new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
             {usuarioNome && <span className="hidden lg:flex items-center gap-1"><IdCard className="w-3.5 h-3.5" /> {usuarioNome}</span>}
           </div>
-          <button onClick={() => setShowModalCliente(true)} className="flex items-center gap-1.5 text-gray-600 hover:text-blue-600 font-medium">
+          <button onClick={() => setShowModalCliente(true)} className="flex items-center gap-1.5 text-gray-600 hover:text-blue-600 font-medium" title="Selecionar cliente (F9)">
             <User className="w-4 h-4" /> {clienteSelecionado?.nome || "Consumidor final"}
           </button>
         </div>
@@ -237,14 +265,14 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
               value={codigo}
               onChange={(e) => setCodigo(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && adicionarPorCodigo(codigo)}
-              placeholder="Código de barras — escaneia ou digita e aperta Enter"
+              placeholder="Código de barras (F2) — escaneia ou digita e aperta Enter"
               className="w-full pl-10 pr-3 py-2.5 border-2 border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
           <button onClick={() => setShowScanner(true)} className="px-3 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl" title="Escanear com a câmera">
             <ScanBarcode className="w-5 h-5" />
           </button>
-          <button onClick={() => setShowBusca(true)} className="px-3 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl" title="Buscar por nome">
+          <button onClick={() => setShowBusca(true)} className="px-3 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl" title="Buscar por nome (F3)">
             <Search className="w-5 h-5" />
           </button>
         </div>
@@ -352,10 +380,11 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
 
           <button
             onClick={() => confirmar(false)}
-            disabled={carrinho.length === 0 || finalizando || (metodoPagamento === "dinheiro" && (typeof valorPago !== "number" || valorPago < total))}
+            disabled={!podeFinalizar}
+            title="Finalizar venda (F4)"
             className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white px-6 py-3 rounded-xl font-semibold transition whitespace-nowrap"
           >
-            {finalizando ? "Processando..." : "Finalizar venda"}
+            {finalizando ? "Processando..." : "Finalizar venda (F4)"}
           </button>
         </div>
         </div>
