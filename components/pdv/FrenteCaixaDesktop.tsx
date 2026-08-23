@@ -22,7 +22,9 @@ import {
 import { BarcodeScanner } from "@/components/pdv/BarcodeScanner";
 import { useCarrinhoPdv } from "@/lib/pdv/useCarrinhoPdv";
 import { agruparPorCatalogo } from "@/lib/pdv/agruparPorCatalogo";
+import QRCode from "qrcode";
 import { obterDadosEmpresa, salvarDadosEmpresa, type DadosEmpresa } from "@/lib/pdv/dadosEmpresa";
+import { gerarPayloadPix } from "@/lib/pdv/pixBRCode";
 import type { ClienteFiado, FormaPagamento, ItemCarrinho, ProdutoPDV, PropsFrenteCaixa } from "@/lib/pdv/frenteCaixaTypes";
 
 function formatarMoeda(v: number) {
@@ -182,8 +184,10 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
   const [valorPago, setValorPago] = useState<number | "">("");
   const [lancamentosHoje, setLancamentosHoje] = useState<LancamentoCaixa[]>([]);
   const [tipoImpressao, setTipoImpressao] = useState<"cupom" | "nota">("cupom");
-  const [empresa, setEmpresa] = useState<DadosEmpresa>({ nome: "", cnpj: "", endereco: "", telefone: "" });
+  const [empresa, setEmpresa] = useState<DadosEmpresa>({ nome: "", cnpj: "", endereco: "", telefone: "", chavePix: "", cidade: "" });
   const [showConfig, setShowConfig] = useState(false);
+  const [qrPixUrl, setQrPixUrl] = useState<string | null>(null);
+  const [gerandoQrPix, setGerandoQrPix] = useState(false);
   const inputCodigoRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -191,6 +195,20 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
     const tipo = localStorage.getItem("pdv_tipo_impressao");
     if (tipo === "nota") setTipoImpressao("nota");
   }, []);
+
+  const gerarQrPix = async () => {
+    if (!empresa.chavePix) { setShowConfig(true); return; }
+    setGerandoQrPix(true);
+    try {
+      const payload = gerarPayloadPix({ chave: empresa.chavePix, nomeRecebedor: empresa.nome || usuarioNome || "Recebedor", cidade: empresa.cidade, valor: total });
+      const url = await QRCode.toDataURL(payload, { width: 260, margin: 1 });
+      setQrPixUrl(url);
+    } catch {
+      toast.error("Não deu pra gerar o QR Code — confira a chave Pix cadastrada");
+    } finally {
+      setGerandoQrPix(false);
+    }
+  };
 
   const salvarConfig = () => {
     salvarDadosEmpresa(empresa);
@@ -290,6 +308,7 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
         else if (grupoParaEscolher) setGrupoParaEscolher(null);
         else if (showModalCliente) setShowModalCliente(false);
         else if (showConfig) setShowConfig(false);
+        else if (qrPixUrl) setQrPixUrl(null);
         return;
       }
       if (e.key === "F2") { e.preventDefault(); inputCodigoRef.current?.focus(); return; }
@@ -304,7 +323,7 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
     window.addEventListener("keydown", aoTeclar);
     return () => window.removeEventListener("keydown", aoTeclar);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showScanner, showBusca, grupoParaEscolher, showModalCliente, showConfig, podeFinalizar]);
+  }, [showScanner, showBusca, grupoParaEscolher, showModalCliente, showConfig, qrPixUrl, podeFinalizar]);
 
   const confirmar = async (forcarLimite = false) => {
     if (metodoPagamento === "fiado" && !clienteSelecionado) {
@@ -366,6 +385,7 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
     setClienteSelecionado(null);
     setValorPago("");
     setMetodoPagamento("dinheiro");
+    setQrPixUrl(null);
     onVendaFinalizada();
     carregarResumoHoje();
     inputCodigoRef.current?.focus();
@@ -520,6 +540,16 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
             </div>
           )}
 
+          {metodoPagamento === "pix" && (
+            <button
+              onClick={gerarQrPix}
+              disabled={gerandoQrPix || total <= 0}
+              className="px-3 py-2.5 bg-white border-2 border-blue-200 text-blue-700 rounded-xl text-sm font-medium disabled:opacity-50 whitespace-nowrap"
+            >
+              {gerandoQrPix ? "Gerando..." : "Mostrar QR Code"}
+            </button>
+          )}
+
           <button
             onClick={() => confirmar(false)}
             disabled={!podeFinalizar}
@@ -672,6 +702,21 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
         </div>
       )}
 
+      {qrPixUrl && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-xs w-full p-5 text-center">
+            <div className="flex justify-between items-center mb-3">
+              <h2 className="font-bold text-gray-800">Pague com Pix</h2>
+              <button onClick={() => setQrPixUrl(null)}><X className="w-5 h-5 text-gray-400" /></button>
+            </div>
+            <img src={qrPixUrl} alt="QR Code Pix" className="mx-auto rounded-lg border" />
+            <p className="text-lg font-bold text-gray-800 mt-3">{formatarMoeda(total)}</p>
+            <p className="text-xs text-gray-400 mt-1">Peça pro cliente escanear com o app do banco dele. O pagamento cai direto na sua conta — confirme visualmente antes de finalizar a venda.</p>
+            <button onClick={() => setQrPixUrl(null)} className="w-full mt-4 bg-gray-100 text-gray-700 py-2.5 rounded-xl font-medium">Fechar</button>
+          </div>
+        </div>
+      )}
+
       {showConfig && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-sm w-full max-h-[85vh] overflow-y-auto p-5">
@@ -695,6 +740,14 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
               <div>
                 <label className="text-xs font-medium text-gray-500">Telefone (opcional)</label>
                 <input value={empresa.telefone} onChange={(e) => setEmpresa({ ...empresa, telefone: e.target.value })} placeholder="(75) 99999-9999" className="w-full mt-1 px-3 py-2 border rounded-lg text-sm" />
+              </div>
+              <div className="pt-2 border-t">
+                <label className="text-xs font-medium text-gray-500">Chave Pix (pra gerar QR Code na venda)</label>
+                <input value={empresa.chavePix} onChange={(e) => setEmpresa({ ...empresa, chavePix: e.target.value })} placeholder="CPF, e-mail, telefone ou chave aleatória" className="w-full mt-1 px-3 py-2 border rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-500">Cidade (pro QR Code Pix)</label>
+                <input value={empresa.cidade} onChange={(e) => setEmpresa({ ...empresa, cidade: e.target.value })} placeholder="VALENTE" className="w-full mt-1 px-3 py-2 border rounded-lg text-sm" />
               </div>
               <div className="pt-2 border-t">
                 <label className="text-xs font-medium text-gray-500 mb-1.5 block">O que imprime ao finalizar a venda</label>

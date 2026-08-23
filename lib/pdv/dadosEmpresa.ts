@@ -1,12 +1,13 @@
 // Caminho: C:\valente_conecta\lib\pdv\dadosEmpresa.ts
 //
 // Dados da empresa pra imprimir na nota de venda formal (nome, CNPJ,
-// endereco, telefone) -- opcionais, guardados por dispositivo em
-// localStorage, mesmo padrao ja usado pro nome da loja no fiado
-// (app/pdv/fiado/page.tsx, chave pdv_fiado_loja_nome). Nao virou
-// migration/tabela porque e' so' conteudo impresso, nao dado
-// transacional -- consistente com o resto do PDV que ja usa esse
-// padrao pra preferencia de dispositivo (usePdvLayoutPreference).
+// endereco, telefone) e pra gerar o QR Code Pix (chave, cidade) --
+// opcionais, guardados por dispositivo em localStorage, mesmo padrao ja
+// usado pro nome da loja no fiado (app/pdv/fiado/page.tsx, chave
+// pdv_fiado_loja_nome). Nao virou migration/tabela porque e' so' dado
+// de exibicao/configuracao de impressao, nao dado transacional --
+// consistente com o resto do PDV que ja usa esse padrao pra preferencia
+// de dispositivo (usePdvLayoutPreference).
 
 const CHAVE = "pdv_dados_empresa";
 
@@ -15,17 +16,21 @@ export interface DadosEmpresa {
   cnpj: string;
   endereco: string;
   telefone: string;
+  chavePix: string;
+  cidade: string;
 }
 
+const PADRAO: DadosEmpresa = { nome: "", cnpj: "", endereco: "", telefone: "", chavePix: "", cidade: "" };
+
 export function obterDadosEmpresa(): DadosEmpresa {
-  if (typeof window === "undefined") return { nome: "", cnpj: "", endereco: "", telefone: "" };
+  if (typeof window === "undefined") return { ...PADRAO };
   try {
     const salvo = localStorage.getItem(CHAVE);
-    if (salvo) return { nome: "", cnpj: "", endereco: "", telefone: "", ...JSON.parse(salvo) };
+    if (salvo) return { ...PADRAO, ...JSON.parse(salvo) };
   } catch {
     // ignora e cai no default
   }
-  return { nome: "", cnpj: "", endereco: "", telefone: "" };
+  return { ...PADRAO };
 }
 
 export function salvarDadosEmpresa(dados: DadosEmpresa) {
