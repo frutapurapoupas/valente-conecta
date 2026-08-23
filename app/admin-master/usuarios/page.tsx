@@ -7,7 +7,7 @@
 // Realtime (nao polling) sempre que alguem se cadastra ou muda de status.
 
 import { useCallback, useEffect, useState } from "react";
-import { Search, Radio, MapPin, CreditCard } from "lucide-react";
+import { Search, Radio, MapPin, CreditCard, ChevronDown, ChevronUp, Mail, Phone, Gift, Wallet } from "lucide-react";
 import { useUsuariosRealtime } from "@/lib/hooks/useUsuariosRealtime";
 import { CardsResumoUsuarios, GraficoCadastrosPorDia, GraficoPorCidade, GraficoPorStatus, type MetricasUsuarios } from "../components/GraficosUsuarios";
 
@@ -15,9 +15,20 @@ interface UsuarioLinha {
   id: string;
   nome: string;
   whatsapp: string;
+  whatsapp_confirmado: boolean | null;
+  email: string | null;
+  telefone: string | null;
+  bairro: string | null;
   cidade_base: string | null;
   status: "admin" | "trial" | "viral" | "expirado";
   created_at: string;
+  codigo_indicacao: string | null;
+  convidado_por_id: string | null;
+  total_earned: number | null;
+  wallet: number | null;
+  convites_count: number | null;
+  plano_geral: string | null;
+  plano_geral_valido_ate: string | null;
   planos_ativos: { plano_id: string; servico_id: string }[];
   cidades_adicionais: string[];
 }
@@ -38,6 +49,7 @@ export default function AdminUsuariosPage() {
   const [statusFiltro, setStatusFiltro] = useState("");
   const [somenteNovos, setSomenteNovos] = useState(false);
   const [ultimaAtualizacao, setUltimaAtualizacao] = useState<Date | null>(null);
+  const [expandidoId, setExpandidoId] = useState<string | null>(null);
 
   const carregar = useCallback(async () => {
     const params = new URLSearchParams();
@@ -122,29 +134,77 @@ export default function AdminUsuariosPage() {
         ) : usuarios.length === 0 ? (
           <p className="p-4 text-sm text-gray-400">Nenhum usuário encontrado.</p>
         ) : (
-          usuarios.map((u) => (
-            <div key={u.id} className="p-3 flex items-center gap-3 flex-wrap">
-              <div className="flex-1 min-w-[180px]">
-                <p className="text-sm font-medium text-gray-800">{u.nome}</p>
-                <p className="text-xs text-gray-500">{u.whatsapp}</p>
+          usuarios.map((u) => {
+            const aberto = expandidoId === u.id;
+            return (
+              <div key={u.id}>
+                <button
+                  onClick={() => setExpandidoId(aberto ? null : u.id)}
+                  className="w-full p-3 flex items-center gap-3 flex-wrap text-left hover:bg-gray-50"
+                >
+                  <div className="flex-1 min-w-[180px]">
+                    <p className="text-sm font-medium text-gray-800">{u.nome}</p>
+                    <p className="text-xs text-gray-500">{u.whatsapp}</p>
+                  </div>
+                  <span className="flex items-center gap-1 text-xs text-gray-500">
+                    <MapPin className="w-3 h-3" /> {u.cidade_base || "—"}
+                    {u.cidades_adicionais.length > 0 && ` +${u.cidades_adicionais.length}`}
+                  </span>
+                  {u.planos_ativos.length > 0 && (
+                    <span className="flex items-center gap-1 text-xs text-blue-600">
+                      <CreditCard className="w-3 h-3" /> {u.planos_ativos.length} plano(s)
+                    </span>
+                  )}
+                  <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${STATUS_COR[u.status]}`}>
+                    {STATUS_LABEL[u.status]}
+                  </span>
+                  <span className="text-xs text-gray-400 whitespace-nowrap">
+                    {new Date(u.created_at).toLocaleDateString("pt-BR")}
+                  </span>
+                  {aberto ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+                </button>
+
+                {aberto && (
+                  <div className="px-4 pb-4 bg-gray-50 grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2 text-xs text-gray-600">
+                    <p className="flex items-center gap-1.5">
+                      <Phone className="w-3.5 h-3.5 text-gray-400" /> {u.whatsapp}
+                      {u.whatsapp_confirmado ? (
+                        <span className="text-green-600">(confirmado)</span>
+                      ) : (
+                        <span className="text-gray-400">(não confirmado)</span>
+                      )}
+                    </p>
+                    {u.telefone && (
+                      <p className="flex items-center gap-1.5">
+                        <Phone className="w-3.5 h-3.5 text-gray-400" /> {u.telefone} (telefone alt.)
+                      </p>
+                    )}
+                    {u.email && (
+                      <p className="flex items-center gap-1.5">
+                        <Mail className="w-3.5 h-3.5 text-gray-400" /> {u.email}
+                      </p>
+                    )}
+                    {u.bairro && (
+                      <p className="flex items-center gap-1.5">
+                        <MapPin className="w-3.5 h-3.5 text-gray-400" /> Bairro: {u.bairro}
+                      </p>
+                    )}
+                    <p className="flex items-center gap-1.5">
+                      <Gift className="w-3.5 h-3.5 text-gray-400" /> Código: {u.codigo_indicacao || "—"} · {u.convites_count ?? 0} indicado(s)
+                    </p>
+                    <p className="flex items-center gap-1.5">
+                      <Wallet className="w-3.5 h-3.5 text-gray-400" /> Carteira: R$ {(u.wallet ?? 0).toFixed(2)} · Ganho total: R$ {(u.total_earned ?? 0).toFixed(2)}
+                    </p>
+                    <p>Plano geral: {u.plano_geral || "gratis"}{u.plano_geral_valido_ate ? ` (até ${new Date(u.plano_geral_valido_ate).toLocaleDateString("pt-BR")})` : ""}</p>
+                    {u.planos_ativos.length > 0 && (
+                      <p>Planos ativos: {u.planos_ativos.map((p) => p.servico_id).join(", ")}</p>
+                    )}
+                    {u.cidades_adicionais.length > 0 && <p>Cidades adicionais: {u.cidades_adicionais.join(", ")}</p>}
+                  </div>
+                )}
               </div>
-              <span className="flex items-center gap-1 text-xs text-gray-500">
-                <MapPin className="w-3 h-3" /> {u.cidade_base || "—"}
-                {u.cidades_adicionais.length > 0 && ` +${u.cidades_adicionais.length}`}
-              </span>
-              {u.planos_ativos.length > 0 && (
-                <span className="flex items-center gap-1 text-xs text-blue-600">
-                  <CreditCard className="w-3 h-3" /> {u.planos_ativos.length} plano(s)
-                </span>
-              )}
-              <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${STATUS_COR[u.status]}`}>
-                {STATUS_LABEL[u.status]}
-              </span>
-              <span className="text-xs text-gray-400 whitespace-nowrap">
-                {new Date(u.created_at).toLocaleDateString("pt-BR")}
-              </span>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

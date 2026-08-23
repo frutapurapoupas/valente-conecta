@@ -30,7 +30,9 @@ export async function GET(request: NextRequest) {
     const supabase = createClient();
     let query = supabase
       .from('usuarios')
-      .select('id, nome, whatsapp, cidade_base, role, trial_end_at, is_viral_active, viral_end_at, created_at')
+      .select(
+        'id, nome, whatsapp, whatsapp_confirmado, email, telefone, bairro, cidade_base, role, trial_end_at, is_viral_active, viral_end_at, created_at, codigo_indicacao, convidado_por_id, total_earned, wallet, convites_count, plano_geral, plano_geral_valido_ate'
+      )
       .order('created_at', { ascending: false })
       .limit(500);
 
