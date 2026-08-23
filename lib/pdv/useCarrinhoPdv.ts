@@ -20,6 +20,8 @@ interface ResultadoVenda {
   erro?: string;
   limiteExcedido?: { saldoAtual: number; limite: number };
   troco?: number;
+  saldoTotalCliente?: number;
+  dataVencimentoFiado?: string;
 }
 
 export function useCarrinhoPdv(usuarioId: string) {
@@ -121,7 +123,12 @@ export function useCarrinhoPdv(usuarioId: string) {
       }
 
       limpar();
-      return { sucesso: true, troco: resultado.data.troco };
+      return {
+        sucesso: true,
+        troco: resultado.data.troco,
+        saldoTotalCliente: resultado.data.saldoTotalCliente,
+        dataVencimentoFiado: resultado.data.dataVencimentoFiado,
+      };
     } catch {
       return { sucesso: false, erro: "Falha de conexão" };
     } finally {

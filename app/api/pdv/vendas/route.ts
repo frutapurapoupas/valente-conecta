@@ -81,19 +81,22 @@ export async function POST(request: NextRequest) {
     });
     if (erroRpc) throw erroRpc;
 
+    let saldoTotalCliente: number | undefined;
+    let dataVencimentoFiado: string | undefined;
     if (formaPagamento === 'fiado') {
       // Limite ja' foi checado acima, antes de registrar a venda -- aqui e'
       // so' inserir a divida mesmo (venda ja' existe e o estoque ja' foi
       // descontado, nao tem mais como voltar atras nem faz sentido recusar).
-      const vencimento = body.fiadoVencimento || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-      await inserirDividaFiado({
+      dataVencimentoFiado = body.fiadoVencimento || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const resultado = await inserirDividaFiado({
         donoId: usuarioId,
         clienteId,
         valorTotal: total,
-        dataVencimento: vencimento,
+        dataVencimento: dataVencimentoFiado!,
         itens: itens.map((i) => ({ nome: i.nome, quantidade: i.quantidade, precoUnitario: i.precoUnitario })),
         observacoes: `Venda #${String(vendaId).slice(0, 8)}`,
       });
+      saldoTotalCliente = resultado.saldoTotalCliente;
     }
 
     await supabase.from('pdv_caixa_lancamentos').insert({
@@ -105,7 +108,14 @@ export async function POST(request: NextRequest) {
       forma_pagamento: formaPagamento,
     });
 
-    return NextResponse.json({ success: true, data: { vendaId, subtotal, total, troco: formaPagamento === 'dinheiro' ? Math.max(0, valorPago - total) : 0 } });
+    return NextResponse.json({
+      success: true,
+      data: {
+        vendaId, subtotal, total,
+        troco: formaPagamento === 'dinheiro' ? Math.max(0, valorPago - total) : 0,
+        saldoTotalCliente, dataVencimentoFiado,
+      },
+    });
   } catch (error: any) {
     console.error('Erro ao registrar venda:', error);
     return NextResponse.json({ success: false, error: error.message || 'Erro ao finalizar venda' }, { status: 500 });

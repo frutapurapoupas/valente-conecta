@@ -9,13 +9,33 @@
 
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
-import { ShoppingCart, Plus, Minus, Trash2, X, Search, Package, ChevronUp } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, X, Search, Package, ChevronUp, Receipt, MessageCircle } from "lucide-react";
 import { useCarrinhoPdv } from "@/lib/pdv/useCarrinhoPdv";
 import { agruparPorCatalogo } from "@/lib/pdv/agruparPorCatalogo";
 import type { ClienteFiado, FormaPagamento, ProdutoPDV, PropsFrenteCaixa } from "@/lib/pdv/frenteCaixaTypes";
 
 function formatarMoeda(v: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
+}
+
+function formatarDataBR(iso: string) {
+  return new Date(iso + "T00:00:00").toLocaleDateString("pt-BR");
+}
+
+// Mesmo padrao de link "wa.me" ja usado em app/pdv/fiado/page.tsx e no
+// FrenteCaixaDesktop.tsx -- so' abre uma mensagem pronta, o lojista quem
+// manda.
+function linkWhatsappCobranca(telefone: string, mensagem: string) {
+  const digitos = telefone.replace(/\D/g, "");
+  const numeroCompleto = digitos.startsWith("55") ? digitos : `55${digitos}`;
+  return `https://wa.me/${numeroCompleto}?text=${encodeURIComponent(mensagem)}`;
+}
+
+interface ResumoFiado {
+  cliente: ClienteFiado;
+  valor: number;
+  vencimento: string;
+  saldoTotal: number;
 }
 
 const FORMAS: { id: FormaPagamento; label: string }[] = [
@@ -39,6 +59,7 @@ export function FrenteCaixaMobile({ usuarioId, produtos, clientes, carregandoPro
   const [novoClienteNome, setNovoClienteNome] = useState("");
   const [novoClienteTelefone, setNovoClienteTelefone] = useState("");
   const [salvandoNovoCliente, setSalvandoNovoCliente] = useState(false);
+  const [resumoFiado, setResumoFiado] = useState<ResumoFiado | null>(null);
 
   const totalItens = useMemo(() => carrinho.reduce((s, i) => s + i.quantidade, 0), [carrinho]);
   const todosClientes = useMemo(() => [...clientes, ...clientesExtra], [clientes, clientesExtra]);
@@ -91,6 +112,8 @@ export function FrenteCaixaMobile({ usuarioId, produtos, clientes, carregandoPro
       abrirSelecaoCliente();
       return;
     }
+    const clienteAntes = clienteSelecionado;
+    const totalAntes = total;
     const resultado = await finalizarVenda({
       formaPagamento: metodoPagamento,
       cliente: clienteSelecionado,
@@ -114,7 +137,16 @@ export function FrenteCaixaMobile({ usuarioId, produtos, clientes, carregandoPro
       return;
     }
 
-    toast.success(resultado.troco ? `Venda ok! Troco: ${formatarMoeda(resultado.troco)}` : "Venda finalizada!");
+    if (metodoPagamento === "fiado" && clienteAntes) {
+      setResumoFiado({
+        cliente: clienteAntes,
+        valor: totalAntes,
+        vencimento: resultado.dataVencimentoFiado || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+        saldoTotal: resultado.saldoTotalCliente ?? totalAntes,
+      });
+    } else {
+      toast.success(resultado.troco ? `Venda ok! Troco: ${formatarMoeda(resultado.troco)}` : "Venda finalizada!");
+    }
     setClienteSelecionado(null);
     setValorPago("");
     setMetodoPagamento("dinheiro");
@@ -283,6 +315,32 @@ export function FrenteCaixaMobile({ usuarioId, produtos, clientes, carregandoPro
                   <span className="text-xs text-gray-400">{v.estoque} {v.unidade || "un"}</span>
                 </button>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {resumoFiado && (
+        <div className="fixed inset-0 bg-black/40 z-[70] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-5">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="font-bold text-gray-800 flex items-center gap-2"><Receipt className="w-4.5 h-4.5" /> Venda fiado registrada</h2>
+              <button onClick={() => setResumoFiado(null)}><X className="w-5 h-5 text-gray-400" /></button>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between"><span className="text-gray-500">Cliente</span><span className="font-medium">{resumoFiado.cliente.nome}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">Valor da compra</span><span className="font-medium">{formatarMoeda(resumoFiado.valor)}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">Vencimento</span><span className="font-medium">{formatarDataBR(resumoFiado.vencimento)}</span></div>
+              <div className="flex justify-between pt-2 border-t"><span className="text-gray-700 font-semibold">Saldo total em aberto</span><span className="font-bold text-red-600">{formatarMoeda(resumoFiado.saldoTotal)}</span></div>
+            </div>
+            <div className="flex gap-3 pt-5">
+              <button onClick={() => setResumoFiado(null)} className="flex-1 px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-50">Fechar</button>
+              <button
+                onClick={() => window.open(linkWhatsappCobranca(resumoFiado.cliente.telefone, `Olá, ${resumoFiado.cliente.nome}! Compra de ${formatarMoeda(resumoFiado.valor)} no fiado, vencimento em ${formatarDataBR(resumoFiado.vencimento)}. Saldo total em aberto: ${formatarMoeda(resumoFiado.saldoTotal)}.`), "_blank")}
+                className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 flex items-center justify-center gap-2"
+              >
+                <MessageCircle className="w-4 h-4" /> WhatsApp
+              </button>
             </div>
           </div>
         </div>

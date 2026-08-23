@@ -17,7 +17,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import {
   Trash2, CreditCard, QrCode, DollarSign, Receipt, X, Search, ScanBarcode, User, Plus, Minus,
-  AlertTriangle, TrendingUp, History, IdCard, CalendarClock, Settings, FileText,
+  AlertTriangle, TrendingUp, History, IdCard, CalendarClock, Settings, FileText, MessageCircle,
 } from "lucide-react";
 import { BarcodeScanner } from "@/components/pdv/BarcodeScanner";
 import { useCarrinhoPdv } from "@/lib/pdv/useCarrinhoPdv";
@@ -36,6 +36,27 @@ function diasParaVencer(validade: string | null): number | null {
   const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
   const dataValidade = new Date(validade + "T00:00:00");
   return Math.round((dataValidade.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+function formatarDataBR(iso: string) {
+  return new Date(iso + "T00:00:00").toLocaleDateString("pt-BR");
+}
+
+// Mesmo padrao de link "wa.me" ja usado em app/pdv/fiado/page.tsx pra
+// cobrar por WhatsApp -- so' abre uma mensagem pronta, o lojista quem
+// manda; por isso nao depende do cliente ter o app instalado nem do
+// plano da loja (diferente do push automatico, que so' plano pago dispara).
+function linkWhatsappCobranca(telefone: string, mensagem: string) {
+  const digitos = telefone.replace(/\D/g, "");
+  const numeroCompleto = digitos.startsWith("55") ? digitos : `55${digitos}`;
+  return `https://wa.me/${numeroCompleto}?text=${encodeURIComponent(mensagem)}`;
+}
+
+interface ResumoFiado {
+  cliente: ClienteFiado;
+  valor: number;
+  vencimento: string;
+  saldoTotal: number;
 }
 
 function imprimirComprovante(itens: { nome: string; preco: number; quantidade: number }[], subtotal: number, desconto: number, total: number, cliente: ClienteFiado | null, nomeEmpresa: string) {
@@ -178,6 +199,8 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
   const [showScanner, setShowScanner] = useState(false);
   const [showBusca, setShowBusca] = useState(false);
   const [buscaTexto, setBuscaTexto] = useState("");
+  const [buscaIndiceAtivo, setBuscaIndiceAtivo] = useState(0);
+  const [resumoFiado, setResumoFiado] = useState<ResumoFiado | null>(null);
   const [clienteSelecionado, setClienteSelecionado] = useState<ClienteFiado | null>(null);
   const [showModalCliente, setShowModalCliente] = useState(false);
   const [clientesExtra, setClientesExtra] = useState<ClienteFiado[]>([]);
@@ -353,6 +376,7 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
         else if (showModalCliente) { setShowModalCliente(false); setMostrarCadastroCliente(false); }
         else if (showConfig) setShowConfig(false);
         else if (qrPixUrl) setQrPixUrl(null);
+        else if (resumoFiado) setResumoFiado(null);
         return;
       }
       if (e.key === "F2") { e.preventDefault(); inputCodigoRef.current?.focus(); return; }
@@ -367,7 +391,7 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
     window.addEventListener("keydown", aoTeclar);
     return () => window.removeEventListener("keydown", aoTeclar);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showScanner, showBusca, grupoParaEscolher, showModalCliente, showConfig, qrPixUrl, podeFinalizar]);
+  }, [showScanner, showBusca, grupoParaEscolher, showModalCliente, showConfig, qrPixUrl, resumoFiado, podeFinalizar]);
 
   const confirmar = async (forcarLimite = false) => {
     if (metodoPagamento === "fiado" && !clienteSelecionado) {
@@ -407,7 +431,17 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
     }
 
     toast.success("Venda finalizada!");
-    if (tipoImpressao === "nota") {
+    if (formaAntes === "fiado" && clienteAntes) {
+      // Fiado nao mostra o cupom/nota generico -- o que importa aqui e' o
+      // saldo total que o cliente passou a dever, nao o comprovante da
+      // venda em si (ele ja e' registrado sozinho no /pdv/fiado).
+      setResumoFiado({
+        cliente: clienteAntes,
+        valor: totalAntes,
+        vencimento: resultado.dataVencimentoFiado || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+        saldoTotal: resultado.saldoTotalCliente ?? totalAntes,
+      });
+    } else if (tipoImpressao === "nota") {
       imprimirNotaVenda({
         vendaNumero: vendaNumeroAntes,
         itens: itensAntes,
@@ -701,16 +735,27 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
             <input
               autoFocus
               value={buscaTexto}
-              onChange={(e) => setBuscaTexto(e.target.value)}
-              placeholder="Nome do produto..."
+              onChange={(e) => { setBuscaTexto(e.target.value); setBuscaIndiceAtivo(0); }}
+              onKeyDown={(e) => {
+                if (gruposBusca.length === 0) return;
+                if (e.key === "ArrowDown") { e.preventDefault(); setBuscaIndiceAtivo((i) => Math.min(i + 1, gruposBusca.length - 1)); }
+                else if (e.key === "ArrowUp") { e.preventDefault(); setBuscaIndiceAtivo((i) => Math.max(i - 1, 0)); }
+                else if (e.key === "Enter") {
+                  e.preventDefault();
+                  const grupo = gruposBusca[buscaIndiceAtivo];
+                  if (grupo) { adicionarOuEscolher(grupo, qtdEntrada || 1); setQtdEntrada(1); setShowBusca(false); setBuscaTexto(""); }
+                }
+              }}
+              placeholder="Nome do produto... (setas pra navegar, Enter pra adicionar)"
               className="w-full px-3 py-2.5 border rounded-xl text-sm mb-2"
             />
             <div className="max-h-72 overflow-y-auto space-y-1">
-              {gruposBusca.map((grupo) => (
+              {gruposBusca.map((grupo, idx) => (
                 <button
                   key={grupo[0].catalogoId || grupo[0].estoqueId}
                   onClick={() => { adicionarOuEscolher(grupo, qtdEntrada || 1); setQtdEntrada(1); setShowBusca(false); setBuscaTexto(""); }}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 flex justify-between items-center text-sm"
+                  onMouseEnter={() => setBuscaIndiceAtivo(idx)}
+                  className={`w-full text-left px-3 py-2 rounded-lg flex justify-between items-center text-sm ${idx === buscaIndiceAtivo ? "bg-blue-50 ring-1 ring-blue-300" : "hover:bg-gray-50"}`}
                 >
                   <span className="text-gray-800">{grupo[0].nome}{grupo.length > 1 && <span className="ml-1.5 text-xs text-blue-600 font-medium">{grupo.length} opções</span>}</span>
                   <span className="text-emerald-600 font-medium">{formatarMoeda(grupo[0].preco)}</span>
@@ -757,6 +802,32 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
             <p className="text-lg font-bold text-gray-800 mt-3">{formatarMoeda(total)}</p>
             <p className="text-xs text-gray-400 mt-1">Peça pro cliente escanear com o app do banco dele. O pagamento cai direto na sua conta — confirme visualmente antes de finalizar a venda.</p>
             <button onClick={() => setQrPixUrl(null)} className="w-full mt-4 bg-gray-100 text-gray-700 py-2.5 rounded-xl font-medium">Fechar</button>
+          </div>
+        </div>
+      )}
+
+      {resumoFiado && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-5">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="font-bold text-gray-800 flex items-center gap-2"><Receipt className="w-4.5 h-4.5" /> Venda fiado registrada</h2>
+              <button onClick={() => setResumoFiado(null)}><X className="w-5 h-5 text-gray-400" /></button>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between"><span className="text-gray-500">Cliente</span><span className="font-medium">{resumoFiado.cliente.nome}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">Valor da compra</span><span className="font-medium">{formatarMoeda(resumoFiado.valor)}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">Vencimento</span><span className="font-medium">{formatarDataBR(resumoFiado.vencimento)}</span></div>
+              <div className="flex justify-between pt-2 border-t"><span className="text-gray-700 font-semibold">Saldo total em aberto</span><span className="font-bold text-red-600">{formatarMoeda(resumoFiado.saldoTotal)}</span></div>
+            </div>
+            <div className="flex gap-3 pt-5">
+              <button onClick={() => setResumoFiado(null)} className="flex-1 px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-50">Fechar</button>
+              <button
+                onClick={() => window.open(linkWhatsappCobranca(resumoFiado.cliente.telefone, `Olá, ${resumoFiado.cliente.nome}! Aqui é ${empresa.nome || "a loja"}. Compra de ${formatarMoeda(resumoFiado.valor)} no fiado, vencimento em ${formatarDataBR(resumoFiado.vencimento)}. Saldo total em aberto: ${formatarMoeda(resumoFiado.saldoTotal)}.`), "_blank")}
+                className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 flex items-center justify-center gap-2"
+              >
+                <MessageCircle className="w-4 h-4" /> WhatsApp
+              </button>
+            </div>
           </div>
         </div>
       )}
