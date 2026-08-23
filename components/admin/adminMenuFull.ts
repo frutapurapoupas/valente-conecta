@@ -584,7 +584,6 @@ export const adminMenuFull: MenuGroup[] = [
     icon: DollarSign,
     collapsible: true,
     items: [
-      { name: "Módulo Fiado (liberar por loja)", path: "/admin-master/fiado", icon: DollarSign, status: 'active' },
       { name: "Módulo Agenda + Fila (liberar por loja)", path: "/admin-master/agenda", icon: Calendar, status: 'active' },
       { name: "Correspondente bancário", path: "/admin-master/financeiro/correspondente", icon: DollarSign, status: 'construction' },
       { name: "Empréstimos", path: "/admin-master/financeiro/emprestimos", icon: DollarSign, status: 'construction' },

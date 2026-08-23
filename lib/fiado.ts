@@ -95,11 +95,18 @@ export async function inserirDividaFiado(params: Omit<ParametrosDividaFiado, 'fo
   const cliente = (divida as any).fiado_clientes;
   if (cliente?.cliente_usuario_id) {
     try {
-      await enviarPushParaUsuario(cliente.cliente_usuario_id, {
-        titulo: `Nova conta fiado — ${params.lojaNome || 'Valente Conecta'}`,
-        corpo: `Compra: R$ ${params.valorTotal.toFixed(2)} · Saldo total em aberto: R$ ${saldoTotalCliente.toFixed(2)} · Vencimento: ${formatarData(params.dataVencimento)}`,
-        url: '/pdv/fiado',
-      });
+      // Aviso automatico pro cliente devedor e' beneficio de quem paga
+      // algum plano (basico/ilimitado) -- gratis ainda lanca a divida
+      // normalmente, so' nao dispara o push sozinho (lojista cobra por
+      // fora). Decisao tomada com o dono do produto.
+      const { data: dono } = await supabase.from('usuarios').select('plano_geral').eq('id', params.donoId).maybeSingle();
+      if ((dono?.plano_geral || 'gratis') !== 'gratis') {
+        await enviarPushParaUsuario(cliente.cliente_usuario_id, {
+          titulo: `Nova conta fiado — ${params.lojaNome || 'Valente Conecta'}`,
+          corpo: `Compra: R$ ${params.valorTotal.toFixed(2)} · Saldo total em aberto: R$ ${saldoTotalCliente.toFixed(2)} · Vencimento: ${formatarData(params.dataVencimento)}`,
+          url: '/pdv/fiado',
+        });
+      }
     } catch {
       // push e' best-effort, nao bloqueia o lancamento do debito
     }

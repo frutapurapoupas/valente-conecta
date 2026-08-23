@@ -4,10 +4,19 @@
 //
 // Reescrita: a versao anterior era 100% mock (setTimeout + estado local,
 // sem nenhuma persistencia, sem push real, sem lancar divida nova de
-// verdade). Agora e' o modulo Fiado de verdade — opcional por loja, liberado
-// pelo admin master sob solicitacao (ver 017_fiado.sql), escopado por
-// dono_id, com push real ao lancar um debito e lembretes automaticos
-// (app/api/fiado/cron/lembretes).
+// verdade). Agora e' o modulo Fiado de verdade — embarcado por padrao pra
+// todo lojista que usa o PDV, sem aprovacao manual do admin master (isso
+// existia antes, ver 017_fiado.sql, mas foi removido a pedido do dono do
+// produto: fiado agora e' parte do PDV, nao um extra sob solicitacao). O
+// registro em fiado_habilitacoes continua existindo, so' que agora e'
+// criado automaticamente na primeira visita e serve so' pra guardar a
+// config de juros/multa da loja (ver 071_fiado_juros_multa.sql) -- o campo
+// `ativo` nao trava mais nada.
+//
+// Push automatico pro cliente devedor (lancamento de divida + lembretes
+// do cron) e' beneficio de quem paga algum plano (basico/ilimitado) --
+// gratis lanca a divida normalmente, so' nao notifica sozinho (ver
+// lib/fiado.ts e app/api/fiado/cron/lembretes/route.ts).
 //
 // dono_id usa getCurrentUser().id (o mesmo usuario_id real usado no
 // resto do PDV -- estoque, caixa, frente de venda). Antes usava
@@ -21,7 +30,7 @@
 import { useState, useEffect } from 'react';
 import {
   Users, Plus, Search, DollarSign, CheckCircle, XCircle, AlertCircle,
-  Phone, CreditCard, Send, Lock, Clock, Printer, MessageCircle, Receipt, MapPin, Edit2
+  Phone, CreditCard, Send, Printer, MessageCircle, Receipt, MapPin, Edit2
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { getCurrentUser } from '@/lib/auth';
@@ -94,17 +103,27 @@ export default function FiadoPage() {
 
   useEffect(() => {
     if (!donoId) return;
-    fetch(`/api/fiado/habilitacao?donoId=${donoId}`)
-      .then((r) => r.json())
-      .then((res) => {
-        const dados = res.success ? res.data : null;
+    (async () => {
+      try {
+        let dados = await fetch(`/api/fiado/habilitacao?donoId=${donoId}`).then((r) => r.json()).then((res) => (res.success ? res.data : null));
+        // Fiado e' embarcado por padrao -- primeira visita da loja cria a
+        // linha de configuracao sozinha, sem pedir aprovacao de ninguem.
+        if (!dados) {
+          dados = await fetch('/api/fiado/habilitacao', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ donoId }),
+          }).then((r) => r.json()).then((res) => (res.success ? res.data : null));
+        }
         setHabilitacao(dados);
         if (dados) {
           setJurosMensalPct(Number(dados.juros_mensal_pct) || 0);
           setMultaPct(Number(dados.multa_pct) || 0);
         }
-      })
-      .finally(() => setLoading(false));
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, [donoId]);
 
   const salvarJurosMulta = async () => {
@@ -153,23 +172,8 @@ export default function FiadoPage() {
   };
 
   useEffect(() => {
-    if (donoId && habilitacao?.ativo) carregarDados();
-  }, [donoId, habilitacao?.ativo]);
-
-  const solicitarAcesso = async () => {
-    const resp = await fetch('/api/fiado/habilitacao', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ donoId }),
-    });
-    const resultado = await resp.json();
-    if (resultado.success) {
-      setHabilitacao(resultado.data);
-      toast.success('Solicitação enviada! Aguarde a liberação do admin master.');
-    } else {
-      toast.error(resultado.error || 'Erro ao solicitar');
-    }
-  };
+    if (donoId) carregarDados();
+  }, [donoId]);
 
   const abrirNovoCliente = () => {
     setEditandoClienteId(null);
@@ -353,33 +357,6 @@ export default function FiadoPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  if (!habilitacao?.ativo) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-        <div className="bg-white rounded-2xl shadow p-8 max-w-md text-center">
-          <Lock className="w-10 h-10 text-gray-400 mx-auto mb-3" />
-          <h1 className="text-xl font-bold text-gray-800 mb-2">Módulo Fiado</h1>
-          {habilitacao === null ? (
-            <>
-              <p className="text-gray-500 text-sm mb-5">
-                O Fiado é um módulo opcional: venda a prazo com controle de cobrança e aviso automático ao cliente.
-                Disponível para qualquer loja, mediante liberação do admin master.
-              </p>
-              <button onClick={solicitarAcesso} className="w-full px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
-                Solicitar acesso ao módulo
-              </button>
-            </>
-          ) : (
-            <div className="flex items-center gap-2 justify-center text-amber-600 bg-amber-50 rounded-lg py-3 px-4">
-              <Clock className="w-5 h-5" />
-              <p className="text-sm font-medium">Solicitação enviada — aguardando liberação do admin master.</p>
-            </div>
-          )}
-        </div>
       </div>
     );
   }

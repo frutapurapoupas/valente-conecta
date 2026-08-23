@@ -34,8 +34,49 @@ export function FrenteCaixaMobile({ usuarioId, produtos, clientes, carregandoPro
   const [metodoPagamento, setMetodoPagamento] = useState<FormaPagamento>("dinheiro");
   const [valorPago, setValorPago] = useState<number | "">("");
   const [grupoParaEscolher, setGrupoParaEscolher] = useState<ProdutoPDV[] | null>(null);
+  const [clientesExtra, setClientesExtra] = useState<ClienteFiado[]>([]);
+  const [mostrarCadastroCliente, setMostrarCadastroCliente] = useState(false);
+  const [novoClienteNome, setNovoClienteNome] = useState("");
+  const [novoClienteTelefone, setNovoClienteTelefone] = useState("");
+  const [salvandoNovoCliente, setSalvandoNovoCliente] = useState(false);
 
   const totalItens = useMemo(() => carrinho.reduce((s, i) => s + i.quantidade, 0), [carrinho]);
+  const todosClientes = useMemo(() => [...clientes, ...clientesExtra], [clientes, clientesExtra]);
+
+  // Fiado embarcado no PDV: escolher "Fiado" sem cliente cadastrado ja'
+  // abre o cadastro na hora (mesmo padrao do FrenteCaixaDesktop.tsx).
+  const abrirSelecaoCliente = () => {
+    setMostrarClientes(true);
+    setMostrarCadastroCliente(todosClientes.length === 0);
+  };
+
+  const cadastrarClienteRapido = async () => {
+    if (!novoClienteNome.trim() || !novoClienteTelefone.trim()) {
+      toast.error("Preencha nome e telefone");
+      return;
+    }
+    setSalvandoNovoCliente(true);
+    try {
+      const resp = await fetch("/api/fiado/clientes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ donoId: usuarioId, nome: novoClienteNome.trim(), telefone: novoClienteTelefone.trim(), limiteCredito: 0 }),
+      });
+      const resultado = await resp.json();
+      if (!resultado.success) throw new Error(resultado.error || "Erro ao cadastrar cliente");
+      setClientesExtra((prev) => [...prev, resultado.data]);
+      setClienteSelecionado(resultado.data);
+      setNovoClienteNome("");
+      setNovoClienteTelefone("");
+      setMostrarCadastroCliente(false);
+      setMostrarClientes(false);
+      toast.success("Cliente cadastrado!");
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao cadastrar cliente");
+    } finally {
+      setSalvandoNovoCliente(false);
+    }
+  };
 
   const produtosFiltrados = produtos.filter((p) => !busca || p.nome.toLowerCase().includes(busca.toLowerCase()));
   const gruposFiltrados = useMemo(() => Array.from(agruparPorCatalogo(produtosFiltrados).values()), [produtosFiltrados]);
@@ -47,7 +88,7 @@ export function FrenteCaixaMobile({ usuarioId, produtos, clientes, carregandoPro
 
   const confirmar = async (forcarLimite = false) => {
     if (metodoPagamento === "fiado" && !clienteSelecionado) {
-      setMostrarClientes(true);
+      abrirSelecaoCliente();
       return;
     }
     const resultado = await finalizarVenda({
@@ -189,7 +230,7 @@ export function FrenteCaixaMobile({ usuarioId, produtos, clientes, carregandoPro
                 {FORMAS.map((f) => (
                   <button
                     key={f.id}
-                    onClick={() => setMetodoPagamento(f.id)}
+                    onClick={() => { setMetodoPagamento(f.id); if (f.id === "fiado" && !clienteSelecionado) abrirSelecaoCliente(); }}
                     className={`flex-1 py-2 rounded-xl text-xs font-medium border ${metodoPagamento === f.id ? "border-blue-500 bg-blue-50 text-blue-700" : "text-gray-500"}`}
                   >
                     {f.label}
@@ -206,7 +247,7 @@ export function FrenteCaixaMobile({ usuarioId, produtos, clientes, carregandoPro
                 />
               )}
               {metodoPagamento === "fiado" && (
-                <button onClick={() => setMostrarClientes(true)} className="w-full text-left px-3 py-2.5 border rounded-xl text-sm text-gray-600">
+                <button onClick={abrirSelecaoCliente} className="w-full text-left px-3 py-2.5 border rounded-xl text-sm text-gray-600">
                   {clienteSelecionado ? `Cliente: ${clienteSelecionado.nome}` : "Toque para selecionar cliente"}
                 </button>
               )}
@@ -251,28 +292,53 @@ export function FrenteCaixaMobile({ usuarioId, produtos, clientes, carregandoPro
         <div className="fixed inset-0 bg-black/40 z-[60] flex items-end">
           <div className="bg-white rounded-t-3xl w-full max-h-[70vh] flex flex-col">
             <div className="p-4 border-b flex items-center justify-between shrink-0">
-              <h2 className="font-bold text-gray-800">Selecionar cliente</h2>
-              <button onClick={() => setMostrarClientes(false)}><X className="w-5 h-5 text-gray-400" /></button>
+              <h2 className="font-bold text-gray-800">{mostrarCadastroCliente ? "Novo cliente" : "Selecionar cliente"}</h2>
+              <button onClick={() => { setMostrarClientes(false); setMostrarCadastroCliente(false); }}><X className="w-5 h-5 text-gray-400" /></button>
             </div>
-            <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
-              <button
-                onClick={() => { setClienteSelecionado(null); setMostrarClientes(false); }}
-                className="w-full text-left p-3 border rounded-xl"
-              >
-                <p className="font-medium text-sm">Consumidor final</p>
-              </button>
-              {clientes.map((c) => (
+
+            {mostrarCadastroCliente ? (
+              <div className="flex-1 overflow-y-auto p-3 space-y-3">
+                <p className="text-xs text-gray-400">Nome e telefone bastam pra vender fiado agora — CPF, endereço e limite dá pra completar depois em Fiado.</p>
+                <div>
+                  <label className="text-xs font-medium text-gray-500">Nome *</label>
+                  <input value={novoClienteNome} onChange={(e) => setNovoClienteNome(e.target.value)} className="w-full mt-1 px-3 py-2 border rounded-lg text-sm" autoFocus />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-500">Telefone/WhatsApp *</label>
+                  <input value={novoClienteTelefone} onChange={(e) => setNovoClienteTelefone(e.target.value)} placeholder="(75) 99999-9999" className="w-full mt-1 px-3 py-2 border rounded-lg text-sm" />
+                </div>
+                <button onClick={cadastrarClienteRapido} disabled={salvandoNovoCliente} className="w-full bg-blue-600 text-white py-2.5 rounded-xl font-semibold disabled:opacity-60">
+                  {salvandoNovoCliente ? "Cadastrando..." : "Cadastrar e selecionar"}
+                </button>
+                {todosClientes.length > 0 && (
+                  <button onClick={() => setMostrarCadastroCliente(false)} className="w-full text-center text-sm text-gray-500">
+                    Voltar pra lista de clientes
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
+                <button onClick={() => setMostrarCadastroCliente(true)} className="w-full text-left p-3 border-2 border-dashed border-blue-200 rounded-xl text-blue-600 font-medium text-sm">
+                  + Novo cliente
+                </button>
                 <button
-                  key={c.id}
-                  onClick={() => { setClienteSelecionado(c); setMostrarClientes(false); }}
+                  onClick={() => { setClienteSelecionado(null); setMostrarClientes(false); }}
                   className="w-full text-left p-3 border rounded-xl"
                 >
-                  <p className="font-medium text-sm">{c.nome}</p>
-                  <p className="text-xs text-gray-400">{c.telefone} · limite {formatarMoeda(c.limite_credito)}</p>
+                  <p className="font-medium text-sm">Consumidor final</p>
                 </button>
-              ))}
-              {clientes.length === 0 && <p className="text-xs text-gray-400 text-center py-4">Nenhum cliente cadastrado no fiado ainda.</p>}
-            </div>
+                {todosClientes.map((c) => (
+                  <button
+                    key={c.id}
+                    onClick={() => { setClienteSelecionado(c); setMostrarClientes(false); }}
+                    className="w-full text-left p-3 border rounded-xl"
+                  >
+                    <p className="font-medium text-sm">{c.nome}</p>
+                    <p className="text-xs text-gray-400">{c.telefone} · limite {formatarMoeda(c.limite_credito)}</p>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
