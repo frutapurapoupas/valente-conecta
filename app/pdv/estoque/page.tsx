@@ -13,7 +13,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import {
-  ArrowLeft, Barcode, Camera, Check, Edit2, Package, Plus, Search, Trash2, X,
+  ArrowLeft, Barcode, Camera, Check, Edit2, Package, Plus, Search, Trash2, X, Megaphone,
 } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { MidiaUploader } from "@/components/catalogo/MidiaUploader";
@@ -42,6 +42,7 @@ interface ItemEstoque {
   validade: string | null;
   variante: string;
   ativo: boolean;
+  catalogo_item_id: string | null;
   produto: { id: string; nome: string; ean: string | null; sku: string; segmento: string; categoria: string | null; unidade: string; foto_url: string | null };
 }
 
@@ -87,6 +88,30 @@ export default function PdvEstoquePage() {
   const [validade, setValidade] = useState("");
   const [temVariacao, setTemVariacao] = useState(false);
   const [variantes, setVariantes] = useState<LinhaVariante[]>([{ nome: "", quantidade: 0 }]);
+  const [publicandoVitrine, setPublicandoVitrine] = useState(false);
+
+  const publicarNaVitrine = async () => {
+    if (!usuario) return;
+    setPublicandoVitrine(true);
+    try {
+      const resp = await fetch("/api/pdv/estoque/publicar-vitrine", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ usuarioId: usuario.id }),
+      }).then((r) => r.json());
+      if (!resp.success) throw new Error(resp.error);
+      if (resp.publicados === 0) {
+        toast.success("Todo o estoque ativo já está publicado no app.");
+      } else {
+        toast.success(`${resp.publicados} produto${resp.publicados === 1 ? "" : "s"} publicado${resp.publicados === 1 ? "" : "s"} no app!`);
+      }
+      carregar(usuario.id);
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao publicar no app");
+    } finally {
+      setPublicandoVitrine(false);
+    }
+  };
 
   useEffect(() => {
     const u = getCurrentUser();
@@ -351,6 +376,14 @@ export default function PdvEstoquePage() {
           />
         </div>
 
+        <button
+          onClick={publicarNaVitrine}
+          disabled={publicandoVitrine || itens.length === 0}
+          className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-blue-200 text-blue-600 rounded-xl py-2.5 text-sm font-medium hover:bg-blue-50 disabled:opacity-50"
+        >
+          <Megaphone className="w-4 h-4" /> {publicandoVitrine ? "Publicando..." : "Publicar estoque no app"}
+        </button>
+
         {loading ? (
           <p className="text-sm text-gray-400 text-center py-8">Carregando...</p>
         ) : itensFiltrados.length === 0 ? (
@@ -365,7 +398,10 @@ export default function PdvEstoquePage() {
                   <div className="w-14 h-14 rounded-lg bg-gray-100 flex items-center justify-center shrink-0"><Package className="w-6 h-6 text-gray-300" /></div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-800 truncate">{item.produto.nome}{item.variante ? ` — ${item.variante}` : ""}</p>
+                  <p className="font-medium text-gray-800 truncate flex items-center gap-1.5">
+                    {item.produto.nome}{item.variante ? ` — ${item.variante}` : ""}
+                    {item.catalogo_item_id && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-medium shrink-0">No app</span>}
+                  </p>
                   <p className="text-xs text-gray-400">{item.produto.ean ? `EAN ${item.produto.ean}` : `SKU ${item.produto.sku}`} · {item.quantidade} {item.produto.unidade}</p>
                   <p className="text-sm font-semibold text-green-600">R$ {Number(item.preco_venda).toFixed(2)}</p>
                   {(() => {
