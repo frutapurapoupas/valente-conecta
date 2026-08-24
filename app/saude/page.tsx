@@ -45,6 +45,7 @@ interface Estabelecimento {
   longitude: number | null;
   horario: string;
   foto: string;
+  grupo?: "direto" | "relacionado";
 }
 
 const TIPO_LABEL: Record<string, string> = {
@@ -103,49 +104,77 @@ function DiretorioSaude() {
       .catch(() => {});
   }, []);
 
+  // Busca inteligente: interpreta a intencao (termos diretos/relacionados)
+  // e faz o fan-out contra /api/saude/estabelecimentos por termo, mantendo
+  // o formato proprio de Estabelecimento (donoId/especialidades/reivindicacao)
+  // que o resultado generico da vitrine nao carrega — mesmo padrao de
+  // components/comercios/DiretorioComercios.tsx.
+  const buscarEstabelecimentos = async (termo?: string): Promise<Estabelecimento[]> => {
+    const params = new URLSearchParams();
+    if (tipoFiltro) params.set("tipo", tipoFiltro);
+    if (termo) params.set("busca", termo);
+    const resp = await fetch(`/api/saude/estabelecimentos?${params}`).then((r) => r.json()).catch(() => null);
+    return resp?.success ? resp.data : [];
+  };
+
   useEffect(() => {
-    const t = setTimeout(() => {
+    const t = setTimeout(async () => {
       setResultadosGoogle(null);
       setLimiteGoogleAtingido(false);
       setLoading(true);
-      const params = new URLSearchParams();
-      if (tipoFiltro) params.set("tipo", tipoFiltro);
-      if (busca.trim()) params.set("busca", busca.trim());
-      fetch(`/api/saude/estabelecimentos?${params}`)
-        .then((r) => r.json())
-        .then(async (res) => {
-          const data = res.success ? res.data : [];
-          setLista(data);
-          // So' aciona o Google quando teve uma busca de verdade e nada foi
-          // encontrado no nosso diretorio — nao gasta cota em toda pesquisa.
-          if (data.length === 0 && busca.trim().length >= 3 && cidadeId) {
-            setBuscandoGoogle(true);
-            try {
-              const perfil = getCurrentUser();
-              const usuarioId = perfil?.id || obterUsuarioLocalId();
-              const gparams = new URLSearchParams({
-                termo: busca.trim(),
-                cidade_id: cidadeId,
-                usuarioId,
-                usuarioNome: perfil?.nome || "",
-                usuarioTelefone: perfil?.whatsapp || "",
-              });
-              const gresp = await fetch(`/api/saude/busca-google?${gparams}`).then((r) => r.json());
-              if (gresp.limiteAtingido) {
-                setLimiteGoogleAtingido(true);
-                setResultadosGoogle([]);
-              } else {
-                setResultadosGoogle(gresp.success ? gresp.data : []);
-              }
-            } finally {
-              setBuscandoGoogle(false);
+      try {
+        const termoLimpo = busca.trim();
+        let data: Estabelecimento[];
+        if (!termoLimpo) {
+          data = await buscarEstabelecimentos();
+        } else {
+          const intResp = await fetch(`/api/busca-inteligente/intencao?q=${encodeURIComponent(termoLimpo)}&usuarioId=${meuId}`)
+            .then((r) => r.json())
+            .catch(() => null);
+          const termosDiretos: string[] = intResp?.success && intResp.data.termosDiretos.length > 0 ? intResp.data.termosDiretos : [termoLimpo];
+          const termosRelacionados: string[] = intResp?.success ? intResp.data.termosRelacionados : [];
+
+          const [porDireto, porRelacionado] = await Promise.all([
+            Promise.all(termosDiretos.map(buscarEstabelecimentos)),
+            Promise.all(termosRelacionados.map(buscarEstabelecimentos)),
+          ]);
+          const vistos = new Set<string>();
+          data = [];
+          for (const grupo of porDireto) for (const e of grupo) if (!vistos.has(e.id)) { vistos.add(e.id); data.push({ ...e, grupo: "direto" }); }
+          for (const grupo of porRelacionado) for (const e of grupo) if (!vistos.has(e.id)) { vistos.add(e.id); data.push({ ...e, grupo: "relacionado" }); }
+        }
+        setLista(data);
+        // So' aciona o Google quando teve uma busca de verdade e nada foi
+        // encontrado no nosso diretorio — nao gasta cota em toda pesquisa.
+        if (data.length === 0 && busca.trim().length >= 3 && cidadeId) {
+          setBuscandoGoogle(true);
+          try {
+            const perfil = getCurrentUser();
+            const usuarioId = perfil?.id || obterUsuarioLocalId();
+            const gparams = new URLSearchParams({
+              termo: busca.trim(),
+              cidade_id: cidadeId,
+              usuarioId,
+              usuarioNome: perfil?.nome || "",
+              usuarioTelefone: perfil?.whatsapp || "",
+            });
+            const gresp = await fetch(`/api/saude/busca-google?${gparams}`).then((r) => r.json());
+            if (gresp.limiteAtingido) {
+              setLimiteGoogleAtingido(true);
+              setResultadosGoogle([]);
+            } else {
+              setResultadosGoogle(gresp.success ? gresp.data : []);
             }
+          } finally {
+            setBuscandoGoogle(false);
           }
-        })
-        .finally(() => setLoading(false));
+        }
+      } finally {
+        setLoading(false);
+      }
     }, 400);
     return () => clearTimeout(t);
-  }, [tipoFiltro, busca, cidadeId, recarregarChave]);
+  }, [tipoFiltro, busca, cidadeId, recarregarChave, meuId]);
 
   useEffect(() => {
     if (!navigator.geolocation) return;
@@ -156,6 +185,8 @@ function DiretorioSaude() {
     );
   }, []);
 
+  // Diretos sempre antes de relacionados; dentro de cada grupo, por
+  // distancia quando a localizacao esta disponivel.
   const ordenados = useMemo(() => {
     const comDistancia = lista.map((e) => ({
       item: e,
@@ -163,8 +194,11 @@ function DiretorioSaude() {
         ? distanciaKm(userPosition.lat, userPosition.lng, e.latitude, e.longitude)
         : null,
     }));
-    if (!userPosition) return comDistancia;
     return [...comDistancia].sort((a, b) => {
+      const grupoA = a.item.grupo === "relacionado" ? 1 : 0;
+      const grupoB = b.item.grupo === "relacionado" ? 1 : 0;
+      if (grupoA !== grupoB) return grupoA - grupoB;
+      if (!userPosition) return 0;
       if (a.distancia == null) return 1;
       if (b.distancia == null) return -1;
       return a.distancia - b.distancia;
@@ -263,6 +297,7 @@ function DiretorioSaude() {
                   <p className="text-xs text-gray-500">
                     {TIPO_LABEL[e.tipo] || e.tipo}
                     {e.especialidades?.length > 0 ? ` · ${e.especialidades.join(", ")}` : ""}
+                    {e.grupo === "relacionado" && <span className="ml-1.5 text-amber-600 font-medium">· pode te interessar</span>}
                   </p>
                 </div>
                 {distancia != null && (

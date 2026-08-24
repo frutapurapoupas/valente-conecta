@@ -8,7 +8,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 
-export type ServicoPlanoGeral = 'carona_desbloqueio' | 'fila_hospital' | 'mototaxi' | 'agua_gas' | 'academia' | 'busca_google' | 'desbloqueio_contato';
+export type ServicoPlanoGeral = 'carona_desbloqueio' | 'fila_hospital' | 'mototaxi' | 'agua_gas' | 'academia' | 'busca_google' | 'desbloqueio_contato' | 'busca_inteligente_ia';
 
 export interface ResultadoPlanoGeral {
   permitido: boolean;

@@ -41,6 +41,7 @@ interface Comercio {
   horario: string;
   foto: string;
   catalogo: ItemCatalogo[];
+  grupo?: "direto" | "relacionado";
 }
 
 function distanciaKm(lat1: number, lng1: number, lat2: number, lng2: number) {
@@ -67,15 +68,47 @@ export function DiretorioComercios({ modulo, titulo, categorias }: { modulo: str
     setMeuId(perfil?.id || obterUsuarioLocalId());
   }, []);
 
-  const carregar = () => {
-    setLoading(true);
+  // Busca inteligente: pede pra IA interpretar a intencao (termos diretos +
+  // relacionados) e consulta /api/comercios-diretorio pra cada termo,
+  // mantendo o formato proprio de Comercio (donoId/catalogo/reivindicacao)
+  // que o resultado generico da vitrine nao carrega — ver
+  // app/api/busca-inteligente/intencao/route.ts.
+  const buscarComercios = async (termo?: string): Promise<Comercio[]> => {
     const params = new URLSearchParams({ modulo });
     if (categoriaFiltro) params.set("categoria", categoriaFiltro);
-    if (busca.trim()) params.set("busca", busca.trim());
-    fetch(`/api/comercios-diretorio?${params}`)
-      .then((r) => r.json())
-      .then((res) => setLista(res.success ? res.data : []))
-      .finally(() => setLoading(false));
+    if (termo) params.set("busca", termo);
+    const resp = await fetch(`/api/comercios-diretorio?${params}`).then((r) => r.json()).catch(() => null);
+    return resp?.success ? resp.data : [];
+  };
+
+  const carregar = async () => {
+    setLoading(true);
+    try {
+      const termoLimpo = busca.trim();
+      if (!termoLimpo) {
+        setLista(await buscarComercios());
+        return;
+      }
+
+      const intResp = await fetch(`/api/busca-inteligente/intencao?q=${encodeURIComponent(termoLimpo)}&usuarioId=${meuId}`)
+        .then((r) => r.json())
+        .catch(() => null);
+      const termosDiretos: string[] = intResp?.success && intResp.data.termosDiretos.length > 0 ? intResp.data.termosDiretos : [termoLimpo];
+      const termosRelacionados: string[] = intResp?.success ? intResp.data.termosRelacionados : [];
+
+      const [porDireto, porRelacionado] = await Promise.all([
+        Promise.all(termosDiretos.map(buscarComercios)),
+        Promise.all(termosRelacionados.map(buscarComercios)),
+      ]);
+
+      const vistos = new Set<string>();
+      const combinada: Comercio[] = [];
+      for (const grupo of porDireto) for (const c of grupo) if (!vistos.has(c.id)) { vistos.add(c.id); combinada.push({ ...c, grupo: "direto" }); }
+      for (const grupo of porRelacionado) for (const c of grupo) if (!vistos.has(c.id)) { vistos.add(c.id); combinada.push({ ...c, grupo: "relacionado" }); }
+      setLista(combinada);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -93,6 +126,8 @@ export function DiretorioComercios({ modulo, titulo, categorias }: { modulo: str
     );
   }, []);
 
+  // Diretos sempre antes de relacionados; dentro de cada grupo, por
+  // distancia quando a localizacao esta disponivel.
   const ordenados = useMemo(() => {
     const comDistancia = lista.map((c) => ({
       item: c,
@@ -100,8 +135,11 @@ export function DiretorioComercios({ modulo, titulo, categorias }: { modulo: str
         ? distanciaKm(userPosition.lat, userPosition.lng, c.latitude, c.longitude)
         : null,
     }));
-    if (!userPosition) return comDistancia;
     return [...comDistancia].sort((a, b) => {
+      const grupoA = a.item.grupo === "relacionado" ? 1 : 0;
+      const grupoB = b.item.grupo === "relacionado" ? 1 : 0;
+      if (grupoA !== grupoB) return grupoA - grupoB;
+      if (!userPosition) return 0;
       if (a.distancia == null) return 1;
       if (b.distancia == null) return -1;
       return a.distancia - b.distancia;
@@ -161,7 +199,10 @@ export function DiretorioComercios({ modulo, titulo, categorias }: { modulo: str
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <p className="font-bold text-gray-800 truncate">{c.nome}</p>
-                  <p className="text-xs text-gray-500">{c.categoria}</p>
+                  <p className="text-xs text-gray-500">
+                    {c.categoria}
+                    {c.grupo === "relacionado" && <span className="ml-1.5 text-amber-600 font-medium">· pode te interessar</span>}
+                  </p>
                 </div>
                 {distancia != null && (
                   <span className="text-[11px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full shrink-0">

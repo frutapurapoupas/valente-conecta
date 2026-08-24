@@ -51,6 +51,7 @@ interface Imovel {
   dataPublicacao: Date;
   destaque: boolean;
   status: 'disponivel' | 'vendido' | 'alugado';
+  grupo?: 'direto' | 'relacionado';
 }
 
 export default function ImoveisPage() {
@@ -92,9 +93,32 @@ export default function ImoveisPage() {
     destaque: false
   });
 
+  const [intencaoBusca, setIntencaoBusca] = useState<{ diretos: string[]; relacionados: string[] }>({ diretos: [], relacionados: [] });
+
   useEffect(() => {
     carregarImoveis();
   }, []);
+
+  // Busca inteligente: os dados ja vem todos carregados (filtro sempre foi
+  // local nessa tela) -- so' pede pra IA os termos diretos/relacionados e
+  // casa eles contra titulo/bairro/descricao, sem round-trip novo por termo.
+  useEffect(() => {
+    const termoLimpo = busca.trim();
+    if (!termoLimpo) { setIntencaoBusca({ diretos: [], relacionados: [] }); return; }
+    const t = setTimeout(() => {
+      fetch(`/api/busca-inteligente/intencao?q=${encodeURIComponent(termoLimpo)}&usuarioId=${obterUsuarioLocalId()}`)
+        .then((r) => r.json())
+        .then((res) => {
+          setIntencaoBusca(
+            res.success && res.data.termosDiretos.length > 0
+              ? { diretos: res.data.termosDiretos, relacionados: res.data.termosRelacionados }
+              : { diretos: [termoLimpo], relacionados: [] }
+          );
+        })
+        .catch(() => setIntencaoBusca({ diretos: [termoLimpo], relacionados: [] }));
+    }, 600);
+    return () => clearTimeout(t);
+  }, [busca]);
 
   const carregarImoveis = async () => {
     setLoading(true);
@@ -221,15 +245,33 @@ export default function ImoveisPage() {
     }
   };
 
-  const imoveisFiltrados = imoveis.filter(imovel => {
+  const bateTermo = (imovel: Imovel, termo: string) => {
+    const t = termo.toLowerCase();
+    return imovel.titulo.toLowerCase().includes(t) || imovel.bairro.toLowerCase().includes(t) || imovel.descricao.toLowerCase().includes(t);
+  };
+
+  const passaFiltrosBase = (imovel: Imovel) => {
     if (imovel.status !== 'disponivel') return false;
-    if (busca && !imovel.titulo.toLowerCase().includes(busca.toLowerCase()) && !imovel.bairro.toLowerCase().includes(busca.toLowerCase())) return false;
     if (tipoFilter && imovel.tipo !== tipoFilter) return false;
     if (operacaoFilter && imovel.operacao !== operacaoFilter) return false;
     if (bairroFilter && imovel.bairro !== bairroFilter) return false;
     if (imovel.preco < precoMin || imovel.preco > precoMax) return false;
     return true;
-  });
+  };
+
+  const termoLimpo = busca.trim();
+  const termosDiretos = termoLimpo ? (intencaoBusca.diretos.length > 0 ? intencaoBusca.diretos : [termoLimpo]) : [];
+
+  const imoveisDiretos = imoveis.filter((i) => passaFiltrosBase(i) && (!termoLimpo || termosDiretos.some((t) => bateTermo(i, t))));
+  const idsDiretos = new Set(imoveisDiretos.map((i) => i.id));
+  const imoveisRelacionados = termoLimpo
+    ? imoveis.filter((i) => passaFiltrosBase(i) && !idsDiretos.has(i.id) && intencaoBusca.relacionados.some((t) => bateTermo(i, t)))
+    : [];
+
+  const imoveisFiltrados: Imovel[] = [
+    ...imoveisDiretos.map((i) => ({ ...i, grupo: 'direto' as const })),
+    ...imoveisRelacionados.map((i) => ({ ...i, grupo: 'relacionado' as const })),
+  ];
 
   const bairrosUnicos = Array.from(new Set(imoveis.map(i => i.bairro)));
 
@@ -412,6 +454,7 @@ export default function ImoveisPage() {
                   <div className="flex items-center gap-1 text-sm text-gray-500 mb-2">
                     <MapPin className="w-4 h-4" />
                     {imovel.bairro}, {imovel.cidade}
+                    {imovel.grupo === "relacionado" && <span className="ml-1.5 text-amber-600 font-medium text-xs">· pode te interessar</span>}
                   </div>
                   
                   <div className="flex items-center justify-between mb-3">

@@ -10,7 +10,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, Store } from "lucide-react";
-import { useCatalogoPublico } from "@/lib/catalogo/useCatalogoModulo";
+import { useBuscaInteligente } from "@/lib/busca/useBuscaInteligente";
 import { ItemCard } from "./ItemCard";
 
 interface CatalogoModuloPageProps {
@@ -24,7 +24,7 @@ interface CatalogoModuloPageProps {
 export function CatalogoModuloPage({ modulo, labelModulo, categorias, descricao, linkExtra }: CatalogoModuloPageProps) {
   const router = useRouter();
   const [categoria, setCategoria] = useState<string | undefined>(undefined);
-  const { itens, loading, buscar, termo } = useCatalogoPublico(modulo, categoria);
+  const { diretos, relacionados, carregando: loading, buscar, termo } = useBuscaInteligente({ modulo, categoria });
 
   return (
     <div className="max-w-6xl mx-auto p-4 sm:p-6">
@@ -85,7 +85,7 @@ export function CatalogoModuloPage({ modulo, labelModulo, categorias, descricao,
         <div className="flex justify-center py-16">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500" />
         </div>
-      ) : itens.length === 0 ? (
+      ) : diretos.length === 0 && relacionados.length === 0 ? (
         <div className="text-center py-16 bg-gray-50 rounded-lg">
           <p className="text-gray-500 text-lg">Nenhum item por aqui ainda</p>
           <Link href={`/${modulo}/admin`} className="text-blue-600 text-sm font-medium mt-2 inline-block">
@@ -93,14 +93,35 @@ export function CatalogoModuloPage({ modulo, labelModulo, categorias, descricao,
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {itens.map((item) => (
-            <ItemCard
-              key={item.id}
-              item={item}
-              onClick={() => router.push(item.metadata?.link_externo || `/item/${item.id}`)}
-            />
-          ))}
+        <div className="space-y-8">
+          <div>
+            {relacionados.length > 0 && (
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Resultados diretos</p>
+            )}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {diretos.map((item) => (
+                <ItemCard
+                  key={item.id}
+                  item={item}
+                  onClick={() => router.push(item.metadata?.link_externo || `/item/${item.id}`)}
+                />
+              ))}
+            </div>
+          </div>
+          {relacionados.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Também pode te interessar</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                {relacionados.map((item) => (
+                  <ItemCard
+                    key={item.id}
+                    item={item}
+                    onClick={() => router.push(item.metadata?.link_externo || `/item/${item.id}`)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

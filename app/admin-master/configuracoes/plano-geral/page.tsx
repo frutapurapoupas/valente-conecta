@@ -25,6 +25,7 @@ const SERVICOS: { chave: string; label: string; periodo: string }[] = [
   { chave: "academia", label: "Academia — check-ins", periodo: "/mês" },
   { chave: "busca_google", label: "Buscas no Google", periodo: "/dia" },
   { chave: "desbloqueio_contato", label: "Vitrine — desbloqueios de contato grátis", periodo: "/dia" },
+  { chave: "busca_inteligente_ia", label: "Busca inteligente — interpretação por IA", periodo: "/dia" },
 ];
 
 export default function PlanoGeralAdminPage() {

@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 export const revalidate = 0;
 
-const SERVICOS = ['carona_desbloqueio', 'fila_hospital', 'mototaxi', 'agua_gas', 'academia', 'busca_google', 'desbloqueio_contato'] as const;
+const SERVICOS = ['carona_desbloqueio', 'fila_hospital', 'mototaxi', 'agua_gas', 'academia', 'busca_google', 'desbloqueio_contato', 'busca_inteligente_ia'] as const;
 const TIERS = ['gratis', 'basico', 'ilimitado'] as const;
 
 export async function GET() {
@@ -64,7 +64,7 @@ export async function PUT(request: NextRequest) {
         tier: t.tier,
         servico,
         limite: t.limites[servico] === null || t.limites[servico] === '' ? null : Number(t.limites[servico]),
-        periodo: servico === 'busca_google' || servico === 'desbloqueio_contato' ? 'diario' : 'mensal',
+        periodo: servico === 'busca_google' || servico === 'desbloqueio_contato' || servico === 'busca_inteligente_ia' ? 'diario' : 'mensal',
         updated_at: new Date().toISOString(),
       }));
       if (limitesRows.length > 0) {

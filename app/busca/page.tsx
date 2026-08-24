@@ -13,10 +13,11 @@ import { useEffect, useState } from "react";
 import { Search, MapPin, MapPinOff, BellRing, CheckCircle2, ExternalLink, Globe } from "lucide-react";
 import toast from "react-hot-toast";
 import { ItemCard } from "@/components/catalogo/ItemCard";
-import { LABEL_MODULO, type ModuloId, type ResultadoVitrine } from "@/lib/catalogo/marketplaceTypes";
+import { LABEL_MODULO, type ModuloId } from "@/lib/catalogo/marketplaceTypes";
 import { getCurrentUser, isUserLoggedIn } from "@/lib/auth";
 import { obterUsuarioLocalId } from "@/lib/usuarioLocal";
 import { CadastroPopup } from "@/components/CadastroPopup";
+import { useBuscaInteligente } from "@/lib/busca/useBuscaInteligente";
 
 const MODULOS = Object.keys(LABEL_MODULO) as ModuloId[];
 
@@ -27,9 +28,12 @@ export default function BuscaPage() {
 
   const [termo, setTermo] = useState(queryInicial);
   const [moduloAtivo, setModuloAtivo] = useState<string | null>(null);
-  const [resultados, setResultados] = useState<ResultadoVitrine[]>([]);
-  const [loading, setLoading] = useState(false);
   const [localizacao, setLocalizacao] = useState<{ lat: number; lng: number } | null>(null);
+  const { diretos, relacionados, carregando: loading, buscarImediato } = useBuscaInteligente({
+    modulo: moduloAtivo || undefined,
+    lat: localizacao?.lat,
+    lng: localizacao?.lng,
+  });
   const [pediuLocalizacao, setPediuLocalizacao] = useState(false);
   const [demandaRegistrada, setDemandaRegistrada] = useState(false);
   const [registrandoDemanda, setRegistrandoDemanda] = useState(false);
@@ -83,43 +87,33 @@ export default function BuscaPage() {
     }
   }, []); // eslint-disable-line
 
+  // Busca inicial (query da URL) e re-busca quando a localizacao chega
+  // depois do mount (geolocation e' assincrona) -- modulo ja e' coberto
+  // pelo efeito interno do hook.
   useEffect(() => {
-    buscar();
-  }, [moduloAtivo, localizacao]);
+    buscarImediato(queryInicial);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const buscar = async (termoBusca = termo) => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      if (termoBusca) params.set("q", termoBusca);
-      if (moduloAtivo) params.set("modulo", moduloAtivo);
-      if (localizacao) {
-        params.set("lat", String(localizacao.lat));
-        params.set("lng", String(localizacao.lng));
-      }
-      const resposta = await fetch(`/api/catalogo/busca?${params.toString()}`);
-      const resultado = await resposta.json();
-      setResultados(resultado.success ? resultado.data : []);
-    } catch (error) {
-      console.error("Erro na busca:", error);
-      setResultados([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    if (localizacao) buscarImediato(termo);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localizacao]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setDemandaRegistrada(false);
     setResultadosExternos([]);
     router.replace(`/busca?q=${encodeURIComponent(termo)}`);
-    buscar(termo);
+    buscarImediato(termo);
   };
+
+  const totalResultados = diretos.length + relacionados.length;
 
   // So busca fora da plataforma quando a busca interna terminou e nao achou
   // nada — evita gastar cota da API em toda letra digitada.
   useEffect(() => {
-    if (loading || resultados.length > 0 || !termo.trim()) {
+    if (loading || totalResultados > 0 || !termo.trim()) {
       setResultadosExternos([]);
       return;
     }
@@ -139,7 +133,7 @@ export default function BuscaPage() {
       .then((res) => setResultadosExternos(res.success ? res.data : []))
       .catch(() => setResultadosExternos([]))
       .finally(() => setBuscandoExterno(false));
-  }, [loading, resultados.length, termo, localizacao]);
+  }, [loading, totalResultados, termo, localizacao]);
 
   const registrarDemanda = async () => {
     if (!isUserLoggedIn()) {
@@ -229,7 +223,7 @@ export default function BuscaPage() {
         <div className="flex justify-center py-16">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500" />
         </div>
-      ) : resultados.length === 0 ? (
+      ) : totalResultados === 0 ? (
         <div className="text-center py-16 bg-gray-50 rounded-lg px-6">
           <p className="text-gray-500 text-lg">Nenhum resultado encontrado</p>
           <p className="text-gray-400 text-sm mt-1">Ainda não existe ninguém oferecendo isso na plataforma.</p>
@@ -283,14 +277,36 @@ export default function BuscaPage() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {resultados.map((item) => (
-            <ItemCard
-              key={item.id}
-              item={item}
-              onClick={() => router.push(item.metadata?.link_externo || `/item/${item.id}`)}
-            />
-          ))}
+        <div className="space-y-8">
+          <div>
+            {relacionados.length > 0 && (
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Resultados diretos</p>
+            )}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {diretos.map((item) => (
+                <ItemCard
+                  key={item.id}
+                  item={item}
+                  onClick={() => router.push(item.metadata?.link_externo || `/item/${item.id}`)}
+                />
+              ))}
+            </div>
+          </div>
+
+          {relacionados.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Também pode te interessar</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                {relacionados.map((item) => (
+                  <ItemCard
+                    key={item.id}
+                    item={item}
+                    onClick={() => router.push(item.metadata?.link_externo || `/item/${item.id}`)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

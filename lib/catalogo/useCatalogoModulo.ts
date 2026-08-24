@@ -2,50 +2,17 @@
 
 // Caminho: C:\valente_conecta\lib\catalogo\useCatalogoModulo.ts
 //
-// Hooks genericos reaproveitados por todos os modulos verticais do
-// catalogo (agua-gas, servicos, mercados, imoveis, emprego, construcao,
-// saude, pet) — evita reescrever a mesma logica de fetch/CRUD em cada
-// modulo (ver MASTER_SPEC secao 2: "interface unica reutilizavel").
+// Hook generico reaproveitado por todos os modulos verticais do catalogo
+// (agua-gas, servicos, mercados, imoveis, emprego, construcao, saude, pet)
+// pro lado do DONO (admin da loja) — evita reescrever a mesma logica de
+// CRUD em cada modulo (ver MASTER_SPEC secao 2: "interface unica
+// reutilizavel"). O lado publico (busca/listagem) usa
+// lib/busca/useBuscaInteligente.ts.
 
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { obterUsuarioLocalId } from "@/lib/usuarioLocal";
-import type { CatalogoItem, NovoCatalogoItem, ResultadoVitrine } from "./marketplaceTypes";
-
-/** Lado publico: lista os itens ativos de um modulo via a busca inteligente. */
-export function useCatalogoPublico(modulo: string, categoria?: string) {
-  const [itens, setItens] = useState<ResultadoVitrine[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [termo, setTermo] = useState("");
-
-  const carregar = useCallback(async (termoBusca?: string) => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({ modulo });
-      if (categoria) params.set("categoria", categoria);
-      if (termoBusca) params.set("q", termoBusca);
-      const resp = await fetch(`/api/catalogo/busca?${params.toString()}`);
-      const resultado = await resp.json();
-      setItens(resultado.success ? resultado.data : []);
-    } catch (error) {
-      console.error(`Erro ao carregar catálogo de ${modulo}:`, error);
-      setItens([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [modulo, categoria]);
-
-  useEffect(() => {
-    carregar(termo);
-  }, [modulo, categoria]);
-
-  const buscar = useCallback((novoTermo: string) => {
-    setTermo(novoTermo);
-    carregar(novoTermo);
-  }, [carregar]);
-
-  return { itens, loading, termo, buscar, recarregar: carregar };
-}
+import type { CatalogoItem, NovoCatalogoItem } from "./marketplaceTypes";
 
 /** Lado do dono (admin da loja): CRUD dos itens do proprio catalogo. */
 export function useMeuCatalogo(modulo: string) {
