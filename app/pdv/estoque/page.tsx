@@ -143,10 +143,16 @@ export default function PdvEstoquePage() {
   const buscarPorEan = async (codigo: string) => {
     setShowScanner(false);
     setEan(codigo);
+    const toastId = toast.loading("Consultando o catálogo...");
     try {
-      const resp = await fetch(`/api/pdv/catalogo?ean=${encodeURIComponent(codigo)}`).then((r) => r.json());
+      const resp = await fetch(`/api/pdv/catalogo/buscar-externo?ean=${encodeURIComponent(codigo)}`).then((r) => r.json());
+      toast.dismiss(toastId);
       if (resp.success && resp.data) {
-        toast.success(`Produto já existe no catálogo: ${resp.data.nome}`);
+        toast.success(
+          resp.origem === "kodebar"
+            ? `Achamos "${resp.data.nome}" numa base externa — foto já vem preenchida!`
+            : `Produto já existe no catálogo: ${resp.data.nome}`
+        );
         setCatalogoId(resp.data.id);
         setNome(resp.data.nome);
         setEtapa("preco");
@@ -155,6 +161,7 @@ export default function PdvEstoquePage() {
         setEtapa("preco");
       }
     } catch {
+      toast.dismiss(toastId);
       toast.error("Erro ao consultar o catálogo");
     }
   };
