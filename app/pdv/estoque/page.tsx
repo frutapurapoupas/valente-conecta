@@ -89,17 +89,35 @@ export default function PdvEstoquePage() {
   const [temVariacao, setTemVariacao] = useState(false);
   const [variantes, setVariantes] = useState<LinhaVariante[]>([{ nome: "", quantidade: 0 }]);
   const [publicandoVitrine, setPublicandoVitrine] = useState(false);
+  const [showCompletarPerfil, setShowCompletarPerfil] = useState(false);
+  const [perfilNome, setPerfilNome] = useState("");
+  const [perfilEndereco, setPerfilEndereco] = useState("");
+  const [salvandoPerfil, setSalvandoPerfil] = useState(false);
+
+  const executarPublicacao = async () => {
+    if (!usuario) return;
+    const resp = await fetch("/api/pdv/estoque/publicar-vitrine", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ usuarioId: usuario.id }),
+    }).then((r) => r.json());
+    return resp;
+  };
 
   const publicarNaVitrine = async () => {
     if (!usuario) return;
     setPublicandoVitrine(true);
     try {
-      const resp = await fetch("/api/pdv/estoque/publicar-vitrine", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ usuarioId: usuario.id }),
-      }).then((r) => r.json());
-      if (!resp.success) throw new Error(resp.error);
+      const resp = await executarPublicacao();
+      if (!resp.success) {
+        if (resp.error === "perfil_incompleto") {
+          setPerfilNome(resp.perfil?.nome_exibicao || usuario.nome || "");
+          setPerfilEndereco(resp.perfil?.endereco || "");
+          setShowCompletarPerfil(true);
+          return;
+        }
+        throw new Error(resp.error);
+      }
       if (resp.publicados === 0) {
         toast.success("Todo o estoque ativo já está publicado no app.");
       } else {
@@ -109,6 +127,39 @@ export default function PdvEstoquePage() {
     } catch (error: any) {
       toast.error(error.message || "Erro ao publicar no app");
     } finally {
+      setPublicandoVitrine(false);
+    }
+  };
+
+  const confirmarPerfilEPublicar = async () => {
+    if (!usuario) return;
+    if (!perfilNome.trim() || !perfilEndereco.trim()) {
+      toast.error("Preencha nome da loja e endereço");
+      return;
+    }
+    setSalvandoPerfil(true);
+    try {
+      const resp = await fetch("/api/pdv/perfil-vitrine", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ usuarioId: usuario.id, nomeExibicao: perfilNome.trim(), endereco: perfilEndereco.trim() }),
+      }).then((r) => r.json());
+      if (!resp.success) throw new Error(resp.error);
+
+      setShowCompletarPerfil(false);
+      setPublicandoVitrine(true);
+      const publicacao = await executarPublicacao();
+      if (!publicacao.success) throw new Error(publicacao.error);
+      if (publicacao.publicados === 0) {
+        toast.success("Perfil salvo! Todo o estoque ativo já estava publicado.");
+      } else {
+        toast.success(`Perfil salvo! ${publicacao.publicados} produto${publicacao.publicados === 1 ? "" : "s"} publicado${publicacao.publicados === 1 ? "" : "s"} no app!`);
+      }
+      carregar(usuario.id);
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao salvar perfil");
+    } finally {
+      setSalvandoPerfil(false);
       setPublicandoVitrine(false);
     }
   };
@@ -582,6 +633,35 @@ export default function PdvEstoquePage() {
       )}
 
       {showScanner && <BarcodeScanner onDetected={buscarPorEan} onClose={() => setShowScanner(false)} />}
+
+      {showCompletarPerfil && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-5">
+            <div className="flex justify-between items-center mb-3">
+              <h2 className="font-bold text-gray-800 flex items-center gap-2"><Megaphone className="w-4.5 h-4.5 text-blue-600" /> Complete o perfil da loja</h2>
+              <button onClick={() => setShowCompletarPerfil(false)}><X className="w-5 h-5 text-gray-400" /></button>
+            </div>
+            <p className="text-xs text-gray-400 mb-3">Esses dados aparecem junto dos seus produtos na vitrine pública do app — só precisa preencher uma vez.</p>
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-medium text-gray-500">Nome da loja</label>
+                <input value={perfilNome} onChange={(e) => setPerfilNome(e.target.value)} placeholder="Ex: Mercadinho da Dona Neide" className="w-full mt-1 px-3 py-2 border rounded-lg text-sm" autoFocus />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-500">Endereço</label>
+                <input value={perfilEndereco} onChange={(e) => setPerfilEndereco(e.target.value)} placeholder="Rua, número, bairro — Valente/BA" className="w-full mt-1 px-3 py-2 border rounded-lg text-sm" />
+              </div>
+              <button
+                onClick={confirmarPerfilEPublicar}
+                disabled={salvandoPerfil || publicandoVitrine}
+                className="w-full bg-blue-600 text-white py-2.5 rounded-xl font-semibold disabled:opacity-60"
+              >
+                {salvandoPerfil || publicandoVitrine ? "Publicando..." : "Salvar e publicar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

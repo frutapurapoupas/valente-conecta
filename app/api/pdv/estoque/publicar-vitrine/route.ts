@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { moduloVitrineParaSegmento } from '@/lib/pdv/segmentoParaModuloVitrine';
+import { obterPerfilFornecedor } from '@/lib/pdv/perfilFornecedorPdv';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -31,8 +32,15 @@ export async function POST(request: NextRequest) {
 
     const supabase = createClient();
 
-    const { data: perfis } = await supabase.rpc('meu_perfil_fornecedor', { p_usuario_id: usuarioId });
-    const perfil = perfis?.[0] || null;
+    // A vitrine carrega os dados da loja (nome de exibição, endereço) ANTES
+    // de publicar -- se o fornecedor ainda não completou esse perfil (a
+    // maioria de quem só usa o PDV nunca passou pela tela de "meu perfil"
+    // dos outros módulos), pede pra completar em vez de publicar com um
+    // nome genérico. Front mostra o formulário quando vê esse erro.
+    const perfil = await obterPerfilFornecedor(usuarioId);
+    if (!perfil?.endereco) {
+      return NextResponse.json({ success: false, error: 'perfil_incompleto', perfil }, { status: 409 });
+    }
     const latitude = perfil?.latitude ?? null;
     const longitude = perfil?.longitude ?? null;
 

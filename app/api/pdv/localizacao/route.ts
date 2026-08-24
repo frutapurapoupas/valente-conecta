@@ -5,10 +5,10 @@
 // 045_base_fiscal_pdv.sql) — em vez de criar uma coluna paralela só pro PDV.
 // Chamado uma vez, no primeiro acesso ao PDV (lib/pdv/solicitarLocalizacao.ts).
 // Preserva qualquer perfil de fornecedor já existente (outro módulo pode já
-// ter cadastrado nome/telefone/horário) — só sobrescreve latitude/longitude.
+// ter cadastrado nome/telefone/endereço) — só sobrescreve latitude/longitude.
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { salvarCamposPerfilFornecedor } from '@/lib/pdv/perfilFornecedorPdv';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,35 +23,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'latitude/longitude inválidas' }, { status: 400 });
     }
 
-    const supabase = createClient();
-
-    const { data: perfisExistentes } = await supabase.rpc('meu_perfil_fornecedor', { p_usuario_id: usuarioId });
-    const perfil = perfisExistentes?.[0] || null;
-
-    let nomeExibicao = perfil?.nome_exibicao;
-    let telefone = perfil?.telefone;
-    if (!nomeExibicao || !telefone) {
-      const { data: usuario } = await supabase.from('usuarios').select('nome, whatsapp').eq('id', usuarioId).maybeSingle();
-      nomeExibicao = nomeExibicao || usuario?.nome || 'Loja';
-      telefone = telefone || usuario?.whatsapp || '';
-    }
-
-    const { data, error } = await supabase.rpc('salvar_perfil_fornecedor_v3', {
-      p_usuario_id: usuarioId,
-      p_nome_exibicao: nomeExibicao,
-      p_telefone: telefone,
-      p_whatsapp: perfil?.whatsapp ?? telefone,
-      p_endereco: perfil?.endereco ?? null,
-      p_latitude: latitude,
-      p_longitude: longitude,
-      p_plano: perfil?.plano ?? 'gratis',
-      p_horarios: perfil?.horarios ?? null,
-      p_cnpj_cpf: perfil?.cnpj_cpf ?? null,
-      p_inscricao_estadual: perfil?.inscricao_estadual ?? null,
-      p_regime_tributario: perfil?.regime_tributario ?? null,
-    });
-    if (error) throw error;
-
+    const data = await salvarCamposPerfilFornecedor(usuarioId, { latitude, longitude });
     return NextResponse.json({ success: true, data });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message || 'Erro ao salvar localização' }, { status: 500 });
