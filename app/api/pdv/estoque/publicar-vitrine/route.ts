@@ -31,6 +31,11 @@ export async function POST(request: NextRequest) {
 
     const supabase = createClient();
 
+    const { data: perfis } = await supabase.rpc('meu_perfil_fornecedor', { p_usuario_id: usuarioId });
+    const perfil = perfis?.[0] || null;
+    const latitude = perfil?.latitude ?? null;
+    const longitude = perfil?.longitude ?? null;
+
     const { data: itens, error: erroItens } = await supabase
       .from('pdv_estoque_itens')
       .select('id, quantidade, preco_venda, ativo, variante, catalogo_item_id, produto:pdv_produtos_catalogo(nome, segmento, categoria, foto_url)')
@@ -60,8 +65,8 @@ export async function POST(request: NextRequest) {
             descricao_publica: null,
             preco: Number(item.preco_venda) || 0,
             midia: produto.foto_url ? [{ tipo: 'imagem', url: produto.foto_url, thumb_url: produto.foto_url, ordem: 0 }] : [],
-            latitude: null,
-            longitude: null,
+            latitude,
+            longitude,
             status: Number(item.quantidade) > 0 ? 'ativo' : 'pausado',
             metadata: { origem: 'pdv_estoque', pdv_estoque_id: item.id },
           })

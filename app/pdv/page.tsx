@@ -19,6 +19,7 @@ import { usePdvLayoutPreference } from "@/lib/hooks/usePdvLayoutPreference";
 import { FrenteCaixaDesktop } from "@/components/pdv/FrenteCaixaDesktop";
 import { FrenteCaixaMobile } from "@/components/pdv/FrenteCaixaMobile";
 import { getOperadorAtivo, limparOperadorAtivo, type OperadorAtivo } from "@/lib/pdv/operadorPdv";
+import { solicitarLocalizacaoUmaVez } from "@/lib/pdv/solicitarLocalizacao";
 import type { ClienteFiado, ProdutoPDV } from "@/lib/pdv/frenteCaixaTypes";
 
 export default function PDVPage() {
@@ -71,6 +72,7 @@ export default function PDVPage() {
     if (u) {
       carregarDados(u.id);
       setOperador(getOperadorAtivo());
+      solicitarLocalizacaoUmaVez(u.id);
       fetch(`/api/pdv/funcionarios?donoId=${u.id}`, { cache: "no-store" })
         .then((r) => r.json())
         .then((resp) => { if (resp.success) setFuncionarios(resp.data); })
