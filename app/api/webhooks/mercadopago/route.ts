@@ -167,6 +167,30 @@ async function processWebhookCaronaDesbloqueio(desbloqueioId: string, payment: a
 	return NextResponse.json({ success: true, desbloqueioId, status: statusPagamento });
 }
 
+// Comprador pagou pra desbloquear o contato de um item da vitrine (cota
+// diaria gratis do Plano Geral ja estourada — ver
+// lib/catalogo/catalogoService.ts::criarInteresse).
+async function processWebhookVitrineDesbloqueio(interesseId: string, payment: any) {
+	const supabase = createClient();
+	const statusPagamento = normalizeStatus(String(payment?.status || ''));
+
+	const { data: interesse, error } = await supabase
+		.from('interesses')
+		.update({
+			status_comprador: statusPagamento === 'pago' ? 'liberado' : 'pendente_pagamento',
+			mp_payment_id: String(payment?.id || ''),
+		})
+		.eq('id', interesseId)
+		.select('*')
+		.single();
+
+	if (error || !interesse) {
+		return NextResponse.json({ success: true, ignored: true, reason: 'interesse nao encontrado' });
+	}
+
+	return NextResponse.json({ success: true, interesseId, status: statusPagamento });
+}
+
 async function processWebhook(request: NextRequest, payload: any) {
 	try {
 		const { searchParams } = new URL(request.url);
@@ -214,6 +238,9 @@ async function processWebhook(request: NextRequest, payload: any) {
 		}
 		if (pedidoId.startsWith('carona_desbloqueio_')) {
 			return processWebhookCaronaDesbloqueio(pedidoId.replace('carona_desbloqueio_', ''), payment);
+		}
+		if (pedidoId.startsWith('vitrine_desbloqueio_')) {
+			return processWebhookVitrineDesbloqueio(pedidoId.replace('vitrine_desbloqueio_', ''), payment);
 		}
 
 		const pedidos = readPedidos();

@@ -2,10 +2,11 @@
 
 // Caminho: C:\valente_conecta\components\catalogo\InteresseButton.tsx
 //
-// CTA "Tenho interesse" — cria o registro em interesses e, se ja estiver
-// liberado (taxa desligada ou assinatura ativa), mostra o contato na hora.
-// Se a taxa estiver ativa e pendente, mostra o valor a pagar (o gateway de
-// pagamento em si nao faz parte do escopo dos documentos de marketplace).
+// CTA "Tenho interesse" — cria o registro em interesses. Fornecedor em
+// plano pago libera na hora; fornecedor grátis depende da cota diária do
+// comprador (lib/catalogo/catalogoService.ts::criarInteresse) — dentro da
+// cota libera igual, estourada mostra o contato borrado + botão real de
+// pagamento via Mercado Pago (mesmo fluxo já usado pela carona).
 
 import { useState } from "react";
 import { Phone, MessageCircle, Lock, Loader2 } from "lucide-react";
@@ -18,7 +19,8 @@ interface InteresseButtonProps {
 type Estado =
   | { fase: "inicial" }
   | { fase: "carregando" }
-  | { fase: "aguardando_pagamento"; valor: number }
+  | { fase: "aguardando_pagamento"; interesseId: string; valor: number }
+  | { fase: "redirecionando" }
   | { fase: "liberado"; telefone: string; whatsapp: string | null; nome: string }
   | { fase: "erro"; mensagem: string };
 
@@ -51,9 +53,29 @@ export function InteresseButton({ itemId }: InteresseButtonProps) {
           return;
         }
       }
-      setEstado({ fase: "aguardando_pagamento", valor: interesse.valor_taxa_comprador });
+      setEstado({ fase: "aguardando_pagamento", interesseId: interesse.id, valor: interesse.valor_taxa_comprador });
     } catch (err: any) {
       setEstado({ fase: "erro", mensagem: err?.message || "Não foi possível registrar o interesse." });
+    }
+  };
+
+  const pagarEDesbloquear = async (interesseId: string) => {
+    setEstado({ fase: "redirecionando" });
+    try {
+      const resposta = await fetch(`/api/catalogo/interesses/${interesseId}/pagamento`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const resultado = await resposta.json();
+      if (!resultado.success) throw new Error(resultado.error);
+      if (resultado.checkoutUrl) {
+        window.location.href = resultado.checkoutUrl;
+        return;
+      }
+      // Já liberado (ex: sem valor a cobrar) — recarrega pra puxar o contato.
+      manifestarInteresse();
+    } catch (err: any) {
+      setEstado({ fase: "erro", mensagem: err?.message || "Não foi possível iniciar o pagamento." });
     }
   };
 
@@ -78,14 +100,38 @@ export function InteresseButton({ itemId }: InteresseButtonProps) {
     );
   }
 
-  if (estado.fase === "aguardando_pagamento") {
+  if (estado.fase === "aguardando_pagamento" || estado.fase === "redirecionando") {
+    const valor = estado.fase === "aguardando_pagamento" ? estado.valor : 0;
     return (
-      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800 flex items-start gap-2">
-        <Lock className="w-4 h-4 mt-0.5 shrink-0" />
-        <span>
-          Taxa de {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(estado.valor)} para
-          liberar o contato. Pagamento em breve.
-        </span>
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-3">
+        <div className="flex items-center gap-2 text-amber-800 text-sm font-medium">
+          <Lock className="w-4 h-4 shrink-0" /> Contato bloqueado
+        </div>
+        <div className="space-y-1.5 select-none" aria-hidden>
+          <p className="flex items-center gap-2 text-gray-700 font-semibold blur-sm">
+            <Phone className="w-4 h-4" /> (75) 9****-**21
+          </p>
+          <p className="flex items-center gap-2 text-gray-700 font-semibold blur-sm">
+            <MessageCircle className="w-4 h-4" /> WhatsApp
+          </p>
+        </div>
+        <p className="text-xs text-amber-700">
+          Você já usou seus desbloqueios grátis de hoje. Pague{" "}
+          {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(valor)} pra ver esse contato.
+        </p>
+        {estado.fase === "aguardando_pagamento" && (
+          <button
+            onClick={() => pagarEDesbloquear(estado.interesseId)}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-600 text-white rounded-lg hover:bg-amber-700 font-medium text-sm"
+          >
+            Pagar {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(valor)} e desbloquear
+          </button>
+        )}
+        {estado.fase === "redirecionando" && (
+          <div className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-amber-700 text-sm">
+            <Loader2 className="w-4 h-4 animate-spin" /> Abrindo pagamento...
+          </div>
+        )}
       </div>
     );
   }

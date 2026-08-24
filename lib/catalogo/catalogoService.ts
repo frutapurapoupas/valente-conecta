@@ -7,6 +7,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { calcularDistanciaMetros } from '@/utils/geo';
+import { verificarECConsumirPlanoGeral } from '@/lib/planoGeral';
 import type {
   CatalogoItem,
   NovoCatalogoItem,
@@ -177,14 +178,19 @@ export async function criarInteresse(itemId: string, compradorId: string, mensag
   const item = await obterItem(itemId);
   if (!item) throw new Error('Item não encontrado');
 
-  const { data: taxaComprador } = await supabase
-    .from('taxas_config')
-    .select('valor, ativo')
-    .in('escopo', [`categoria:${item.categoria}`, `modulo:${item.modulo}`, 'global'])
-    .eq('tipo', 'taxa_comprador')
-    .order('escopo')
+  // Ja existe interesse desse comprador nesse item -- devolve o mesmo em
+  // vez de criar duplicado (e consumir cota diaria de novo) a cada clique
+  // em "Tenho interesse".
+  const { data: existente } = await supabase
+    .from('interesses')
+    .select('*')
+    .eq('item_id', itemId)
+    .eq('comprador_id', compradorId)
+    .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle();
+  if (existente) return existente;
+
   const { data: taxaFornecedor } = await supabase
     .from('taxas_config')
     .select('valor, ativo')
@@ -197,15 +203,17 @@ export async function criarInteresse(itemId: string, compradorId: string, mensag
   const compradorIsento = await temAssinaturaAtiva(compradorId);
   const fornecedorIsento = await temAssinaturaAtiva(item.dono_id);
 
+  const { statusComprador, valorTaxaComprador } = await decidirLiberacaoComprador(item, compradorId, compradorIsento);
+
   const { data, error } = await supabase
     .from('interesses')
     .insert({
       item_id: itemId,
       comprador_id: compradorId,
       fornecedor_id: item.dono_id,
-      status_comprador: compradorIsento ? 'isento_assinatura' : taxaComprador?.ativo ? 'pendente_pagamento' : 'liberado',
+      status_comprador: statusComprador,
       status_fornecedor: fornecedorIsento ? 'isento_assinatura' : taxaFornecedor?.ativo ? 'pendente_pagamento' : 'liberado',
-      valor_taxa_comprador: taxaComprador?.ativo ? taxaComprador.valor : 0,
+      valor_taxa_comprador: valorTaxaComprador,
       valor_taxa_fornecedor: taxaFornecedor?.ativo ? taxaFornecedor.valor : 0,
       mensagem: mensagem || null,
     })
@@ -213,6 +221,51 @@ export async function criarInteresse(itemId: string, compradorId: string, mensag
     .single();
   if (error) throw error;
   return data;
+}
+
+// Fornecedor em plano pago -> contato sempre aberto (promessa ja escrita em
+// /planos: "itens pagos ficam com anuncio aberto"). Fornecedor gratis (ou
+// sem perfil ainda) -> comprador tem uma cota diaria gratis, reaproveitando
+// o mesmo sistema ja usado por carona/mototaxi/agua-gas/academia
+// (plano_geral_limites/plano_geral_uso, 055_plano_geral.sql — so' um
+// servico novo, 'desbloqueio_contato', ver 076_vitrine_desbloqueio_contato.sql).
+// Estourou a cota -> vira pendente de pagamento pelo valor configurado no
+// admin master (unlockContactPrice), cobrado via Mercado Pago.
+async function decidirLiberacaoComprador(
+  item: CatalogoItem,
+  compradorId: string,
+  compradorIsento: boolean
+): Promise<{ statusComprador: 'liberado' | 'isento_assinatura' | 'pendente_pagamento'; valorTaxaComprador: number }> {
+  const supabase = createClient();
+
+  const { data: perfis } = await supabase.rpc('meu_perfil_fornecedor', { p_usuario_id: item.dono_id });
+  const planoFornecedor = perfis?.[0]?.plano;
+  if (planoFornecedor && planoFornecedor !== 'gratis') {
+    return { statusComprador: 'isento_assinatura', valorTaxaComprador: 0 };
+  }
+
+  if (compradorIsento) {
+    return { statusComprador: 'isento_assinatura', valorTaxaComprador: 0 };
+  }
+
+  const cota = await verificarECConsumirPlanoGeral(compradorId, 'desbloqueio_contato');
+  if (cota.permitido) {
+    return { statusComprador: 'liberado', valorTaxaComprador: 0 };
+  }
+
+  return { statusComprador: 'pendente_pagamento', valorTaxaComprador: await obterUnlockContactPrice() };
+}
+
+async function obterUnlockContactPrice(): Promise<number> {
+  const supabase = createClient();
+  const { data } = await supabase.from('admin_configuracoes').select('valor').eq('chave', 'planos_config').maybeSingle();
+  if (!data?.valor) return 0.5;
+  try {
+    const preco = Number(JSON.parse(data.valor)?.settings?.unlockContactPrice);
+    return Number.isFinite(preco) && preco >= 0 ? preco : 0.5;
+  } catch {
+    return 0.5;
+  }
 }
 
 async function temAssinaturaAtiva(usuarioId: string): Promise<boolean> {
