@@ -4,7 +4,7 @@
 // listener de 'activate' so' apaga caches com nome diferente do atual) —
 // sem isso, quem ja tinha o PWA instalado fica preso na versao antiga do
 // app pra sempre, mesmo com deploys novos no servidor.
-const CACHE_NAME = 'valente-conecta-v2';
+const CACHE_NAME = 'valente-conecta-v3';
 const urlsToCache = [
   '/',
   '/offline',
@@ -72,6 +72,13 @@ self.addEventListener('notificationclick', (event) => {
 // antes, mesmo depois de um novo deploy.
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return; // nunca intercepta POST/PUT/DELETE (APIs)
+
+  // Nunca intercepta chamada a API externa (OSRM/Nominatim no mapa do
+  // moto-taxi, por exemplo) -- se a rede oscilar bem na hora dessa chamada,
+  // o catch abaixo devolvia o HTML da pagina /offline no lugar da resposta
+  // JSON esperada, quebrando silenciosamente o fetch (achado investigando
+  // o mapa de rota reta). Só a rede nativa do navegador cuida dessas.
+  if (new URL(event.request.url).origin !== self.location.origin) return;
 
   event.respondWith(
     fetch(event.request)
