@@ -30,6 +30,7 @@ const TIPOS_POR_MODULO: Record<string, Record<string, string>> = {
     grocery_store: 'Mercearia',
     convenience_store: 'Mercearia',
     bakery: 'Padaria',
+    butcher_shop: 'Açougue',
   },
   moda: {
     clothing_store: 'Moda Feminina',
