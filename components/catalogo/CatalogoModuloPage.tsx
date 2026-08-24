@@ -11,6 +11,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, Store } from "lucide-react";
 import { useBuscaInteligente } from "@/lib/busca/useBuscaInteligente";
+import { useFallbackExterno } from "@/lib/busca/useFallbackExterno";
+import { SemResultados } from "@/components/busca/SemResultados";
 import { ItemCard } from "./ItemCard";
 
 interface CatalogoModuloPageProps {
@@ -24,7 +26,17 @@ interface CatalogoModuloPageProps {
 export function CatalogoModuloPage({ modulo, labelModulo, categorias, descricao, linkExtra }: CatalogoModuloPageProps) {
   const router = useRouter();
   const [categoria, setCategoria] = useState<string | undefined>(undefined);
-  const { diretos, relacionados, carregando: loading, buscar, termo } = useBuscaInteligente({ modulo, categoria });
+  const { diretos, relacionados, mensagemHumanizada, carregando: loading, buscar, termo } = useBuscaInteligente({ modulo, categoria });
+  const totalResultados = diretos.length + relacionados.length;
+  const {
+    demandaRegistrada,
+    registrandoDemanda,
+    pedirCadastro,
+    setPedirCadastro,
+    resultadosExternos,
+    buscandoExterno,
+    registrarDemanda,
+  } = useFallbackExterno({ termo, modulo, localizacao: null, loading, totalResultados });
 
   return (
     <div className="max-w-6xl mx-auto p-4 sm:p-6">
@@ -85,16 +97,28 @@ export function CatalogoModuloPage({ modulo, labelModulo, categorias, descricao,
         <div className="flex justify-center py-16">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500" />
         </div>
-      ) : diretos.length === 0 && relacionados.length === 0 ? (
-        <div className="text-center py-16 bg-gray-50 rounded-lg">
-          <p className="text-gray-500 text-lg">Nenhum item por aqui ainda</p>
-          <Link href={`/${modulo}/admin`} className="text-blue-600 text-sm font-medium mt-2 inline-block">
-            Seja o primeiro a publicar
-          </Link>
-        </div>
+      ) : totalResultados === 0 ? (
+        <SemResultados
+          termo={termo}
+          demandaRegistrada={demandaRegistrada}
+          registrandoDemanda={registrandoDemanda}
+          onRegistrarDemanda={registrarDemanda}
+          buscandoExterno={buscandoExterno}
+          resultadosExternos={resultadosExternos}
+          pedirCadastro={pedirCadastro}
+          onFecharCadastro={() => setPedirCadastro(false)}
+          semTermoExtra={
+            <Link href={`/${modulo}/admin`} className="text-blue-600 text-sm font-medium mt-2 inline-block">
+              Seja o primeiro a publicar
+            </Link>
+          }
+        />
       ) : (
         <div className="space-y-8">
           <div>
+            {mensagemHumanizada && (
+              <p className="text-sm text-gray-600 mb-3">{mensagemHumanizada}</p>
+            )}
             {relacionados.length > 0 && (
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Resultados diretos</p>
             )}

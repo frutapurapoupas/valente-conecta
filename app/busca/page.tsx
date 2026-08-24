@@ -10,14 +10,12 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Search, MapPin, MapPinOff, BellRing, CheckCircle2, ExternalLink, Globe } from "lucide-react";
-import toast from "react-hot-toast";
+import { Search, MapPin, MapPinOff } from "lucide-react";
 import { ItemCard } from "@/components/catalogo/ItemCard";
 import { LABEL_MODULO, type ModuloId } from "@/lib/catalogo/marketplaceTypes";
-import { getCurrentUser, isUserLoggedIn } from "@/lib/auth";
-import { obterUsuarioLocalId } from "@/lib/usuarioLocal";
-import { CadastroPopup } from "@/components/CadastroPopup";
 import { useBuscaInteligente } from "@/lib/busca/useBuscaInteligente";
+import { useFallbackExterno } from "@/lib/busca/useFallbackExterno";
+import { SemResultados } from "@/components/busca/SemResultados";
 
 const MODULOS = Object.keys(LABEL_MODULO) as ModuloId[];
 
@@ -29,17 +27,25 @@ export default function BuscaPage() {
   const [termo, setTermo] = useState(queryInicial);
   const [moduloAtivo, setModuloAtivo] = useState<string | null>(null);
   const [localizacao, setLocalizacao] = useState<{ lat: number; lng: number } | null>(null);
-  const { diretos, relacionados, carregando: loading, buscarImediato } = useBuscaInteligente({
+  const [pediuLocalizacao, setPediuLocalizacao] = useState(false);
+
+  const { diretos, relacionados, mensagemHumanizada, carregando: loading, buscarImediato } = useBuscaInteligente({
     modulo: moduloAtivo || undefined,
     lat: localizacao?.lat,
     lng: localizacao?.lng,
   });
-  const [pediuLocalizacao, setPediuLocalizacao] = useState(false);
-  const [demandaRegistrada, setDemandaRegistrada] = useState(false);
-  const [registrandoDemanda, setRegistrandoDemanda] = useState(false);
-  const [pedirCadastro, setPedirCadastro] = useState(false);
-  const [resultadosExternos, setResultadosExternos] = useState<{ titulo: string; trecho: string; link: string; fonte: string }[]>([]);
-  const [buscandoExterno, setBuscandoExterno] = useState(false);
+
+  const totalResultados = diretos.length + relacionados.length;
+
+  const {
+    demandaRegistrada,
+    registrandoDemanda,
+    pedirCadastro,
+    setPedirCadastro,
+    resultadosExternos,
+    buscandoExterno,
+    registrarDemanda,
+  } = useFallbackExterno({ termo, modulo: moduloAtivo || undefined, localizacao, loading, totalResultados });
 
   useEffect(() => {
     if (!("geolocation" in navigator)) return;
@@ -49,43 +55,6 @@ export default function BuscaPage() {
       { timeout: 5000 }
     );
   }, []);
-
-  // O CadastroPopup recarrega a pagina inteira ~1.5s depois do cadastro
-  // (pra atualizar o estado de login em todo o app) — o que interromperia
-  // um fetch de registrarDemanda() em andamento. Por isso guardamos a
-  // intencao no localStorage antes de abrir o popup e retomamos aqui, ja
-  // logado, depois do reload.
-  useEffect(() => {
-    const pendente = localStorage.getItem("busca_demanda_pendente");
-    if (!pendente || !isUserLoggedIn()) return;
-    localStorage.removeItem("busca_demanda_pendente");
-    try {
-      const { termo: termoPendente, modulo } = JSON.parse(pendente);
-      if (!termoPendente) return;
-      const usuario = getCurrentUser();
-      fetch("/api/demandas-busca", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          termo: termoPendente,
-          modulo,
-          usuarioId: obterUsuarioLocalId(),
-          usuarioNome: usuario?.nome,
-          usuarioTelefone: usuario?.whatsapp,
-        }),
-      })
-        .then((r) => r.json())
-        .then((res) => {
-          if (res.success) {
-            toast.success("Prontinho! Vamos te avisar assim que aparecer.");
-            if (termoPendente === termo) setDemandaRegistrada(true);
-          }
-        })
-        .catch((err) => console.error("Erro ao registrar demanda pendente:", err));
-    } catch {
-      // ignora JSON invalido
-    }
-  }, []); // eslint-disable-line
 
   // Busca inicial (query da URL) e re-busca quando a localizacao chega
   // depois do mount (geolocation e' assincrona) -- modulo ja e' coberto
@@ -102,70 +71,8 @@ export default function BuscaPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setDemandaRegistrada(false);
-    setResultadosExternos([]);
     router.replace(`/busca?q=${encodeURIComponent(termo)}`);
     buscarImediato(termo);
-  };
-
-  const totalResultados = diretos.length + relacionados.length;
-
-  // So busca fora da plataforma quando a busca interna terminou e nao achou
-  // nada — evita gastar cota da API em toda letra digitada.
-  useEffect(() => {
-    if (loading || totalResultados > 0 || !termo.trim()) {
-      setResultadosExternos([]);
-      return;
-    }
-    // cidade_base existe na tabela usuarios mas nao esta no tipo Usuario
-    // (campo adicionado depois, tipo nao foi atualizado).
-    const usuario = getCurrentUser();
-    const cidade = (usuario as any)?.cidade_base || undefined;
-    setBuscandoExterno(true);
-    const params = new URLSearchParams({ q: termo, usuarioId: usuario?.id || obterUsuarioLocalId() });
-    if (cidade) params.set("cidade", cidade);
-    if (localizacao) {
-      params.set("lat", String(localizacao.lat));
-      params.set("lng", String(localizacao.lng));
-    }
-    fetch(`/api/busca-externa?${params.toString()}`)
-      .then((r) => r.json())
-      .then((res) => setResultadosExternos(res.success ? res.data : []))
-      .catch(() => setResultadosExternos([]))
-      .finally(() => setBuscandoExterno(false));
-  }, [loading, totalResultados, termo, localizacao]);
-
-  const registrarDemanda = async () => {
-    if (!isUserLoggedIn()) {
-      localStorage.setItem("busca_demanda_pendente", JSON.stringify({ termo, modulo: moduloAtivo }));
-      setPedirCadastro(true);
-      return;
-    }
-    const usuario = getCurrentUser();
-    setRegistrandoDemanda(true);
-    try {
-      const resp = await fetch("/api/demandas-busca", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          termo,
-          modulo: moduloAtivo,
-          usuarioId: obterUsuarioLocalId(),
-          usuarioNome: usuario?.nome,
-          usuarioTelefone: usuario?.whatsapp,
-          latitude: localizacao?.lat,
-          longitude: localizacao?.lng,
-        }),
-      });
-      const resultado = await resp.json();
-      if (!resultado.success) throw new Error(resultado.error);
-      setDemandaRegistrada(true);
-      toast.success("Prontinho! Vamos te avisar assim que aparecer.");
-    } catch (err: any) {
-      toast.error(err.message || "Erro ao registrar seu interesse");
-    } finally {
-      setRegistrandoDemanda(false);
-    }
   };
 
   return (
@@ -224,61 +131,22 @@ export default function BuscaPage() {
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500" />
         </div>
       ) : totalResultados === 0 ? (
-        <div className="text-center py-16 bg-gray-50 rounded-lg px-6">
-          <p className="text-gray-500 text-lg">Nenhum resultado encontrado</p>
-          <p className="text-gray-400 text-sm mt-1">Ainda não existe ninguém oferecendo isso na plataforma.</p>
-          {termo.trim() && (
-            demandaRegistrada ? (
-              <p className="mt-5 flex items-center justify-center gap-2 text-emerald-600 font-medium text-sm">
-                <CheckCircle2 className="w-4 h-4" /> Interesse registrado — vamos te avisar em até 24h se aparecer.
-              </p>
-            ) : (
-              <button
-                onClick={registrarDemanda}
-                disabled={registrandoDemanda}
-                className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-lg font-medium"
-              >
-                <BellRing className="w-4 h-4" />
-                {registrandoDemanda ? "Registrando..." : `Avise-me quando "${termo}" aparecer`}
-              </button>
-            )
-          )}
-
-          {buscandoExterno && (
-            <p className="text-xs text-gray-400 mt-6">Procurando na internet perto de você...</p>
-          )}
-
-          {resultadosExternos.length > 0 && (
-            <div className="mt-8 text-left max-w-lg mx-auto">
-              <p className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                <Globe className="w-3.5 h-3.5" /> Encontrado na internet, fora da plataforma
-              </p>
-              <div className="space-y-2">
-                {resultadosExternos.map((r, i) => (
-                  <a
-                    key={i}
-                    href={r.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block bg-white border rounded-lg p-3 hover:border-blue-400 transition-colors"
-                  >
-                    <p className="text-sm font-medium text-blue-700 flex items-center gap-1.5">
-                      {r.titulo} <ExternalLink className="w-3 h-3 shrink-0" />
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1 line-clamp-2">{r.trecho}</p>
-                    <p className="text-[11px] text-gray-400 mt-1">{r.fonte}</p>
-                  </a>
-                ))}
-              </div>
-              <p className="text-[11px] text-gray-400 mt-2">
-                Resultado externo — o preço, se aparecer no texto, não é garantido pelo Valente Conecta.
-              </p>
-            </div>
-          )}
-        </div>
+        <SemResultados
+          termo={termo}
+          demandaRegistrada={demandaRegistrada}
+          registrandoDemanda={registrandoDemanda}
+          onRegistrarDemanda={registrarDemanda}
+          buscandoExterno={buscandoExterno}
+          resultadosExternos={resultadosExternos}
+          pedirCadastro={pedirCadastro}
+          onFecharCadastro={() => setPedirCadastro(false)}
+        />
       ) : (
         <div className="space-y-8">
           <div>
+            {mensagemHumanizada && (
+              <p className="text-sm text-gray-600 mb-3">{mensagemHumanizada}</p>
+            )}
             {relacionados.length > 0 && (
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Resultados diretos</p>
             )}
@@ -308,20 +176,6 @@ export default function BuscaPage() {
             </div>
           )}
         </div>
-      )}
-
-      {pedirCadastro && (
-        <CadastroPopup
-          forceShow
-          onSuccess={() => {
-            // Nao chama registrarDemanda() aqui: o CadastroPopup recarrega a
-            // pagina inteira ~1.5s depois, o que aborta esse fetch no meio
-            // do caminho na maioria das vezes. O useEffect de
-            // "busca_demanda_pendente" acima cuida disso depois do reload,
-            // ja com o login confirmado.
-            setPedirCadastro(false);
-          }}
-        />
       )}
     </div>
   );

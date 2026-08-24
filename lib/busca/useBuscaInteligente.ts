@@ -28,6 +28,7 @@ export function useBuscaInteligente(filtros: FiltrosBuscaInteligente = {}) {
   const [termo, setTermo] = useState("");
   const [diretos, setDiretos] = useState<ResultadoAgrupado[]>([]);
   const [relacionados, setRelacionados] = useState<ResultadoAgrupado[]>([]);
+  const [mensagemHumanizada, setMensagemHumanizada] = useState<string | undefined>(undefined);
   const [carregando, setCarregando] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -44,13 +45,16 @@ export function useBuscaInteligente(filtros: FiltrosBuscaInteligente = {}) {
       if (resultado.success) {
         setDiretos(resultado.data.diretos);
         setRelacionados(resultado.data.relacionados);
+        setMensagemHumanizada(resultado.data.mensagemHumanizada);
       } else {
         setDiretos([]);
         setRelacionados([]);
+        setMensagemHumanizada(undefined);
       }
     } catch {
       setDiretos([]);
       setRelacionados([]);
+      setMensagemHumanizada(undefined);
     } finally {
       setCarregando(false);
     }
@@ -78,5 +82,5 @@ export function useBuscaInteligente(filtros: FiltrosBuscaInteligente = {}) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtros.modulo, filtros.categoria]);
 
-  return { termo, diretos, relacionados, carregando, buscar, buscarImediato };
+  return { termo, diretos, relacionados, mensagemHumanizada, carregando, buscar, buscarImediato };
 }

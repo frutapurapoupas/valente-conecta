@@ -20,6 +20,7 @@ export interface BuscaInteligenteResultado {
   diretos: ResultadoAgrupado[];
   relacionados: ResultadoAgrupado[];
   termosUsados: { diretos: string[]; relacionados: string[] };
+  mensagemHumanizada?: string;
 }
 
 interface FiltrosBuscaInteligente {
@@ -80,5 +81,10 @@ export async function buscarInteligente(query: string, filtros: FiltrosBuscaInte
     }
   }
 
-  return { diretos, relacionados, termosUsados: intencao ? { diretos: intencao.termosDiretos, relacionados: intencao.termosRelacionados } : { diretos: [], relacionados: [] } };
+  return {
+    diretos,
+    relacionados,
+    termosUsados: { diretos: intencao.termosDiretos, relacionados: intencao.termosRelacionados },
+    mensagemHumanizada: intencao.mensagemHumanizada,
+  };
 }
