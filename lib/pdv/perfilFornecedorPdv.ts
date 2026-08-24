@@ -18,6 +18,7 @@ export interface PerfilFornecedorPdv {
   latitude: number | null;
   longitude: number | null;
   plano: string;
+  categoria_negocio?: string | null;
 }
 
 export async function obterPerfilFornecedor(usuarioId: string): Promise<PerfilFornecedorPdv | null> {
@@ -28,7 +29,7 @@ export async function obterPerfilFornecedor(usuarioId: string): Promise<PerfilFo
 
 export async function salvarCamposPerfilFornecedor(
   usuarioId: string,
-  campos: Partial<{ nomeExibicao: string; endereco: string; latitude: number; longitude: number }>
+  campos: Partial<{ nomeExibicao: string; endereco: string; latitude: number; longitude: number; categoriaNegocio: string }>
 ): Promise<PerfilFornecedorPdv> {
   const supabase = createClient();
   const perfil = await obterPerfilFornecedor(usuarioId);
@@ -50,6 +51,7 @@ export async function salvarCamposPerfilFornecedor(
     p_latitude: campos.latitude ?? perfil?.latitude ?? null,
     p_longitude: campos.longitude ?? perfil?.longitude ?? null,
     p_plano: perfil?.plano ?? 'gratis',
+    p_categoria_negocio: campos.categoriaNegocio ?? perfil?.categoria_negocio ?? null,
   });
   if (error) throw error;
   return data;

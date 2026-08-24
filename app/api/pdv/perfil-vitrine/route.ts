@@ -24,11 +24,13 @@ export async function POST(request: NextRequest) {
     const usuarioId = String(body.usuarioId || '').trim();
     const nomeExibicao = String(body.nomeExibicao || '').trim();
     const endereco = String(body.endereco || '').trim();
+    const categoriaNegocio = String(body.categoriaNegocio || '').trim();
     if (!usuarioId) return NextResponse.json({ success: false, error: 'usuarioId é obrigatório' }, { status: 400 });
     if (!nomeExibicao) return NextResponse.json({ success: false, error: 'Nome da loja é obrigatório' }, { status: 400 });
     if (!endereco) return NextResponse.json({ success: false, error: 'Endereço é obrigatório' }, { status: 400 });
+    if (!categoriaNegocio) return NextResponse.json({ success: false, error: 'Categoria do negócio é obrigatória' }, { status: 400 });
 
-    const data = await salvarCamposPerfilFornecedor(usuarioId, { nomeExibicao, endereco });
+    const data = await salvarCamposPerfilFornecedor(usuarioId, { nomeExibicao, endereco, categoriaNegocio });
     return NextResponse.json({ success: true, data });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message || 'Erro ao salvar perfil' }, { status: 500 });

@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     // dos outros módulos), pede pra completar em vez de publicar com um
     // nome genérico. Front mostra o formulário quando vê esse erro.
     const perfil = await obterPerfilFornecedor(usuarioId);
-    if (!perfil?.endereco) {
+    if (!perfil?.endereco || !perfil?.categoria_negocio) {
       return NextResponse.json({ success: false, error: 'perfil_incompleto', perfil }, { status: 409 });
     }
     const latitude = perfil?.latitude ?? null;
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
 
     const pendentes = (itens || []).filter((i: any) => !i.catalogo_item_id);
     if (pendentes.length === 0) {
-      return NextResponse.json({ success: true, publicados: 0, jaPublicados: (itens || []).length });
+      return NextResponse.json({ success: true, publicados: 0, jaPublicados: (itens || []).length, categoriaNegocio: perfil.categoria_negocio });
     }
 
     let publicados = 0;
@@ -100,6 +100,7 @@ export async function POST(request: NextRequest) {
       publicados,
       jaPublicados: (itens || []).length - pendentes.length,
       comErro,
+      categoriaNegocio: perfil.categoria_negocio,
     });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message || 'Erro ao publicar estoque na vitrine' }, { status: 500 });

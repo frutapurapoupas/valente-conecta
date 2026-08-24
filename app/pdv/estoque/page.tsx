@@ -92,7 +92,17 @@ export default function PdvEstoquePage() {
   const [showCompletarPerfil, setShowCompletarPerfil] = useState(false);
   const [perfilNome, setPerfilNome] = useState("");
   const [perfilEndereco, setPerfilEndereco] = useState("");
+  const [perfilCategoriaNegocio, setPerfilCategoriaNegocio] = useState("");
+  const [categoriasNegocio, setCategoriasNegocio] = useState<{ id: string; nome: string }[]>([]);
   const [salvandoPerfil, setSalvandoPerfil] = useState(false);
+  const [planoRecomendadoServico, setPlanoRecomendadoServico] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/planos-config")
+      .then((r) => r.json())
+      .then((resp) => { if (resp.success) setCategoriasNegocio(resp.data.services.map((s: any) => ({ id: s.id, nome: s.nome }))); })
+      .catch(() => {});
+  }, []);
 
   const executarPublicacao = async () => {
     if (!usuario) return;
@@ -113,6 +123,7 @@ export default function PdvEstoquePage() {
         if (resp.error === "perfil_incompleto") {
           setPerfilNome(resp.perfil?.nome_exibicao || usuario.nome || "");
           setPerfilEndereco(resp.perfil?.endereco || "");
+          setPerfilCategoriaNegocio(resp.perfil?.categoria_negocio || "");
           setShowCompletarPerfil(true);
           return;
         }
@@ -123,6 +134,7 @@ export default function PdvEstoquePage() {
       } else {
         toast.success(`${resp.publicados} produto${resp.publicados === 1 ? "" : "s"} publicado${resp.publicados === 1 ? "" : "s"} no app!`);
       }
+      if (resp.categoriaNegocio) setPlanoRecomendadoServico(resp.categoriaNegocio);
       carregar(usuario.id);
     } catch (error: any) {
       toast.error(error.message || "Erro ao publicar no app");
@@ -133,8 +145,8 @@ export default function PdvEstoquePage() {
 
   const confirmarPerfilEPublicar = async () => {
     if (!usuario) return;
-    if (!perfilNome.trim() || !perfilEndereco.trim()) {
-      toast.error("Preencha nome da loja e endereço");
+    if (!perfilNome.trim() || !perfilEndereco.trim() || !perfilCategoriaNegocio) {
+      toast.error("Preencha nome da loja, endereço e categoria do negócio");
       return;
     }
     setSalvandoPerfil(true);
@@ -142,7 +154,7 @@ export default function PdvEstoquePage() {
       const resp = await fetch("/api/pdv/perfil-vitrine", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ usuarioId: usuario.id, nomeExibicao: perfilNome.trim(), endereco: perfilEndereco.trim() }),
+        body: JSON.stringify({ usuarioId: usuario.id, nomeExibicao: perfilNome.trim(), endereco: perfilEndereco.trim(), categoriaNegocio: perfilCategoriaNegocio }),
       }).then((r) => r.json());
       if (!resp.success) throw new Error(resp.error);
 
@@ -155,6 +167,7 @@ export default function PdvEstoquePage() {
       } else {
         toast.success(`Perfil salvo! ${publicacao.publicados} produto${publicacao.publicados === 1 ? "" : "s"} publicado${publicacao.publicados === 1 ? "" : "s"} no app!`);
       }
+      if (publicacao.categoriaNegocio) setPlanoRecomendadoServico(publicacao.categoriaNegocio);
       carregar(usuario.id);
     } catch (error: any) {
       toast.error(error.message || "Erro ao salvar perfil");
@@ -651,6 +664,15 @@ export default function PdvEstoquePage() {
                 <label className="text-xs font-medium text-gray-500">Endereço</label>
                 <input value={perfilEndereco} onChange={(e) => setPerfilEndereco(e.target.value)} placeholder="Rua, número, bairro — Valente/BA" className="w-full mt-1 px-3 py-2 border rounded-lg text-sm" />
               </div>
+              <div>
+                <label className="text-xs font-medium text-gray-500">Categoria do negócio</label>
+                <select value={perfilCategoriaNegocio} onChange={(e) => setPerfilCategoriaNegocio(e.target.value)} className="w-full mt-1 px-3 py-2 border rounded-lg text-sm bg-white">
+                  <option value="">Selecione...</option>
+                  {categoriasNegocio.map((c) => (
+                    <option key={c.id} value={c.id}>{c.nome}</option>
+                  ))}
+                </select>
+              </div>
               <button
                 onClick={confirmarPerfilEPublicar}
                 disabled={salvandoPerfil || publicandoVitrine}
@@ -658,6 +680,30 @@ export default function PdvEstoquePage() {
               >
                 {salvandoPerfil || publicandoVitrine ? "Publicando..." : "Salvar e publicar"}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {planoRecomendadoServico && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-5 text-center">
+            <div className="flex justify-end">
+              <button onClick={() => setPlanoRecomendadoServico(null)}><X className="w-5 h-5 text-gray-400" /></button>
+            </div>
+            <Megaphone className="w-10 h-10 text-blue-600 mx-auto mb-2" />
+            <h2 className="font-bold text-gray-800 text-lg mb-1">Seus produtos já estão no app!</h2>
+            <p className="text-sm text-gray-500 mb-4">Baseado na categoria do seu negócio, temos um plano que combina com sua loja — mais fotos por produto e destaque na busca.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setPlanoRecomendadoServico(null)} className="flex-1 px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-50">
+                Agora não
+              </button>
+              <a
+                href={`/planos?servico=${encodeURIComponent(planoRecomendadoServico)}`}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+              >
+                Ver planos
+              </a>
             </div>
           </div>
         </div>
