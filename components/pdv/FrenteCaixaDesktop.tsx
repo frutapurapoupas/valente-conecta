@@ -42,19 +42,27 @@ function formatarDataBR(iso: string) {
   return new Date(iso + "T00:00:00").toLocaleDateString("pt-BR");
 }
 
-// Protocolo direto do WhatsApp (nao o link wa.me) -- abre o WhatsApp
-// Desktop/celular na hora, sem passar pela pagina intermediaria
-// "Compartilhar no WhatsApp" que o wa.me mostra quando o navegador nao
-// tem certeza de qual app abrir. So' abre uma mensagem pronta, o
-// lojista quem manda; por isso nao depende do cliente ter o app
-// instalado nem do plano da loja (diferente do push automatico, que so'
-// plano pago dispara). Se o WhatsApp Desktop nao estiver instalado, o
-// proprio Windows mostra o aviso padrao de "abrir com" -- sem isso nao
-// tem como saber de antemao se o app existe.
-function linkWhatsappCobranca(telefone: string, mensagem: string) {
+// Tenta o protocolo direto do WhatsApp primeiro (abre o app na hora,
+// sem passar pela pagina "Compartilhar no WhatsApp" do wa.me) -- mas o
+// Chrome so' faz essa entrega se ja' tiver permissao concedida pro site
+// abrir esse tipo de link, e nao existe um jeito confiavel de saber de
+// antemao se essa permissao existe (achado testando: quando falta, o
+// link nao faz literalmente nada, sem erro nenhum). Por isso tem
+// fallback: se depois de ~1,2s a aba continuar visivel (sinal de que o
+// app NAO abriu, porque abrir um app de verdade tira o foco da aba),
+// cai pro link wa.me tradicional, que sempre funciona. So' abre uma
+// mensagem pronta, o lojista quem manda; nao depende do cliente ter o
+// app instalado nem do plano da loja (diferente do push automatico,
+// que so' plano pago dispara).
+function abrirWhatsapp(telefone: string, mensagem: string) {
   const digitos = telefone.replace(/\D/g, "");
   const numeroCompleto = digitos.startsWith("55") ? digitos : `55${digitos}`;
-  return `whatsapp://send?phone=${numeroCompleto}&text=${encodeURIComponent(mensagem)}`;
+  const linkApp = `whatsapp://send?phone=${numeroCompleto}&text=${encodeURIComponent(mensagem)}`;
+  const linkWeb = `https://wa.me/${numeroCompleto}?text=${encodeURIComponent(mensagem)}`;
+  window.location.href = linkApp;
+  setTimeout(() => {
+    if (document.visibilityState === "visible") window.open(linkWeb, "_blank");
+  }, 1200);
 }
 
 interface ResumoFiado {
@@ -830,7 +838,7 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
             <div className="flex gap-3 pt-5">
               <button onClick={() => setResumoFiado(null)} className="flex-1 px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-50">Fechar</button>
               <button
-                onClick={() => { window.location.href = linkWhatsappCobranca(resumoFiado.cliente.telefone, `Olá, ${resumoFiado.cliente.nome}! Aqui é ${empresa.nome || "a loja"}. Compra de ${formatarMoeda(resumoFiado.valor)} no fiado, vencimento em ${formatarDataBR(resumoFiado.vencimento)}. Saldo total em aberto: ${formatarMoeda(resumoFiado.saldoTotal)}.`); }}
+                onClick={() => abrirWhatsapp(resumoFiado.cliente.telefone, `Olá, ${resumoFiado.cliente.nome}! Aqui é ${empresa.nome || "a loja"}. Compra de ${formatarMoeda(resumoFiado.valor)} no fiado, vencimento em ${formatarDataBR(resumoFiado.vencimento)}. Saldo total em aberto: ${formatarMoeda(resumoFiado.saldoTotal)}.`)}
                 className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 flex items-center justify-center gap-2"
               >
                 <MessageCircle className="w-4 h-4" /> WhatsApp

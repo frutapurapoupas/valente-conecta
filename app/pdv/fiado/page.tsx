@@ -287,13 +287,20 @@ export default function FiadoPage() {
       .filter((d) => d.cliente_id === clienteId && d.status !== 'pago')
       .reduce((soma, d) => soma + (Number(d.valor_total) - Number(d.valor_pago)), 0);
 
-  // Protocolo direto do WhatsApp (nao wa.me) -- abre o WhatsApp
-  // Desktop/celular na hora, sem passar pela pagina intermediaria
-  // "Compartilhar no WhatsApp".
-  const linkWhatsappCobranca = (cliente: ClienteFiado, mensagem: string) => {
+  // Tenta o protocolo direto do WhatsApp e cai pro link wa.me se depois
+  // de ~1,2s a aba continuar visivel (sinal de que o app nao abriu --
+  // achado testando: o Chrome so' entrega o link direto quando ja' tem
+  // permissao concedida pro site, e sem essa permissao o link nao faz
+  // literalmente nada, sem erro nenhum pra detectar).
+  const abrirWhatsapp = (cliente: ClienteFiado, mensagem: string) => {
     const telefone = cliente.telefone.replace(/\D/g, '');
     const numeroCompleto = telefone.startsWith('55') ? telefone : `55${telefone}`;
-    return `whatsapp://send?phone=${numeroCompleto}&text=${encodeURIComponent(mensagem)}`;
+    const linkApp = `whatsapp://send?phone=${numeroCompleto}&text=${encodeURIComponent(mensagem)}`;
+    const linkWeb = `https://wa.me/${numeroCompleto}?text=${encodeURIComponent(mensagem)}`;
+    window.location.href = linkApp;
+    setTimeout(() => {
+      if (document.visibilityState === 'visible') window.open(linkWeb, '_blank');
+    }, 1200);
   };
 
   const cobrarPorWhatsapp = (divida: Divida) => {
@@ -304,7 +311,7 @@ export default function FiadoPage() {
     const mensagem = atualizado
       ? `Olá, ${cliente.nome}! Aqui é ${lojaNome || 'a loja'}. Você tem uma conta em aberto de R$ ${saldo.toFixed(2)}, vencida em ${formatDate(divida.data_vencimento)} (${atualizado.diasAtraso} dias em atraso). Com juros e multa, o valor atualizado é R$ ${atualizado.total.toFixed(2)}. Qualquer dúvida, é só chamar por aqui.`
       : `Olá, ${cliente.nome}! Aqui é ${lojaNome || 'a loja'}. Você tem uma conta em aberto de R$ ${saldo.toFixed(2)}, com vencimento em ${formatDate(divida.data_vencimento)}. Qualquer dúvida, é só chamar por aqui.`;
-    window.location.href = linkWhatsappCobranca(cliente, mensagem);
+    abrirWhatsapp(cliente, mensagem);
   };
 
   const registrarPagamento = async () => {
@@ -539,7 +546,7 @@ export default function FiadoPage() {
                       )}
                       {saldo > 0 && (
                         <button
-                          onClick={() => { window.location.href = linkWhatsappCobranca(c, `Olá, ${c.nome}! Aqui é ${lojaNome || 'a loja'}. Seu saldo em aberto é de R$ ${saldo.toFixed(2)}.`); }}
+                          onClick={() => abrirWhatsapp(c, `Olá, ${c.nome}! Aqui é ${lojaNome || 'a loja'}. Seu saldo em aberto é de R$ ${saldo.toFixed(2)}.`)}
                           className="text-xs text-emerald-600 flex items-center gap-1 hover:underline"
                         >
                           <MessageCircle className="w-3 h-3" /> Avisar saldo
@@ -722,7 +729,7 @@ export default function FiadoPage() {
                   <Printer className="w-4 h-4" /> Imprimir
                 </button>
                 <button
-                  onClick={() => { window.location.href = linkWhatsappCobranca(recibo.cliente, `Olá, ${recibo.cliente.nome}! Recibo de compra em ${lojaNome || 'nossa loja'}: R$ ${recibo.valor.toFixed(2)}, vencimento em ${formatDate(recibo.vencimento)}. Saldo total em aberto: R$ ${recibo.saldoTotal.toFixed(2)}.`); }}
+                  onClick={() => abrirWhatsapp(recibo.cliente, `Olá, ${recibo.cliente.nome}! Recibo de compra em ${lojaNome || 'nossa loja'}: R$ ${recibo.valor.toFixed(2)}, vencimento em ${formatDate(recibo.vencimento)}. Saldo total em aberto: R$ ${recibo.saldoTotal.toFixed(2)}.`)}
                   className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 flex items-center justify-center gap-2"
                 >
                   <MessageCircle className="w-4 h-4" /> WhatsApp
