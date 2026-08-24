@@ -1,19 +1,19 @@
 // Caminho: C:\valente_conecta\lib\busca\interpretarIntencao.ts
 //
 // Interpreta a intenção de uma busca (palavra solta ou pergunta em
-// linguagem natural) via IA — DeepSeek Chat Completions (compatível com o
-// padrão OpenAI), usando a MESMA chave DEEPSEEK_API_KEY que já existe em
-// .env.local (até aqui só usada pela ferramenta de dev, nunca pelo app em
-// produção). Devolve termos de busca diretos e relacionados, que
-// lib/busca/buscarTudo.ts usa pra consultar o catálogo de verdade — a IA
-// nunca inventa comércio nem garante que o termo vai achar algo, só sugere
-// o que buscar.
+// linguagem natural) via IA. Prioriza o Google Gemini (camada gratuita de
+// verdade, sem cartão — GEMINI_API_KEY) através da API compatível com o
+// padrão OpenAI; se essa chave não estiver configurada, cai pro DeepSeek
+// (DEEPSEEK_API_KEY, mesmo formato de chamada). Devolve termos de busca
+// diretos e relacionados, que lib/busca/buscarTudo.ts usa pra consultar o
+// catálogo de verdade — a IA nunca inventa comércio nem garante que o
+// termo vai achar algo, só sugere o que buscar.
 //
-// Nunca trava a busca: erro de rede, timeout, JSON inválido ou cota do dia
-// estourada (lib/planoGeral.ts, servico 'busca_inteligente_ia',
-// 077_busca_inteligente_ia.sql) caem todos no mesmo fallback — busca
-// literal pelo termo digitado, exatamente como funcionava antes de existir
-// essa camada.
+// Nunca trava a busca: sem nenhuma das duas chaves, erro de rede, timeout,
+// JSON inválido ou cota do dia estourada (lib/planoGeral.ts, servico
+// 'busca_inteligente_ia', 077_busca_inteligente_ia.sql) caem todos no
+// mesmo fallback — busca literal pelo termo digitado, exatamente como
+// funcionava antes de existir essa camada.
 
 import { verificarECConsumirPlanoGeral } from '@/lib/planoGeral';
 
@@ -33,30 +33,27 @@ Responda só com o JSON, sem nenhum texto explicativo antes ou depois.
 Exemplo — busca "onde regularizar a documentação do carro":
 {"termos_diretos": ["despachante", "DETRAN", "cartório", "confecção de placas", "emplacamento"], "termos_relacionados": ["oficina mecânica", "chapeação e pintura", "auto peças"]}`;
 
-export async function interpretarIntencaoBusca(query: string, usuarioId?: string): Promise<IntencaoBusca> {
-  const fallback: IntencaoBusca = { termosDiretos: [query], termosRelacionados: [] };
+// Provedores tentados nessa ordem — primeiro com chave configurada vence.
+// Os dois falam o mesmo formato (chat completions estilo OpenAI), so' muda
+// base URL/modelo/env var.
+const PROVEDORES = [
+  { env: 'GEMINI_API_KEY', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', model: 'gemini-3.7-flash' },
+  { env: 'DEEPSEEK_API_KEY', baseUrl: 'https://api.deepseek.com/chat/completions', model: 'deepseek-chat' },
+] as const;
 
-  const apiKey = process.env.DEEPSEEK_API_KEY;
-  if (!apiKey) return fallback;
+function limparTermos(lista: any, max: number): string[] {
+  return Array.isArray(lista) ? lista.filter((t) => typeof t === 'string' && t.trim()).map((t: string) => t.trim()).slice(0, max) : [];
+}
 
-  if (usuarioId) {
-    try {
-      const cota = await verificarECConsumirPlanoGeral(usuarioId, 'busca_inteligente_ia');
-      if (!cota.permitido) return fallback;
-    } catch {
-      // cota indisponivel (erro de banco, etc) nao deve travar a busca
-    }
-  }
-
+async function chamarProvedor(baseUrl: string, model: string, apiKey: string, query: string): Promise<IntencaoBusca | null> {
+  const controlador = new AbortController();
+  const timeoutId = setTimeout(() => controlador.abort(), 6000);
   try {
-    const controlador = new AbortController();
-    const timeoutId = setTimeout(() => controlador.abort(), 6000);
-
-    const resposta = await fetch('https://api.deepseek.com/chat/completions', {
+    const resposta = await fetch(baseUrl, {
       method: 'POST',
       headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'deepseek-chat',
+        model,
         messages: [
           { role: 'system', content: PROMPT_SISTEMA },
           { role: 'user', content: query },
@@ -67,23 +64,39 @@ export async function interpretarIntencaoBusca(query: string, usuarioId?: string
       }),
       signal: controlador.signal,
     });
-    clearTimeout(timeoutId);
-    if (!resposta.ok) return fallback;
+    if (!resposta.ok) return null;
 
     const dados = await resposta.json();
     const conteudo = dados?.choices?.[0]?.message?.content;
-    if (!conteudo) return fallback;
+    if (!conteudo) return null;
 
     const parsed = JSON.parse(conteudo);
-    const limpar = (lista: any, max: number): string[] =>
-      Array.isArray(lista) ? lista.filter((t) => typeof t === 'string' && t.trim()).map((t) => t.trim()).slice(0, max) : [];
-
-    const termosDiretos = limpar(parsed?.termos_diretos, 6);
-    const termosRelacionados = limpar(parsed?.termos_relacionados, 4);
-
-    if (termosDiretos.length === 0) return fallback;
+    const termosDiretos = limparTermos(parsed?.termos_diretos, 6);
+    const termosRelacionados = limparTermos(parsed?.termos_relacionados, 4);
+    if (termosDiretos.length === 0) return null;
     return { termosDiretos, termosRelacionados };
   } catch {
-    return fallback;
+    return null;
+  } finally {
+    clearTimeout(timeoutId);
   }
+}
+
+export async function interpretarIntencaoBusca(query: string, usuarioId?: string): Promise<IntencaoBusca> {
+  const fallback: IntencaoBusca = { termosDiretos: [query], termosRelacionados: [] };
+
+  const provedor = PROVEDORES.find((p) => process.env[p.env]);
+  if (!provedor) return fallback;
+
+  if (usuarioId) {
+    try {
+      const cota = await verificarECConsumirPlanoGeral(usuarioId, 'busca_inteligente_ia');
+      if (!cota.permitido) return fallback;
+    } catch {
+      // cota indisponivel (erro de banco, etc) nao deve travar a busca
+    }
+  }
+
+  const resultado = await chamarProvedor(provedor.baseUrl, provedor.model, process.env[provedor.env]!, query);
+  return resultado || fallback;
 }
