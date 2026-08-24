@@ -5,23 +5,37 @@
 // linkava pra outra antes, cada uma só era alcançável por URL direta.
 
 import Link from "next/link";
-import { ShoppingCart, Package, Receipt, Wallet, FileText, Eye, FileSpreadsheet, Tag } from "lucide-react";
+import { ShoppingCart, Package, Receipt, Wallet, FileText, Eye, FileSpreadsheet, Tag, Users } from "lucide-react";
+import { temPermissao, type OperadorAtivo } from "@/lib/pdv/operadorPdv";
+import type { ChavePermissaoPdv } from "@/lib/pdv/permissoesFuncionario";
 
-const ABAS = [
+const ABAS: { href: string; chave: string; label: string; icone: typeof ShoppingCart; permissao?: ChavePermissaoPdv; soDono?: boolean }[] = [
   { href: "/pdv", chave: "vender", label: "Vender", icone: ShoppingCart },
-  { href: "/pdv/estoque", chave: "estoque", label: "Estoque", icone: Package },
-  { href: "/pdv/importar-estoque", chave: "importar-estoque", label: "Importar", icone: FileSpreadsheet },
-  { href: "/pdv/etiquetas", chave: "etiquetas", label: "Etiquetas", icone: Tag },
-  { href: "/pdv/fiado", chave: "fiado", label: "Fiado", icone: Receipt },
-  { href: "/pdv/caixa", chave: "caixa", label: "Caixa", icone: Wallet },
-  { href: "/pdv/notas-fiscais", chave: "notas-fiscais", label: "Notas", icone: FileText },
-  { href: "/pdv/captura-externa", chave: "captura-externa", label: "Captura", icone: Eye },
+  { href: "/pdv/estoque", chave: "estoque", label: "Estoque", icone: Package, permissao: "estoque" },
+  { href: "/pdv/importar-estoque", chave: "importar-estoque", label: "Importar", icone: FileSpreadsheet, permissao: "importar-estoque" },
+  { href: "/pdv/etiquetas", chave: "etiquetas", label: "Etiquetas", icone: Tag, permissao: "etiquetas" },
+  { href: "/pdv/fiado", chave: "fiado", label: "Fiado", icone: Receipt, permissao: "fiado" },
+  { href: "/pdv/caixa", chave: "caixa", label: "Caixa", icone: Wallet, permissao: "caixa" },
+  { href: "/pdv/notas-fiscais", chave: "notas-fiscais", label: "Notas", icone: FileText, permissao: "notas-fiscais" },
+  { href: "/pdv/captura-externa", chave: "captura-externa", label: "Captura", icone: Eye, permissao: "captura-externa" },
+  { href: "/pdv/equipe", chave: "equipe", label: "Equipe", icone: Users, soDono: true },
 ];
 
-export function PdvSubNav({ ativa }: { ativa: "vender" | "estoque" | "importar-estoque" | "etiquetas" | "fiado" | "caixa" | "notas-fiscais" | "captura-externa" }) {
+export function PdvSubNav({
+  ativa,
+  operador,
+}: {
+  ativa: "vender" | "estoque" | "importar-estoque" | "etiquetas" | "fiado" | "caixa" | "notas-fiscais" | "captura-externa" | "equipe";
+  operador?: OperadorAtivo | null;
+}) {
+  const abasVisiveis = ABAS.filter((aba) => {
+    if (aba.soDono) return !operador || operador.ehDono;
+    if (!aba.permissao) return true;
+    return temPermissao(operador ?? null, aba.permissao);
+  });
   return (
     <div className="bg-white border-b px-4 flex gap-1 overflow-x-auto">
-      {ABAS.map((aba) => {
+      {abasVisiveis.map((aba) => {
         const Icone = aba.icone;
         return (
           <Link

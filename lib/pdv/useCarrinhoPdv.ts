@@ -88,6 +88,7 @@ export function useCarrinhoPdv(usuarioId: string) {
     valorPago?: number;
     fiadoVencimento?: string;
     forcarLimiteFiado?: boolean;
+    funcionarioId?: string | null;
   }): Promise<ResultadoVenda> => {
     if (carrinho.length === 0) return { sucesso: false, erro: "Carrinho vazio" };
 
@@ -111,6 +112,7 @@ export function useCarrinhoPdv(usuarioId: string) {
           valorPago: opcoes.valorPago,
           fiadoVencimento: opcoes.fiadoVencimento,
           forcarLimiteFiado: opcoes.forcarLimiteFiado,
+          funcionarioId: opcoes.funcionarioId || null,
         }),
       });
       const resultado = await resp.json();

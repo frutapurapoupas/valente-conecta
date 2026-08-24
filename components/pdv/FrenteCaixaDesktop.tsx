@@ -18,6 +18,7 @@ import toast from "react-hot-toast";
 import {
   Trash2, CreditCard, QrCode, DollarSign, Receipt, X, Search, ScanBarcode, User, Plus, Minus,
   AlertTriangle, TrendingUp, History, IdCard, CalendarClock, Settings, FileText, MessageCircle,
+  ShoppingCart, LogOut,
 } from "lucide-react";
 import { BarcodeScanner } from "@/components/pdv/BarcodeScanner";
 import { useCarrinhoPdv } from "@/lib/pdv/useCarrinhoPdv";
@@ -25,6 +26,7 @@ import { agruparPorCatalogo } from "@/lib/pdv/agruparPorCatalogo";
 import QRCode from "qrcode";
 import { obterDadosEmpresa, salvarDadosEmpresa, type DadosEmpresa } from "@/lib/pdv/dadosEmpresa";
 import { gerarPayloadPix } from "@/lib/pdv/pixBRCode";
+import { temPermissao } from "@/lib/pdv/operadorPdv";
 import type { ClienteFiado, FormaPagamento, ItemCarrinho, ProdutoPDV, PropsFrenteCaixa } from "@/lib/pdv/frenteCaixaTypes";
 
 function formatarMoeda(v: number) {
@@ -189,11 +191,11 @@ function imprimirNotaVenda(dados: DadosNotaVenda) {
   win.print();
 }
 
-const FORMAS: { id: FormaPagamento; label: string; Icone: typeof DollarSign }[] = [
-  { id: "dinheiro", label: "Dinheiro", Icone: DollarSign },
-  { id: "pix", label: "PIX", Icone: QrCode },
-  { id: "cartao", label: "Cartão", Icone: CreditCard },
-  { id: "fiado", label: "Fiado", Icone: Receipt },
+const FORMAS: { id: FormaPagamento; label: string; Icone: typeof DollarSign; tecla: string }[] = [
+  { id: "dinheiro", label: "Dinheiro", Icone: DollarSign, tecla: "F4" },
+  { id: "pix", label: "PIX", Icone: QrCode, tecla: "F5" },
+  { id: "cartao", label: "Cartão", Icone: CreditCard, tecla: "F6" },
+  { id: "fiado", label: "Fiado", Icone: Receipt, tecla: "F7" },
 ];
 
 interface LancamentoCaixa {
@@ -205,7 +207,7 @@ interface LancamentoCaixa {
   created_at: string;
 }
 
-export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes, carregandoProdutos, onVendaFinalizada }: PropsFrenteCaixa) {
+export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes, carregandoProdutos, onVendaFinalizada, operador, onTrocarOperador }: PropsFrenteCaixa) {
   const { carrinho, desconto, setDesconto, adicionar, atualizarQuantidade, removerItem, subtotal, total, finalizando, finalizarVenda } = useCarrinhoPdv(usuarioId);
   const [codigo, setCodigo] = useState("");
   const [qtdEntrada, setQtdEntrada] = useState(1);
@@ -376,6 +378,15 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
   };
 
   const podeFinalizar = carrinho.length > 0 && !finalizando && !(metodoPagamento === "dinheiro" && (typeof valorPago !== "number" || valorPago < total));
+  const podeAplicarDesconto = temPermissao(operador ?? null, "aplicar_desconto");
+  const podeVenderFiado = temPermissao(operador ?? null, "vender_fiado");
+  const podeForcarLimiteFiado = temPermissao(operador ?? null, "forcar_limite_fiado");
+  const formasVisiveis = FORMAS.filter((f) => f.id !== "fiado" || podeVenderFiado);
+
+  const selecionarFormaPagamento = (id: FormaPagamento) => {
+    setMetodoPagamento(id);
+    if (id === "fiado" && !clienteSelecionado) abrirSelecaoCliente();
+  };
 
   // Atalhos de teclado -- quem opera caixa o dia todo ganha velocidade sem
   // precisar do mouse (mesmo espirito dos F2/F3/F4/F9 do sistema de
@@ -395,7 +406,11 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
       if (e.key === "F2") { e.preventDefault(); inputCodigoRef.current?.focus(); return; }
       if (e.key === "F3") { e.preventDefault(); setShowBusca(true); return; }
       if (e.key === "F9") { e.preventDefault(); abrirSelecaoCliente(); return; }
-      if (e.key === "F4") {
+      if (e.key === "F4") { e.preventDefault(); selecionarFormaPagamento("dinheiro"); return; }
+      if (e.key === "F5") { e.preventDefault(); selecionarFormaPagamento("pix"); return; }
+      if (e.key === "F6") { e.preventDefault(); selecionarFormaPagamento("cartao"); return; }
+      if (e.key === "F7") { e.preventDefault(); if (podeVenderFiado) selecionarFormaPagamento("fiado"); return; }
+      if (e.key === "F10") {
         e.preventDefault();
         if (podeFinalizar) confirmar(false);
         return;
@@ -404,7 +419,7 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
     window.addEventListener("keydown", aoTeclar);
     return () => window.removeEventListener("keydown", aoTeclar);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showScanner, showBusca, grupoParaEscolher, showModalCliente, showConfig, qrPixUrl, resumoFiado, podeFinalizar]);
+  }, [showScanner, showBusca, grupoParaEscolher, showModalCliente, showConfig, qrPixUrl, resumoFiado, podeFinalizar, clienteSelecionado, podeVenderFiado]);
 
   const confirmar = async (forcarLimite = false) => {
     if (metodoPagamento === "fiado" && !clienteSelecionado) {
@@ -425,15 +440,18 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
       cliente: clienteSelecionado,
       valorPago: metodoPagamento === "dinheiro" ? Number(valorPago || total) : undefined,
       forcarLimiteFiado: forcarLimite,
+      funcionarioId: operador?.id ?? null,
     });
 
     if (resultado.limiteExcedido) {
       toast((t) => (
         <div className="text-sm">
           <p className="font-medium">Cliente já deve {formatarMoeda(resultado.limiteExcedido!.saldoAtual)} de {formatarMoeda(resultado.limiteExcedido!.limite)} de limite.</p>
-          <button onClick={() => { toast.dismiss(t.id); confirmar(true); }} className="mt-2 text-blue-600 underline">
-            Lançar assim mesmo
-          </button>
+          {podeForcarLimiteFiado && (
+            <button onClick={() => { toast.dismiss(t.id); confirmar(true); }} className="mt-2 text-blue-600 underline">
+              Lançar assim mesmo
+            </button>
+          )}
         </div>
       ), { duration: 8000 });
       return;
@@ -493,6 +511,11 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
             {usuarioNome && <span className="hidden lg:flex items-center gap-1"><IdCard className="w-3.5 h-3.5" /> {usuarioNome}</span>}
           </div>
           <div className="flex items-center gap-3">
+            {operador && onTrocarOperador && (
+              <button onClick={onTrocarOperador} className="flex items-center gap-1.5 text-gray-500 hover:text-red-600 text-xs font-medium" title="Trocar operador">
+                <LogOut className="w-3.5 h-3.5" /> {operador.nome}
+              </button>
+            )}
             <button onClick={abrirSelecaoCliente} className="flex items-center gap-1.5 text-gray-600 hover:text-blue-600 font-medium" title="Selecionar cliente (F9)">
               <User className="w-4 h-4" /> {clienteSelecionado?.nome || "Consumidor final"}
             </button>
@@ -556,7 +579,14 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
                 {carrinho.map((item) => (
                   <tr key={item.chave} className="hover:bg-gray-50">
                     <td className="px-3 py-2 text-gray-400 text-xs font-mono">{item.ean || "—"}</td>
-                    <td className="px-3 py-2 text-gray-800 font-medium">{item.nome}</td>
+                    <td className="px-3 py-2 text-gray-800 font-medium">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded bg-gray-100 flex items-center justify-center overflow-hidden shrink-0">
+                          {item.fotoUrl ? <img src={item.fotoUrl} alt="" className="w-full h-full object-cover" /> : <ShoppingCart className="w-4 h-4 text-gray-300" />}
+                        </div>
+                        {item.nome}
+                      </div>
+                    </td>
                     <td className="px-3 py-2 text-center text-gray-400 text-xs uppercase">{item.unidade || "un"}</td>
                     <td className="px-3 py-2">
                       <div className="flex items-center justify-center gap-1.5">
@@ -591,12 +621,16 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
               </div>
               <div className="bg-gray-50 rounded-xl px-3 py-2">
                 <p className="text-[10px] text-gray-400 uppercase">Desconto</p>
-                <input
-                  type="number" step="0.01" min={0} value={desconto || ""}
-                  onChange={(e) => setDesconto(Math.max(0, parseFloat(e.target.value) || 0))}
-                  placeholder="0,00"
-                  className="w-full bg-transparent font-bold text-gray-700 focus:outline-none"
-                />
+                {podeAplicarDesconto ? (
+                  <input
+                    type="number" step="0.01" min={0} value={desconto || ""}
+                    onChange={(e) => setDesconto(Math.max(0, parseFloat(e.target.value) || 0))}
+                    placeholder="0,00"
+                    className="w-full bg-transparent font-bold text-gray-700 focus:outline-none"
+                  />
+                ) : (
+                  <p className="font-bold text-gray-300">—</p>
+                )}
               </div>
               <div className="bg-emerald-50 rounded-xl px-3 py-2">
                 <p className="text-[10px] text-emerald-600 uppercase">Total</p>
@@ -605,14 +639,16 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
             </div>
 
             <div className="flex gap-1.5">
-            {FORMAS.map(({ id, label, Icone }) => (
+            {formasVisiveis.map(({ id, label, Icone, tecla }) => (
               <button
                 key={id}
-                onClick={() => { setMetodoPagamento(id); if (id === "fiado" && !clienteSelecionado) abrirSelecaoCliente(); }}
+                onClick={() => selecionarFormaPagamento(id)}
+                title={`${label} (${tecla})`}
                 className={`px-3 py-2 rounded-xl border flex flex-col items-center gap-0.5 transition min-w-[68px] ${metodoPagamento === id ? "border-blue-500 bg-blue-50 text-blue-700" : "text-gray-500 hover:bg-gray-50"}`}
               >
                 <Icone className="w-4 h-4" />
                 <span className="text-[11px] font-medium">{label}</span>
+                <span className="text-[9px] text-gray-400">{tecla}</span>
               </button>
             ))}
           </div>
@@ -644,10 +680,10 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
           <button
             onClick={() => confirmar(false)}
             disabled={!podeFinalizar}
-            title="Finalizar venda (F4)"
+            title="Finalizar venda (F10)"
             className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white px-6 py-3 rounded-xl font-semibold transition whitespace-nowrap"
           >
-            {finalizando ? "Processando..." : "Finalizar venda (F4)"}
+            {finalizando ? "Processando..." : "Finalizar venda (F10)"}
           </button>
         </div>
         </div>

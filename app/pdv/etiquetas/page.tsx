@@ -23,6 +23,8 @@ import JsBarcode from "jsbarcode";
 import { ArrowLeft, Tag, Search, Minus, Plus, Printer } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { PdvSubNav } from "@/components/pdv/PdvSubNav";
+import { SemPermissaoPdv } from "@/components/pdv/SemPermissaoPdv";
+import { getOperadorAtivo, temPermissao, type OperadorAtivo } from "@/lib/pdv/operadorPdv";
 import { agruparPorCatalogo, codigoParaEtiqueta } from "@/lib/pdv/agruparPorCatalogo";
 import type { ProdutoPDV } from "@/lib/pdv/frenteCaixaTypes";
 
@@ -43,6 +45,7 @@ function gerarBarcodeDataUrl(codigo: string): string | null {
 export default function PdvEtiquetasPage() {
   const router = useRouter();
   const [usuario, setUsuario] = useState<any>(null);
+  const [operador, setOperador] = useState<OperadorAtivo | null>(null);
   const [produtos, setProdutos] = useState<ProdutoPDV[]>([]);
   const [loading, setLoading] = useState(true);
   const [busca, setBusca] = useState("");
@@ -53,6 +56,7 @@ export default function PdvEtiquetasPage() {
   useEffect(() => {
     const u = getCurrentUser();
     setUsuario(u);
+    setOperador(getOperadorAtivo());
     if (!u) { setLoading(false); return; }
     fetch(`/api/pdv/estoque?usuarioId=${u.id}`, { cache: "no-store" })
       .then((r) => r.json())
@@ -163,13 +167,17 @@ export default function PdvEtiquetasPage() {
     );
   }
 
+  if (operador && !temPermissao(operador, "etiquetas")) {
+    return <SemPermissaoPdv />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 pb-28">
       <header className="bg-white border-b sticky top-0 z-30 px-4 py-3 flex items-center gap-3">
         <button onClick={() => router.back()}><ArrowLeft className="w-5 h-5" /></button>
         <h1 className="font-bold text-gray-800 flex items-center gap-2"><Tag className="w-5 h-5 text-blue-600" /> Etiquetas</h1>
       </header>
-      <PdvSubNav ativa="etiquetas" />
+      <PdvSubNav ativa="etiquetas" operador={operador} />
 
       <div className="p-4 space-y-3">
         <div className="relative">

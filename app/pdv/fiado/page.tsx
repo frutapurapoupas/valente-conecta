@@ -35,6 +35,8 @@ import {
 import { toast } from 'react-hot-toast';
 import { getCurrentUser } from '@/lib/auth';
 import { PdvSubNav } from '@/components/pdv/PdvSubNav';
+import { SemPermissaoPdv } from '@/components/pdv/SemPermissaoPdv';
+import { getOperadorAtivo, temPermissao, type OperadorAtivo } from '@/lib/pdv/operadorPdv';
 import { MidiaUploader } from '@/components/catalogo/MidiaUploader';
 import type { MidiaItem } from '@/lib/catalogo/marketplaceTypes';
 
@@ -88,12 +90,14 @@ export default function FiadoPage() {
   const [lojaNome, setLojaNome] = useState('');
   const [lancandoDivida, setLancandoDivida] = useState(false);
   const [recibo, setRecibo] = useState<{ cliente: ClienteFiado; valor: number; vencimento: string; saldoTotal: number; data: string } | null>(null);
+  const [operador, setOperador] = useState<OperadorAtivo | null>(null);
 
   useEffect(() => {
     const usuario = getCurrentUser();
     if (usuario) setDonoId(usuario.id);
     else setLoading(false);
     setLojaNome(localStorage.getItem('pdv_fiado_loja_nome') || '');
+    setOperador(getOperadorAtivo());
   }, []);
 
   const salvarNomeLoja = (nome: string) => {
@@ -371,9 +375,13 @@ export default function FiadoPage() {
     );
   }
 
+  if (operador && !temPermissao(operador, "fiado")) {
+    return <SemPermissaoPdv />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <PdvSubNav ativa="fiado" />
+      <PdvSubNav ativa="fiado" operador={operador} />
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-wrap justify-between items-center gap-3 mb-6">
           <div>

@@ -14,6 +14,8 @@ import { ArrowLeft, Camera } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { MidiaUploader } from "@/components/catalogo/MidiaUploader";
 import { PdvSubNav } from "@/components/pdv/PdvSubNav";
+import { SemPermissaoPdv } from "@/components/pdv/SemPermissaoPdv";
+import { getOperadorAtivo, temPermissao, type OperadorAtivo } from "@/lib/pdv/operadorPdv";
 import type { MidiaItem } from "@/lib/catalogo/marketplaceTypes";
 
 interface ItemPendente {
@@ -28,10 +30,12 @@ export default function ImportacaoPendentesPage() {
   const [usuario, setUsuario] = useState<any>(null);
   const [itens, setItens] = useState<ItemPendente[]>([]);
   const [loading, setLoading] = useState(true);
+  const [operador, setOperador] = useState<OperadorAtivo | null>(null);
 
   useEffect(() => {
     const u = getCurrentUser();
     setUsuario(u);
+    setOperador(getOperadorAtivo());
     if (u) carregar(u.id);
     else setLoading(false);
   }, []);
@@ -75,6 +79,10 @@ export default function ImportacaoPendentesPage() {
     );
   }
 
+  if (operador && !temPermissao(operador, "importar-estoque")) {
+    return <SemPermissaoPdv />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       <header className="bg-white border-b sticky top-0 z-30 px-4 py-3 flex items-center gap-3">
@@ -85,7 +93,7 @@ export default function ImportacaoPendentesPage() {
           <Camera className="w-5 h-5 text-amber-600" /> Fotos pendentes
         </h1>
       </header>
-      <PdvSubNav ativa="importar-estoque" />
+      <PdvSubNav ativa="importar-estoque" operador={operador} />
 
       <div className="p-4 space-y-3">
         {loading ? (

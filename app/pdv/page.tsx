@@ -14,9 +14,11 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Monitor, Smartphone, Store } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { PdvSubNav } from "@/components/pdv/PdvSubNav";
+import { SelecionarOperadorPdv } from "@/components/pdv/SelecionarOperadorPdv";
 import { usePdvLayoutPreference } from "@/lib/hooks/usePdvLayoutPreference";
 import { FrenteCaixaDesktop } from "@/components/pdv/FrenteCaixaDesktop";
 import { FrenteCaixaMobile } from "@/components/pdv/FrenteCaixaMobile";
+import { getOperadorAtivo, limparOperadorAtivo, type OperadorAtivo } from "@/lib/pdv/operadorPdv";
 import type { ClienteFiado, ProdutoPDV } from "@/lib/pdv/frenteCaixaTypes";
 
 export default function PDVPage() {
@@ -26,6 +28,9 @@ export default function PDVPage() {
   const [produtos, setProdutos] = useState<ProdutoPDV[]>([]);
   const [clientes, setClientes] = useState<ClienteFiado[]>([]);
   const [carregandoProdutos, setCarregandoProdutos] = useState(true);
+  const [funcionarios, setFuncionarios] = useState<any[]>([]);
+  const [carregandoFuncionarios, setCarregandoFuncionarios] = useState(true);
+  const [operador, setOperador] = useState<OperadorAtivo | null>(null);
 
   const carregarDados = async (usuarioId: string) => {
     setCarregandoProdutos(true);
@@ -63,8 +68,17 @@ export default function PDVPage() {
   useEffect(() => {
     const u = getCurrentUser();
     setUsuario(u);
-    if (u) carregarDados(u.id);
-    else setCarregandoProdutos(false);
+    if (u) {
+      carregarDados(u.id);
+      setOperador(getOperadorAtivo());
+      fetch(`/api/pdv/funcionarios?donoId=${u.id}`, { cache: "no-store" })
+        .then((r) => r.json())
+        .then((resp) => { if (resp.success) setFuncionarios(resp.data); })
+        .finally(() => setCarregandoFuncionarios(false));
+    } else {
+      setCarregandoProdutos(false);
+      setCarregandoFuncionarios(false);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -73,6 +87,19 @@ export default function PDVPage() {
       <div className="min-h-screen flex items-center justify-center p-6 text-center">
         <p className="text-gray-600">Complete seu cadastro pra usar a frente de caixa.</p>
       </div>
+    );
+  }
+
+  // Gate de operador: so' aparece se a loja ja' tem funcionario cadastrado
+  // (senao continua exatamente como sempre foi, sem fricao nenhuma).
+  const funcionariosAtivos = funcionarios.filter((f) => f.ativo);
+  if (!carregandoFuncionarios && usuario && funcionariosAtivos.length > 0 && !operador) {
+    return (
+      <SelecionarOperadorPdv
+        donoNome={usuario.nome}
+        funcionarios={funcionariosAtivos}
+        onSelecionado={setOperador}
+      />
     );
   }
 
@@ -104,7 +131,7 @@ export default function PDVPage() {
           </div>
         )}
       </header>
-      <PdvSubNav ativa="vender" />
+      <PdvSubNav ativa="vender" operador={operador} />
 
       {carregado && usuario && (
         layout === "desktop" ? (
@@ -115,6 +142,8 @@ export default function PDVPage() {
             clientes={clientes}
             carregandoProdutos={carregandoProdutos}
             onVendaFinalizada={() => carregarDados(usuario.id)}
+            operador={operador}
+            onTrocarOperador={() => { limparOperadorAtivo(); setOperador(null); }}
           />
         ) : (
           <FrenteCaixaMobile
@@ -123,6 +152,8 @@ export default function PDVPage() {
             clientes={clientes}
             carregandoProdutos={carregandoProdutos}
             onVendaFinalizada={() => carregarDados(usuario.id)}
+            operador={operador}
+            onTrocarOperador={() => { limparOperadorAtivo(); setOperador(null); }}
           />
         )
       )}

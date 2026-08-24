@@ -32,6 +32,7 @@ export async function POST(request: NextRequest) {
     const formaPagamento = String(body.formaPagamento || '').trim();
     const desconto = Number(body.desconto || 0);
     const clienteId = body.clienteId || null;
+    const funcionarioId = body.funcionarioId || null;
 
     if (!usuarioId) return NextResponse.json({ success: false, error: 'usuarioId é obrigatório' }, { status: 400 });
     if (!itens.length) return NextResponse.json({ success: false, error: 'Carrinho vazio' }, { status: 400 });
@@ -81,6 +82,10 @@ export async function POST(request: NextRequest) {
     });
     if (erroRpc) throw erroRpc;
 
+    if (funcionarioId) {
+      await supabase.from('pdv_vendas').update({ funcionario_id: funcionarioId }).eq('id', vendaId);
+    }
+
     let saldoTotalCliente: number | undefined;
     let dataVencimentoFiado: string | undefined;
     if (formaPagamento === 'fiado') {
@@ -106,6 +111,7 @@ export async function POST(request: NextRequest) {
       valor: total,
       categoria: 'venda',
       forma_pagamento: formaPagamento,
+      funcionario_id: funcionarioId,
     });
 
     return NextResponse.json({

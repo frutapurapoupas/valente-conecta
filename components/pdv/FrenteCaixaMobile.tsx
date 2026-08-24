@@ -9,9 +9,10 @@
 
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
-import { ShoppingCart, Plus, Minus, Trash2, X, Search, Package, ChevronUp, Receipt, MessageCircle } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, X, Search, Package, ChevronUp, Receipt, MessageCircle, LogOut } from "lucide-react";
 import { useCarrinhoPdv } from "@/lib/pdv/useCarrinhoPdv";
 import { agruparPorCatalogo } from "@/lib/pdv/agruparPorCatalogo";
+import { temPermissao } from "@/lib/pdv/operadorPdv";
 import type { ClienteFiado, FormaPagamento, ProdutoPDV, PropsFrenteCaixa } from "@/lib/pdv/frenteCaixaTypes";
 
 function formatarMoeda(v: number) {
@@ -51,7 +52,7 @@ const FORMAS: { id: FormaPagamento; label: string }[] = [
   { id: "fiado", label: "Fiado" },
 ];
 
-export function FrenteCaixaMobile({ usuarioId, produtos, clientes, carregandoProdutos, onVendaFinalizada }: PropsFrenteCaixa) {
+export function FrenteCaixaMobile({ usuarioId, produtos, clientes, carregandoProdutos, onVendaFinalizada, operador, onTrocarOperador }: PropsFrenteCaixa) {
   const { carrinho, desconto, setDesconto, adicionar, atualizarQuantidade, subtotal, total, finalizando, finalizarVenda } = useCarrinhoPdv(usuarioId);
   const [busca, setBusca] = useState("");
   const [carrinhoAberto, setCarrinhoAberto] = useState(false);
@@ -69,6 +70,10 @@ export function FrenteCaixaMobile({ usuarioId, produtos, clientes, carregandoPro
 
   const totalItens = useMemo(() => carrinho.reduce((s, i) => s + i.quantidade, 0), [carrinho]);
   const todosClientes = useMemo(() => [...clientes, ...clientesExtra], [clientes, clientesExtra]);
+  const podeAplicarDesconto = temPermissao(operador ?? null, "aplicar_desconto");
+  const podeVenderFiado = temPermissao(operador ?? null, "vender_fiado");
+  const podeForcarLimiteFiado = temPermissao(operador ?? null, "forcar_limite_fiado");
+  const formasVisiveis = FORMAS.filter((f) => f.id !== "fiado" || podeVenderFiado);
 
   // Fiado embarcado no PDV: escolher "Fiado" sem cliente cadastrado ja'
   // abre o cadastro na hora (mesmo padrao do FrenteCaixaDesktop.tsx).
@@ -125,15 +130,18 @@ export function FrenteCaixaMobile({ usuarioId, produtos, clientes, carregandoPro
       cliente: clienteSelecionado,
       valorPago: metodoPagamento === "dinheiro" ? Number(valorPago || total) : undefined,
       forcarLimiteFiado: forcarLimite,
+      funcionarioId: operador?.id ?? null,
     });
 
     if (resultado.limiteExcedido) {
       toast((t) => (
         <div className="text-sm">
           <p className="font-medium">Cliente já deve {formatarMoeda(resultado.limiteExcedido!.saldoAtual)} de {formatarMoeda(resultado.limiteExcedido!.limite)}.</p>
-          <button onClick={() => { toast.dismiss(t.id); confirmar(true); }} className="mt-2 text-blue-600 underline">
-            Lançar assim mesmo
-          </button>
+          {podeForcarLimiteFiado && (
+            <button onClick={() => { toast.dismiss(t.id); confirmar(true); }} className="mt-2 text-blue-600 underline">
+              Lançar assim mesmo
+            </button>
+          )}
         </div>
       ), { duration: 8000 });
       return;
@@ -163,6 +171,11 @@ export function FrenteCaixaMobile({ usuarioId, produtos, clientes, carregandoPro
   return (
     <div className="relative">
       <div className="p-3 space-y-3 pb-24">
+        {operador && onTrocarOperador && (
+          <button onClick={onTrocarOperador} className="w-full flex items-center justify-center gap-1.5 text-gray-500 text-xs font-medium py-1">
+            <LogOut className="w-3.5 h-3.5" /> Operando como <span className="font-semibold">{operador.nome}</span> — trocar
+          </button>
+        )}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
           <input
@@ -250,22 +263,24 @@ export function FrenteCaixaMobile({ usuarioId, produtos, clientes, carregandoPro
             </div>
 
             <div className="border-t p-4 space-y-2.5 shrink-0">
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <span>Desconto</span>
-                <input
-                  type="number" step="0.01" min={0} value={desconto || ""}
-                  onChange={(e) => setDesconto(Math.max(0, parseFloat(e.target.value) || 0))}
-                  placeholder="0,00"
-                  className="flex-1 px-2 py-1.5 border rounded-lg text-sm text-right"
-                />
-              </div>
+              {podeAplicarDesconto && (
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <span>Desconto</span>
+                  <input
+                    type="number" step="0.01" min={0} value={desconto || ""}
+                    onChange={(e) => setDesconto(Math.max(0, parseFloat(e.target.value) || 0))}
+                    placeholder="0,00"
+                    className="flex-1 px-2 py-1.5 border rounded-lg text-sm text-right"
+                  />
+                </div>
+              )}
               <div className="flex justify-between text-lg font-bold text-gray-800">
                 <span>Total</span>
                 <span className="text-emerald-600">{formatarMoeda(total)}</span>
               </div>
 
               <div className="flex gap-1.5">
-                {FORMAS.map((f) => (
+                {formasVisiveis.map((f) => (
                   <button
                     key={f.id}
                     onClick={() => { setMetodoPagamento(f.id); if (f.id === "fiado" && !clienteSelecionado) abrirSelecaoCliente(); }}

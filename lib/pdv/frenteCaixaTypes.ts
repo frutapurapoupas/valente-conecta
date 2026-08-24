@@ -3,6 +3,8 @@
 // Tipos compartilhados entre app/pdv/page.tsx (shell) e os dois layouts de
 // frente de caixa (components/pdv/FrenteCaixaDesktop.tsx e FrenteCaixaMobile.tsx).
 
+import type { OperadorAtivo } from "./operadorPdv";
+
 export interface ProdutoPDV {
   estoqueId: string;
   catalogoId: string | null;
@@ -50,4 +52,6 @@ export interface PropsFrenteCaixa {
   clientes: ClienteFiado[];
   carregandoProdutos: boolean;
   onVendaFinalizada: () => void;
+  operador?: OperadorAtivo | null;
+  onTrocarOperador?: () => void;
 }

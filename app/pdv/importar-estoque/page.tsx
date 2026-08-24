@@ -12,6 +12,8 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, FileSpreadsheet } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { PdvSubNav } from "@/components/pdv/PdvSubNav";
+import { SemPermissaoPdv } from "@/components/pdv/SemPermissaoPdv";
+import { getOperadorAtivo, temPermissao, type OperadorAtivo } from "@/lib/pdv/operadorPdv";
 import { PassoUpload } from "./components/PassoUpload";
 import { PassoMapeamento } from "./components/PassoMapeamento";
 import { PassoRevisao } from "./components/PassoRevisao";
@@ -25,6 +27,7 @@ export default function ImportarEstoquePage() {
   const [usuario, setUsuario] = useState<any>(null);
   const [loadingUsuario, setLoadingUsuario] = useState(true);
   const [passo, setPasso] = useState<Passo>("upload");
+  const [operador, setOperador] = useState<OperadorAtivo | null>(null);
 
   const {
     nomeArquivo,
@@ -45,6 +48,7 @@ export default function ImportarEstoquePage() {
 
   useEffect(() => {
     setUsuario(getCurrentUser());
+    setOperador(getOperadorAtivo());
     setLoadingUsuario(false);
   }, []);
 
@@ -71,6 +75,10 @@ export default function ImportarEstoquePage() {
     );
   }
 
+  if (operador && !temPermissao(operador, "importar-estoque")) {
+    return <SemPermissaoPdv />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       <header className="bg-white border-b sticky top-0 z-30 px-4 py-3 flex items-center gap-3">
@@ -81,7 +89,7 @@ export default function ImportarEstoquePage() {
           <FileSpreadsheet className="w-5 h-5 text-blue-600" /> Importar planilha
         </h1>
       </header>
-      <PdvSubNav ativa="importar-estoque" />
+      <PdvSubNav ativa="importar-estoque" operador={operador} />
 
       {passo !== "upload" && (
         <div className="px-4 pt-4">

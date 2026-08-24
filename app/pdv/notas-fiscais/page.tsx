@@ -13,6 +13,8 @@ import toast from "react-hot-toast";
 import { ArrowLeft, FileText, Plus, X, CheckCircle2, Clock, Ban } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { PdvSubNav } from "@/components/pdv/PdvSubNav";
+import { SemPermissaoPdv } from "@/components/pdv/SemPermissaoPdv";
+import { getOperadorAtivo, temPermissao, type OperadorAtivo } from "@/lib/pdv/operadorPdv";
 
 interface Nota {
   id: string;
@@ -38,6 +40,7 @@ function formatarMoeda(valor: number) {
 export default function NotasFiscaisPage() {
   const router = useRouter();
   const [usuario, setUsuario] = useState<any>(null);
+  const [operador, setOperador] = useState<OperadorAtivo | null>(null);
   const [notas, setNotas] = useState<Nota[]>([]);
   const [loading, setLoading] = useState(true);
   const [formAberto, setFormAberto] = useState(false);
@@ -57,6 +60,7 @@ export default function NotasFiscaisPage() {
   useEffect(() => {
     const u = getCurrentUser();
     setUsuario(u);
+    setOperador(getOperadorAtivo());
     if (u) carregar(u.id);
     else setLoading(false);
   }, []);
@@ -101,13 +105,17 @@ export default function NotasFiscaisPage() {
     return <div className="max-w-md mx-auto p-6 text-center text-gray-500">Complete seu cadastro no app pra usar essa área.</div>;
   }
 
+  if (operador && !temPermissao(operador, "notas-fiscais")) {
+    return <SemPermissaoPdv />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       <header className="bg-white border-b sticky top-0 z-30 px-4 py-3 flex items-center gap-3">
         <button onClick={() => router.back()}><ArrowLeft className="w-5 h-5" /></button>
         <h1 className="font-bold text-gray-800 flex items-center gap-2"><FileText className="w-5 h-5 text-blue-600" /> Notas Fiscais</h1>
       </header>
-      <PdvSubNav ativa="notas-fiscais" />
+      <PdvSubNav ativa="notas-fiscais" operador={operador} />
 
       <main className="max-w-2xl mx-auto p-4 space-y-4">
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-800">

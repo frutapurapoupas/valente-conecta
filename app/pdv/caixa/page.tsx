@@ -13,6 +13,8 @@ import toast from "react-hot-toast";
 import { ArrowLeft, Plus, TrendingUp, TrendingDown, Wallet, Trash2, Calendar, X, LayoutList, ChartColumn } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { PdvSubNav } from "@/components/pdv/PdvSubNav";
+import { SemPermissaoPdv } from "@/components/pdv/SemPermissaoPdv";
+import { getOperadorAtivo, temPermissao, type OperadorAtivo } from "@/lib/pdv/operadorPdv";
 
 interface Lancamento {
   id: string;
@@ -61,6 +63,7 @@ function formatarMoeda(valor: number) {
 export default function PdvCaixaPage() {
   const router = useRouter();
   const [usuario, setUsuario] = useState<any>(null);
+  const [operador, setOperador] = useState<OperadorAtivo | null>(null);
   const [dataInicio, setDataInicio] = useState(hojeISO());
   const [dataFim, setDataFim] = useState(hojeISO());
   const [lancamentos, setLancamentos] = useState<Lancamento[]>([]);
@@ -119,6 +122,7 @@ export default function PdvCaixaPage() {
   useEffect(() => {
     const u = getCurrentUser();
     setUsuario(u);
+    setOperador(getOperadorAtivo());
     if (u) carregar(u.id, dataInicio, dataFim);
     else setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -187,6 +191,10 @@ export default function PdvCaixaPage() {
     );
   }
 
+  if (operador && !temPermissao(operador, "caixa")) {
+    return <SemPermissaoPdv />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       <header className="bg-white border-b sticky top-0 z-30">
@@ -195,7 +203,7 @@ export default function PdvCaixaPage() {
           <h1 className="font-bold text-lg text-gray-800 flex items-center gap-2"><Wallet className="w-5 h-5 text-blue-600" /> Livro Caixa</h1>
         </div>
       </header>
-      <PdvSubNav ativa="caixa" />
+      <PdvSubNav ativa="caixa" operador={operador} />
 
       <main className="max-w-3xl mx-auto p-4 space-y-4">
         <div className="bg-white rounded-2xl shadow p-4">

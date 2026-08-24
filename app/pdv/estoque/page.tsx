@@ -19,6 +19,8 @@ import { getCurrentUser } from "@/lib/auth";
 import { MidiaUploader } from "@/components/catalogo/MidiaUploader";
 import { BarcodeScanner } from "@/components/pdv/BarcodeScanner";
 import { PdvSubNav } from "@/components/pdv/PdvSubNav";
+import { SemPermissaoPdv } from "@/components/pdv/SemPermissaoPdv";
+import { getOperadorAtivo, temPermissao, type OperadorAtivo } from "@/lib/pdv/operadorPdv";
 import type { MidiaItem } from "@/lib/catalogo/marketplaceTypes";
 
 const SEGMENTOS = [
@@ -63,6 +65,7 @@ export default function PdvEstoquePage() {
   const [itens, setItens] = useState<ItemEstoque[]>([]);
   const [loading, setLoading] = useState(true);
   const [busca, setBusca] = useState("");
+  const [operador, setOperador] = useState<OperadorAtivo | null>(null);
 
   const [etapa, setEtapa] = useState<Etapa>("fechado");
   const [salvando, setSalvando] = useState(false);
@@ -88,6 +91,7 @@ export default function PdvEstoquePage() {
   useEffect(() => {
     const u = getCurrentUser();
     setUsuario(u);
+    setOperador(getOperadorAtivo());
     if (u) carregar(u.id);
     else setLoading(false);
   }, []);
@@ -317,13 +321,17 @@ export default function PdvEstoquePage() {
     );
   }
 
+  if (operador && !temPermissao(operador, "estoque")) {
+    return <SemPermissaoPdv />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       <header className="bg-white border-b sticky top-0 z-30 px-4 py-3 flex items-center gap-3">
         <button onClick={() => router.back()}><ArrowLeft className="w-5 h-5" /></button>
         <h1 className="font-bold text-gray-800 flex items-center gap-2"><Package className="w-5 h-5 text-blue-600" /> Meu Estoque</h1>
       </header>
-      <PdvSubNav ativa="estoque" />
+      <PdvSubNav ativa="estoque" operador={operador} />
 
       <div className="p-4 space-y-4">
         <div className="relative">

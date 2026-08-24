@@ -17,6 +17,8 @@ import { ArrowLeft, Camera, Package, DollarSign, X, Check, Trash2, Eye } from "l
 import { getCurrentUser } from "@/lib/auth";
 import { MidiaUploader } from "@/components/catalogo/MidiaUploader";
 import { PdvSubNav } from "@/components/pdv/PdvSubNav";
+import { SemPermissaoPdv } from "@/components/pdv/SemPermissaoPdv";
+import { getOperadorAtivo, temPermissao, type OperadorAtivo } from "@/lib/pdv/operadorPdv";
 import type { MidiaItem } from "@/lib/catalogo/marketplaceTypes";
 
 interface Captura {
@@ -34,6 +36,7 @@ export default function CapturaExternaPage() {
   const [ativo, setAtivo] = useState(false);
   const [loading, setLoading] = useState(true);
   const [capturas, setCapturas] = useState<Captura[]>([]);
+  const [operador, setOperador] = useState<OperadorAtivo | null>(null);
 
   const [novaFoto, setNovaFoto] = useState<MidiaItem[]>([]);
   const [novoTipo, setNovoTipo] = useState<"produto" | "venda">("produto");
@@ -60,6 +63,7 @@ export default function CapturaExternaPage() {
   useEffect(() => {
     const u = getCurrentUser();
     setUsuario(u);
+    setOperador(getOperadorAtivo());
     if (u) carregar(u.id);
     else setLoading(false);
   }, []);
@@ -179,13 +183,17 @@ export default function CapturaExternaPage() {
     return <div className="max-w-md mx-auto p-6 text-center text-gray-500">Complete seu cadastro no app pra usar essa área.</div>;
   }
 
+  if (operador && !temPermissao(operador, "captura-externa")) {
+    return <SemPermissaoPdv />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       <header className="bg-white border-b sticky top-0 z-30 px-4 py-3 flex items-center gap-3">
         <button onClick={() => router.back()}><ArrowLeft className="w-5 h-5" /></button>
         <h1 className="font-bold text-gray-800 flex items-center gap-2"><Eye className="w-5 h-5 text-blue-600" /> Captura por Foto</h1>
       </header>
-      <PdvSubNav ativa="captura-externa" />
+      <PdvSubNav ativa="captura-externa" operador={operador} />
 
       <main className="max-w-2xl mx-auto p-4 space-y-4">
         <div className="bg-white rounded-2xl shadow p-4">
