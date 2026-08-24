@@ -40,7 +40,7 @@ const PROVEDORES = [
   // reasoning_effort "low": Gemini 3 pensa antes de responder por padrao e
   // consome tokens nisso -- sem isso, o "pensamento" comia o orcamento de
   // max_tokens inteiro e cortava o JSON no meio (achado testando em producao).
-  { env: 'GEMINI_API_KEY', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', model: 'gemini-3-flash-preview', extra: { reasoning_effort: 'low' } },
+  { env: 'GEMINI_API_KEY', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', model: 'gemini-2.5-flash-lite', extra: { reasoning_effort: 'low' } },
   { env: 'DEEPSEEK_API_KEY', baseUrl: 'https://api.deepseek.com/chat/completions', model: 'deepseek-chat', extra: {} },
 ] as const;
 
