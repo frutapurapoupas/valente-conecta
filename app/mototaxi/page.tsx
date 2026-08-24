@@ -186,17 +186,35 @@ function buildRideMapHtml(corrida: CorridaApi, motorista: MotoristaApi | null) {
         bounds.push(motorista);
         L.circleMarker(motorista, { radius: 8, color: '#065f46', fillColor: '#10b981', fillOpacity: 0.95, weight: 2 }).addTo(map).bindTooltip('Motorista', { permanent: true, direction: 'top' });
 
-        fetch('https://router.project-osrm.org/route/v1/driving/' + data.driver.lng + ',' + data.driver.lat + ';' + data.destination.lng + ',' + data.destination.lat + '?overview=full&geometries=geojson')
+        // Motorista -> origem (embarque) -> destino, nao so' motorista->destino
+        // (achado testando: pulava o ponto de embarque, a rota real do
+        // passageiro sempre passa por ali antes de seguir pro destino).
+        fetch('https://router.project-osrm.org/route/v1/driving/' + data.driver.lng + ',' + data.driver.lat + ';' + data.origin.lng + ',' + data.origin.lat + ';' + data.destination.lng + ',' + data.destination.lat + '?overview=full&geometries=geojson')
           .then((r) => r.json())
           .then((json) => {
             if (json?.routes?.[0]?.geometry?.coordinates) {
               const coords = json.routes[0].geometry.coordinates.map((p) => [p[1], p[0]]);
               L.polyline(coords, { color: '#22d3ee', weight: 5, opacity: 0.95 }).addTo(map);
+            } else {
+              L.polyline([motorista, origem, destino], { color: '#94a3b8', weight: 4, opacity: 0.65, dashArray: '6 5' }).addTo(map);
             }
           })
-          .catch(() => null);
+          .catch(() => L.polyline([motorista, origem, destino], { color: '#94a3b8', weight: 4, opacity: 0.65, dashArray: '6 5' }).addTo(map));
       } else {
-        L.polyline([origem, destino], { color: '#94a3b8', weight: 4, opacity: 0.65, dashArray: '6 5' }).addTo(map);
+        // Ainda sem motorista (aguardando aceitar) -- mesma rota real que a
+        // previa ja mostra antes de solicitar, com fallback pra linha reta
+        // so' se o OSRM falhar (antes caia direto na linha reta sempre).
+        fetch('https://router.project-osrm.org/route/v1/driving/' + data.origin.lng + ',' + data.origin.lat + ';' + data.destination.lng + ',' + data.destination.lat + '?overview=full&geometries=geojson')
+          .then((r) => r.json())
+          .then((json) => {
+            if (json?.routes?.[0]?.geometry?.coordinates) {
+              const coords = json.routes[0].geometry.coordinates.map((p) => [p[1], p[0]]);
+              L.polyline(coords, { color: '#94a3b8', weight: 4, opacity: 0.8 }).addTo(map);
+            } else {
+              L.polyline([origem, destino], { color: '#94a3b8', weight: 4, opacity: 0.65, dashArray: '6 5' }).addTo(map);
+            }
+          })
+          .catch(() => L.polyline([origem, destino], { color: '#94a3b8', weight: 4, opacity: 0.65, dashArray: '6 5' }).addTo(map));
       }
 
       map.fitBounds(bounds, { padding: [24, 24] });
