@@ -37,15 +37,18 @@ Exemplo — busca "onde regularizar a documentação do carro":
 // Os dois falam o mesmo formato (chat completions estilo OpenAI), so' muda
 // base URL/modelo/env var.
 const PROVEDORES = [
-  { env: 'GEMINI_API_KEY', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', model: 'gemini-3-flash-preview' },
-  { env: 'DEEPSEEK_API_KEY', baseUrl: 'https://api.deepseek.com/chat/completions', model: 'deepseek-chat' },
+  // reasoning_effort "low": Gemini 3 pensa antes de responder por padrao e
+  // consome tokens nisso -- sem isso, o "pensamento" comia o orcamento de
+  // max_tokens inteiro e cortava o JSON no meio (achado testando em producao).
+  { env: 'GEMINI_API_KEY', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', model: 'gemini-3-flash-preview', extra: { reasoning_effort: 'low' } },
+  { env: 'DEEPSEEK_API_KEY', baseUrl: 'https://api.deepseek.com/chat/completions', model: 'deepseek-chat', extra: {} },
 ] as const;
 
 function limparTermos(lista: any, max: number): string[] {
   return Array.isArray(lista) ? lista.filter((t) => typeof t === 'string' && t.trim()).map((t: string) => t.trim()).slice(0, max) : [];
 }
 
-async function chamarProvedor(baseUrl: string, model: string, apiKey: string, query: string): Promise<IntencaoBusca | null> {
+async function chamarProvedor(baseUrl: string, model: string, apiKey: string, query: string, extra: Record<string, unknown>): Promise<IntencaoBusca | null> {
   const controlador = new AbortController();
   const timeoutId = setTimeout(() => controlador.abort(), 6000);
   try {
@@ -60,7 +63,8 @@ async function chamarProvedor(baseUrl: string, model: string, apiKey: string, qu
         ],
         response_format: { type: 'json_object' },
         temperature: 0.3,
-        max_tokens: 300,
+        max_tokens: 1000,
+        ...extra,
       }),
       signal: controlador.signal,
     });
@@ -76,7 +80,13 @@ async function chamarProvedor(baseUrl: string, model: string, apiKey: string, qu
       return null;
     }
 
-    const parsed = JSON.parse(conteudo);
+    let parsed: any;
+    try {
+      parsed = JSON.parse(conteudo);
+    } catch {
+      console.error('interpretarIntencaoBusca: conteudo nao e JSON valido', baseUrl, conteudo);
+      return null;
+    }
     const termosDiretos = limparTermos(parsed?.termos_diretos, 6);
     const termosRelacionados = limparTermos(parsed?.termos_relacionados, 4);
     if (termosDiretos.length === 0) return null;
@@ -104,6 +114,6 @@ export async function interpretarIntencaoBusca(query: string, usuarioId?: string
     }
   }
 
-  const resultado = await chamarProvedor(provedor.baseUrl, provedor.model, process.env[provedor.env]!, query);
+  const resultado = await chamarProvedor(provedor.baseUrl, provedor.model, process.env[provedor.env]!, query, provedor.extra);
   return resultado || fallback;
 }
