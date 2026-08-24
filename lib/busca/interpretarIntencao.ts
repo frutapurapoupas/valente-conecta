@@ -64,18 +64,25 @@ async function chamarProvedor(baseUrl: string, model: string, apiKey: string, qu
       }),
       signal: controlador.signal,
     });
-    if (!resposta.ok) return null;
+    if (!resposta.ok) {
+      console.error('interpretarIntencaoBusca: provedor recusou a chamada', baseUrl, resposta.status, await resposta.text().catch(() => ''));
+      return null;
+    }
 
     const dados = await resposta.json();
     const conteudo = dados?.choices?.[0]?.message?.content;
-    if (!conteudo) return null;
+    if (!conteudo) {
+      console.error('interpretarIntencaoBusca: resposta sem conteudo', baseUrl, JSON.stringify(dados));
+      return null;
+    }
 
     const parsed = JSON.parse(conteudo);
     const termosDiretos = limparTermos(parsed?.termos_diretos, 6);
     const termosRelacionados = limparTermos(parsed?.termos_relacionados, 4);
     if (termosDiretos.length === 0) return null;
     return { termosDiretos, termosRelacionados };
-  } catch {
+  } catch (erro) {
+    console.error('interpretarIntencaoBusca: erro ao chamar provedor', baseUrl, erro);
     return null;
   } finally {
     clearTimeout(timeoutId);
