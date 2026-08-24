@@ -37,7 +37,7 @@ Exemplo — busca "onde regularizar a documentação do carro":
 // Os dois falam o mesmo formato (chat completions estilo OpenAI), so' muda
 // base URL/modelo/env var.
 const PROVEDORES = [
-  { env: 'GEMINI_API_KEY', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', model: 'gemini-3.7-flash' },
+  { env: 'GEMINI_API_KEY', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', model: 'gemini-3-flash-preview' },
   { env: 'DEEPSEEK_API_KEY', baseUrl: 'https://api.deepseek.com/chat/completions', model: 'deepseek-chat' },
 ] as const;
 
