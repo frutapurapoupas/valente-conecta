@@ -95,7 +95,13 @@ export function SemResultados({
         </div>
       )}
 
-      {pedirCadastro && <CadastroPopup forceShow onSuccess={onFecharCadastro} />}
+      {pedirCadastro && (
+        <CadastroPopup
+          forceShow
+          codigoIndicacao={typeof window !== "undefined" ? localStorage.getItem("convite_codigo") || undefined : undefined}
+          onSuccess={onFecharCadastro}
+        />
+      )}
     </div>
   );
 }

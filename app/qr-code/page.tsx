@@ -352,14 +352,14 @@ export default function QRCodePage() {
                         <p className="text-gray-400 text-xs">{item.whatsapp || 'WhatsApp não informado'}</p>
                       </div>
                       <span className={`text-xs font-semibold shrink-0 ${validado ? 'text-green-400' : 'text-yellow-400'}`}>
-                        {validado ? 'Validado' : 'Pendente'}
+                        {validado ? 'Válida' : 'Expirada'}
                       </span>
                     </div>
                     <p className={`text-xs mt-1 ${validado ? 'text-green-300/70' : 'text-yellow-300/70'}`}>
                       {validado
-                        ? `Já conta pro seu bônus — teste dele vence em ${new Date(item.trial_end_at).toLocaleDateString('pt-BR')}.`
+                        ? `Indicação válida — teste dele vence em ${new Date(item.trial_end_at).toLocaleDateString('pt-BR')}.`
                         : item.trial_end_at
-                          ? `Teste grátis venceu em ${new Date(item.trial_end_at).toLocaleDateString('pt-BR')} sem virar assinante — essa indicação não conta mais pro seu bônus.`
+                          ? `Indicação expirada — teste grátis venceu em ${new Date(item.trial_end_at).toLocaleDateString('pt-BR')} sem virar assinante.`
                           : 'Ainda sem data de teste registrada.'}
                     </p>
                   </div>

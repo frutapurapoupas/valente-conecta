@@ -16,6 +16,7 @@ import {
   Shirt,
   Sprout,
   Wrench,
+  Droplets,
   Plus,
   Wallet,
   ArrowDownLeft,
@@ -171,7 +172,7 @@ export default function HomePage() {
     { nome: "Farmácias", Icone: Pill, href: "/saude?tipo=farmacia" },
     { nome: "Moto Táxi", Icone: Bike, href: "/mototaxi" },
     { nome: "Academias & Esportes", Icone: Dumbbell, href: "/academia" },
-    { nome: "Água e Gás", Icone: Wrench, href: "/agua-gas" },
+    { nome: "Água e Gás", Icone: Droplets, href: "/agua-gas" },
     { nome: "Serviços", Icone: Wrench, href: "/servicos" },
   ];
 
