@@ -334,11 +334,14 @@ export async function PUT(request: NextRequest) {
       if (error) throw error;
 
       // Taxa de uso da plataforma (ver lib/mototaxi/taxaUso.ts) -- so' calcula
-      // quando a corrida vira 'concluida'. Roda depois de responder pro
-      // cliente nao esperar por isso; falha aqui nunca derruba a conclusao
-      // da corrida em si.
+      // quando a corrida vira 'concluida'. Precisa de await mesmo: em
+      // ambiente serverless (Vercel) uma chamada sem await pode ser
+      // encerrada no meio assim que a resposta e' enviada, e o trabalho em
+      // segundo plano nunca termina (confirmado testando em producao -- sem
+      // await, a taxa nunca era gravada). A funcao em si ja nunca lanca erro
+      // pra fora, entao isso nao derruba a conclusao da corrida.
       if (status === 'concluida') {
-        calcularERegistrarTaxasDaCorrida(corridaId);
+        await calcularERegistrarTaxasDaCorrida(corridaId);
       }
 
       return NextResponse.json({ success: true, data });
