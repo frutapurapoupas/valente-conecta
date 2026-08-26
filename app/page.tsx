@@ -242,17 +242,17 @@ export default function HomePage() {
             />
             <div>
               <h1 className="font-extrabold text-lg leading-tight tracking-tight text-blue-900">VALENTE CONECTA</h1>
-              <p className="text-[10px] text-slate-500 font-medium">A economia da cidade na palma da mão</p>
+              <p className="text-[13px] text-slate-600 font-medium">A economia da cidade na palma da mão</p>
               <ContadorUsuarios />
             </div>
           </div>
           <div className="flex flex-col items-end gap-1">
             {nomeUsuario && (
-              <span className="text-xs font-semibold text-slate-700 max-w-[140px] truncate">{nomeUsuario}</span>
+              <span className="text-sm font-semibold text-slate-700 max-w-[140px] truncate">{nomeUsuario}</span>
             )}
             <button
               onClick={() => router.push("/profile")}
-              className="flex items-center gap-1 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full text-xs font-medium border border-blue-100"
+              className="flex items-center gap-1 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full text-sm font-medium border border-blue-100"
             >
               <MapPin size={13} className="text-blue-600" />
               <span>Valente, BA</span>
@@ -282,29 +282,29 @@ export default function HomePage() {
       <main className="px-4 pt-4 space-y-5">
         <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+            <span className="text-sm font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
               <Wallet size={14} className="text-amber-500" /> Carteira Digital
             </span>
-            <button onClick={() => router.push("/extrato")} className="text-xs text-blue-600 font-medium">
+            <button onClick={() => router.push("/extrato")} className="text-sm text-blue-600 font-medium">
               Ver extrato
             </button>
           </div>
 
           <div className="flex items-baseline justify-between mb-3">
             <h2 className="text-2xl font-black text-slate-900">{saldoMoedaConecta.toFixed(2)} {siglaMoedaConecta}</h2>
-            <span className="text-xs text-slate-500 font-normal">Moeda Conecta</span>
+            <span className="text-sm text-slate-500 font-normal">Moeda Conecta</span>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => router.push("/carteira?abrir=receber")}
-              className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-4 rounded-xl text-xs font-semibold shadow-sm transition-colors"
+              className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-4 rounded-xl text-sm font-semibold shadow-sm transition-colors"
             >
               <ArrowDownLeft size={16} /> Receber
             </button>
             <button
               onClick={() => router.push("/carteira?abrir=pagar")}
-              className="flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white py-2.5 px-4 rounded-xl text-xs font-semibold shadow-sm transition-colors"
+              className="flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white py-2.5 px-4 rounded-xl text-sm font-semibold shadow-sm transition-colors"
             >
               <ArrowUpRight size={16} /> Pagar
             </button>
@@ -317,12 +317,12 @@ export default function HomePage() {
             className="bg-gradient-to-br from-blue-900 to-blue-950 text-white p-4 rounded-2xl relative overflow-hidden shadow-sm flex flex-col justify-between h-32 cursor-pointer"
           >
             <div>
-              <span className="bg-amber-500 text-blue-950 font-bold text-[9px] px-2 py-0.5 rounded-full uppercase">Novidade</span>
+              <span className="bg-amber-500 text-blue-950 font-bold text-[11px] px-2 py-0.5 rounded-full uppercase">Novidade</span>
               <h3 className="font-bold text-sm mt-1 leading-snug flex items-center gap-1">
                 <PlayCircle size={14} /> Lançamento
               </h3>
             </div>
-            <p className="text-[10px] text-blue-200">Conecte-se ao comércio local agora!</p>
+            <p className="text-[13px] text-blue-100">Conecte-se ao comércio local agora!</p>
           </div>
 
           <div
@@ -330,12 +330,12 @@ export default function HomePage() {
             className="bg-gradient-to-br from-amber-400 to-amber-500 text-slate-950 p-4 rounded-2xl relative overflow-hidden shadow-sm flex flex-col justify-between h-32 cursor-pointer"
           >
             <div>
-              <span className="bg-white/80 text-amber-900 font-bold text-[9px] px-2 py-0.5 rounded-full uppercase">Indique</span>
+              <span className="bg-white/80 text-amber-900 font-bold text-[11px] px-2 py-0.5 rounded-full uppercase">Indique</span>
               <h3 className="font-bold text-sm mt-1 leading-snug flex items-center gap-1">
                 <Gift size={14} /> Indique e Ganhe
               </h3>
             </div>
-            <p className="text-[10px] text-amber-950 font-medium">Ganhe bônus por indicação!</p>
+            <p className="text-[13px] text-amber-950 font-medium">Ganhe bônus por indicação!</p>
           </div>
         </div>
 
@@ -352,7 +352,7 @@ export default function HomePage() {
                   <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm border border-blue-200">
                     <Icone size={22} />
                   </div>
-                  <span className="text-[11px] font-medium text-slate-700 leading-tight">{cat.nome}</span>
+                  <span className="text-[13px] font-medium text-slate-700 leading-tight">{cat.nome}</span>
                 </button>
               );
             })}
@@ -360,7 +360,7 @@ export default function HomePage() {
               <div className="w-14 h-14 rounded-2xl bg-slate-100 text-slate-600 flex items-center justify-center shadow-sm border border-slate-300">
                 <Plus size={22} />
               </div>
-              <span className="text-[11px] font-medium text-slate-700 leading-tight">
+              <span className="text-[13px] font-medium text-slate-700 leading-tight">
                 {showTodasCategorias ? "Ver menos" : "Ver Mais"}
               </span>
             </button>
@@ -375,7 +375,7 @@ export default function HomePage() {
                     <div className="w-14 h-14 rounded-2xl bg-slate-50 text-slate-600 flex items-center justify-center shadow-sm border border-slate-200">
                       <Icone size={22} />
                     </div>
-                    <span className="text-[11px] font-medium text-slate-700 leading-tight">{cat.nome}</span>
+                    <span className="text-[13px] font-medium text-slate-700 leading-tight">{cat.nome}</span>
                   </button>
                 );
               })}
@@ -386,7 +386,7 @@ export default function HomePage() {
         <section>
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-bold text-slate-900 text-sm">Comércio Local em Destaque</h3>
-            <button onClick={() => router.push("/comercio")} className="text-xs text-blue-600 font-medium">
+            <button onClick={() => router.push("/comercio")} className="text-sm text-blue-600 font-medium">
               Ver todos
             </button>
           </div>
@@ -401,7 +401,7 @@ export default function HomePage() {
               <p className="text-sm text-slate-500">Em breve, os comércios cadastrados aparecerão aqui.</p>
               <button
                 onClick={() => router.push("/indicar-estabelecimento")}
-                className="mt-3 text-xs text-blue-600 font-medium underline"
+                className="mt-3 text-sm text-blue-600 font-medium underline"
               >
                 Quero cadastrar meu comércio
               </button>
@@ -429,7 +429,7 @@ export default function HomePage() {
                 </div>
                 <div>
                   <span className="text-slate-800 font-bold text-sm">Comunicado Oficial</span>
-                  <p className="text-slate-400 text-[9px]">Admin Master</p>
+                  <p className="text-slate-500 text-[13px]">Admin Master</p>
                 </div>
               </div>
               <button onClick={() => setShowAdminNotifications(false)} className="text-slate-300 hover:text-slate-500">
@@ -443,7 +443,7 @@ export default function HomePage() {
                   <div className="flex-1">
                     <p className="text-slate-800 text-sm font-medium">{notif.titulo}</p>
                     <p className="text-slate-600 text-sm">{notif.mensagem}</p>
-                    <p className="text-slate-400 text-[9px] mt-0.5">{notif.data}</p>
+                    <p className="text-slate-500 text-[13px] mt-0.5">{notif.data}</p>
                   </div>
                 </div>
               ))}
@@ -465,19 +465,19 @@ export default function HomePage() {
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-6 py-2 flex justify-between items-center z-50 shadow-lg">
         <button onClick={() => router.push("/")} className="flex flex-col items-center text-blue-600">
           <HomeIcon size={20} />
-          <span className="text-[10px] font-bold mt-1">Início</span>
+          <span className="text-[13px] font-bold mt-1">Início</span>
         </button>
-        <button onClick={() => router.push("/planos")} className="flex flex-col items-center text-slate-400 hover:text-slate-600">
+        <button onClick={() => router.push("/planos")} className="flex flex-col items-center text-slate-500 hover:text-slate-700">
           <CreditCard size={20} />
-          <span className="text-[10px] font-medium mt-1">Planos</span>
+          <span className="text-[13px] font-medium mt-1">Planos</span>
         </button>
-        <button onClick={() => router.push("/carteira")} className="flex flex-col items-center text-slate-400 hover:text-slate-600">
+        <button onClick={() => router.push("/carteira")} className="flex flex-col items-center text-slate-500 hover:text-slate-700">
           <Wallet size={20} />
-          <span className="text-[10px] font-medium mt-1">Carteira</span>
+          <span className="text-[13px] font-medium mt-1">Carteira</span>
         </button>
-        <button onClick={() => router.push("/profile")} className="flex flex-col items-center text-slate-400 hover:text-slate-600">
+        <button onClick={() => router.push("/profile")} className="flex flex-col items-center text-slate-500 hover:text-slate-700">
           <User size={20} />
-          <span className="text-[10px] font-medium mt-1">Perfil</span>
+          <span className="text-[13px] font-medium mt-1">Perfil</span>
         </button>
       </nav>
     </div>
