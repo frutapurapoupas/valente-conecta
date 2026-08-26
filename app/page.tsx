@@ -231,7 +231,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 pb-24">
+    <div className="min-h-screen bg-slate-50 text-slate-800">
       <header className="bg-white px-4 pt-4 pb-3 shadow-sm sticky top-0 z-40">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
@@ -462,24 +462,6 @@ export default function HomePage() {
         </button>
       )}
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-6 py-2 flex justify-between items-center z-50 shadow-lg">
-        <button onClick={() => router.push("/")} className="flex flex-col items-center text-blue-600">
-          <HomeIcon size={20} />
-          <span className="text-[13px] font-bold mt-1">Início</span>
-        </button>
-        <button onClick={() => router.push("/planos")} className="flex flex-col items-center text-slate-500 hover:text-slate-700">
-          <CreditCard size={20} />
-          <span className="text-[13px] font-medium mt-1">Planos</span>
-        </button>
-        <button onClick={() => router.push("/carteira")} className="flex flex-col items-center text-slate-500 hover:text-slate-700">
-          <Wallet size={20} />
-          <span className="text-[13px] font-medium mt-1">Carteira</span>
-        </button>
-        <button onClick={() => router.push("/profile")} className="flex flex-col items-center text-slate-500 hover:text-slate-700">
-          <User size={20} />
-          <span className="text-[13px] font-medium mt-1">Perfil</span>
-        </button>
-      </nav>
     </div>
   );
 }

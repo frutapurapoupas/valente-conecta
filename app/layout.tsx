@@ -12,13 +12,34 @@ import { InstallPrompt } from '@/components/InstallPrompt';
 import PushSubscriptionManager from '@/components/PushSubscriptionManager';
 import { Suspense } from 'react';
 import Sidebar from '@/components/admin/Sidebar';
+import { BottomNav } from '@/components/layout/BottomNav';
 import { usePathname } from 'next/navigation';
 
 const inter = Inter({ subsets: ['latin'] });
 
+// Rotas que ja tem a propria navegacao/contexto (ferramenta de trabalho,
+// fluxo de autenticacao isolado, etc.) -- nao recebem a barra inferior do
+// app do consumidor. Ver diagnostico de UX (achado "nao existe navegacao
+// persistente fora da home"): a barra passou a existir em todo lugar, exceto
+// aqui.
+const PREFIXOS_SEM_NAV = [
+  '/admin-master', '/admin', '/pdv', '/cdl', '/login', '/register',
+  '/academia', '/cozinha', '/autenticacao-completa', '/convite', '/qr-code',
+  '/acesso-expirado', '/servico-indisponivel', '/diagnostico', '/teste-geo',
+];
+const SEGMENTOS_SEM_NAV = ['/motorista', '/entregador', '/fornecedor', '/admin', '/publicar'];
+
+function deveMostrarNav(pathname: string | null): boolean {
+  if (!pathname) return false;
+  if (PREFIXOS_SEM_NAV.some((p) => pathname === p || pathname.startsWith(p + '/'))) return false;
+  if (SEGMENTOS_SEM_NAV.some((s) => pathname.includes(s))) return false;
+  return true;
+}
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAdminPage = pathname?.startsWith('/admin-master');
+  const mostrarNav = !isAdminPage && deveMostrarNav(pathname);
 
   return (
     <html lang="pt-BR" className="h-full">
@@ -54,11 +75,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </div>
             ) : (
               // Layout limpo para o restante do site
-              <main className="min-h-screen">
+              <main className="min-h-screen" style={mostrarNav ? { paddingBottom: '72px' } : undefined}>
                 {children}
               </main>
             )}
           </Suspense>
+          {mostrarNav && <BottomNav />}
           <Toaster position="top-right" />
           <CadastroPopupWrapper />
           <QuizPerfilPopup />
