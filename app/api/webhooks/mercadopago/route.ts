@@ -240,6 +240,71 @@ async function processWebhookMototaxiTaxa(taxaId: string, payment: any) {
 	return NextResponse.json({ success: true, taxaId, status: statusPagamento });
 }
 
+// Cliente ou fornecedor pagou a taxa de uso da plataforma no pedido
+// expresso de Agua e Gas (ver lib/aguaGas/taxaUso.ts) -- confirma a linha
+// em agua_gas_taxas_uso. So' acontece quando o pedido foi combinado em
+// dinheiro (pagamento online ja' desconta a taxa via marketplace_fee, ver
+// processWebhookAguaGasPedido abaixo).
+async function processWebhookAguaGasTaxa(taxaId: string, payment: any) {
+	const supabase = createClient();
+	const statusPagamento = normalizeStatus(String(payment?.status || ''));
+
+	const { data: taxa, error } = await supabase
+		.from('agua_gas_taxas_uso')
+		.update({
+			status: statusPagamento === 'pago' ? 'pago' : 'pendente',
+			pago_via: statusPagamento === 'pago' ? 'mercadopago' : null,
+			mp_payment_id: String(payment?.id || ''),
+			updated_at: new Date().toISOString(),
+		})
+		.eq('id', taxaId)
+		.select('*')
+		.single();
+
+	if (error || !taxa) {
+		return NextResponse.json({ success: true, ignored: true, reason: 'taxa nao encontrada' });
+	}
+
+	return NextResponse.json({ success: true, taxaId, status: statusPagamento });
+}
+
+// Cliente pagou um pedido expresso de Agua e Gas online, com split
+// automatico pro fornecedor (ver 081_agua_gas_pedido_expresso.sql) -- so'
+// confirma o pagamento e avisa o fornecedor; a taxa da plataforma ja saiu
+// via marketplace_fee, nao precisa de cobranca separada.
+async function processWebhookAguaGasPedido(pedidoId: string, payment: any) {
+	const supabase = createClient();
+	const statusPagamento = normalizeStatus(String(payment?.status || ''));
+
+	const { data: pedido, error } = await supabase
+		.from('agua_gas_pedidos')
+		.update({
+			pagamento_status: statusPagamento === 'pago' ? 'pago_online' : 'aguardando_pagamento',
+			mp_payment_id: String(payment?.id || ''),
+			updated_at: new Date().toISOString(),
+		})
+		.eq('id', pedidoId)
+		.select('*')
+		.single();
+
+	if (error || !pedido) {
+		return NextResponse.json({ success: true, ignored: true, reason: 'pedido nao encontrado' });
+	}
+
+	if (statusPagamento === 'pago') {
+		const { data: fornecedor } = await supabase.from('agua_gas_fornecedores').select('dono_id').eq('id', pedido.fornecedor_id).maybeSingle();
+		if (fornecedor?.dono_id) {
+			await enviarPushParaUsuario(fornecedor.dono_id, {
+				titulo: 'Novo pedido pago — Água e Gás',
+				corpo: `${pedido.cliente_nome} pagou ${pedido.produto} × ${pedido.quantidade}. Confirme e providencie a entrega.`,
+				url: '/agua-gas/fornecedor',
+			});
+		}
+	}
+
+	return NextResponse.json({ success: true, pedidoId, status: statusPagamento });
+}
+
 // Comprador pagou pra desbloquear o contato de um item da vitrine (cota
 // diaria gratis do Plano Geral ja estourada — ver
 // lib/catalogo/catalogoService.ts::criarInteresse).
@@ -320,6 +385,12 @@ async function processWebhook(request: NextRequest, payload: any) {
 		}
 		if (pedidoId.startsWith('carona_reserva_')) {
 			return processWebhookCaronaReserva(pedidoId.replace('carona_reserva_', ''), payment);
+		}
+		if (pedidoId.startsWith('agua_gas_taxa_')) {
+			return processWebhookAguaGasTaxa(pedidoId.replace('agua_gas_taxa_', ''), payment);
+		}
+		if (pedidoId.startsWith('agua_gas_pedido_')) {
+			return processWebhookAguaGasPedido(pedidoId.replace('agua_gas_pedido_', ''), payment);
 		}
 
 		const pedidos = readPedidos();

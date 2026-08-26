@@ -3,9 +3,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   Droplets, Flame, Search, Plus, Edit3, Trash2, CheckCircle2, EyeOff,
-  Star, RefreshCw, Phone, Package, Truck, X, MessageCircle, ShoppingBag, DollarSign, MapPin
+  Star, RefreshCw, Phone, Package, Truck, X, MessageCircle, ShoppingBag, DollarSign, MapPin, Save
 } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
+
+interface TaxaConfig { taxaPercentualCliente: number; taxaPercentualFornecedor: number; }
 
 const TIPOS_PRODUTO = [
   { id: 'agua_garrafao', label: 'Garrafão 20L',  unidade: 'unidade' },
@@ -50,6 +52,31 @@ export default function AdminAguaGasPage() {
   const [cidades, setCidades] = useState<{ id: string; nome: string }[]>([]);
   const [cidadeId, setCidadeId] = useState('');
   const [importando, setImportando] = useState(false);
+  const [taxaConfig, setTaxaConfig] = useState<TaxaConfig | null>(null);
+  const [savingTaxa, setSavingTaxa] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/admin-master/agua-gas/taxa-config').then((r) => r.json()).then((res) => {
+      if (res.success) setTaxaConfig(res.data);
+    }).catch(() => {});
+  }, []);
+
+  const saveTaxaConfig = async () => {
+    if (!taxaConfig) return;
+    setSavingTaxa(true);
+    try {
+      const resp = await fetch('/api/admin-master/agua-gas/taxa-config', {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(taxaConfig),
+      });
+      const resultado = await resp.json();
+      if (!resultado.success) throw new Error(resultado.error);
+      toast.success('Taxa de uso salva.');
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao salvar taxa.');
+    } finally {
+      setSavingTaxa(false);
+    }
+  };
 
   const carregarFornecedores = useCallback(async () => {
     setLoading(true);
@@ -217,6 +244,40 @@ export default function AdminAguaGasPage() {
             {a === 'fornecedores' ? `Fornecedores (${resumo.total})` : a === 'pedidos' ? `Pedidos (${pedidos.length})` : `Financeiro (${movimentacoes.length})`}
           </button>
         ))}
+      </div>
+
+      {/* ── TAXA DE USO (pedido expresso) ────────────────────────────────────── */}
+      <div className="bg-slate-900 border border-white/10 rounded-2xl p-5 mb-6">
+        <h2 className="font-semibold text-white mb-1">Taxa de uso do pedido rápido (1 toque)</h2>
+        <p className="text-sm text-gray-400 mb-3">
+          Cobrada de cliente e fornecedor quando o pedido rápido é pago em dinheiro (pagamento online já desconta automático via Mercado Pago).
+          Quem tiver plano pago (cliente: Plano Geral básico/ilimitado; fornecedor: assinatura ativa na categoria Utilidades) fica isento da própria parte.
+        </p>
+        {taxaConfig && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 max-w-md">
+              <label className="text-sm text-gray-400">Taxa do cliente (%)
+                <input
+                  type="number" min={0} max={100} step={0.5}
+                  value={taxaConfig.taxaPercentualCliente}
+                  onChange={(e) => setTaxaConfig({ ...taxaConfig, taxaPercentualCliente: Number(e.target.value) })}
+                  className="w-full mt-1 bg-slate-800 border border-white/10 text-white rounded-lg px-3 py-2"
+                />
+              </label>
+              <label className="text-sm text-gray-400">Taxa do fornecedor (%)
+                <input
+                  type="number" min={0} max={100} step={0.5}
+                  value={taxaConfig.taxaPercentualFornecedor}
+                  onChange={(e) => setTaxaConfig({ ...taxaConfig, taxaPercentualFornecedor: Number(e.target.value) })}
+                  className="w-full mt-1 bg-slate-800 border border-white/10 text-white rounded-lg px-3 py-2"
+                />
+              </label>
+            </div>
+            <button onClick={saveTaxaConfig} disabled={savingTaxa} className="flex items-center gap-2 bg-green-600 hover:bg-green-500 disabled:opacity-60 px-4 py-2 rounded-xl text-sm font-semibold transition-colors">
+              <Save className="w-4 h-4" />{savingTaxa ? 'Salvando...' : 'Salvar taxa de uso'}
+            </button>
+          </>
+        )}
       </div>
 
       {/* ── FORNECEDORES ─────────────────────────────────────────────────────── */}

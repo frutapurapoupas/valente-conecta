@@ -12,6 +12,9 @@ import { createClient } from '@/lib/supabase/server';
 import { verificarECConsumirPlanoGeral } from '@/lib/planoGeral';
 
 function fornecedorParaApi(f: any) {
+  // mp_access_token/mp_refresh_token NUNCA saem pro navegador -- so' o
+  // booleano de "esta conectado" (ver 081_agua_gas_pedido_expresso.sql),
+  // mesmo padrao ja usado em app/api/carona/motoristas/route.ts.
   return {
     id: f.id,
     donoId: f.dono_id || null,
@@ -25,10 +28,16 @@ function fornecedorParaApi(f: any) {
     descricao: f.descricao || '',
     foto: f.foto || '',
     horario: f.horario || '',
+    atendimento24h: f.atendimento_24h ?? false,
+    diasFuncionamento: f.dias_funcionamento || null,
     temEntrega: f.tem_entrega,
     taxaEntrega: Number(f.taxa_entrega || 0),
     freteGratisAcima: Number(f.frete_gratis_acima || 0),
     produtos: f.produtos || [],
+    precoAguaPadrao: f.preco_agua_padrao != null ? Number(f.preco_agua_padrao) : null,
+    descricaoAguaPadrao: f.descricao_agua_padrao || '',
+    precoGasPadrao: f.preco_gas_padrao != null ? Number(f.preco_gas_padrao) : null,
+    descricaoGasPadrao: f.descricao_gas_padrao || '',
     status: f.status,
     destaque: f.destaque,
     latitude: f.latitude,
@@ -38,6 +47,7 @@ function fornecedorParaApi(f: any) {
     aceitaPix: f.aceita_pix ?? false,
     aceitaValeGas: f.aceita_vale_gas ?? false,
     aceitaFiado: f.aceita_fiado ?? false,
+    mpConectado: !!f.mp_access_token,
     createdAt: f.created_at,
     updatedAt: f.updated_at,
   };
@@ -57,6 +67,9 @@ function pedidoParaApi(p: any) {
     observacoes: p.observacoes || '',
     formaPagamento: p.forma_pagamento || '',
     entregadorId: p.entregador_id || null,
+    origem: p.origem || 'whatsapp',
+    categoria: p.categoria || null,
+    pagamentoStatus: p.pagamento_status || 'nao_aplicavel',
     status: p.status,
     createdAt: p.created_at,
     updatedAt: p.updated_at,
@@ -258,10 +271,16 @@ export async function POST(request: NextRequest) {
       descricao: String(body.descricao || '').trim(),
       foto: String(body.foto || '').trim(),
       horario: String(body.horario || '').trim(),
+      atendimento_24h: Boolean(body.atendimento24h ?? false),
+      dias_funcionamento: body.diasFuncionamento ?? null,
       tem_entrega: Boolean(body.temEntrega ?? true),
       taxa_entrega: Number(body.taxaEntrega || 0),
       frete_gratis_acima: Number(body.freteGratisAcima || 0),
       produtos: Array.isArray(body.produtos) ? body.produtos : [],
+      preco_agua_padrao: body.precoAguaPadrao != null ? Number(body.precoAguaPadrao) : null,
+      descricao_agua_padrao: String(body.descricaoAguaPadrao || '').trim(),
+      preco_gas_padrao: body.precoGasPadrao != null ? Number(body.precoGasPadrao) : null,
+      descricao_gas_padrao: String(body.descricaoGasPadrao || '').trim(),
       latitude: body.latitude ?? null,
       longitude: body.longitude ?? null,
       aceita_dinheiro: Boolean(body.aceitaDinheiro ?? true),
@@ -339,9 +358,16 @@ export async function PUT(request: NextRequest) {
   if (body.bairro !== undefined) patch.bairro = body.bairro;
   if (body.endereco !== undefined) patch.endereco = body.endereco;
   if (body.horario !== undefined) patch.horario = body.horario;
+  if (body.atendimento24h !== undefined) patch.atendimento_24h = body.atendimento24h;
+  if (body.diasFuncionamento !== undefined) patch.dias_funcionamento = body.diasFuncionamento;
   if (body.temEntrega !== undefined) patch.tem_entrega = body.temEntrega;
   if (body.taxaEntrega !== undefined) patch.taxa_entrega = body.taxaEntrega;
+  if (body.freteGratisAcima !== undefined) patch.frete_gratis_acima = body.freteGratisAcima;
   if (body.produtos !== undefined) patch.produtos = body.produtos;
+  if (body.precoAguaPadrao !== undefined) patch.preco_agua_padrao = body.precoAguaPadrao;
+  if (body.descricaoAguaPadrao !== undefined) patch.descricao_agua_padrao = body.descricaoAguaPadrao;
+  if (body.precoGasPadrao !== undefined) patch.preco_gas_padrao = body.precoGasPadrao;
+  if (body.descricaoGasPadrao !== undefined) patch.descricao_gas_padrao = body.descricaoGasPadrao;
   if (body.latitude !== undefined) patch.latitude = body.latitude;
   if (body.longitude !== undefined) patch.longitude = body.longitude;
   if (body.aceitaDinheiro !== undefined) patch.aceita_dinheiro = body.aceitaDinheiro;

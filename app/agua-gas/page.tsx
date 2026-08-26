@@ -39,6 +39,11 @@ interface Fornecedor {
   destaque: boolean;
   latitude: number | null;
   longitude: number | null;
+  precoAguaPadrao: number | null;
+  descricaoAguaPadrao: string;
+  precoGasPadrao: number | null;
+  descricaoGasPadrao: string;
+  mpConectado: boolean;
   aceitaDinheiro: boolean;
   aceitaCartao: boolean;
   aceitaPix: boolean;
@@ -106,8 +111,14 @@ function BadgeProduto({ p }: { p: Produto }) {
 }
 
 // ─── Card de fornecedor ───────────────────────────────────────────────────────
-function CardFornecedor({ forn, onPedir, onReivindicar, distanciaKm: distancia }: { forn: Fornecedor; onPedir: (f: Fornecedor) => void; onReivindicar: (f: Fornecedor) => void; distanciaKm?: number | null }) {
+function CardFornecedor({ forn, categoria, onPedir, onPedirExpresso, onReivindicar, distanciaKm: distancia }: {
+  forn: Fornecedor; categoria: 'agua' | 'gas' | null;
+  onPedir: (f: Fornecedor) => void; onPedirExpresso: (f: Fornecedor, categoria: 'agua' | 'gas') => void; onReivindicar: (f: Fornecedor) => void;
+  distanciaKm?: number | null;
+}) {
   const produtosVisiveis = forn.produtos?.filter((p) => p.disponivel !== false).slice(0, 4) || [];
+  const precoExpresso = categoria === 'agua' ? forn.precoAguaPadrao : categoria === 'gas' ? forn.precoGasPadrao : null;
+  const temPedidoExpresso = categoria != null && Number(precoExpresso) > 0;
 
   return (
     <div className={`rounded-2xl border border-white/10 bg-slate-900 overflow-hidden ${forn.destaque ? 'ring-2 ring-blue-400/40' : ''}`}>
@@ -199,7 +210,16 @@ function CardFornecedor({ forn, onPedir, onReivindicar, distanciaKm: distancia }
         )}
 
         {/* Ação */}
-        <div className="mt-4 grid grid-cols-2 gap-2 pt-4 border-t border-white/10">
+        {temPedidoExpresso && (
+          <button
+            onClick={() => onPedirExpresso(forn, categoria as 'agua' | 'gas')}
+            className={`mt-4 w-full flex items-center justify-center gap-1.5 text-white rounded-xl py-2.5 text-sm font-bold transition-colors ${categoria === 'agua' ? 'bg-blue-600 hover:bg-blue-500' : 'bg-orange-600 hover:bg-orange-500'}`}
+          >
+            {categoria === 'agua' ? <Droplets className="w-4 h-4" /> : <Flame className="w-4 h-4" />}
+            Pedir {categoria === 'agua' ? 'água' : 'gás'} agora — R$ {Number(precoExpresso).toFixed(2)}
+          </button>
+        )}
+        <div className={`grid grid-cols-2 gap-2 pt-4 border-t border-white/10 ${temPedidoExpresso ? 'mt-2' : 'mt-4'}`}>
           <a
             href={`https://wa.me/55${forn.whatsapp.replace(/\D/g, '')}`}
             target="_blank"
@@ -212,7 +232,7 @@ function CardFornecedor({ forn, onPedir, onReivindicar, distanciaKm: distancia }
             onClick={() => onPedir(forn)}
             className="flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-2 text-sm font-semibold transition-colors"
           >
-            <ShoppingCart className="w-4 h-4" />Pedir
+            <ShoppingCart className="w-4 h-4" />{temPedidoExpresso ? 'Outro produto' : 'Pedir'}
           </button>
         </div>
 
@@ -413,6 +433,111 @@ function ModalPedido({ forn, onClose }: { forn: Fornecedor; onClose: () => void 
   );
 }
 
+// ─── Modal de pedido expresso (1 toque) ────────────────────────────────────────
+function ModalPedidoExpresso({ forn, categoria, onClose }: { forn: Fornecedor; categoria: 'agua' | 'gas'; onClose: () => void }) {
+  const descricao = (categoria === 'agua' ? forn.descricaoAguaPadrao : forn.descricaoGasPadrao) || (categoria === 'agua' ? 'Água' : 'Gás');
+  const preco = Number((categoria === 'agua' ? forn.precoAguaPadrao : forn.precoGasPadrao) || 0);
+  const [quantidade, setQuantidade] = useState(1);
+  const [enviando, setEnviando] = useState<'online' | 'dinheiro' | null>(null);
+  const [pedidoCriado, setPedidoCriado] = useState(false);
+  const perfil = getCurrentUser();
+
+  const confirmar = async (formaPagamento: 'online' | 'dinheiro') => {
+    if (!perfil?.id) {
+      toast.error('Complete seu cadastro no app pra fazer um pedido rápido.');
+      return;
+    }
+    setEnviando(formaPagamento);
+    try {
+      const resp = await fetch('/api/agua-gas/pedido-expresso', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ usuarioId: perfil.id, fornecedorId: forn.id, categoria, quantidade, formaPagamento }),
+      });
+      const resultado = await resp.json();
+      if (!resultado.success) throw new Error(resultado.error);
+
+      if (resultado.checkoutUrl) {
+        window.location.href = resultado.checkoutUrl;
+        return;
+      }
+      setPedidoCriado(true);
+      toast.success('Pedido confirmado!');
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao criar pedido.');
+    } finally {
+      setEnviando(null);
+    }
+  };
+
+  if (pedidoCriado) {
+    return (
+      <div className="fixed inset-0 z-50 bg-black/70 flex items-end sm:items-center justify-center p-4">
+        <div className="bg-slate-900 border border-white/10 rounded-2xl w-full max-w-md p-6 text-center">
+          <CheckCircle className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
+          <h2 className="text-white font-bold text-lg mb-1">Pedido confirmado!</h2>
+          <p className="text-gray-400 text-sm mb-2">{forn.nome} vai combinar a entrega pelo seu WhatsApp.</p>
+          <p className="text-gray-400 text-sm mb-5">
+            Como o pagamento é em dinheiro, você e o fornecedor vão receber um aviso sobre a taxinha de uso do app (1%) — sem plano pago, ela fica pendente até ser paga.
+          </p>
+          <button onClick={onClose} className="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-3 text-sm font-semibold">Fechar</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/70 flex items-end sm:items-center justify-center p-4">
+      <div className="bg-slate-900 border border-white/10 rounded-2xl w-full max-w-md">
+        <div className="flex items-center justify-between p-5 border-b border-white/10">
+          <div className="flex items-center gap-2">
+            {categoria === 'agua' ? <Droplets className="w-5 h-5 text-blue-400" /> : <Flame className="w-5 h-5 text-orange-400" />}
+            <div>
+              <h2 className="text-white font-bold text-lg">{descricao}</h2>
+              <p className="text-gray-400 text-sm">{forn.nome}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-white"><X className="w-5 h-5" /></button>
+        </div>
+
+        <div className="p-5 space-y-5">
+          <div>
+            <label className="text-sm text-gray-400">Quantidade</label>
+            <div className="flex items-center justify-between mt-2 bg-slate-800 border border-white/10 rounded-xl px-4 py-3">
+              <button type="button" onClick={() => setQuantidade((q) => Math.max(1, q - 1))} className="w-8 h-8 rounded-full bg-white/10 text-white font-bold flex items-center justify-center">−</button>
+              <span className="text-white font-bold text-lg">{quantidade}</span>
+              <button type="button" onClick={() => setQuantidade((q) => Math.min(20, q + 1))} className="w-8 h-8 rounded-full bg-white/10 text-white font-bold flex items-center justify-center">+</button>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between text-white">
+            <span className="text-gray-400 text-sm">Total</span>
+            <span className="font-bold text-xl">R$ {(preco * quantidade).toFixed(2)}</span>
+          </div>
+
+          <div className="space-y-2">
+            <button
+              onClick={() => confirmar('online')}
+              disabled={!forn.mpConectado || enviando !== null}
+              className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white font-bold py-3 rounded-xl transition-colors"
+            >
+              {enviando === 'online' ? 'Abrindo pagamento...' : 'Pagar agora (Pix/Cartão)'}
+            </button>
+            {!forn.mpConectado && <p className="text-xs text-gray-500 text-center -mt-1">Esse fornecedor ainda não conectou pagamento online.</p>}
+            <button
+              onClick={() => confirmar('dinheiro')}
+              disabled={enviando !== null}
+              className="w-full bg-white/10 hover:bg-white/20 disabled:opacity-40 text-white font-semibold py-3 rounded-xl transition-colors"
+            >
+              {enviando === 'dinheiro' ? 'Confirmando...' : 'Pagar em dinheiro na entrega'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Modal "Sou proprietário" ─────────────────────────────────────────────────
 function ModalReivindicarAguaGas({ forn, onFechar, onEnviado }: {
   forn: Fornecedor; onFechar: () => void; onEnviado: () => void;
@@ -558,6 +683,7 @@ export default function AguaGasPage() {
   const [tipoFiltro, setTipoFiltro] = useState('');
   const [categoria, setCategoria] = useState<'agua' | 'gas' | null>(null);
   const [modalForn, setModalForn] = useState<Fornecedor | null>(null);
+  const [modalExpresso, setModalExpresso] = useState<{ forn: Fornecedor; categoria: 'agua' | 'gas' } | null>(null);
   const [fornReivindicar, setFornReivindicar] = useState<Fornecedor | null>(null);
   const [recarregarChave, setRecarregarChave] = useState(0);
   const [userPosition, setUserPosition] = useState<{ lat: number; lng: number } | null>(null);
@@ -710,7 +836,17 @@ export default function AguaGasPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {ordenados.map(({ forn, distancia }) => <CardFornecedor key={forn.id} forn={forn} onPedir={setModalForn} onReivindicar={setFornReivindicar} distanciaKm={distancia} />)}
+            {ordenados.map(({ forn, distancia }) => (
+              <CardFornecedor
+                key={forn.id}
+                forn={forn}
+                categoria={categoria}
+                onPedir={setModalForn}
+                onPedirExpresso={(f, cat) => setModalExpresso({ forn: f, categoria: cat })}
+                onReivindicar={setFornReivindicar}
+                distanciaKm={distancia}
+              />
+            ))}
           </div>
         )}
 
@@ -726,6 +862,9 @@ export default function AguaGasPage() {
       </div>
 
       {modalForn && <ModalPedido forn={modalForn} onClose={() => setModalForn(null)} />}
+      {modalExpresso && (
+        <ModalPedidoExpresso forn={modalExpresso.forn} categoria={modalExpresso.categoria} onClose={() => setModalExpresso(null)} />
+      )}
       {fornReivindicar && (
         <ModalReivindicarAguaGas
           forn={fornReivindicar}

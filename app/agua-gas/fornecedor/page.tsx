@@ -11,9 +11,26 @@
 // persiste de verdade via /api/agua-gas (ver 014_agua_gas_supabase.sql).
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
-import { Store, Package, ShoppingBag, Plus, Trash2, Loader2, Truck, MapPin, Users } from "lucide-react";
+import { Store, Package, ShoppingBag, Plus, Trash2, Loader2, Truck, MapPin, Users, Clock, Wallet, CheckCircle2 } from "lucide-react";
 import { obterUsuarioLocalId } from "@/lib/usuarioLocal";
+
+const DIAS_SEMANA = [
+  { chave: "seg", label: "Segunda" },
+  { chave: "ter", label: "Terça" },
+  { chave: "qua", label: "Quarta" },
+  { chave: "qui", label: "Quinta" },
+  { chave: "sex", label: "Sexta" },
+  { chave: "sab", label: "Sábado" },
+  { chave: "dom", label: "Domingo" },
+] as const;
+
+interface DiaFuncionamento { ativo: boolean; abre: string; fecha: string; }
+type DiasFuncionamento = Record<string, DiaFuncionamento>;
+
+const diasFuncionamentoPadrao = (): DiasFuncionamento =>
+  Object.fromEntries(DIAS_SEMANA.map((d) => [d.chave, { ativo: d.chave !== "dom", abre: "08:00", fecha: "18:00" }]));
 
 const FORMAS_PAGAMENTO = [
   { chave: "aceitaDinheiro", label: "Dinheiro" },
@@ -37,9 +54,13 @@ interface Produto { tipo: string; descricao: string; preco: number; unidade: str
 interface Fornecedor {
   id: string; nome: string; responsavel: string; telefone: string; whatsapp: string;
   bairro: string; cidade: string; descricao: string; horario: string;
+  atendimento24h: boolean; diasFuncionamento: DiasFuncionamento | null;
   temEntrega: boolean; taxaEntrega: number; freteGratisAcima: number;
   produtos: Produto[]; status: string; destaque: boolean;
   latitude: number | null; longitude: number | null;
+  precoAguaPadrao: number | null; descricaoAguaPadrao: string;
+  precoGasPadrao: number | null; descricaoGasPadrao: string;
+  mpConectado: boolean;
   aceitaDinheiro: boolean; aceitaCartao: boolean; aceitaPix: boolean; aceitaValeGas: boolean; aceitaFiado: boolean;
 }
 interface Pedido {
@@ -56,6 +77,7 @@ interface Entregador {
 type Aba = "dados" | "produtos" | "entregadores" | "pedidos";
 
 export default function FornecedorAguaGasPage() {
+  const searchParams = useSearchParams();
   const [donoId, setDonoId] = useState("");
   const [aba, setAba] = useState<Aba>("dados");
   const [fornecedor, setFornecedor] = useState<Fornecedor | null>(null);
@@ -71,6 +93,20 @@ export default function FornecedorAguaGasPage() {
     carregarMeuFornecedor();
   }, [donoId]);
 
+  useEffect(() => {
+    const mpConectado = searchParams?.get("mpConectado");
+    const mpErro = searchParams?.get("mpErro");
+    if (mpConectado) {
+      toast.success("Conta Mercado Pago conectada! Agora você já pode receber pagamentos online no pedido rápido.");
+      if (donoId) carregarMeuFornecedor();
+      window.history.replaceState(null, "", "/agua-gas/fornecedor");
+    } else if (mpErro) {
+      toast.error(mpErro);
+      window.history.replaceState(null, "", "/agua-gas/fornecedor");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, donoId]);
+
   const carregarMeuFornecedor = async () => {
     setLoading(true);
     try {
@@ -83,7 +119,9 @@ export default function FornecedorAguaGasPage() {
     }
   };
 
-  const criarCadastro = async (dados: Omit<Fornecedor, "id" | "status" | "destaque" | "produtos">) => {
+  const criarCadastro = async (
+    dados: Omit<Fornecedor, "id" | "status" | "destaque" | "produtos" | "atendimento24h" | "diasFuncionamento" | "precoAguaPadrao" | "descricaoAguaPadrao" | "precoGasPadrao" | "descricaoGasPadrao" | "mpConectado">
+  ) => {
     setSalvando(true);
     try {
       const resp = await fetch("/api/agua-gas", {
@@ -243,9 +281,11 @@ function Campo({ label, value, onChange, placeholder, type = "text" }: { label: 
   );
 }
 
-function AbaDados({ fornecedor, onSalvar }: { fornecedor: Fornecedor; onSalvar: (p: Partial<Fornecedor>) => void }) {
-  const [form, setForm] = useState(fornecedor);
+function AbaDados({ fornecedor, onSalvar }: { fornecedor: Fornecedor; onSalvar: (p: Partial<Fornecedor>) => Promise<any> }) {
+  const [form, setForm] = useState({ ...fornecedor, diasFuncionamento: fornecedor.diasFuncionamento || diasFuncionamentoPadrao() });
   const [buscandoLocalizacao, setBuscandoLocalizacao] = useState(false);
+  const [freteGratis, setFreteGratis] = useState(fornecedor.taxaEntrega === 0);
+  const [salvando, setSalvando] = useState(false);
 
   const usarLocalizacaoAtual = () => {
     if (!navigator.geolocation) {
@@ -266,17 +306,29 @@ function AbaDados({ fornecedor, onSalvar }: { fornecedor: Fornecedor; onSalvar: 
     );
   };
 
-  const salvar = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSalvar(form);
+  const setDia = (chave: string, patch: Partial<DiaFuncionamento>) => {
+    setForm((p) => ({ ...p, diasFuncionamento: { ...p.diasFuncionamento, [chave]: { ...p.diasFuncionamento![chave], ...patch } } }));
   };
+
+  const salvar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSalvando(true);
+    try {
+      await onSalvar({ ...form, taxaEntrega: freteGratis ? 0 : form.taxaEntrega });
+      toast.success("Dados salvos!");
+    } finally {
+      setSalvando(false);
+    }
+  };
+
   return (
-    <form onSubmit={salvar} className="bg-white rounded-lg shadow p-5 space-y-4 max-w-lg">
-      <Campo label="Nome da empresa" value={form.nome} onChange={(v) => setForm((p) => ({ ...p, nome: v }))} />
-      <Campo label="Telefone" value={form.telefone} onChange={(v) => setForm((p) => ({ ...p, telefone: v }))} />
-      <Campo label="WhatsApp" value={form.whatsapp} onChange={(v) => setForm((p) => ({ ...p, whatsapp: v }))} />
-      <Campo label="Bairro" value={form.bairro} onChange={(v) => setForm((p) => ({ ...p, bairro: v }))} />
-      <Campo label="Horário" value={form.horario} onChange={(v) => setForm((p) => ({ ...p, horario: v }))} />
+    <form onSubmit={salvar} className="bg-white rounded-lg shadow p-5 space-y-5 max-w-lg">
+      <div className="space-y-4">
+        <Campo label="Nome da empresa" value={form.nome} onChange={(v) => setForm((p) => ({ ...p, nome: v }))} />
+        <Campo label="Telefone" value={form.telefone} onChange={(v) => setForm((p) => ({ ...p, telefone: v }))} />
+        <Campo label="WhatsApp" value={form.whatsapp} onChange={(v) => setForm((p) => ({ ...p, whatsapp: v }))} />
+        <Campo label="Bairro" value={form.bairro} onChange={(v) => setForm((p) => ({ ...p, bairro: v }))} />
+      </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Localização</label>
@@ -292,12 +344,67 @@ function AbaDados({ fornecedor, onSalvar }: { fornecedor: Fornecedor; onSalvar: 
         <p className="text-xs text-gray-400 mt-1">Usada pra mostrar a distância até o cliente na hora do pedido.</p>
       </div>
 
-      <label className="flex items-center gap-2 text-sm text-gray-700">
-        <input type="checkbox" checked={form.temEntrega} onChange={(e) => setForm((p) => ({ ...p, temEntrega: e.target.checked }))} />
-        Faço entrega
-      </label>
+      <div className="border-t pt-4">
+        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+          <Clock className="w-4 h-4 text-blue-600" /> Dias e horários de funcionamento
+        </label>
+        <label className="flex items-center gap-2 text-sm text-gray-700 mb-2">
+          <input type="checkbox" checked={form.atendimento24h} onChange={(e) => setForm((p) => ({ ...p, atendimento24h: e.target.checked }))} />
+          Atendimento 24h
+        </label>
+        {!form.atendimento24h && (
+          <div className="space-y-1.5">
+            {DIAS_SEMANA.map((d) => {
+              const dia = form.diasFuncionamento![d.chave];
+              return (
+                <div key={d.chave} className="flex items-center gap-2 text-sm">
+                  <label className="flex items-center gap-1.5 w-24 shrink-0 text-gray-700">
+                    <input type="checkbox" checked={dia.ativo} onChange={(e) => setDia(d.chave, { ativo: e.target.checked })} />
+                    {d.label}
+                  </label>
+                  <input
+                    type="time"
+                    value={dia.abre}
+                    disabled={!dia.ativo}
+                    onChange={(e) => setDia(d.chave, { abre: e.target.value })}
+                    className="border rounded-lg px-2 py-1 text-sm disabled:opacity-40"
+                  />
+                  <span className="text-gray-400">às</span>
+                  <input
+                    type="time"
+                    value={dia.fecha}
+                    disabled={!dia.ativo}
+                    onChange={(e) => setDia(d.chave, { fecha: e.target.value })}
+                    className="border rounded-lg px-2 py-1 text-sm disabled:opacity-40"
+                  />
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
-      <div>
+      <div className="border-t pt-4">
+        <label className="flex items-center gap-2 text-sm text-gray-700">
+          <input type="checkbox" checked={form.temEntrega} onChange={(e) => setForm((p) => ({ ...p, temEntrega: e.target.checked }))} />
+          Faço entrega
+        </label>
+        {form.temEntrega && (
+          <div className="mt-2">
+            <label className="flex items-center gap-2 text-sm text-gray-700">
+              <input type="checkbox" checked={freteGratis} onChange={(e) => setFreteGratis(e.target.checked)} />
+              Frete grátis
+            </label>
+            {!freteGratis && (
+              <div className="mt-2 max-w-[10rem]">
+                <Campo label="Valor do frete (R$)" type="number" value={String(form.taxaEntrega)} onChange={(v) => setForm((p) => ({ ...p, taxaEntrega: Number(v) || 0 }))} />
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="border-t pt-4">
         <label className="block text-sm font-medium text-gray-700 mb-1">Formas de pagamento aceitas</label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
           {FORMAS_PAGAMENTO.map((f) => (
@@ -313,8 +420,59 @@ function AbaDados({ fornecedor, onSalvar }: { fornecedor: Fornecedor; onSalvar: 
         </div>
       </div>
 
-      <button type="submit" className="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">Salvar</button>
+      <div className="border-t pt-4 space-y-3">
+        <p className="text-sm font-medium text-gray-700">Preço do pedido rápido (1 toque)</p>
+        <p className="text-xs text-gray-400 -mt-2">
+          É o preço que aparece quando o cliente aperta direto no botão Água ou Gás na página principal, sem precisar escolher entre vários produtos.
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          <Campo label="Descrição (água)" value={form.descricaoAguaPadrao || ""} onChange={(v) => setForm((p) => ({ ...p, descricaoAguaPadrao: v }))} placeholder="Garrafão 20L" />
+          <Campo label="Preço (R$)" type="number" value={String(form.precoAguaPadrao ?? "")} onChange={(v) => setForm((p) => ({ ...p, precoAguaPadrao: v === "" ? null : Number(v) }))} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <Campo label="Descrição (gás)" value={form.descricaoGasPadrao || ""} onChange={(v) => setForm((p) => ({ ...p, descricaoGasPadrao: v }))} placeholder="Botijão P13" />
+          <Campo label="Preço (R$)" type="number" value={String(form.precoGasPadrao ?? "")} onChange={(v) => setForm((p) => ({ ...p, precoGasPadrao: v === "" ? null : Number(v) }))} />
+        </div>
+      </div>
+
+      <button type="submit" disabled={salvando} className="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium disabled:opacity-60">
+        {salvando ? "Salvando..." : "Salvar"}
+      </button>
+
+      <ContaMercadoPagoCard fornecedor={fornecedor} />
     </form>
+  );
+}
+
+function ContaMercadoPagoCard({ fornecedor }: { fornecedor: Fornecedor }) {
+  if (fornecedor.mpConectado) {
+    return (
+      <div className="border-t pt-4">
+        <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-center gap-2">
+          <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
+          <div>
+            <p className="text-sm font-medium text-green-800">Conta Mercado Pago conectada</p>
+            <p className="text-xs text-green-700">Você já pode receber pagamentos online no pedido rápido, com a taxa da plataforma descontada automaticamente.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="border-t pt-4">
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+        <p className="text-sm font-medium text-blue-800 flex items-center gap-1.5"><Wallet className="w-4 h-4" /> Receber pagamento online</p>
+        <p className="text-xs text-blue-700 mt-1 mb-2">
+          Conecte sua conta Mercado Pago pra receber os pagamentos do pedido rápido direto na sua conta. Sem conectar, esses pedidos só podem ser combinados em dinheiro.
+        </p>
+        <a
+          href={`/api/agua-gas/fornecedor/mercadopago/conectar?fornecedorId=${fornecedor.id}`}
+          className="inline-flex items-center gap-1.5 text-sm bg-blue-600 text-white px-3 py-2 rounded-lg font-medium hover:bg-blue-700"
+        >
+          Conectar Mercado Pago
+        </a>
+      </div>
+    </div>
   );
 }
 
