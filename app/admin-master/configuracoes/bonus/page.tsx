@@ -136,7 +136,7 @@ export default function ConfiguracoesBonusPage() {
                     <span className="text-sm text-gray-500">Quantidade por lote</span>
                     <input type="number" value={b.meta} onChange={(e) => handleMetaChange(b.categoria, parseInt(e.target.value, 10) || 0)} className="w-24 p-1 border rounded text-right font-bold text-indigo-600" step="1" />
                   </div>
-                  <p className="text-xs text-gray-400 mb-3">{b.descricao}</p>
+                  <p className="text-sm text-gray-500 mb-3">{b.descricao}</p>
                   <button onClick={() => handleToggle(b.categoria)} className={`w-full py-1 rounded-lg text-sm font-semibold ${b.ativo ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-500"}`}>
                     {b.ativo ? "Ativo" : "Inativo"}
                   </button>

@@ -30,7 +30,7 @@ export default function AlertsPanel() {
           );
         })}
       </div>
-      <button className="w-full mt-4 text-center text-xs text-indigo-600 hover:text-indigo-700">
+      <button className="w-full mt-4 text-center text-sm text-indigo-600 hover:text-indigo-700">
         Ver todos os alertas ?
       </button>
     </div>

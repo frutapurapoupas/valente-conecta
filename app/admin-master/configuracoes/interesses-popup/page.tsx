@@ -63,7 +63,7 @@ export default function ConfigInteressesPopupPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-700">Pop-up ativo</p>
-              <p className="text-xs text-gray-400 mt-0.5">{ativo ? "Sendo exibido pros usuários." : "Desligado."}</p>
+              <p className="text-sm text-gray-500 mt-0.5">{ativo ? "Sendo exibido pros usuários." : "Desligado."}</p>
             </div>
             <button
               onClick={() => salvar(!ativo)}

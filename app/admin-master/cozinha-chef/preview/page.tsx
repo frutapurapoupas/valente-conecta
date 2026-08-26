@@ -334,7 +334,7 @@ export default function PreviewCardapio() {
                       className={`${design.classes.formInput} pl-8`}
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">{design.titles.precoHint}</p>
+                  <p className="text-sm text-gray-500 mt-1">{design.titles.precoHint}</p>
                 </div>
 
                 <div>

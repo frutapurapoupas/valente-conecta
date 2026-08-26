@@ -8,7 +8,7 @@ function CardMetric({ icon, label, value, tone }: { icon: React.ReactNode; label
     <div className="bg-white rounded-xl border border-gray-200 p-3">
       <div className={`mb-1 ${tone || "text-slate-500"}`}>{icon}</div>
       <p className="text-xl font-bold text-gray-800">{value}</p>
-      <p className="text-xs text-gray-500">{label}</p>
+      <p className="text-sm text-gray-500">{label}</p>
     </div>
   );
 }

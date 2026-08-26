@@ -30,7 +30,7 @@ export default function HeatMap({ cidades }: { cidades: Cidade[] }) {
           <MapPin size={18} className="text-indigo-600" />
           Mapa de Calor por Cidade
         </h3>
-        <span className="text-xs text-gray-400">Mais ativas primeiro</span>
+        <span className="text-sm text-gray-500">Mais ativas primeiro</span>
       </div>
       <div className="space-y-3">
         {cidades.map((cidade) => {

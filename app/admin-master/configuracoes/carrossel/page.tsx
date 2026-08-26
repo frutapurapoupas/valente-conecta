@@ -62,7 +62,7 @@ export default function ConfigCarrosselPage() {
             onChange={(e) => setIntervalo(e.target.value)}
             className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
           />
-          <p className="text-xs text-gray-400 mt-1">Mínimo de 2 segundos. Padrão: 5 segundos.</p>
+          <p className="text-sm text-gray-500 mt-1">Mínimo de 2 segundos. Padrão: 5 segundos.</p>
         </div>
 
         <button

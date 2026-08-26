@@ -76,7 +76,7 @@ export default function MenuAdmin() {
 
         return (
           <div key={categoria}>
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 px-3">
+            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2 px-3">
               {tituloCategoria}
             </h3>
             <div className="space-y-1">

@@ -57,7 +57,7 @@ export default function AdminChatListaPage() {
                 <p className="text-sm font-medium text-gray-800 truncate">
                   Usuário {c.usuarioId.slice(0, 8)}
                 </p>
-                <p className="text-xs text-gray-400 truncate">
+                <p className="text-sm text-gray-500 truncate">
                   {c.ultimoRemetente === "admin" ? "Você: " : ""}
                   {c.ultimaMensagem}
                 </p>
