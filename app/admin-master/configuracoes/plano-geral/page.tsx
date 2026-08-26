@@ -117,7 +117,7 @@ export default function PlanoGeralAdminPage() {
           <tbody>
             {SERVICOS.map((s) => (
               <tr key={s.chave} className="border-b">
-                <td className="py-2 pr-3 text-gray-700">{s.label} <span className="text-gray-400 text-xs">{s.periodo}</span></td>
+                <td className="py-2 pr-3 text-gray-700">{s.label} <span className="text-gray-500 text-sm">{s.periodo}</span></td>
                 {tiers.map((t) => (
                   <td key={t.tier} className="py-2 px-3">
                     <input

@@ -248,7 +248,7 @@ export default function DashboardMetricas() {
                     </div>
                     <div className="text-right">
                       <span className="text-sm font-semibold">{produto.quantity}x</span>
-                      <span className="text-xs text-gray-500 ml-2">{formatCurrency(produto.revenue)}</span>
+                      <span className="text-sm text-gray-500 ml-2">{formatCurrency(produto.revenue)}</span>
                     </div>
                   </div>
                 ))
@@ -264,7 +264,7 @@ export default function DashboardMetricas() {
           <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm mb-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold flex items-center gap-2"><Users size={18} /> Usuários</h2>
-              <span className="flex items-center gap-1 text-xs text-green-600 font-medium">
+              <span className="flex items-center gap-1 text-sm text-green-600 font-medium">
                 <Radio className="w-3 h-3 animate-pulse" /> Ao vivo
               </span>
             </div>

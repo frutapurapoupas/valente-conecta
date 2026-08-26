@@ -36,7 +36,7 @@ export default function AlunosTab({ alunos, empresas }: { alunos: Aluno[]; empre
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
-              <tr className="text-left text-xs text-gray-500 border-b">
+              <tr className="text-left text-sm text-gray-500 border-b">
                 <th className="py-2 pr-3">Nome</th>
                 <th className="py-2 pr-3">E-mail</th>
                 <th className="py-2 pr-3">Academia</th>
@@ -52,7 +52,7 @@ export default function AlunosTab({ alunos, empresas }: { alunos: Aluno[]; empre
                   <td className="py-2 pr-3 text-gray-600">{nomeEmpresa(a.gym_unit_id)}</td>
                   <td className="py-2 pr-3 text-gray-600 capitalize">{a.plano}</td>
                   <td className="py-2 pr-3">
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${a.status === 'ativo' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                    <span className={`text-sm px-2 py-0.5 rounded-full ${a.status === 'ativo' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
                       {a.status}
                     </span>
                   </td>

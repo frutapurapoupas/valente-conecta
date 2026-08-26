@@ -62,7 +62,7 @@ export default function CaronaConfigPage() {
 
       <div className="bg-white rounded-xl border p-4">
         <p className="font-semibold text-gray-800 flex items-center gap-2 mb-1"><Car size={16} className="text-orange-500" /> Taxa do motorista</p>
-        <p className="text-xs text-gray-500 mb-3">Cobrada do motorista pra viagem aparecer na vitrine pública. Zero desliga a cobrança (viagem publica direto).</p>
+        <p className="text-sm text-gray-500 mb-3">Cobrada do motorista pra viagem aparecer na vitrine pública. Zero desliga a cobrança (viagem publica direto).</p>
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-500">R$</span>
           <input type="number" step="0.5" min="0" value={taxaMotorista} onChange={(e) => setTaxaMotorista(parseFloat(e.target.value) || 0)} className="w-32 p-2 border rounded-lg text-right font-bold" />
@@ -71,7 +71,7 @@ export default function CaronaConfigPage() {
 
       <div className="bg-white rounded-xl border p-4">
         <p className="font-semibold text-gray-800 flex items-center gap-2 mb-1"><Unlock size={16} className="text-emerald-500" /> Taxa do passageiro</p>
-        <p className="text-xs text-gray-500 mb-3">Cobrada do caronista pra desbloquear o contato do motorista numa viagem específica. Zero desliga a cobrança (desbloqueia direto).</p>
+        <p className="text-sm text-gray-500 mb-3">Cobrada do caronista pra desbloquear o contato do motorista numa viagem específica. Zero desliga a cobrança (desbloqueia direto).</p>
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-500">R$</span>
           <input type="number" step="0.5" min="0" value={taxaPassageiro} onChange={(e) => setTaxaPassageiro(parseFloat(e.target.value) || 0)} className="w-32 p-2 border rounded-lg text-right font-bold" />

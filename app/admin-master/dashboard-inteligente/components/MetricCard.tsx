@@ -24,10 +24,10 @@ export default function MetricCard({ titulo, valor, icone, cor, tendencia, label
     <div className="bg-white rounded-xl p-4 shadow-sm border hover:shadow-md transition">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs text-gray-500 uppercase tracking-wider">{titulo}</p>
+          <p className="text-sm text-gray-500 uppercase tracking-wider">{titulo}</p>
           <p className="text-2xl font-bold text-gray-800 mt-1">{valor}</p>
           {tendencia !== undefined && (
-            <p className={`text-xs mt-2 ${isTendenciaPositiva ? "text-green-600" : "text-red-600"}`}>
+            <p className={`text-sm mt-2 ${isTendenciaPositiva ? "text-green-600" : "text-red-600"}`}>
               {isTendenciaPositiva ? "↑" : "↓"} {tendencia} {labelTendencia && `• ${labelTendencia}`}
             </p>
           )}

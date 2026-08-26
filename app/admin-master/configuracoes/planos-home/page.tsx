@@ -213,7 +213,7 @@ export default function AdminPlanosHomePage() {
             <div className={`bg-gradient-to-r ${plano.cor} p-4 text-white`}>
               <div className="flex justify-between items-start">
                 <div><h3 className="text-xl font-bold">{plano.nome}</h3><p className="text-sm opacity-90">{plano.descricao}</p></div>
-                {plano.destaque && <span className="bg-yellow-400 text-black text-xs px-2 py-1 rounded-full">â­ MAIS VENDIDO</span>}
+                {plano.destaque && <span className="bg-yellow-400 text-black text-sm px-2 py-1 rounded-full">â­ MAIS VENDIDO</span>}
               </div>
               <div className="mt-2">
                 <span className="text-3xl font-bold">R$ {plano.preco.toFixed(2)}</span>
@@ -238,7 +238,7 @@ export default function AdminPlanosHomePage() {
 
       <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
         <h4 className="font-semibold text-blue-800 text-sm mb-2">📌 Como funciona</h4>
-        <p className="text-xs text-blue-700">Os planos configurados aqui aparecerão automaticamente na página principal. Altere preços, recursos e destaques em tempo real.</p>
+        <p className="text-sm text-blue-700">Os planos configurados aqui aparecerão automaticamente na página principal. Altere preços, recursos e destaques em tempo real.</p>
       </div>
     </div>
   );

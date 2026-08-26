@@ -61,12 +61,12 @@ export default function ConfigQuizPerfilPage() {
       </p>
 
       {loading ? (
-        <p className="text-gray-400 text-sm">Carregando...</p>
+        <p className="text-gray-500 text-sm">Carregando...</p>
       ) : (
         <div className="bg-white border rounded-lg p-5 flex items-center justify-between mb-6">
           <div>
             <p className="text-sm font-medium text-gray-700">Quiz ativo</p>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="text-sm text-gray-500 mt-0.5">
               {ativo ? "Sendo exibido pros novos usuários." : "Desligado — ninguém vê o quiz agora."}
             </p>
           </div>
@@ -94,7 +94,7 @@ export default function ConfigQuizPerfilPage() {
 function CardResumo({ icone, label, valor }: { icone: React.ReactNode; label: string; valor: number }) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-      <div className="flex items-center gap-1.5 text-gray-400 text-xs mb-1">{icone} {label}</div>
+      <div className="flex items-center gap-1.5 text-gray-500 text-sm mb-1">{icone} {label}</div>
       <p className="text-2xl font-bold text-gray-800">{valor}</p>
     </div>
   );
