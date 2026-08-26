@@ -167,6 +167,54 @@ async function processWebhookCaronaDesbloqueio(desbloqueioId: string, payment: a
 	return NextResponse.json({ success: true, desbloqueioId, status: statusPagamento });
 }
 
+// Passageiro pagou a(s) vaga(s) de uma viagem de Carona Solidaria com split
+// automatico pro motorista (ver 080_carona_split_pagamento.sql). Ao
+// confirmar: libera o contato (reaproveita carona_desbloqueios, mesmo
+// mecanismo que a tela ja consulta) e desconta as vagas da viagem.
+async function processWebhookCaronaReserva(reservaId: string, payment: any) {
+	const supabase = createClient();
+	const statusPagamento = normalizeStatus(String(payment?.status || ''));
+
+	const { data: reserva, error } = await supabase
+		.from('carona_reservas')
+		.update({
+			status: statusPagamento === 'pago' ? 'pago' : 'pendente',
+			mp_payment_id: String(payment?.id || ''),
+			updated_at: new Date().toISOString(),
+		})
+		.eq('id', reservaId)
+		.select('*')
+		.single();
+
+	if (error || !reserva) {
+		return NextResponse.json({ success: true, ignored: true, reason: 'reserva nao encontrada' });
+	}
+
+	if (statusPagamento === 'pago') {
+		// Libera o contato pra essa viagem -- mesma tabela/checagem que
+		// GET /api/carona/desbloqueios ja usa, entao a tela nao precisa mudar.
+		const { data: desbloqueioExistente } = await supabase
+			.from('carona_desbloqueios')
+			.select('id')
+			.eq('viagem_id', reserva.viagem_id)
+			.eq('usuario_id', reserva.usuario_id)
+			.maybeSingle();
+		if (desbloqueioExistente) {
+			await supabase.from('carona_desbloqueios').update({ status: 'pago', updated_at: new Date().toISOString() }).eq('id', desbloqueioExistente.id);
+		} else {
+			await supabase.from('carona_desbloqueios').insert({ viagem_id: reserva.viagem_id, usuario_id: reserva.usuario_id, valor: 0, status: 'pago' });
+		}
+
+		const { data: viagem } = await supabase.from('carona_viagens').select('vagas_disponiveis').eq('id', reserva.viagem_id).maybeSingle();
+		if (viagem) {
+			const restantes = Math.max(0, Number(viagem.vagas_disponiveis) - Number(reserva.vagas));
+			await supabase.from('carona_viagens').update({ vagas_disponiveis: restantes, updated_at: new Date().toISOString() }).eq('id', reserva.viagem_id);
+		}
+	}
+
+	return NextResponse.json({ success: true, reservaId, status: statusPagamento });
+}
+
 // Cliente ou motorista pagou a taxa de uso da plataforma no Moto Taxi (ver
 // lib/mototaxi/taxaUso.ts) -- confirma a linha em mototaxi_taxas_uso.
 async function processWebhookMototaxiTaxa(taxaId: string, payment: any) {
@@ -269,6 +317,9 @@ async function processWebhook(request: NextRequest, payload: any) {
 		}
 		if (pedidoId.startsWith('mototaxi_taxa_')) {
 			return processWebhookMototaxiTaxa(pedidoId.replace('mototaxi_taxa_', ''), payment);
+		}
+		if (pedidoId.startsWith('carona_reserva_')) {
+			return processWebhookCaronaReserva(pedidoId.replace('carona_reserva_', ''), payment);
 		}
 
 		const pedidos = readPedidos();

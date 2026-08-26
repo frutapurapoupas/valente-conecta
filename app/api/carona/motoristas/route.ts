@@ -25,7 +25,11 @@ export async function GET(request: NextRequest) {
   const { data, error } = await query.maybeSingle();
   if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
 
-  return NextResponse.json({ success: true, data: data || null });
+  // mp_access_token/mp_refresh_token NUNCA saem pro navegador -- so' o
+  // booleano de "esta conectado" (ver 080_carona_split_pagamento.sql).
+  if (!data) return NextResponse.json({ success: true, data: null });
+  const { mp_access_token, mp_refresh_token, ...motoristaSemToken } = data as any;
+  return NextResponse.json({ success: true, data: { ...motoristaSemToken, mp_conectado: !!mp_access_token } });
 }
 
 export async function POST(request: NextRequest) {

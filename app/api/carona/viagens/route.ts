@@ -62,9 +62,11 @@ export async function GET(request: NextRequest) {
   // GET /api/carona/desbloqueios). Se telefone entrasse nessa resposta,
   // qualquer um leria o numero sem pagar, o que quebra o modelo de negocio
   // inteiro dessa funcionalidade.
+  // mp_access_token entra na consulta so' pra virar o booleano "mp_conectado"
+  // abaixo -- NUNCA sai na resposta (e' credencial do motorista).
   let query = supabase
     .from('carona_viagens')
-    .select('*, motorista:carona_motoristas(id, nome, foto_url, veiculo_foto_url, veiculo, placa)')
+    .select('*, motorista:carona_motoristas(id, nome, foto_url, veiculo_foto_url, veiculo, placa, mp_access_token)')
     .order('data_viagem', { ascending: true });
 
   if (motoristaId) {
@@ -78,7 +80,14 @@ export async function GET(request: NextRequest) {
   const { data, error } = await query;
   if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
 
-  return NextResponse.json({ success: true, data: data || [] });
+  const semToken = (data || []).map((viagem: any) => {
+    const motorista = viagem.motorista;
+    if (!motorista) return viagem;
+    const { mp_access_token, ...motoristaSemToken } = motorista;
+    return { ...viagem, motorista: { ...motoristaSemToken, mp_conectado: !!mp_access_token } };
+  });
+
+  return NextResponse.json({ success: true, data: semToken });
 }
 
 export async function POST(request: NextRequest) {

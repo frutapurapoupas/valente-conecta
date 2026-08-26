@@ -25,7 +25,7 @@ interface Viagem {
   preco_sugerido_vaga: number | null;
   observacoes: string | null;
   status?: string;
-  motorista: { id: string; nome: string; foto_url: string; veiculo_foto_url: string; veiculo: string; placa: string };
+  motorista: { id: string; nome: string; foto_url: string; veiculo_foto_url: string; veiculo: string; placa: string; mp_conectado?: boolean };
 }
 
 interface Solicitacao {
@@ -49,6 +49,8 @@ export default function CaronaSolidariaPage() {
   const [buscaDestino, setBuscaDestino] = useState("");
   const [desbloqueios, setDesbloqueios] = useState<Record<string, string | null>>({});
   const [desbloqueando, setDesbloqueando] = useState<string | null>(null);
+  const [vagasSelecionadas, setVagasSelecionadas] = useState<Record<string, number>>({});
+  const [reservando, setReservando] = useState<string | null>(null);
   const [mostrarSolicitar, setMostrarSolicitar] = useState(false);
   const [minhasSolicitacoes, setMinhasSolicitacoes] = useState<Solicitacao[]>([]);
   const [viagensAceitas, setViagensAceitas] = useState<Record<string, Viagem>>({});
@@ -172,6 +174,46 @@ export default function CaronaSolidariaPage() {
       toast.error(error.message || "Erro ao desbloquear contato");
     } finally {
       setDesbloqueando(null);
+    }
+  };
+
+  const ajustarVagas = (viagemId: string, delta: number, max: number) => {
+    setVagasSelecionadas((prev) => {
+      const atual = prev[viagemId] || 1;
+      const novo = Math.min(max, Math.max(1, atual + delta));
+      return { ...prev, [viagemId]: novo };
+    });
+  };
+
+  // Reserva e paga a(s) vaga(s) direto na conta do motorista (split
+  // automático via Mercado Pago, ver app/api/carona/reservas/route.ts) —
+  // só aparece pra viagens cujo motorista já conectou a própria conta.
+  const reservar = async (viagem: Viagem) => {
+    if (!usuario) {
+      toast.error("Complete seu cadastro no app pra reservar uma vaga.");
+      return;
+    }
+    setReservando(viagem.id);
+    try {
+      const resp = await fetch("/api/carona/reservas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          usuarioId: usuario.id,
+          viagemId: viagem.id,
+          vagas: vagasSelecionadas[viagem.id] || 1,
+          nomeUsuario: usuario.nome,
+        }),
+      });
+      const resultado = await resp.json();
+      if (!resultado.success) throw new Error(resultado.error);
+      if (resultado.checkoutUrl) {
+        window.location.href = resultado.checkoutUrl;
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao reservar vaga");
+    } finally {
+      setReservando(null);
     }
   };
 
@@ -339,6 +381,39 @@ export default function CaronaSolidariaPage() {
                       >
                         <MessageCircle className="w-4 h-4" /> Chamar no WhatsApp
                       </a>
+                    </div>
+                  ) : v.motorista?.mp_conectado && v.preco_sugerido_vaga ? (
+                    <div className="mt-3 pt-3 border-t">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-gray-600">Quantas vagas?</span>
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => ajustarVagas(v.id, -1, v.vagas_disponiveis)}
+                            className="w-7 h-7 rounded-full bg-gray-100 text-gray-700 font-bold flex items-center justify-center"
+                          >
+                            −
+                          </button>
+                          <span className="font-semibold text-gray-800 w-4 text-center">{vagasSelecionadas[v.id] || 1}</span>
+                          <button
+                            type="button"
+                            onClick={() => ajustarVagas(v.id, 1, v.vagas_disponiveis)}
+                            className="w-7 h-7 rounded-full bg-gray-100 text-gray-700 font-bold flex items-center justify-center"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => reservar(v)}
+                        disabled={reservando === v.id}
+                        className="w-full bg-green-600 text-white py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                        {reservando === v.id
+                          ? "Abrindo pagamento..."
+                          : `Reservar e pagar · R$ ${(Number(v.preco_sugerido_vaga) * (vagasSelecionadas[v.id] || 1)).toFixed(2)}`}
+                      </button>
                     </div>
                   ) : (
                     <button

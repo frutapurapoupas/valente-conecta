@@ -13,9 +13,9 @@
 // direto pro segundo passo.
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
-import { AlertTriangle, Car, MapPin, Bell, Send } from "lucide-react";
+import { AlertTriangle, Car, MapPin, Bell, Send, Wallet, CheckCircle2 } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { MidiaUploader } from "@/components/catalogo/MidiaUploader";
 import type { MidiaItem } from "@/lib/catalogo/marketplaceTypes";
@@ -48,6 +48,7 @@ function tocarBeep() {
 
 export default function NovaViagemCaronaPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [usuario, setUsuario] = useState<any>(null);
   const [motorista, setMotorista] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -72,6 +73,19 @@ export default function NovaViagemCaronaPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  // Volta do OAuth do Mercado Pago (ver
+  // app/api/carona/motorista/mercadopago/callback/route.ts).
+  useEffect(() => {
+    if (searchParams?.get("mpConectado")) {
+      toast.success("Conta Mercado Pago conectada! Agora você pode receber o valor da vaga direto pelo app.");
+      router.replace("/carona/motorista/nova-viagem");
+    } else if (searchParams?.get("mpErro")) {
+      toast.error(searchParams.get("mpErro") || "Erro ao conectar Mercado Pago");
+      router.replace("/carona/motorista/nova-viagem");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-600" /></div>;
   }
@@ -94,6 +108,7 @@ export default function NovaViagemCaronaPage() {
           <FormularioCadastroMotorista usuario={usuario} onCadastrado={setMotorista} />
         ) : (
           <>
+            <ContaMercadoPagoCard motorista={motorista} />
             <PedidosAbertos onAceitar={setSolicitacaoAceita} />
             <FormularioViagem
               motorista={motorista}
@@ -105,6 +120,35 @@ export default function NovaViagemCaronaPage() {
           </>
         )}
       </main>
+    </div>
+  );
+}
+
+function ContaMercadoPagoCard({ motorista }: { motorista: any }) {
+  if (motorista.mp_conectado) {
+    return (
+      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center gap-2 text-emerald-800 text-sm">
+        <CheckCircle2 size={16} className="shrink-0" />
+        Conta Mercado Pago conectada — passageiros podem reservar e pagar a vaga direto pelo app, o valor cai na sua conta.
+      </div>
+    );
+  }
+  return (
+    <div className="bg-white rounded-2xl shadow p-4 space-y-2">
+      <div className="flex items-center gap-2">
+        <Wallet size={16} className="text-blue-600" />
+        <p className="font-semibold text-sm text-gray-800">Receba o valor da vaga direto na sua conta</p>
+      </div>
+      <p className="text-sm text-gray-500">
+        Conecte sua conta Mercado Pago pra deixar os passageiros reservarem e pagarem a vaga pelo app — o dinheiro cai
+        direto pra você, sem precisar combinar em dinheiro. Sem conectar, a viagem continua funcionando do jeito de hoje.
+      </p>
+      <a
+        href={`/api/carona/motorista/mercadopago/conectar?motoristaId=${motorista.id}`}
+        className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+      >
+        <Wallet size={14} /> Conectar Mercado Pago
+      </a>
     </div>
   );
 }
