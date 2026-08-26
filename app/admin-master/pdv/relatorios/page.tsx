@@ -47,7 +47,7 @@ interface Relatorio {
 function TooltipPadrao({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white p-2.5 rounded-lg shadow-lg border border-gray-200 text-xs">
+    <div className="bg-white p-2.5 rounded-lg shadow-lg border border-gray-200 text-sm">
       {label && <p className="font-semibold text-gray-800 mb-1">{label}</p>}
       {payload.map((entry: any, i: number) => (
         <p key={i} style={{ color: entry.color || entry.payload?.fill }}>
@@ -78,8 +78,8 @@ export default function RelatorioCatalogoPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [busca]);
 
-  if (loading && !relatorio) return <p className="p-6 text-gray-400 text-sm">Carregando...</p>;
-  if (!relatorio) return <p className="p-6 text-gray-400 text-sm">Nenhum dado ainda.</p>;
+  if (loading && !relatorio) return <p className="p-6 text-gray-500 text-sm">Carregando...</p>;
+  if (!relatorio) return <p className="p-6 text-gray-500 text-sm">Nenhum dado ainda.</p>;
 
   const { totais, porSegmento, maisReutilizados, produtos } = relatorio;
 
@@ -120,7 +120,7 @@ export default function RelatorioCatalogoPage() {
             <Users className="w-4 h-4 text-emerald-600" /> Mais reutilizados entre comerciantes
           </h3>
           {maisReutilizados.length === 0 ? (
-            <p className="text-sm text-gray-400 py-8 text-center">
+            <p className="text-sm text-gray-500 py-8 text-center">
               Nenhum produto ainda reutilizado por mais de um comerciante — a colaboração aparece aqui conforme o catálogo cresce.
             </p>
           ) : (
@@ -131,7 +131,7 @@ export default function RelatorioCatalogoPage() {
                     {p.foto_url && <img src={p.foto_url} alt="" className="w-full h-full object-cover" />}
                   </div>
                   <span className="flex-1 truncate text-gray-700">{p.nome}</span>
-                  <span className="text-xs font-semibold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full shrink-0">
+                  <span className="text-sm font-semibold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full shrink-0">
                     {p.comerciantes} lojas
                   </span>
                 </div>
@@ -157,7 +157,7 @@ export default function RelatorioCatalogoPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs text-gray-400 border-b">
+              <tr className="text-left text-sm text-gray-500 border-b">
                 <th className="pb-2 pr-2">Produto</th>
                 <th className="pb-2 pr-2">Segmento</th>
                 <th className="pb-2 pr-2">SKU</th>
@@ -175,13 +175,13 @@ export default function RelatorioCatalogoPage() {
                     <span className="text-gray-700">{p.nome}</span>
                   </td>
                   <td className="py-2 pr-2 text-gray-500">{LABEL_SEGMENTO[p.segmento] || p.segmento}</td>
-                  <td className="py-2 pr-2 text-gray-500 font-mono text-xs">{p.sku}</td>
-                  <td className="py-2 pr-2 text-gray-500 font-mono text-xs">{p.ean || "—"}</td>
+                  <td className="py-2 pr-2 text-gray-500 font-mono text-sm">{p.sku}</td>
+                  <td className="py-2 pr-2 text-gray-500 font-mono text-sm">{p.ean || "—"}</td>
                   <td className="py-2 text-right text-gray-700 font-medium">{p.comerciantes}</td>
                 </tr>
               ))}
               {produtos.length === 0 && (
-                <tr><td colSpan={5} className="py-8 text-center text-gray-400">Nenhum produto encontrado.</td></tr>
+                <tr><td colSpan={5} className="py-8 text-center text-gray-500">Nenhum produto encontrado.</td></tr>
               )}
             </tbody>
           </table>
@@ -194,7 +194,7 @@ export default function RelatorioCatalogoPage() {
 function CardStat({ icone, label, valor }: { icone: React.ReactNode; label: string; valor: number }) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-      <div className="flex items-center gap-1.5 text-gray-400 text-xs mb-1">{icone} {label}</div>
+      <div className="flex items-center gap-1.5 text-gray-500 text-sm mb-1">{icone} {label}</div>
       <p className="text-2xl font-bold text-gray-800">{valor}</p>
     </div>
   );

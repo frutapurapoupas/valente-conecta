@@ -257,13 +257,13 @@ export default function EstoquePage() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produto</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoria</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantidade</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Conversao</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Preco</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acoes</th>
+              <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">Produto</th>
+              <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">Categoria</th>
+              <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">Quantidade</th>
+              <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">Conversao</th>
+              <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">Preco</th>
+              <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">Acoes</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -285,14 +285,14 @@ export default function EstoquePage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {item.quantidade ?? 0} {item.unidade || 'un'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-400">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     1 {item.unidade} = {item.fator_conversao ?? 1} {item.unidade_uso}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     R$ {(item.preco_unitario ?? 0).toFixed(2)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
+                    <span className={`px-2 py-1 inline-flex text-sm leading-5 font-semibold rounded-full
                       ${(item.quantidade ?? 0) > (item.quantidade_minima ?? 0) ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                       {(item.quantidade ?? 0) > (item.quantidade_minima ?? 0) ? 'OK' : 'Baixo'}
                     </span>
@@ -393,7 +393,7 @@ export default function EstoquePage() {
                 </select>
               </label>
             </div>
-            <p className="text-xs text-gray-500">
+            <p className="text-sm text-gray-500">
               Equivale a: 1 {unidadeCompra || 'compra'} = {fatorConversaoCalculado} {unidadeUso || 'uso'}
             </p>
 
