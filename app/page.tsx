@@ -70,10 +70,16 @@ export default function HomePage() {
   const [showTodasCategorias, setShowTodasCategorias] = useState(false);
   const [saldoMoedaConecta, setSaldoMoedaConecta] = useState(0);
   const [siglaMoedaConecta, setSiglaMoedaConecta] = useState("MC");
+  // Nome de quem esta logado, pra mostrar em cima do badge de cidade no
+  // cabecalho — appContext.user nunca e' preenchido hoje (sem login real
+  // ligado a ele, mesmo caso ja documentado em app/qr-code/page.tsx), entao
+  // usa getCurrentUser() (localStorage, sessao real gravada no cadastro).
+  const [nomeUsuario, setNomeUsuario] = useState<string | null>(null);
 
   useEffect(() => {
     const usuarioReal = getCurrentUser();
     if (!usuarioReal) return;
+    setNomeUsuario(usuarioReal.nome || null);
     fetch(`/api/moeda-conecta/saldo?usuarioId=${usuarioReal.id}`)
       .then((r) => r.json())
       .then((res) => {
@@ -240,13 +246,18 @@ export default function HomePage() {
               <ContadorUsuarios />
             </div>
           </div>
-          <button
-            onClick={() => router.push("/profile")}
-            className="flex items-center gap-1 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full text-xs font-medium border border-blue-100"
-          >
-            <MapPin size={13} className="text-blue-600" />
-            <span>Valente, BA</span>
-          </button>
+          <div className="flex flex-col items-end gap-1">
+            {nomeUsuario && (
+              <span className="text-xs font-semibold text-slate-700 max-w-[140px] truncate">{nomeUsuario}</span>
+            )}
+            <button
+              onClick={() => router.push("/profile")}
+              className="flex items-center gap-1 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full text-xs font-medium border border-blue-100"
+            >
+              <MapPin size={13} className="text-blue-600" />
+              <span>Valente, BA</span>
+            </button>
+          </div>
         </div>
 
         <div className="relative flex items-center bg-slate-100 border border-slate-200 rounded-xl">
