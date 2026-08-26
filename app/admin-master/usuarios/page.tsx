@@ -81,10 +81,10 @@ export default function AdminUsuariosPage() {
           <h1 className="text-2xl font-bold text-gray-800">Usuários</h1>
           <p className="text-sm text-gray-500">Cadastros reais, atualizando automaticamente.</p>
         </div>
-        <div className="flex items-center gap-1.5 text-xs text-green-600 font-medium">
+        <div className="flex items-center gap-1.5 text-sm text-green-600 font-medium">
           <Radio className="w-3.5 h-3.5 animate-pulse" /> Ao vivo
           {ultimaAtualizacao && (
-            <span className="text-gray-400 font-normal">
+            <span className="text-gray-500 font-normal">
               · última atualização {ultimaAtualizacao.toLocaleTimeString("pt-BR")}
             </span>
           )}
@@ -131,9 +131,9 @@ export default function AdminUsuariosPage() {
 
       <div className="bg-white border rounded-lg divide-y">
         {carregando ? (
-          <p className="p-4 text-sm text-gray-400">Carregando...</p>
+          <p className="p-4 text-sm text-gray-500">Carregando...</p>
         ) : usuarios.length === 0 ? (
-          <p className="p-4 text-sm text-gray-400">Nenhum usuário encontrado.</p>
+          <p className="p-4 text-sm text-gray-500">Nenhum usuário encontrado.</p>
         ) : (
           usuarios.map((u) => {
             const aberto = expandidoId === u.id;
@@ -145,34 +145,34 @@ export default function AdminUsuariosPage() {
                 >
                   <div className="flex-1 min-w-[180px]">
                     <p className="text-sm font-medium text-gray-800">{u.nome}</p>
-                    <p className="text-xs text-gray-500">{u.whatsapp}</p>
+                    <p className="text-sm text-gray-500">{u.whatsapp}</p>
                   </div>
-                  <span className="flex items-center gap-1 text-xs text-gray-500">
+                  <span className="flex items-center gap-1 text-sm text-gray-500">
                     <MapPin className="w-3 h-3" /> {u.cidade_base || "—"}
                     {u.cidades_adicionais.length > 0 && ` +${u.cidades_adicionais.length}`}
                   </span>
                   {u.planos_ativos.length > 0 && (
-                    <span className="flex items-center gap-1 text-xs text-blue-600">
+                    <span className="flex items-center gap-1 text-sm text-blue-600">
                       <CreditCard className="w-3 h-3" /> {u.planos_ativos.length} plano(s)
                     </span>
                   )}
-                  <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${STATUS_COR[u.status]}`}>
+                  <span className={`text-sm px-2 py-1 rounded-full whitespace-nowrap ${STATUS_COR[u.status]}`}>
                     {STATUS_LABEL[u.status]}
                   </span>
-                  <span className="text-xs text-gray-400 whitespace-nowrap">
+                  <span className="text-sm text-gray-500 whitespace-nowrap">
                     {new Date(u.created_at).toLocaleDateString("pt-BR")}
                   </span>
                   {aberto ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
                 </button>
 
                 {aberto && (
-                  <div className="px-4 pb-4 bg-gray-50 grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2 text-xs text-gray-600">
+                  <div className="px-4 pb-4 bg-gray-50 grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2 text-sm text-gray-600">
                     <p className="flex items-center gap-1.5">
                       <Phone className="w-3.5 h-3.5 text-gray-400" /> {u.whatsapp}
                       {u.whatsapp_confirmado ? (
                         <span className="text-green-600">(confirmado)</span>
                       ) : (
-                        <span className="text-gray-400">(não confirmado)</span>
+                        <span className="text-gray-500">(não confirmado)</span>
                       )}
                     </p>
                     {u.telefone && (

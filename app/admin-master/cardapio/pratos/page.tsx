@@ -387,7 +387,7 @@ export default function AdminPratosPage() {
                       <span className="text-2xl">{getCategoriaIcone(prato.categoria)}</span>
                       <div>
                         <h3 className="font-bold text-gray-800">{prato.nome}</h3>
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${getCategoriaCor(prato.categoria)}`}>
+                        <span className={`text-sm px-2 py-0.5 rounded-full ${getCategoriaCor(prato.categoria)}`}>
                           {prato.categoria}
                         </span>
                       </div>
@@ -406,28 +406,28 @@ export default function AdminPratosPage() {
                   <div className="mt-3 p-3 bg-gray-50 rounded-lg">
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div>
-                        <p className="text-gray-400 text-xs">Custo Total</p>
+                        <p className="text-gray-500 text-sm">Custo Total</p>
                         <p className="font-medium text-red-500">R$ {prato.custoTotal.toFixed(2)}</p>
                       </div>
                       <div>
-                        <p className="text-gray-400 text-xs">Margem</p>
+                        <p className="text-gray-500 text-sm">Margem</p>
                         <p className={`font-medium ${prato.margemLucro >= 50 ? "text-green-500" : "text-yellow-500"}`}>
                           {prato.margemLucro.toFixed(0)}%
                         </p>
                       </div>
                       <div>
-                        <p className="text-gray-400 text-xs">Venda Normal</p>
+                        <p className="text-gray-500 text-sm">Venda Normal</p>
                         <p className="font-bold text-orange-500">R$ {prato.precoVenda.toFixed(2)}</p>
                       </div>
                       <div>
-                        <p className="text-gray-400 text-xs">Revendedor</p>
+                        <p className="text-gray-500 text-sm">Revendedor</p>
                         <p className="font-bold text-green-600">R$ {prato.precoRevendedor.toFixed(2)}</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="mt-3 pt-3 border-t flex justify-between items-center">
-                    <p className="text-xs text-gray-500 flex items-center gap-1">
+                    <p className="text-sm text-gray-500 flex items-center gap-1">
                       <Scale size={12} /> {prato.ingredientes.length} ingredientes
                     </p>
                     <div className="flex gap-2">
@@ -522,7 +522,7 @@ export default function AdminPratosPage() {
                 {/* Lista de ingredientes cadastrados */}
                 <div className="space-y-2 max-h-48 overflow-y-auto mb-3">
                   {ingredientes.length === 0 ? (
-                    <p className="text-sm text-gray-400 text-center py-4">
+                    <p className="text-sm text-gray-500 text-center py-4">
                       Nenhum ingrediente adicionado
                     </p>
                   ) : (
@@ -536,7 +536,7 @@ export default function AdminPratosPage() {
                         </div>
                         <div className="flex items-center gap-2">
                           <div className="flex items-center gap-1">
-                            <span className="text-xs text-gray-400">R$</span>
+                            <span className="text-sm text-gray-500">R$</span>
                             <input
                               type="number"
                               step="0.01"
@@ -544,7 +544,7 @@ export default function AdminPratosPage() {
                               onChange={(e) => atualizarCustoIngrediente(ing.id, parseFloat(e.target.value))}
                               className="w-20 p-1 border rounded text-sm text-right"
                             />
-                            <span className="text-xs text-gray-400">/{ing.unidade === "g" ? "kg" : ing.unidade}</span>
+                            <span className="text-sm text-gray-500">/{ing.unidade === "g" ? "kg" : ing.unidade}</span>
                           </div>
                           <span className="text-sm text-green-600 w-20 text-right">
                             R$ {calcularCustoIngrediente(ing).toFixed(2)}
@@ -603,7 +603,7 @@ export default function AdminPratosPage() {
                       <Plus size={14} /> Add
                     </button>
                   </div>
-                  <p className="text-xs text-gray-400 mt-2">
+                  <p className="text-sm text-gray-500 mt-2">
                     * Deixe o preço em branco para sugestão automática baseada no nome
                   </p>
                 </div>
@@ -653,7 +653,7 @@ export default function AdminPratosPage() {
                     <p className="text-sm text-green-800">
                       💰 Preço sugerido: <strong>R$ {precoSugeridoAtual.toFixed(2)}</strong>
                       <br />
-                      <span className="text-xs">(Custo: R$ {custoTotalAtual.toFixed(2)} + Margem: {margemDesejada}%)</span>
+                      <span className="text-sm">(Custo: R$ {custoTotalAtual.toFixed(2)} + Margem: {margemDesejada}%)</span>
                     </p>
                   </div>
                 )}
@@ -669,7 +669,7 @@ export default function AdminPratosPage() {
                     onChange={(e) => setPrecoVendaManual(parseFloat(e.target.value))}
                     className="w-full p-2 border rounded-lg"
                   />
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-sm text-gray-500 mt-1">
                     Custo total do prato: <strong>R$ {custoTotalAtual.toFixed(2)}</strong>
                   </p>
                 </div>
