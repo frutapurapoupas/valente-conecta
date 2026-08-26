@@ -177,7 +177,7 @@ export default function ConfigurarCardapioPage() {
             <AlertCircle size={20} className="text-yellow-600" />
             <div>
               <p className="text-sm text-yellow-800 font-medium">Configuração incompleta</p>
-              <p className="text-xs text-yellow-600">
+              <p className="text-sm text-yellow-600">
                 Faltam pratos para os dias: {diasIncompletos.join(", ")}
               </p>
             </div>
@@ -190,7 +190,7 @@ export default function ConfigurarCardapioPage() {
             <CheckCircle size={20} className="text-green-600" />
             <div>
               <p className="text-sm text-green-800 font-medium">Cardápio salvo com sucesso!</p>
-              <p className="text-xs text-green-600">O cardápio do cliente foi atualizado automaticamente</p>
+              <p className="text-sm text-green-600">O cardápio do cliente foi atualizado automaticamente</p>
             </div>
           </div>
         )}
@@ -249,7 +249,7 @@ export default function ConfigurarCardapioPage() {
                           ))}
                         </select>
                         {pratoCarneSelecionado && (
-                          <p className="text-xs text-gray-400 mt-1">
+                          <p className="text-sm text-gray-500 mt-1">
                             {pratoCarneSelecionado.descricao.substring(0, 50)}...
                           </p>
                         )}
@@ -269,7 +269,7 @@ export default function ConfigurarCardapioPage() {
                           ))}
                         </select>
                         {pratoFrangoSelecionado && (
-                          <p className="text-xs text-gray-400 mt-1">
+                          <p className="text-sm text-gray-500 mt-1">
                             {pratoFrangoSelecionado.descricao.substring(0, 50)}...
                           </p>
                         )}
@@ -285,7 +285,7 @@ export default function ConfigurarCardapioPage() {
                           />
                           <span className="text-sm text-gray-500">marmitas</span>
                         </div>
-                        <p className="text-xs text-gray-400 mt-1">
+                        <p className="text-sm text-gray-500 mt-1">
                           Faturamento estimado: R$ {((previsaoVendas[dia] || 0) * 25).toFixed(2)}
                         </p>
                       </td>
@@ -306,15 +306,15 @@ export default function ConfigurarCardapioPage() {
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-white rounded-lg p-2 text-center">
-                <p className="text-xs text-gray-500">Total</p>
+                <p className="text-sm text-gray-500">Total</p>
                 <p className="text-lg font-bold text-blue-600">{totalSemanal} marmitas</p>
               </div>
               <div className="bg-white rounded-lg p-2 text-center">
-                <p className="text-xs text-gray-500">Média Diária</p>
+                <p className="text-sm text-gray-500">Média Diária</p>
                 <p className="text-lg font-bold text-green-600">{mediaDiaria} marmitas</p>
               </div>
               <div className="bg-white rounded-lg p-2 text-center">
-                <p className="text-xs text-gray-500">Faturamento</p>
+                <p className="text-sm text-gray-500">Faturamento</p>
                 <p className="text-lg font-bold text-purple-600">R$ {faturamentoEstimado.toFixed(0)}</p>
               </div>
             </div>
@@ -340,7 +340,7 @@ export default function ConfigurarCardapioPage() {
             <h3 className="font-semibold text-gray-800 flex items-center gap-2">
               <Clock size={18} /> Preview do Cardápio do Cliente
             </h3>
-            <p className="text-xs text-gray-500">Como ficará visível para o cliente</p>
+            <p className="text-sm text-gray-500">Como ficará visível para o cliente</p>
           </div>
           <div className="p-4 overflow-x-auto">
             <div className="flex gap-4">
@@ -354,20 +354,20 @@ export default function ConfigurarCardapioPage() {
                     <p className="font-bold text-center text-gray-700">{dia}</p>
                     <div className="mt-2 space-y-2">
                       {pratoCarne ? (
-                        <div className="text-xs p-2 bg-white rounded">
+                        <div className="text-sm p-2 bg-white rounded">
                           <span className="text-red-500">🥩</span> {pratoCarne.nome}
                         </div>
                       ) : (
-                        <div className="text-xs p-2 bg-gray-200 rounded text-gray-400 text-center">
+                        <div className="text-sm p-2 bg-gray-200 rounded text-gray-500 text-center">
                           Aguardando configuração
                         </div>
                       )}
                       {pratoFrango ? (
-                        <div className="text-xs p-2 bg-white rounded">
+                        <div className="text-sm p-2 bg-white rounded">
                           <span className="text-orange-500">ðŸ—</span> {pratoFrango.nome}
                         </div>
                       ) : (
-                        <div className="text-xs p-2 bg-gray-200 rounded text-gray-400 text-center">
+                        <div className="text-sm p-2 bg-gray-200 rounded text-gray-500 text-center">
                           Aguardando configuração
                         </div>
                       )}

@@ -228,7 +228,7 @@ export default function ReceitaFormularioCanonico({
                 {receita.imagem ? (
                   <img src={receita.imagem} alt="Preview" className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-xs text-gray-400">Sem imagem</span>
+                  <span className="text-sm text-gray-500">Sem imagem</span>
                 )}
               </div>
               <div>
@@ -330,11 +330,11 @@ export default function ReceitaFormularioCanonico({
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex justify-between items-center mb-1">
             <h2 className="font-semibold">Indicadores Financeiros</h2>
-            <span className={`text-xs px-2 py-1 rounded-full border ${margemBadge.cor}`}>
+            <span className={`text-sm px-2 py-1 rounded-full border ${margemBadge.cor}`}>
               {margem.toFixed(1)}%
             </span>
           </div>
-          <p className="text-xs text-gray-500 mb-3">{margemBadge.texto}</p>
+          <p className="text-sm text-gray-500 mb-3">{margemBadge.texto}</p>
 
           <div className="flex items-center gap-2 text-sm border-b border-gray-100 pb-3 mb-3">
             <label className="flex items-center gap-1 text-gray-600 whitespace-nowrap">
@@ -348,18 +348,18 @@ export default function ReceitaFormularioCanonico({
               />
               %
             </label>
-            <span className="text-gray-400">{'->'}</span>
+            <span className="text-gray-500">{'->'}</span>
             <span className="font-medium">R$ {precoSugeridoCalculado.toFixed(2)}</span>
             <button
               type="button"
-              className="ml-auto text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded-lg px-3 py-1 hover:bg-blue-100"
+              className="ml-auto text-sm bg-blue-50 text-blue-700 border border-blue-200 rounded-lg px-3 py-1 hover:bg-blue-100"
               onClick={() => onChange({ ...receita, preco_sugerido: Number(precoSugeridoCalculado.toFixed(2)) })}
             >
               Usar sugestao
             </button>
           </div>
 
-          <h3 className="text-xs font-semibold text-gray-500 uppercase mb-1">Por porcao (padrao)</h3>
+          <h3 className="text-sm font-semibold text-gray-500 uppercase mb-1">Por porcao (padrao)</h3>
           <div className="space-y-1 text-sm">
             <div className="flex justify-between"><span>Custo por porcao</span><span>R$ {custoPorUnidade.toFixed(2)}</span></div>
             <div className="flex justify-between"><span>Preco sugerido</span><span>R$ {precoSugeridoValor.toFixed(2)}</span></div>
@@ -468,13 +468,13 @@ export default function ReceitaFormularioCanonico({
                   <span className="text-gray-500">
                     {' — '}{toNumber(ing.quantidade, 0)} {ing.unidade} • R$ {toNumber(ing.custo_unitario, 0).toFixed(2)}/un • R$ {toNumber(ing.custo_total, 0).toFixed(2)} total
                     {disponivel && quantidadeCompra !== null && disponivel.unidade !== ing.unidade && (
-                      <span className="text-gray-400"> ({quantidadeCompra.toFixed(3)} {disponivel.unidade})</span>
+                      <span className="text-gray-500"> ({quantidadeCompra.toFixed(3)} {disponivel.unidade})</span>
                     )}
                   </span>
                 </div>
                 <button
                   onClick={() => onRemoverIngrediente(index)}
-                  className="text-red-600 hover:text-red-800 text-xs shrink-0 ml-2"
+                  className="text-red-600 hover:text-red-800 text-sm shrink-0 ml-2"
                 >
                   Remover
                 </button>
@@ -498,10 +498,10 @@ export default function ReceitaFormularioCanonico({
               />
             </div>
             {progresso.falta > 0 && (
-              <p className="text-xs text-gray-500 mt-1">Faltam {progresso.falta.toFixed(0)} g para atingir a meta.</p>
+              <p className="text-sm text-gray-500 mt-1">Faltam {progresso.falta.toFixed(0)} g para atingir a meta.</p>
             )}
             {progresso.sobrando > 0 && (
-              <p className="text-xs text-red-500 mt-1">{progresso.sobrando.toFixed(0)} g acima da meta.</p>
+              <p className="text-sm text-red-500 mt-1">{progresso.sobrando.toFixed(0)} g acima da meta.</p>
             )}
           </div>
         )}
@@ -510,7 +510,7 @@ export default function ReceitaFormularioCanonico({
       <div className="bg-white rounded-lg border border-gray-200 p-4 mt-6">
         <h2 className="font-semibold mb-3">Painel Executivo</h2>
 
-        <h3 className="text-xs font-semibold text-gray-500 uppercase mb-1">Cenarios de preco (por porcao)</h3>
+        <h3 className="text-sm font-semibold text-gray-500 uppercase mb-1">Cenarios de preco (por porcao)</h3>
         <div className="border border-gray-100 rounded-lg overflow-hidden mb-4">
           <table className="w-full text-sm">
             <thead className="bg-gray-50">
@@ -536,10 +536,10 @@ export default function ReceitaFormularioCanonico({
           </table>
         </div>
 
-        <h3 className="text-xs font-semibold text-gray-500 uppercase mb-1">Ranking de custo por ingrediente</h3>
+        <h3 className="text-sm font-semibold text-gray-500 uppercase mb-1">Ranking de custo por ingrediente</h3>
         <div className="border border-gray-100 rounded-lg overflow-hidden mb-4 divide-y divide-gray-100">
           {rankingIngredientes.length === 0 ? (
-            <div className="px-3 py-2 text-sm text-gray-400">Nenhum ingrediente adicionado.</div>
+            <div className="px-3 py-2 text-sm text-gray-500">Nenhum ingrediente adicionado.</div>
           ) : (
             rankingIngredientes.map((item) => (
               <div key={item.ingredienteId} className="px-3 py-1.5 text-sm">
@@ -555,12 +555,12 @@ export default function ReceitaFormularioCanonico({
           )}
         </div>
 
-        <h3 className="text-xs font-semibold text-gray-500 uppercase mb-1">
+        <h3 className="text-sm font-semibold text-gray-500 uppercase mb-1">
           Lista de compras para essa producao ({porcoes} {porcoes === 1 ? 'porcao' : 'porcoes'})
         </h3>
         <div className="border border-gray-100 rounded-lg overflow-hidden divide-y divide-gray-100">
           {listaCompras.itens.length === 0 ? (
-            <div className="px-3 py-2 text-sm text-gray-400">Nenhum ingrediente adicionado.</div>
+            <div className="px-3 py-2 text-sm text-gray-500">Nenhum ingrediente adicionado.</div>
           ) : (
             <>
               {listaCompras.itens.map((item, idx) => (
@@ -576,7 +576,7 @@ export default function ReceitaFormularioCanonico({
             </>
           )}
         </div>
-        <p className="text-xs text-gray-400 mt-2">
+        <p className="text-sm text-gray-500 mt-2">
           Quantidades calculadas para esta producao especifica, sem descontar o que ja existe no estoque.
         </p>
       </div>
@@ -652,7 +652,7 @@ export default function ReceitaFormularioCanonico({
               />
             </label>
 
-            <p className="text-xs text-gray-500">
+            <p className="text-sm text-gray-500">
               O fator de conversao vem da embalagem/compra (ex: 1kg = 1000g). O peso em gramas so precisa ser ajustado
               para itens contados em unidades (ex: 1 ovo ~50g) — para itens ja comprados em kg/L, deixe 1.
             </p>

@@ -113,27 +113,27 @@ export default function ControlCenterPage() {
       <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
         <div className="bg-white rounded-xl p-3 shadow-sm border text-center">
           <p className="text-2xl font-bold text-blue-600">{stats.total}</p>
-          <p className="text-xs text-gray-500">Total</p>
+          <p className="text-sm text-gray-500">Total</p>
         </div>
         <div className="bg-white rounded-xl p-3 shadow-sm border text-center">
           <p className="text-2xl font-bold text-purple-600">{stats.empresas}</p>
-          <p className="text-xs text-gray-500">Empresas</p>
+          <p className="text-sm text-gray-500">Empresas</p>
         </div>
         <div className="bg-white rounded-xl p-3 shadow-sm border text-center">
           <p className="text-2xl font-bold text-green-600">{stats.comuns}</p>
-          <p className="text-xs text-gray-500">Usuários</p>
+          <p className="text-sm text-gray-500">Usuários</p>
         </div>
         <div className="bg-white rounded-xl p-3 shadow-sm border text-center">
           <p className="text-2xl font-bold text-green-600">{stats.ativos}</p>
-          <p className="text-xs text-gray-500">Ativos</p>
+          <p className="text-sm text-gray-500">Ativos</p>
         </div>
         <div className="bg-white rounded-xl p-3 shadow-sm border text-center">
           <p className="text-2xl font-bold text-yellow-600">{stats.pendentes}</p>
-          <p className="text-xs text-gray-500">Pendentes</p>
+          <p className="text-sm text-gray-500">Pendentes</p>
         </div>
         <div className="bg-white rounded-xl p-3 shadow-sm border text-center">
           <p className="text-2xl font-bold text-indigo-600">{stats.selecionados}</p>
-          <p className="text-xs text-gray-500">Selecionados</p>
+          <p className="text-sm text-gray-500">Selecionados</p>
         </div>
       </div>
 
@@ -170,16 +170,16 @@ export default function ControlCenterPage() {
             {stats.selecionados} usuário(s) selecionado(s)
           </span>
           <div className="flex gap-2">
-            <button onClick={() => executarAcao("enviar_push")} className="bg-blue-600 text-white px-3 py-1 rounded-lg text-xs flex items-center gap-1">
+            <button onClick={() => executarAcao("enviar_push")} className="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm flex items-center gap-1">
               <Bell size={12} /> Push
             </button>
-            <button onClick={() => executarAcao("enviar_mensagem")} className="bg-green-600 text-white px-3 py-1 rounded-lg text-xs flex items-center gap-1">
+            <button onClick={() => executarAcao("enviar_mensagem")} className="bg-green-600 text-white px-3 py-1 rounded-lg text-sm flex items-center gap-1">
               <Mail size={12} /> Mensagem
             </button>
-            <button onClick={() => executarAcao("bloquear")} className="bg-red-600 text-white px-3 py-1 rounded-lg text-xs flex items-center gap-1">
+            <button onClick={() => executarAcao("bloquear")} className="bg-red-600 text-white px-3 py-1 rounded-lg text-sm flex items-center gap-1">
               <Lock size={12} /> Bloquear
             </button>
-            <button onClick={() => executarAcao("desbloquear")} className="bg-yellow-600 text-white px-3 py-1 rounded-lg text-xs flex items-center gap-1">
+            <button onClick={() => executarAcao("desbloquear")} className="bg-yellow-600 text-white px-3 py-1 rounded-lg text-sm flex items-center gap-1">
               <Unlock size={12} /> Desbloquear
             </button>
           </div>
@@ -226,17 +226,17 @@ export default function ControlCenterPage() {
                 <th className="p-3 w-10">
                   <input type="checkbox" onChange={handleSelectAll} className="w-4 h-4" />
                 </th>
-                <th className="p-3 text-left text-xs font-semibold text-gray-500">Usuário</th>
-                <th className="p-3 text-left text-xs font-semibold text-gray-500">Tipo</th>
-                <th className="p-3 text-left text-xs font-semibold text-gray-500">Cidade</th>
-                <th className="p-3 text-left text-xs font-semibold text-gray-500">Status</th>
-                <th className="p-3 text-left text-xs font-semibold text-gray-500">Ações</th>
+                <th className="p-3 text-left text-sm font-semibold text-gray-500">Usuário</th>
+                <th className="p-3 text-left text-sm font-semibold text-gray-500">Tipo</th>
+                <th className="p-3 text-left text-sm font-semibold text-gray-500">Cidade</th>
+                <th className="p-3 text-left text-sm font-semibold text-gray-500">Status</th>
+                <th className="p-3 text-left text-sm font-semibold text-gray-500">Ações</th>
               </tr>
             </thead>
             <tbody>
               {usuariosFiltrados.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-gray-400">
+                  <td colSpan={6} className="p-8 text-center text-gray-500">
                     Nenhum usuário encontrado
                   </td>
                 </tr>
@@ -253,13 +253,13 @@ export default function ControlCenterPage() {
                     </td>
                     <td className="p-3 text-sm font-medium text-gray-800">{u.nome}</td>
                     <td className="p-3">
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${u.tipo === "empresa" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-700"}`}>
+                      <span className={`text-sm px-2 py-0.5 rounded-full ${u.tipo === "empresa" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-700"}`}>
                         {u.tipo === "empresa" ? "🏢 Empresa" : "👤 Usuário"}
                       </span>
                     </td>
                     <td className="p-3 text-sm text-gray-600">{u.cidade || "Valente"}</td>
                     <td className="p-3">
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${u.status === "ativo" ? "bg-green-100 text-green-700" :
+                      <span className={`text-sm px-2 py-0.5 rounded-full ${u.status === "ativo" ? "bg-green-100 text-green-700" :
                           u.status === "pendente" ? "bg-yellow-100 text-yellow-700" :
                             "bg-red-100 text-red-700"
                         }`}>
