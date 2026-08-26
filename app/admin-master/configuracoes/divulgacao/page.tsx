@@ -224,7 +224,7 @@ export default function DivulgacaoPage() {
           >
             <Upload className="w-4 h-4" /> {importando ? "Importando..." : "Importar planilha (.xlsx/.csv)"}
           </button>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-sm text-gray-500 mt-1">
             Coluna A = nome, coluna B = telefone (ou só uma coluna com o telefone).
           </p>
         </div>
@@ -234,7 +234,7 @@ export default function DivulgacaoPage() {
         <p className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
           <MapPin className="w-4 h-4 text-gray-400" /> Importar comércios do Google Maps
         </p>
-        <p className="text-xs text-gray-400">
+        <p className="text-sm text-gray-500">
           Busca nome, categoria, endereço e telefone dos comércios cadastrados no Google Maps dentro da
           cidade escolhida, e adiciona à lista abaixo (sem duplicar quem já está aqui).
         </p>
@@ -257,7 +257,7 @@ export default function DivulgacaoPage() {
             {importandoGoogle ? "Buscando..." : "Importar do Google Maps"}
           </button>
         </div>
-        {resumoGoogle && <p className="text-xs text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2">{resumoGoogle}</p>}
+        {resumoGoogle && <p className="text-sm text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2">{resumoGoogle}</p>}
       </div>
 
       <div className="flex items-center justify-between mb-2">
@@ -265,7 +265,7 @@ export default function DivulgacaoPage() {
           <Users className="w-4 h-4 text-gray-400" />
           <span className="text-gray-500">{pendentes} pendente(s) de {contatos.length}</span>
         </div>
-        <div className="flex gap-1 text-xs">
+        <div className="flex gap-1 text-sm">
           {(["pendente", "enviado", "todos"] as const).map((op) => (
             <button
               key={op}
@@ -282,30 +282,30 @@ export default function DivulgacaoPage() {
 
       <div className="bg-white border rounded-lg divide-y">
         {carregando ? (
-          <p className="p-4 text-sm text-gray-400">Carregando...</p>
+          <p className="p-4 text-sm text-gray-500">Carregando...</p>
         ) : contatosFiltrados.length === 0 ? (
-          <p className="p-4 text-sm text-gray-400">Nenhum contato aqui.</p>
+          <p className="p-4 text-sm text-gray-500">Nenhum contato aqui.</p>
         ) : (
           contatosFiltrados.map((c) => (
             <div key={c.id} className="flex items-center justify-between gap-2 p-3">
               <div className="min-w-0">
                 <p className="text-sm font-medium text-gray-800 truncate">{c.nome || "(sem nome)"}</p>
-                <p className="text-xs text-gray-400 truncate">
+                <p className="text-sm text-gray-500 truncate">
                   {c.telefone} ·{" "}
                   {c.origem === "planilha" ? "planilha" : c.origem === "google_places" ? "Google Maps" : "manual"}
                   {c.categoria ? ` · ${c.categoria}` : ""}
                 </p>
-                {c.endereco && <p className="text-xs text-gray-300 truncate">{c.endereco}</p>}
+                {c.endereco && <p className="text-sm text-gray-400 truncate">{c.endereco}</p>}
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 {c.status === "enviado" && (
-                  <span className="flex items-center gap-1 text-xs text-green-600">
+                  <span className="flex items-center gap-1 text-sm text-green-600">
                     <Check className="w-3.5 h-3.5" /> enviado
                   </span>
                 )}
                 <button
                   onClick={() => abrirWhatsapp(c)}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-medium"
+                  className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium"
                 >
                   <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
                 </button>

@@ -152,13 +152,13 @@ export default function ComunicadosPage() {
                 <div className="flex gap-2 mt-2">
                   <button
                     onClick={() => moderarRascunho(c.id, "publicar")}
-                    className="flex items-center gap-1 px-2.5 py-1 bg-green-50 hover:bg-green-100 text-green-700 rounded-lg text-xs"
+                    className="flex items-center gap-1 px-2.5 py-1 bg-green-50 hover:bg-green-100 text-green-700 rounded-lg text-sm"
                   >
                     <Check className="w-3 h-3" /> Aprovar e publicar
                   </button>
                   <button
                     onClick={() => moderarRascunho(c.id, "arquivar")}
-                    className="flex items-center gap-1 px-2.5 py-1 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-lg text-xs"
+                    className="flex items-center gap-1 px-2.5 py-1 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-lg text-sm"
                   >
                     <Archive className="w-3 h-3" /> Descartar
                   </button>
@@ -177,7 +177,7 @@ export default function ComunicadosPage() {
         >
           <Sparkles className="w-4 h-4" /> {gerandoSugestoes ? "Analisando dados..." : "Gerar sugestões a partir de dados reais"}
         </button>
-        <p className="text-[11px] text-gray-400 mt-1.5 text-center">
+        <p className="text-sm text-gray-500 mt-1.5 text-center">
           Baseado em atividade real do app (novos anúncios, cadastros, cidades novas) — nunca inventa números.
         </p>
       </div>
@@ -218,13 +218,13 @@ export default function ComunicadosPage() {
         {publico === "segmentado" && (
           <div className="space-y-3 bg-gray-50 rounded-lg p-3 mb-3">
             <div>
-              <p className="text-xs font-medium text-gray-600 mb-1.5">Grupos de interesse</p>
+              <p className="text-sm font-medium text-gray-600 mb-1.5">Grupos de interesse</p>
               <div className="flex flex-wrap gap-1.5">
                 {GRUPOS_INTERESSE.map((g) => (
                   <button
                     key={g.id}
                     onClick={() => setGruposSelecionados((prev) => (prev.includes(g.id) ? prev.filter((x) => x !== g.id) : [...prev, g.id]))}
-                    className={`px-2.5 py-1 rounded-full text-xs border ${gruposSelecionados.includes(g.id) ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-600 border-gray-200"}`}
+                    className={`px-2.5 py-1 rounded-full text-sm border ${gruposSelecionados.includes(g.id) ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-600 border-gray-200"}`}
                   >
                     {g.label}
                   </button>
@@ -232,16 +232,16 @@ export default function ComunicadosPage() {
               </div>
             </div>
             <div>
-              <p className="text-xs font-medium text-gray-600 mb-1.5">Cidades</p>
+              <p className="text-sm font-medium text-gray-600 mb-1.5">Cidades</p>
               {cidadesDisponiveis.length === 0 ? (
-                <p className="text-xs text-gray-400">Nenhum usuário informou cidade ainda.</p>
+                <p className="text-sm text-gray-500">Nenhum usuário informou cidade ainda.</p>
               ) : (
                 <div className="flex flex-wrap gap-1.5">
                   {cidadesDisponiveis.map((c) => (
                     <button
                       key={c}
                       onClick={() => setCidadesSelecionadas((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]))}
-                      className={`px-2.5 py-1 rounded-full text-xs border ${cidadesSelecionadas.includes(c) ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-600 border-gray-200"}`}
+                      className={`px-2.5 py-1 rounded-full text-sm border ${cidadesSelecionadas.includes(c) ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-600 border-gray-200"}`}
                     >
                       {c}
                     </button>
@@ -264,21 +264,21 @@ export default function ComunicadosPage() {
       <div className="bg-white border rounded-lg divide-y">
         <p className="p-3 text-sm font-semibold text-gray-800">Publicados</p>
         {loading ? (
-          <p className="p-4 text-sm text-gray-400">Carregando...</p>
+          <p className="p-4 text-sm text-gray-500">Carregando...</p>
         ) : publicados.length === 0 ? (
-          <p className="p-4 text-sm text-gray-400">Nenhum comunicado publicado ainda.</p>
+          <p className="p-4 text-sm text-gray-500">Nenhum comunicado publicado ainda.</p>
         ) : (
           publicados.map((c) => (
             <div key={c.id} className="p-3 flex items-start justify-between gap-2">
               <div>
                 <p className="text-sm font-medium text-gray-800">{c.titulo}</p>
-                <p className="text-xs text-gray-500">{c.mensagem}</p>
-                <p className="text-[10px] text-gray-400 mt-1">
+                <p className="text-sm text-gray-500">{c.mensagem}</p>
+                <p className="text-sm text-gray-500 mt-1">
                   {c.origem === "ia" ? "Sugerido pelo sistema" : "Admin master"} ·{" "}
                   {c.grupos || c.cidades ? "Segmentado" : "Todos"}
                 </p>
               </div>
-              <button onClick={() => arquivarPublicado(c.id)} className="text-xs text-gray-400 hover:text-red-500 shrink-0">
+              <button onClick={() => arquivarPublicado(c.id)} className="text-sm text-gray-500 hover:text-red-500 shrink-0">
                 Arquivar
               </button>
             </div>

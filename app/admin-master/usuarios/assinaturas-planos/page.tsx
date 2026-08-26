@@ -82,37 +82,37 @@ export default function AdminAssinaturasPlanosPage() {
 
       <div className="bg-white border rounded-lg divide-y">
         {carregando ? (
-          <p className="p-4 text-sm text-gray-400">Carregando...</p>
+          <p className="p-4 text-sm text-gray-500">Carregando...</p>
         ) : assinaturas.length === 0 ? (
-          <p className="p-4 text-sm text-gray-400">Nenhuma assinatura ainda.</p>
+          <p className="p-4 text-sm text-gray-500">Nenhuma assinatura ainda.</p>
         ) : (
           assinaturas.map((a) => (
             <div key={a.id} className="p-4">
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div>
                   <p className="text-sm font-medium text-gray-800">
-                    {a.usuario?.nome || "Usuário"} <span className="text-gray-400 font-normal">· {a.usuario?.whatsapp}</span>
+                    {a.usuario?.nome || "Usuário"} <span className="text-gray-500 font-normal">· {a.usuario?.whatsapp}</span>
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-sm text-gray-500">
                     {a.plano_id} · {a.servico_id.replace(/_/g, " ")} {a.com_fiado ? "· com módulo fiado" : ""}
                   </p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-sm text-gray-500">
                     R$ {Number(a.valor).toFixed(2)} · {a.metodo_pagamento}
                     {a.metodo_pagamento === "cartao" && a.parcelas > 1 ? ` em ${a.parcelas}x` : ""}
                   </p>
                   {a.dados_complementares && (
-                    <div className="mt-2 text-xs bg-gray-50 rounded-lg p-2 space-y-0.5">
-                      <p><span className="text-gray-400">Negócio:</span> {a.dados_complementares.nomeNegocio}</p>
-                      {a.dados_complementares.cnpj && <p><span className="text-gray-400">CNPJ:</span> {a.dados_complementares.cnpj}</p>}
-                      <p><span className="text-gray-400">Endereço:</span> {a.dados_complementares.endereco}</p>
-                      <p><span className="text-gray-400">Localizador:</span> {a.dados_complementares.localizador}</p>
+                    <div className="mt-2 text-sm bg-gray-50 rounded-lg p-2 space-y-0.5">
+                      <p><span className="text-gray-500">Negócio:</span> {a.dados_complementares.nomeNegocio}</p>
+                      {a.dados_complementares.cnpj && <p><span className="text-gray-500">CNPJ:</span> {a.dados_complementares.cnpj}</p>}
+                      <p><span className="text-gray-500">Endereço:</span> {a.dados_complementares.endereco}</p>
+                      <p><span className="text-gray-500">Localizador:</span> {a.dados_complementares.localizador}</p>
                       {a.dados_complementares.faturamentoBruto && (
-                        <p><span className="text-gray-400">Faturamento:</span> {a.dados_complementares.faturamentoBruto}</p>
+                        <p><span className="text-gray-500">Faturamento:</span> {a.dados_complementares.faturamentoBruto}</p>
                       )}
                     </div>
                   )}
                 </div>
-                <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${STATUS_COR[a.status]}`}>
+                <span className={`text-sm px-2 py-1 rounded-full whitespace-nowrap ${STATUS_COR[a.status]}`}>
                   {STATUS_LABEL[a.status]}
                 </span>
               </div>
@@ -122,14 +122,14 @@ export default function AdminAssinaturasPlanosPage() {
                   <button
                     onClick={() => mudarStatus(a.id, "pago")}
                     disabled={atualizandoId === a.id}
-                    className="flex items-center gap-1 px-2.5 py-1 bg-green-50 hover:bg-green-100 disabled:opacity-40 text-green-700 rounded-lg text-xs"
+                    className="flex items-center gap-1 px-2.5 py-1 bg-green-50 hover:bg-green-100 disabled:opacity-40 text-green-700 rounded-lg text-sm"
                   >
                     <Check className="w-3 h-3" /> Aprovar fiado
                   </button>
                   <button
                     onClick={() => mudarStatus(a.id, "recusado")}
                     disabled={atualizandoId === a.id}
-                    className="flex items-center gap-1 px-2.5 py-1 bg-red-50 hover:bg-red-100 disabled:opacity-40 text-red-700 rounded-lg text-xs"
+                    className="flex items-center gap-1 px-2.5 py-1 bg-red-50 hover:bg-red-100 disabled:opacity-40 text-red-700 rounded-lg text-sm"
                   >
                     <XIcon className="w-3 h-3" /> Recusar
                   </button>
