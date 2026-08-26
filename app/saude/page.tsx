@@ -211,7 +211,7 @@ function DiretorioSaude() {
         <HeartPulse className="w-5 h-5 text-red-600" />
         <h2 className="text-lg font-bold text-gray-800">Hospitais e Clínicas</h2>
       </div>
-      <p className="text-sm text-gray-500 mb-3">Telefone e endereço direto, sem taxa nenhuma pra ver o contato.</p>
+      <p className="text-sm text-gray-600 mb-3">Telefone e endereço direto, sem taxa nenhuma pra ver o contato.</p>
 
       <div className="relative mb-3">
         <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -228,7 +228,7 @@ function DiretorioSaude() {
           <button
             key={f.id}
             onClick={() => setTipoFiltro(f.id)}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border ${
+            className={`px-3 py-1.5 rounded-full text-sm font-semibold whitespace-nowrap border ${
               tipoFiltro === f.id ? "bg-red-600 text-white border-red-600" : "bg-white text-gray-600 border-gray-200"
             }`}
           >
@@ -241,9 +241,9 @@ function DiretorioSaude() {
         <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 text-red-500 animate-spin" /></div>
       ) : ordenados.length === 0 ? (
         <div className="py-4">
-          <p className="text-center text-sm text-gray-400 py-4">Nenhum estabelecimento cadastrado no nosso diretório ainda.</p>
+          <p className="text-center text-sm text-gray-500 py-4">Nenhum estabelecimento cadastrado no nosso diretório ainda.</p>
           {buscandoGoogle ? (
-            <div className="flex items-center justify-center gap-2 text-sm text-gray-500 py-4">
+            <div className="flex items-center justify-center gap-2 text-sm text-gray-600 py-4">
               <Loader2 className="w-4 h-4 animate-spin" /> Buscando no Google...
             </div>
           ) : limiteGoogleAtingido ? (
@@ -253,7 +253,7 @@ function DiretorioSaude() {
             </div>
           ) : resultadosGoogle && resultadosGoogle.length > 0 ? (
             <div className="space-y-2">
-              <p className="text-xs text-gray-500 flex items-center gap-1.5 px-1">
+              <p className="text-sm text-gray-600 flex items-center gap-1.5 px-1">
                 <Globe className="w-3.5 h-3.5" /> Achamos isso no Google — já avisamos nossa equipe pra confirmar e adicionar ao cadastro:
               </p>
               {resultadosGoogle.map((g, i) => (
@@ -282,7 +282,7 @@ function DiretorioSaude() {
               ))}
             </div>
           ) : resultadosGoogle && resultadosGoogle.length === 0 ? (
-            <p className="text-center text-xs text-gray-400 pb-2">Não achamos nada no Google também pra essa busca.</p>
+            <p className="text-center text-sm text-gray-500 pb-2">Não achamos nada no Google também pra essa busca.</p>
           ) : null}
         </div>
       ) : (
@@ -294,14 +294,14 @@ function DiretorioSaude() {
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <p className="font-bold text-gray-800 truncate">{e.nome}</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-sm text-gray-600">
                     {TIPO_LABEL[e.tipo] || e.tipo}
                     {e.especialidades?.length > 0 ? ` · ${e.especialidades.join(", ")}` : ""}
                     {e.grupo === "relacionado" && <span className="ml-1.5 text-amber-600 font-medium">· pode te interessar</span>}
                   </p>
                 </div>
                 {distancia != null && (
-                  <span className="text-[11px] text-red-600 bg-red-50 px-2 py-0.5 rounded-full shrink-0">
+                  <span className="text-[13px] text-red-700 bg-red-50 px-2 py-0.5 rounded-full shrink-0">
                     {distancia < 1 ? `${Math.round(distancia * 1000)} m` : `${distancia.toFixed(1)} km`}
                   </span>
                 )}
@@ -315,7 +315,7 @@ function DiretorioSaude() {
                 )}
                 {e.horario && (
                   <div className="flex items-start gap-1.5">
-                    <Clock className="w-3.5 h-3.5 mt-0.5 shrink-0 text-gray-400" /> <span className="text-xs">{e.horario}</span>
+                    <Clock className="w-3.5 h-3.5 mt-0.5 shrink-0 text-gray-400" /> <span className="text-sm">{e.horario}</span>
                   </div>
                 )}
               </div>
@@ -457,44 +457,44 @@ function ModalReivindicarSaude({ estabelecimento, onFechar, onEnviado, onAprovad
         </div>
 
         <div className="overflow-y-auto flex-1 px-5 py-4">
-          <p className="text-sm text-gray-500 mb-4">Confirme e atualize os dados do seu estabelecimento. Sua solicitação passa por uma revisão antes de valer.</p>
+          <p className="text-sm text-gray-600 mb-4">Confirme e atualize os dados do seu estabelecimento. Sua solicitação passa por uma revisão antes de valer.</p>
 
           <div className="space-y-3">
             <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 space-y-3">
-              <p className="text-xs font-semibold text-blue-700">Quem está reivindicando</p>
+              <p className="text-sm font-semibold text-blue-700">Quem está reivindicando</p>
               <div>
-                <label className="text-xs text-gray-500">Seu nome (proprietário) *</label>
+                <label className="text-sm text-gray-600">Seu nome (proprietário) *</label>
                 <input value={form.nomeProprietario} onChange={(e) => setForm((p) => ({ ...p, nomeProprietario: e.target.value }))} className="w-full mt-1 border rounded-lg px-3 py-2 text-sm bg-white" />
               </div>
               <div>
-                <label className="text-xs text-gray-500">Seu WhatsApp *</label>
+                <label className="text-sm text-gray-600">Seu WhatsApp *</label>
                 <input value={form.whatsappProprietario} onChange={(e) => setForm((p) => ({ ...p, whatsappProprietario: e.target.value }))} className="w-full mt-1 border rounded-lg px-3 py-2 text-sm bg-white" />
               </div>
             </div>
             <div>
-              <label className="text-xs text-gray-500">Nome *</label>
+              <label className="text-sm text-gray-600">Nome *</label>
               <input value={form.nome} onChange={(e) => setForm((p) => ({ ...p, nome: e.target.value }))} className="w-full mt-1 border rounded-lg px-3 py-2 text-sm" />
             </div>
             <div>
-              <label className="text-xs text-gray-500">Tipo</label>
+              <label className="text-sm text-gray-600">Tipo</label>
               <select value={form.tipo} onChange={(e) => setForm((p) => ({ ...p, tipo: e.target.value }))} className="w-full mt-1 border rounded-lg px-3 py-2 text-sm bg-white">
                 {TIPOS_SAUDE.map((t) => <option key={t} value={t}>{TIPO_LABEL[t]}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-xs text-gray-500">Telefone *</label>
+              <label className="text-sm text-gray-600">Telefone *</label>
               <input value={form.telefone} onChange={(e) => setForm((p) => ({ ...p, telefone: e.target.value }))} className="w-full mt-1 border rounded-lg px-3 py-2 text-sm" />
             </div>
             <div>
-              <label className="text-xs text-gray-500">WhatsApp</label>
+              <label className="text-sm text-gray-600">WhatsApp</label>
               <input value={form.whatsapp} onChange={(e) => setForm((p) => ({ ...p, whatsapp: e.target.value }))} className="w-full mt-1 border rounded-lg px-3 py-2 text-sm" />
             </div>
             <div>
-              <label className="text-xs text-gray-500">Endereço</label>
+              <label className="text-sm text-gray-600">Endereço</label>
               <input value={form.endereco} onChange={(e) => setForm((p) => ({ ...p, endereco: e.target.value }))} className="w-full mt-1 border rounded-lg px-3 py-2 text-sm" />
             </div>
             <div>
-              <label className="text-xs text-gray-500">Horário de funcionamento *</label>
+              <label className="text-sm text-gray-600">Horário de funcionamento *</label>
               <textarea value={form.horario} onChange={(e) => setForm((p) => ({ ...p, horario: e.target.value }))} rows={2} className="w-full mt-1 border rounded-lg px-3 py-2 text-sm resize-none" />
             </div>
           </div>
@@ -544,7 +544,7 @@ function ModalFotoFachadaSaude({ estabelecimento, onFechar, onSalvo }: {
         </div>
 
         <div className="overflow-y-auto flex-1 px-5 py-4">
-          <p className="text-sm text-gray-500 mb-4">{estabelecimento.nome} já está confirmado. Uma foto da fachada ajuda os pacientes a reconhecer o local.</p>
+          <p className="text-sm text-gray-600 mb-4">{estabelecimento.nome} já está confirmado. Uma foto da fachada ajuda os pacientes a reconhecer o local.</p>
           <FotoFachadaUploader value={foto} onChange={setFoto} />
         </div>
 

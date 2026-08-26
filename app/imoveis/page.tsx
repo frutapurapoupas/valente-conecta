@@ -424,7 +424,7 @@ export default function ImoveisPage() {
             <div className="col-span-full bg-white rounded-lg shadow p-12 text-center">
               <Home className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-600">Nenhum imóvel encontrado</h3>
-              <p className="text-gray-400 mt-2">Tente ajustar os filtros ou anuncie seu imóvel</p>
+              <p className="text-gray-500 mt-2">Tente ajustar os filtros ou anuncie seu imóvel</p>
             </div>
           ) : (
             imoveisFiltrados.map((imovel) => (
@@ -439,11 +439,11 @@ export default function ImoveisPage() {
                     </div>
                   )}
                   {imovel.destaque && (
-                    <span className="absolute top-2 left-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                    <span className="absolute top-2 left-2 bg-yellow-500 text-white text-sm font-bold px-2 py-1 rounded-full">
                       Destaque
                     </span>
                   )}
-                  <span className={`absolute top-2 right-2 px-2 py-1 rounded-full text-xs font-bold text-white ${imovel.operacao === 'venda' ? 'bg-green-600' : 'bg-blue-600'}`}>
+                  <span className={`absolute top-2 right-2 px-2 py-1 rounded-full text-sm font-bold text-white ${imovel.operacao === 'venda' ? 'bg-green-600' : 'bg-blue-600'}`}>
                     {imovel.operacao === 'venda' ? 'VENDA' : 'ALUGUEL'}
                   </span>
                 </div>
@@ -454,7 +454,7 @@ export default function ImoveisPage() {
                   <div className="flex items-center gap-1 text-sm text-gray-500 mb-2">
                     <MapPin className="w-4 h-4" />
                     {imovel.bairro}, {imovel.cidade}
-                    {imovel.grupo === "relacionado" && <span className="ml-1.5 text-amber-600 font-medium text-xs">· pode te interessar</span>}
+                    {imovel.grupo === "relacionado" && <span className="ml-1.5 text-amber-600 font-medium text-sm">· pode te interessar</span>}
                   </div>
                   
                   <div className="flex items-center justify-between mb-3">
@@ -487,13 +487,13 @@ export default function ImoveisPage() {
                   <div className="mb-3">
                     <p className="text-2xl font-bold text-green-600">{formatCurrency(imovel.preco)}</p>
                     {imovel.operacao === 'aluguel' && imovel.precoCondominio && (
-                      <p className="text-xs text-gray-500">+ Condomínio {formatCurrency(imovel.precoCondominio)}</p>
+                      <p className="text-sm text-gray-600">+ Condomínio {formatCurrency(imovel.precoCondominio)}</p>
                     )}
                   </div>
 
                   <div className="flex flex-wrap gap-1 mb-3">
                     {imovel.caracteristicas.slice(0, 3).map((car, idx) => (
-                      <span key={idx} className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                      <span key={idx} className="px-2 py-1 bg-gray-100 text-gray-600 text-sm rounded-full">
                         {car}
                       </span>
                     ))}
