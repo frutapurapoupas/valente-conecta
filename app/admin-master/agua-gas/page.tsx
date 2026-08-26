@@ -304,7 +304,7 @@ export default function AdminAguaGasPage() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead className="border-b border-white/10">
-                    <tr className="text-xs uppercase tracking-widest text-gray-500">
+                    <tr className="text-sm uppercase tracking-widest text-gray-500">
                       <th className="px-5 py-4 text-left">Fornecedor</th>
                       <th className="px-5 py-4 text-left">Contato</th>
                       <th className="px-5 py-4 text-left">Produtos</th>
@@ -318,49 +318,49 @@ export default function AdminAguaGasPage() {
                       <tr key={f.id} className="hover:bg-white/2">
                         <td className="px-5 py-4">
                           <div className="font-semibold text-white">{f.nome}</div>
-                          <div className="text-xs text-gray-400">{f.responsavel}</div>
-                          <div className="text-xs text-gray-500">{[f.bairro, f.cidade].filter(Boolean).join(', ')}</div>
-                          {f.destaque && <span className="text-[10px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-1.5 py-0.5 rounded mt-1 inline-block">DESTAQUE</span>}
+                          <div className="text-sm text-gray-400">{f.responsavel}</div>
+                          <div className="text-sm text-gray-500">{[f.bairro, f.cidade].filter(Boolean).join(', ')}</div>
+                          {f.destaque && <span className="text-sm bg-blue-500/20 text-blue-400 border border-blue-500/30 px-1.5 py-0.5 rounded mt-1 inline-block">DESTAQUE</span>}
                         </td>
                         <td className="px-5 py-4 text-sm text-gray-300">
                           <div>{f.telefone}</div>
-                          {f.horario && <div className="text-xs text-gray-400 mt-0.5">{f.horario}</div>}
+                          {f.horario && <div className="text-sm text-gray-400 mt-0.5">{f.horario}</div>}
                         </td>
                         <td className="px-5 py-4">
                           <div className="flex flex-wrap gap-1">
                             {(f.produtos || []).filter((p) => p.disponivel !== false).slice(0, 3).map((p, i) => (
-                              <span key={i} className="text-xs bg-white/5 text-gray-300 border border-white/10 px-2 py-0.5 rounded-full">
+                              <span key={i} className="text-sm bg-white/5 text-gray-300 border border-white/10 px-2 py-0.5 rounded-full">
                                 {p.descricao || TIPOS_PRODUTO.find((t) => t.id === p.tipo)?.label || p.tipo}
                                 {p.preco > 0 ? ` R$${p.preco.toFixed(0)}` : ''}
                               </span>
                             ))}
-                            {(f.produtos || []).length > 3 && <span className="text-xs text-gray-500">+{(f.produtos || []).length - 3}</span>}
+                            {(f.produtos || []).length > 3 && <span className="text-sm text-gray-500">+{(f.produtos || []).length - 3}</span>}
                           </div>
                         </td>
                         <td className="px-5 py-4">
                           {f.temEntrega ? (
-                            <span className="flex items-center gap-1 text-xs text-green-400"><Truck className="w-3 h-3" />
+                            <span className="flex items-center gap-1 text-sm text-green-400"><Truck className="w-3 h-3" />
                               {f.taxaEntrega === 0 ? 'Grátis' : `R$ ${f.taxaEntrega.toFixed(2)}`}
                             </span>
                           ) : (
-                            <span className="text-xs text-gray-400">Não faz</span>
+                            <span className="text-sm text-gray-400">Não faz</span>
                           )}
                         </td>
                         <td className="px-5 py-4">
-                          <span className={`text-xs font-semibold px-2 py-1 rounded-full ${f.status === 'publicado' ? 'bg-green-500/20 text-green-400' : 'bg-orange-500/20 text-orange-400'}`}>{f.status}</span>
+                          <span className={`text-sm font-semibold px-2 py-1 rounded-full ${f.status === 'publicado' ? 'bg-green-500/20 text-green-400' : 'bg-orange-500/20 text-orange-400'}`}>{f.status}</span>
                         </td>
                         <td className="px-5 py-4">
                           <div className="flex flex-wrap gap-1.5">
-                            <button onClick={() => handlePublicar(f)} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${f.status === 'publicado' ? 'bg-orange-500/20 text-orange-300 hover:bg-orange-500/30' : 'bg-green-500/20 text-green-300 hover:bg-green-500/30'}`}>
+                            <button onClick={() => handlePublicar(f)} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm font-semibold transition-colors ${f.status === 'publicado' ? 'bg-orange-500/20 text-orange-300 hover:bg-orange-500/30' : 'bg-green-500/20 text-green-300 hover:bg-green-500/30'}`}>
                               {f.status === 'publicado' ? <><EyeOff className="w-3 h-3" />Ocultar</> : <><CheckCircle2 className="w-3 h-3" />Publicar</>}
                             </button>
-                            <button onClick={() => handleDestaque(f)} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${f.destaque ? 'bg-blue-500/20 text-blue-300' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}>
+                            <button onClick={() => handleDestaque(f)} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm font-semibold transition-colors ${f.destaque ? 'bg-blue-500/20 text-blue-300' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}>
                               <Star className="w-3 h-3" />{f.destaque ? 'Remover' : 'Destacar'}
                             </button>
-                            <button onClick={() => setEditando({ ...f })} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 text-xs font-semibold transition-colors">
+                            <button onClick={() => setEditando({ ...f })} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 text-sm font-semibold transition-colors">
                               <Edit3 className="w-3 h-3" />Editar
                             </button>
-                            <button onClick={() => handleDelete(f.id)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/30 text-xs font-semibold transition-colors">
+                            <button onClick={() => handleDelete(f.id)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/30 text-sm font-semibold transition-colors">
                               <Trash2 className="w-3 h-3" />Excluir
                             </button>
                           </div>
@@ -384,7 +384,7 @@ export default function AdminAguaGasPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="border-b border-white/10">
-                  <tr className="text-xs uppercase tracking-widest text-gray-500">
+                  <tr className="text-sm uppercase tracking-widest text-gray-500">
                     <th className="px-5 py-4 text-left">Cliente</th>
                     <th className="px-5 py-4 text-left">Fornecedor</th>
                     <th className="px-5 py-4 text-left">Produto / Qtd</th>
@@ -398,32 +398,32 @@ export default function AdminAguaGasPage() {
                     <tr key={p.id} className="hover:bg-white/2">
                       <td className="px-5 py-4">
                         <div className="font-semibold text-white text-sm">{p.clienteNome}</div>
-                        <div className="text-xs text-gray-400 flex items-center gap-1 mt-0.5"><Phone className="w-3 h-3" />{p.clienteTelefone}</div>
+                        <div className="text-sm text-gray-400 flex items-center gap-1 mt-0.5"><Phone className="w-3 h-3" />{p.clienteTelefone}</div>
                       </td>
                       <td className="px-5 py-4 text-sm text-gray-300">{p.fornecedorNome}</td>
                       <td className="px-5 py-4">
                         <div className="text-sm text-white">{p.produto}</div>
-                        <div className="text-xs text-gray-400">Qtd: {p.quantidade}</div>
-                        {p.observacoes && <div className="text-xs text-gray-500 line-clamp-1 mt-0.5">{p.observacoes}</div>}
+                        <div className="text-sm text-gray-400">Qtd: {p.quantidade}</div>
+                        {p.observacoes && <div className="text-sm text-gray-500 line-clamp-1 mt-0.5">{p.observacoes}</div>}
                       </td>
                       <td className="px-5 py-4 text-sm text-gray-400">{p.endereco || '—'}</td>
                       <td className="px-5 py-4">
-                        <span className={`text-xs font-semibold px-2 py-1 rounded-full ${p.status === 'confirmado' ? 'bg-green-500/20 text-green-400' : p.status === 'cancelado' ? 'bg-red-500/20 text-red-400' : 'bg-orange-500/20 text-orange-400'}`}>{p.status}</span>
+                        <span className={`text-sm font-semibold px-2 py-1 rounded-full ${p.status === 'confirmado' ? 'bg-green-500/20 text-green-400' : p.status === 'cancelado' ? 'bg-red-500/20 text-red-400' : 'bg-orange-500/20 text-orange-400'}`}>{p.status}</span>
                       </td>
                       <td className="px-5 py-4">
                         <div className="flex gap-1.5">
                           {p.status === 'pendente' && (
-                            <button onClick={() => handlePedidoStatus(p.id, 'confirmado')} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-green-500/20 text-green-300 hover:bg-green-500/30 text-xs font-semibold">
+                            <button onClick={() => handlePedidoStatus(p.id, 'confirmado')} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-green-500/20 text-green-300 hover:bg-green-500/30 text-sm font-semibold">
                               <CheckCircle2 className="w-3 h-3" />Confirmar
                             </button>
                           )}
                           {p.status !== 'cancelado' && (
-                            <button onClick={() => handlePedidoStatus(p.id, 'cancelado')} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/30 text-xs font-semibold">
+                            <button onClick={() => handlePedidoStatus(p.id, 'cancelado')} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/30 text-sm font-semibold">
                               <Trash2 className="w-3 h-3" />Cancelar
                             </button>
                           )}
                           {p.clienteTelefone && (
-                            <a href={`https://wa.me/55${p.clienteTelefone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-green-600/20 text-green-300 text-xs font-semibold">
+                            <a href={`https://wa.me/55${p.clienteTelefone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-green-600/20 text-green-300 text-sm font-semibold">
                               <MessageCircle className="w-3 h-3" />WA
                             </a>
                           )}
@@ -445,7 +445,7 @@ export default function AdminAguaGasPage() {
             <div className="p-12 text-center">
               <DollarSign className="w-12 h-12 text-gray-600 mx-auto mb-3" />
               <p className="text-gray-400">Nenhuma movimentação ainda.</p>
-              <p className="text-gray-500 text-xs mt-1">Aparece aqui quando um pedido é confirmado pelo fornecedor.</p>
+              <p className="text-gray-500 text-sm mt-1">Aparece aqui quando um pedido é confirmado pelo fornecedor.</p>
             </div>
           ) : (
             <>
@@ -458,7 +458,7 @@ export default function AdminAguaGasPage() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead className="border-b border-white/10">
-                    <tr className="text-xs uppercase tracking-widest text-gray-500">
+                    <tr className="text-sm uppercase tracking-widest text-gray-500">
                       <th className="px-5 py-4 text-left">Data</th>
                       <th className="px-5 py-4 text-left">Fornecedor</th>
                       <th className="px-5 py-4 text-left">Cliente / Produto</th>
@@ -474,7 +474,7 @@ export default function AdminAguaGasPage() {
                         <td className="px-5 py-4 text-sm text-gray-300">{m.pedido?.cliente_nome || '—'} · {m.pedido?.produto || '—'}</td>
                         <td className="px-5 py-4 text-sm font-semibold text-green-400">R$ {m.valor.toFixed(2)}</td>
                         <td className="px-5 py-4">
-                          <span className="text-xs font-semibold px-2 py-1 rounded-full bg-green-500/20 text-green-400">{m.status}</span>
+                          <span className="text-sm font-semibold px-2 py-1 rounded-full bg-green-500/20 text-green-400">{m.status}</span>
                         </td>
                       </tr>
                     ))}
@@ -540,22 +540,22 @@ export default function AdminAguaGasPage() {
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <label className="text-sm text-gray-400 font-semibold">Produtos</label>
-                  <button type="button" onClick={addProd} className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1">
+                  <button type="button" onClick={addProd} className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1">
                     <Plus className="w-3 h-3" />Adicionar
                   </button>
                 </div>
                 {(editando.produtos || []).map((p, i) => (
                   <div key={i} className="bg-slate-800 rounded-xl p-3 mb-2 grid grid-cols-4 gap-2 items-center">
                     <select value={p.tipo} onChange={(e) => { const t = TIPOS_PRODUTO.find((x) => x.id === e.target.value); setProd(i, 'tipo', e.target.value); if (t) setProd(i, 'unidade', t.unidade); }}
-                      className="bg-slate-700 border border-white/10 text-white rounded-lg px-2 py-2 text-xs outline-none col-span-1">
+                      className="bg-slate-700 border border-white/10 text-white rounded-lg px-2 py-2 text-sm outline-none col-span-1">
                       {TIPOS_PRODUTO.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
                     </select>
                     <input value={p.descricao} onChange={(e) => setProd(i, 'descricao', e.target.value)} placeholder="Descrição"
-                      className="bg-slate-700 border border-white/10 text-white rounded-lg px-2 py-2 text-xs outline-none col-span-1" />
+                      className="bg-slate-700 border border-white/10 text-white rounded-lg px-2 py-2 text-sm outline-none col-span-1" />
                     <div className="flex items-center gap-1">
-                      <span className="text-xs text-gray-400">R$</span>
+                      <span className="text-sm text-gray-400">R$</span>
                       <input type="number" min="0" step="0.5" value={p.preco} onChange={(e) => setProd(i, 'preco', Number(e.target.value))}
-                        className="w-full bg-slate-700 border border-white/10 text-white rounded-lg px-2 py-2 text-xs outline-none" />
+                        className="w-full bg-slate-700 border border-white/10 text-white rounded-lg px-2 py-2 text-sm outline-none" />
                     </div>
                     <button type="button" onClick={() => removeProd(i)} className="text-red-400 hover:text-red-300 flex justify-center">
                       <Trash2 className="w-4 h-4" />
