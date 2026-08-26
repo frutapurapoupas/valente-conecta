@@ -124,7 +124,7 @@ export default function PlanosPage() {
         </button>
         <div className="max-w-5xl mx-auto">
           <h1 className="text-white font-bold text-lg">PLANOS E ASSINATURA</h1>
-          <p className="text-white/80 text-xs mt-1">Gratis, Basico, Premium e Fisco (quando aplicavel)</p>
+          <p className="text-white/80 text-sm mt-1">Gratis, Basico, Premium e Fisco (quando aplicavel)</p>
         </div>
       </header>
 
@@ -157,12 +157,12 @@ export default function PlanosPage() {
                   <div className="flex items-center gap-2">
                     <h2 className="text-base font-bold text-white">{service.nome}</h2>
                     {destaque && (
-                      <span className="text-[10px] bg-cyan-500 text-slate-950 font-bold px-2 py-0.5 rounded-full">
+                      <span className="text-[13px] bg-cyan-500 text-slate-950 font-bold px-2 py-0.5 rounded-full">
                         Recomendado pra você
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-slate-400 mt-1">{service.enabledPlans.length} plano(s) disponivel(is)</p>
+                  <p className="text-sm text-slate-400 mt-1">{service.enabledPlans.length} plano(s) disponivel(is)</p>
                 </div>
                 {isOpen ? <ChevronUp className="w-5 h-5 text-slate-300" /> : <ChevronDown className="w-5 h-5 text-slate-300" />}
               </button>
@@ -184,11 +184,11 @@ export default function PlanosPage() {
                             <Icon className="w-4 h-4" />
                             <h3 className="font-bold">{plan.nome}</h3>
                           </div>
-                          <span className="text-xs text-slate-300">{plan.negociavel ? "A negociar" : `R$ ${Number(plan.preco || 0).toFixed(2)}/${plan.periodo}`}</span>
+                          <span className="text-sm text-slate-300">{plan.negociavel ? "A negociar" : `R$ ${Number(plan.preco || 0).toFixed(2)}/${plan.periodo}`}</span>
                         </div>
-                        <p className="text-xs text-slate-400 mt-1">{plan.descricao}</p>
+                        <p className="text-sm text-slate-400 mt-1">{plan.descricao}</p>
                         {plan.descontoPixRecorrenteAtivo && !plan.negociavel && plan.preco ? (
-                          <p className="text-xs text-emerald-400 font-medium mt-2 flex items-center gap-1">
+                          <p className="text-sm text-emerald-400 font-medium mt-2 flex items-center gap-1">
                             💸 {plan.descontoPixRecorrentePercent}% de desconto pagando via PIX por 12 meses
                             <span className="text-slate-400 font-normal">
                               (R$ {(plan.preco * (1 - (plan.descontoPixRecorrentePercent || 0) / 100)).toFixed(2)}/mês)
@@ -197,7 +197,7 @@ export default function PlanosPage() {
                         ) : null}
                         <ul className="mt-3 space-y-1 flex-1">
                           {features.map((f, i) => (
-                            <li key={i} className="text-xs text-slate-200 flex items-start gap-1.5">
+                            <li key={i} className="text-sm text-slate-200 flex items-start gap-1.5">
                               <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 text-green-400 shrink-0" />
                               <span>{f}</span>
                             </li>
@@ -210,14 +210,14 @@ export default function PlanosPage() {
                                 `/planos/checkout?servico=${service.id}&servicoNome=${encodeURIComponent(service.nome)}&plano=${plan.id}&planoNome=${encodeURIComponent(plan.nome)}&valor=${plan.preco || 0}`
                               )
                             }
-                            className="mt-3 w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold rounded-lg"
+                            className="mt-3 w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-bold rounded-lg"
                           >
                             Escolher este plano
                           </button>
                         ) : (
                           <button
                             onClick={() => router.push("/chat")}
-                            className="mt-3 w-full py-2 bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold rounded-lg"
+                            className="mt-3 w-full py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold rounded-lg"
                           >
                             Falar com o suporte
                           </button>

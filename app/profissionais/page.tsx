@@ -48,7 +48,7 @@ function CardProfissional({ prof, onSolicitar }: { prof: Profissional; onSolicit
   const iniciais = prof.nome.split(' ').slice(0, 2).map((n) => n[0]).join('').toUpperCase();
   return (
     <div className={`relative rounded-2xl border border-white/10 bg-slate-900 overflow-hidden transition-colors ${prof.destaque ? 'ring-2 ring-yellow-400/50' : ''}`}>
-      {prof.destaque && <div className="absolute top-3 right-3 z-10 bg-yellow-400 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">DESTAQUE</div>}
+      {prof.destaque && <div className="absolute top-3 right-3 z-10 bg-yellow-400 text-black text-[13px] font-bold px-2 py-0.5 rounded-full">DESTAQUE</div>}
       <div className={`h-2 w-full ${cat.cor}`} />
       <div className="p-5">
         <div className="flex items-start gap-4">
@@ -60,15 +60,15 @@ function CardProfissional({ prof, onSolicitar }: { prof: Profissional; onSolicit
           <div className="flex-1 min-w-0">
             <h3 className="font-bold text-white text-base leading-tight truncate">{prof.nome}</h3>
             <div className="flex items-center gap-2 mt-1">
-              <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full text-white ${cat.cor}`}><Icon className="w-3 h-3" />{cat.label}</span>
-              {prof.plano === 'premium' && <span className="text-xs bg-indigo-600 text-white px-2 py-0.5 rounded-full">Premium</span>}
+              <span className={`inline-flex items-center gap-1 text-sm px-2 py-0.5 rounded-full text-white ${cat.cor}`}><Icon className="w-3 h-3" />{cat.label}</span>
+              {prof.plano === 'premium' && <span className="text-sm bg-indigo-600 text-white px-2 py-0.5 rounded-full">Premium</span>}
             </div>
             <Estrelas valor={prof.avaliacao} total={prof.totalAvaliacoes} />
           </div>
         </div>
         {prof.especialidades?.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-3">
-            {prof.especialidades.slice(0, 3).map((e, i) => <span key={i} className="text-xs bg-white/5 text-gray-300 border border-white/10 px-2 py-0.5 rounded-full">{e}</span>)}
+            {prof.especialidades.slice(0, 3).map((e, i) => <span key={i} className="text-sm bg-white/5 text-gray-300 border border-white/10 px-2 py-0.5 rounded-full">{e}</span>)}
           </div>
         )}
         {prof.descricao && <p className="text-sm text-gray-400 mt-3 line-clamp-2">{prof.descricao}</p>}
@@ -80,7 +80,7 @@ function CardProfissional({ prof, onSolicitar }: { prof: Profissional; onSolicit
         <div className="mt-4 flex items-center justify-between gap-3 border-t border-white/10 pt-4">
           <div>
             {prof.precoHora > 0 ? (
-              <><p className="text-xs text-gray-500">A partir de</p><p className="text-lg font-bold text-green-400">R$ {prof.precoHora.toFixed(2)}</p></>
+              <><p className="text-sm text-gray-500">A partir de</p><p className="text-lg font-bold text-green-400">R$ {prof.precoHora.toFixed(2)}</p></>
             ) : (
               <p className="text-sm text-gray-400 italic">Orcamento a combinar</p>
             )}
@@ -133,7 +133,7 @@ function ModalSolicitar({ prof, onClose }: { prof: Profissional; onClose: () => 
           <button type="submit" disabled={enviando} className="w-full bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2">
             <MessageCircle className="w-5 h-5" />{enviando ? 'Enviando...' : 'Confirmar Solicitacao'}
           </button>
-          <p className="text-xs text-gray-500 text-center">Sera direcionado para o WhatsApp do profissional apos confirmar.</p>
+          <p className="text-sm text-gray-500 text-center">Sera direcionado para o WhatsApp do profissional apos confirmar.</p>
         </form>
       </div>
     </div>

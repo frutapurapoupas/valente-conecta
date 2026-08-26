@@ -207,12 +207,12 @@ export default function ProfilePage() {
           </div>
           <div className="p-5 space-y-4">
             <div>
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide">Nome completo</label>
+              <label className="text-sm font-bold text-zinc-400 uppercase tracking-wide">Nome completo</label>
               <p className="mt-1 text-white font-medium">{user.nome}</p>
             </div>
 
             <div>
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide flex items-center gap-1">
+              <label className="text-sm font-bold text-zinc-400 uppercase tracking-wide flex items-center gap-1">
                 <Mail className="w-3.5 h-3.5" /> E-mail
               </label>
               {editando ? (
@@ -229,14 +229,14 @@ export default function ProfilePage() {
             </div>
 
             <div>
-              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wide flex items-center gap-1">
+              <label className="text-sm font-bold text-zinc-400 uppercase tracking-wide flex items-center gap-1">
                 <Phone className="w-3.5 h-3.5" /> WhatsApp
               </label>
               <p className="mt-1 text-white font-medium">{user.whatsapp || "Não informado"}</p>
             </div>
 
             {editando && (
-              <p className="text-xs text-zinc-500">Nome e WhatsApp são os do seu cadastro e não podem ser trocados por aqui.</p>
+              <p className="text-sm text-zinc-500">Nome e WhatsApp são os do seu cadastro e não podem ser trocados por aqui.</p>
             )}
 
             <div className="pt-3 border-t border-white/10">
@@ -330,7 +330,7 @@ export default function ProfilePage() {
             <p className="text-yellow-400 text-sm">
               Você está logado como Administrador Master
             </p>
-            <p className="text-yellow-400/70 text-xs mt-1">
+            <p className="text-yellow-400/70 text-sm mt-1">
               Toque no ícone de coroa no topo da tela para acessar o painel administrativo
             </p>
           </div>

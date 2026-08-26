@@ -61,7 +61,7 @@ export function EmpregosFiltros({ filtros, onAplicarFiltros, onLimparFiltros }: 
           <Filter className="w-4 h-4" />
           Filtros
           {Object.keys(filtros).length > 0 && (
-            <span className="ml-1 bg-blue-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+            <span className="ml-1 bg-blue-500 text-white text-sm w-5 h-5 rounded-full flex items-center justify-center">
               {Object.keys(filtros).length}
             </span>
           )}
@@ -84,7 +84,7 @@ export function EmpregosFiltros({ filtros, onAplicarFiltros, onLimparFiltros }: 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Tipo */}
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Tipo</label>
+              <label className="block text-sm font-medium text-gray-500 mb-1">Tipo</label>
               <select
                 value={filtrosLocais.tipo || ""}
                 onChange={(e) => handleChange("tipo", e.target.value as TipoVaga || undefined)}
@@ -101,7 +101,7 @@ export function EmpregosFiltros({ filtros, onAplicarFiltros, onLimparFiltros }: 
 
             {/* Modalidade */}
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Modalidade</label>
+              <label className="block text-sm font-medium text-gray-500 mb-1">Modalidade</label>
               <select
                 value={filtrosLocais.modalidade || ""}
                 onChange={(e) => handleChange("modalidade", e.target.value as Modalidade || undefined)}
@@ -116,7 +116,7 @@ export function EmpregosFiltros({ filtros, onAplicarFiltros, onLimparFiltros }: 
 
             {/* Nível */}
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Nível</label>
+              <label className="block text-sm font-medium text-gray-500 mb-1">Nível</label>
               <select
                 value={filtrosLocais.nivel || ""}
                 onChange={(e) => handleChange("nivel", e.target.value as NivelExperiencia || undefined)}
@@ -133,7 +133,7 @@ export function EmpregosFiltros({ filtros, onAplicarFiltros, onLimparFiltros }: 
 
             {/* Status */}
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Status</label>
+              <label className="block text-sm font-medium text-gray-500 mb-1">Status</label>
               <select
                 value={filtrosLocais.status || ""}
                 onChange={(e) => handleChange("status", e.target.value as StatusVaga || undefined)}

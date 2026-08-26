@@ -167,7 +167,7 @@ export function EmpregosContainer() {
       <div className="bg-white border-b px-4 py-1.5 flex justify-end">
         <button
           onClick={() => setSouEmpregador((v) => !v)}
-          className="text-xs font-medium text-indigo-600 hover:text-indigo-700"
+          className="text-sm font-medium text-indigo-600 hover:text-indigo-700"
         >
           {souEmpregador ? "Voltar para busca de vagas" : "Sou empregador · publicar vaga"}
         </button>
@@ -262,13 +262,13 @@ export function EmpregosContainer() {
               {/* Conteúdo do detalhe */}
               <div className="space-y-4">
                 <div className="flex flex-wrap gap-2">
-                  <span className={`text-xs px-2 py-1 rounded-full ${getTipoVagaBadge(vagaSelecionada.tipo)}`}>
+                  <span className={`text-sm px-2 py-1 rounded-full ${getTipoVagaBadge(vagaSelecionada.tipo)}`}>
                     {vagaSelecionada.tipo}
                   </span>
-                  <span className={`text-xs px-2 py-1 rounded-full ${getModalidadeBadge(vagaSelecionada.modalidade)}`}>
+                  <span className={`text-sm px-2 py-1 rounded-full ${getModalidadeBadge(vagaSelecionada.modalidade)}`}>
                     {vagaSelecionada.modalidade}
                   </span>
-                  <span className={`text-xs px-2 py-1 rounded-full ${getNivelBadge(vagaSelecionada.nivel)}`}>
+                  <span className={`text-sm px-2 py-1 rounded-full ${getNivelBadge(vagaSelecionada.nivel)}`}>
                     {vagaSelecionada.nivel}
                   </span>
                 </div>

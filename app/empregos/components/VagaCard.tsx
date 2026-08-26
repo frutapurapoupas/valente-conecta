@@ -46,7 +46,7 @@ export function VagaCard({
             >
               {vaga.titulo}
             </h3>
-            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getStatusVagaCor(vaga.status)}`}>
+            <span className={`text-sm px-2 py-0.5 rounded-full font-medium ${getStatusVagaCor(vaga.status)}`}>
               {getStatusVagaLabel(vaga.status)}
             </span>
           </div>
@@ -54,13 +54,13 @@ export function VagaCard({
           <p className="text-gray-600 font-medium">{vaga.empresa}</p>
 
           <div className="flex flex-wrap gap-2 mt-2">
-            <span className={`text-xs px-2 py-0.5 rounded-full ${getTipoVagaBadge(vaga.tipo)}`}>
+            <span className={`text-sm px-2 py-0.5 rounded-full ${getTipoVagaBadge(vaga.tipo)}`}>
               {vaga.tipo}
             </span>
-            <span className={`text-xs px-2 py-0.5 rounded-full ${getModalidadeBadge(vaga.modalidade)}`}>
+            <span className={`text-sm px-2 py-0.5 rounded-full ${getModalidadeBadge(vaga.modalidade)}`}>
               {vaga.modalidade}
             </span>
-            <span className={`text-xs px-2 py-0.5 rounded-full ${getNivelBadge(vaga.nivel)}`}>
+            <span className={`text-sm px-2 py-0.5 rounded-full ${getNivelBadge(vaga.nivel)}`}>
               {vaga.nivel}
             </span>
           </div>
@@ -82,7 +82,7 @@ export function VagaCard({
               <Users className="w-4 h-4" />
               {vaga.candidatos || 0} candidatos
             </span>
-            <span className="flex items-center gap-1 text-gray-400">
+            <span className="flex items-center gap-1 text-gray-500">
               <Calendar className="w-4 h-4" />
               {formatarDataRelativa(vaga.dataPublicacao)}
             </span>

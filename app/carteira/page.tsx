@@ -310,7 +310,7 @@ export default function CarteiraPage() {
               <History className="w-5 h-5 text-gray-500" />
               Últimas Transações
             </h2>
-            <Link href="/extrato" className="text-xs text-blue-600 font-medium">
+            <Link href="/extrato" className="text-sm text-blue-600 font-medium">
               Ver extrato completo
             </Link>
           </div>
@@ -333,7 +333,7 @@ export default function CarteiraPage() {
                         <p className="font-medium text-gray-800">
                           {entrada ? `De ${t.remetente_nome}` : `Para ${t.destinatario_nome}`}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-sm text-gray-500">
                           {formatDate(t.created_at)} · {STATUS_LABEL[t.status]}
                         </p>
                       </div>
@@ -361,7 +361,7 @@ export default function CarteiraPage() {
                 <div key={c.id} className="p-4 flex justify-between items-center">
                   <div>
                     <p className="font-medium text-gray-800">{c.fornecedor_nome}</p>
-                    <p className="text-xs text-gray-500">{formatDate(c.created_at)} · {COMPENSACAO_STATUS_LABEL[c.status]}</p>
+                    <p className="text-sm text-gray-500">{formatDate(c.created_at)} · {COMPENSACAO_STATUS_LABEL[c.status]}</p>
                   </div>
                   <div className={`text-right font-semibold ${c.status === 'recusada' ? 'text-gray-400 line-through' : 'text-red-600'}`}>
                     {formatCurrency(c.valor)} {sigla}
@@ -388,8 +388,8 @@ export default function CarteiraPage() {
               </p>
               {qrUrl && <img src={qrUrl} alt="Código de recebimento" className="w-48 h-48 mx-auto mb-4" />}
               <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-3">
-                <p className="font-mono text-xs flex-1 break-all">{meuCodigo}</p>
-                <button onClick={copiarCodigo} className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 rounded-lg hover:bg-gray-200 text-xs shrink-0">
+                <p className="font-mono text-sm flex-1 break-all">{meuCodigo}</p>
+                <button onClick={copiarCodigo} className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm shrink-0">
                   {copiado ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
                   {copiado ? 'Copiado!' : 'Copiar'}
                 </button>
@@ -445,7 +445,7 @@ export default function CarteiraPage() {
                       className="w-full pl-9 pr-3 py-2 border rounded-lg"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Saldo disponível: {formatCurrency(saldo)} {sigla}</p>
+                  <p className="text-sm text-gray-500 mt-1">Saldo disponível: {formatCurrency(saldo)} {sigla}</p>
                 </div>
 
                 <div>
@@ -459,7 +459,7 @@ export default function CarteiraPage() {
                   />
                 </div>
 
-                <div className="flex items-start gap-2 bg-amber-50 text-amber-800 text-xs rounded-lg p-3">
+                <div className="flex items-start gap-2 bg-amber-50 text-amber-800 text-sm rounded-lg p-3">
                   <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
                   Transferências para alguém de outra cidade ficam retidas até o admin master aprovar.
                 </div>
@@ -501,7 +501,7 @@ export default function CarteiraPage() {
                 </button>
               </div>
 
-              <p className="text-xs text-gray-500 mb-4">
+              <p className="text-sm text-gray-500 mb-4">
                 Use quando o fornecedor aceitou receber em Moeda Conecta mas ainda não é usuário do app. O valor sai do seu saldo agora; o admin master paga o fornecedor em real (PIX) no fechamento do mês.
               </p>
 
@@ -542,7 +542,7 @@ export default function CarteiraPage() {
                       className="w-full pl-9 pr-3 py-2 border rounded-lg"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Saldo disponível: {formatCurrency(saldo)} {sigla}</p>
+                  <p className="text-sm text-gray-500 mt-1">Saldo disponível: {formatCurrency(saldo)} {sigla}</p>
                 </div>
 
                 <div>

@@ -115,7 +115,7 @@ export default function CatalogoPage() {
       {produtos.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-lg">
           <p className="text-gray-500 text-lg">Nenhum produto encontrado</p>
-          <p className="text-gray-400 text-sm">Tente ajustar os filtros</p>
+          <p className="text-gray-500 text-sm">Tente ajustar os filtros</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -135,12 +135,12 @@ export default function CatalogoPage() {
                     }}
                   />
                 ) : (
-                  <div className="flex items-center justify-center h-full text-gray-400">
+                  <div className="flex items-center justify-center h-full text-gray-500">
                     Sem imagem
                   </div>
                 )}
                 {produto.destaque && (
-                  <span className="absolute top-2 right-2 bg-yellow-500 text-white text-xs px-2 py-1 rounded-full">
+                  <span className="absolute top-2 right-2 bg-yellow-500 text-white text-sm px-2 py-1 rounded-full">
                     Destaque
                   </span>
                 )}
@@ -157,7 +157,7 @@ export default function CatalogoPage() {
                   }).format(produto.preco)}
                 </p>
                 {produto.categoria && (
-                  <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full mt-2 inline-block">
+                  <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full mt-2 inline-block">
                     {produto.categoria.nome}
                   </span>
                 )}

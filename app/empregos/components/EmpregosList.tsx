@@ -44,7 +44,7 @@ export function EmpregosList({
         <div className="flex flex-col items-center justify-center text-center">
           <Briefcase className="w-16 h-16 text-gray-300 mb-4" />
           <p className="text-gray-500 font-medium">Nenhuma vaga encontrada</p>
-          <p className="text-sm text-gray-400">Ajuste os filtros ou tente novamente</p>
+          <p className="text-sm text-gray-500">Ajuste os filtros ou tente novamente</p>
         </div>
       </div>
     );

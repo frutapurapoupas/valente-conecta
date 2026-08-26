@@ -48,11 +48,11 @@ export default function IndicacoesPage() {
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <table className="w-full">
           <thead className="bg-gray-50"><tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Indicante</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Indicado</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bônus</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>
+            <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase">Indicante</th>
+            <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase">Indicado</th>
+            <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase">Status</th>
+            <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase">Bônus</th>
+            <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase">Ações</th>
           </tr></thead>
           <tbody className="divide-y divide-gray-200">
             {indicacoes.length === 0 ? (
@@ -62,7 +62,7 @@ export default function IndicacoesPage() {
                 <tr key={i.id}>
                   <td className="px-6 py-4">{i.nome_indicante}</td>
                   <td className="px-6 py-4">{i.nome_indicado}</td>
-                  <td className="px-6 py-4"><span className={`px-2 py-1 rounded-full text-xs ${statusColors[i.status] || "bg-gray-100"}`}>{i.status}</span></td>
+                  <td className="px-6 py-4"><span className={`px-2 py-1 rounded-full text-sm ${statusColors[i.status] || "bg-gray-100"}`}>{i.status}</span></td>
                   <td className="px-6 py-4">R$ {(i.bonus || 0).toFixed(2)}</td>
                   <td className="px-6 py-4">
                     <select onChange={(e) => atualizarStatus(i.id, e.target.value)} value={i.status} className="text-sm border rounded px-2 py-1">
