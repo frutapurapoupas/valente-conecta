@@ -167,6 +167,31 @@ async function processWebhookCaronaDesbloqueio(desbloqueioId: string, payment: a
 	return NextResponse.json({ success: true, desbloqueioId, status: statusPagamento });
 }
 
+// Cliente ou motorista pagou a taxa de uso da plataforma no Moto Taxi (ver
+// lib/mototaxi/taxaUso.ts) -- confirma a linha em mototaxi_taxas_uso.
+async function processWebhookMototaxiTaxa(taxaId: string, payment: any) {
+	const supabase = createClient();
+	const statusPagamento = normalizeStatus(String(payment?.status || ''));
+
+	const { data: taxa, error } = await supabase
+		.from('mototaxi_taxas_uso')
+		.update({
+			status: statusPagamento === 'pago' ? 'pago' : 'pendente',
+			pago_via: statusPagamento === 'pago' ? 'mercadopago' : null,
+			mp_payment_id: String(payment?.id || ''),
+			updated_at: new Date().toISOString(),
+		})
+		.eq('id', taxaId)
+		.select('*')
+		.single();
+
+	if (error || !taxa) {
+		return NextResponse.json({ success: true, ignored: true, reason: 'taxa nao encontrada' });
+	}
+
+	return NextResponse.json({ success: true, taxaId, status: statusPagamento });
+}
+
 // Comprador pagou pra desbloquear o contato de um item da vitrine (cota
 // diaria gratis do Plano Geral ja estourada — ver
 // lib/catalogo/catalogoService.ts::criarInteresse).
@@ -241,6 +266,9 @@ async function processWebhook(request: NextRequest, payload: any) {
 		}
 		if (pedidoId.startsWith('vitrine_desbloqueio_')) {
 			return processWebhookVitrineDesbloqueio(pedidoId.replace('vitrine_desbloqueio_', ''), payment);
+		}
+		if (pedidoId.startsWith('mototaxi_taxa_')) {
+			return processWebhookMototaxiTaxa(pedidoId.replace('mototaxi_taxa_', ''), payment);
 		}
 
 		const pedidos = readPedidos();

@@ -58,35 +58,64 @@ interface AdsConfig {
   items: AdsItem[];
 }
 
+interface TaxaConfig {
+  taxaPercentualCliente: number;
+  taxaPercentualMotorista: number;
+}
+
 export default function AdminMasterMotoTaxiPage() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [rides, setRides] = useState<Ride[]>([]);
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [adsConfig, setAdsConfig] = useState<AdsConfig | null>(null);
+  const [taxaConfig, setTaxaConfig] = useState<TaxaConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [savingAds, setSavingAds] = useState(false);
+  const [savingTaxa, setSavingTaxa] = useState(false);
 
   const load = async () => {
     setLoading(true);
     try {
-      const [driversRes, ridesRes, metricsRes, adsRes] = await Promise.all([
+      const [driversRes, ridesRes, metricsRes, adsRes, taxaRes] = await Promise.all([
         fetch("/api/mototaxi?recurso=drivers", { cache: "no-store" }),
         fetch("/api/mototaxi?recurso=rides", { cache: "no-store" }),
         fetch("/api/mototaxi?recurso=metrics", { cache: "no-store" }),
-        fetch("/api/mototaxi?recurso=ads", { cache: "no-store" })
+        fetch("/api/mototaxi?recurso=ads", { cache: "no-store" }),
+        fetch("/api/admin-master/mototaxi/taxa-config", { cache: "no-store" })
       ]);
 
       const driversData = await driversRes.json();
       const ridesData = await ridesRes.json();
       const metricsData = await metricsRes.json();
       const adsData = await adsRes.json();
+      const taxaData = await taxaRes.json();
 
       setDrivers(Array.isArray(driversData?.data) ? driversData.data : []);
       setRides(Array.isArray(ridesData?.data) ? ridesData.data : []);
       setMetrics(metricsData?.data || null);
       setAdsConfig(adsData?.data || null);
+      setTaxaConfig(taxaData?.data || null);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const saveTaxaConfig = async () => {
+    if (!taxaConfig) return;
+    setSavingTaxa(true);
+    try {
+      const resp = await fetch("/api/admin-master/mototaxi/taxa-config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(taxaConfig)
+      });
+      const resultado = await resp.json();
+      if (!resultado.success) throw new Error(resultado.error);
+      alert("Taxa de uso salva.");
+    } catch (err: any) {
+      alert(err.message || "Erro ao salvar taxa de uso");
+    } finally {
+      setSavingTaxa(false);
     }
   };
 
@@ -235,6 +264,42 @@ export default function AdminMasterMotoTaxiPage() {
             </div>
           ))}
         </div>
+      </section>
+
+      <section className="bg-white rounded-xl border border-gray-200 p-4">
+        <h2 className="font-semibold text-gray-800 mb-1">Taxa de uso da plataforma</h2>
+        <p className="text-sm text-gray-500 mb-3">Cobrada de cliente e motorista em toda corrida concluída pelo app. Quem tiver plano pago (cliente: Plano Geral básico/ilimitado; motorista: assinatura ativa na categoria Moto Táxi) fica isento da própria parte.</p>
+        {taxaConfig && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+              <label className="text-sm text-gray-600">Taxa do cliente (%)
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  step={0.5}
+                  value={taxaConfig.taxaPercentualCliente}
+                  onChange={(e) => setTaxaConfig({ ...taxaConfig, taxaPercentualCliente: Number(e.target.value) })}
+                  className="w-full mt-1 border rounded px-2 py-1.5"
+                />
+              </label>
+              <label className="text-sm text-gray-600">Taxa do motorista (%)
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  step={0.5}
+                  value={taxaConfig.taxaPercentualMotorista}
+                  onChange={(e) => setTaxaConfig({ ...taxaConfig, taxaPercentualMotorista: Number(e.target.value) })}
+                  className="w-full mt-1 border rounded px-2 py-1.5"
+                />
+              </label>
+            </div>
+            <button onClick={saveTaxaConfig} disabled={savingTaxa} className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 disabled:opacity-60">
+              <Save size={14} /> {savingTaxa ? "Salvando..." : "Salvar taxa de uso"}
+            </button>
+          </>
+        )}
       </section>
 
       <section className="bg-white rounded-xl border border-gray-200 p-4">

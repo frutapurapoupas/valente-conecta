@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { verificarECConsumirPlanoGeral } from '@/lib/planoGeral';
+import { calcularERegistrarTaxasDaCorrida } from '@/lib/mototaxi/taxaUso';
 
 function validarMotoristaPayload(payload: any) {
   const obrigatorios = ['nome', 'telefone', 'veiculo', 'placa', 'cnh_numero', 'licenciamento_vencimento', 'foto_url', 'veiculo_foto_url', 'cnh_foto_url'];
@@ -331,6 +332,15 @@ export async function PUT(request: NextRequest) {
         .single();
 
       if (error) throw error;
+
+      // Taxa de uso da plataforma (ver lib/mototaxi/taxaUso.ts) -- so' calcula
+      // quando a corrida vira 'concluida'. Roda depois de responder pro
+      // cliente nao esperar por isso; falha aqui nunca derruba a conclusao
+      // da corrida em si.
+      if (status === 'concluida') {
+        calcularERegistrarTaxasDaCorrida(corridaId);
+      }
+
       return NextResponse.json({ success: true, data });
     }
 
