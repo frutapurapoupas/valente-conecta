@@ -99,7 +99,7 @@ function BadgeProduto({ p }: { p: Produto }) {
       </span>
       <span className="text-white font-bold text-sm">
         {p.preco > 0 ? `R$ ${p.preco.toFixed(2)}` : 'Consultar'}
-        {p.unidade ? <span className="text-gray-400 font-normal text-xs ml-1">/{p.unidade}</span> : null}
+        {p.unidade ? <span className="text-gray-400 font-normal text-sm ml-1">/{p.unidade}</span> : null}
       </span>
     </div>
   );
@@ -112,7 +112,7 @@ function CardFornecedor({ forn, onPedir, onReivindicar, distanciaKm: distancia }
   return (
     <div className={`rounded-2xl border border-white/10 bg-slate-900 overflow-hidden ${forn.destaque ? 'ring-2 ring-blue-400/40' : ''}`}>
       {forn.destaque && (
-        <div className="bg-blue-600 text-white text-center text-[11px] font-bold py-1 tracking-wide">
+        <div className="bg-blue-600 text-white text-center text-[13px] font-bold py-1 tracking-wide">
           ⭐ DESTAQUE
         </div>
       )}
@@ -129,20 +129,20 @@ function CardFornecedor({ forn, onPedir, onReivindicar, distanciaKm: distancia }
           )}
           <div className="flex-1 min-w-0">
             <h3 className="font-bold text-white text-base leading-tight">{forn.nome}</h3>
-            {forn.responsavel && <p className="text-xs text-gray-400 mt-0.5">{forn.responsavel}</p>}
+            {forn.responsavel && <p className="text-sm text-gray-400 mt-0.5">{forn.responsavel}</p>}
             <div className="flex flex-wrap gap-2 mt-2">
               {forn.temEntrega && (
-                <span className="flex items-center gap-1 text-xs bg-green-500/15 text-green-400 border border-green-500/20 px-2 py-0.5 rounded-full">
+                <span className="flex items-center gap-1 text-sm bg-green-500/15 text-green-400 border border-green-500/20 px-2 py-0.5 rounded-full">
                   <Truck className="w-3 h-3" />Entrega
                 </span>
               )}
               {forn.taxaEntrega === 0 && forn.temEntrega && (
-                <span className="text-xs bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                <span className="text-sm bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full">
                   Frete grátis
                 </span>
               )}
               {forn.freteGratisAcima > 0 && (
-                <span className="text-xs text-gray-400">
+                <span className="text-sm text-gray-400">
                   Frete grátis acima de R$ {forn.freteGratisAcima.toFixed(0)}
                 </span>
               )}
@@ -150,7 +150,7 @@ function CardFornecedor({ forn, onPedir, onReivindicar, distanciaKm: distancia }
             {(forn.aceitaValeGas || forn.aceitaFiado || forn.aceitaPix || forn.aceitaCartao) && (
               <div className="flex flex-wrap gap-1.5 mt-1.5">
                 {FORMAS_PAGAMENTO_CLIENTE.filter((f) => forn[f.chave]).map((f) => (
-                  <span key={f.chave} className="text-[11px] bg-white/5 text-gray-300 border border-white/10 px-2 py-0.5 rounded-full">
+                  <span key={f.chave} className="text-[13px] bg-white/5 text-gray-300 border border-white/10 px-2 py-0.5 rounded-full">
                     {f.label}
                   </span>
                 ))}
@@ -191,7 +191,7 @@ function CardFornecedor({ forn, onPedir, onReivindicar, distanciaKm: distancia }
           <div className="mt-4 space-y-2">
             {produtosVisiveis.map((p, i) => <BadgeProduto key={i} p={p} />)}
             {(forn.produtos?.filter((p) => p.disponivel !== false).length || 0) > 4 && (
-              <p className="text-xs text-gray-500 text-center">
+              <p className="text-sm text-gray-500 text-center">
                 +{(forn.produtos?.filter((p) => p.disponivel !== false).length || 0) - 4} produto(s) disponíveis
               </p>
             )}
@@ -376,7 +376,7 @@ function ModalPedido({ forn, onClose }: { forn: Fornecedor; onClose: () => void 
             )}
           </div>
           {perfilCompleto && (
-            <p className="text-xs text-gray-500">O fornecedor vai combinar o endereço de entrega direto pelo telefone.</p>
+            <p className="text-sm text-gray-500">O fornecedor vai combinar o endereço de entrega direto pelo telefone.</p>
           )}
 
           {formasAceitas.length > 0 && (
@@ -404,7 +404,7 @@ function ModalPedido({ forn, onClose }: { forn: Fornecedor; onClose: () => void 
             <ShoppingCart className="w-5 h-5" />
             {enviando ? 'Enviando...' : 'Confirmar Pedido'}
           </button>
-          <p className="text-xs text-gray-500 text-center">
+          <p className="text-sm text-gray-500 text-center">
             Após confirmar, será aberto o WhatsApp do fornecedor com seu pedido.
           </p>
         </form>
@@ -503,7 +503,7 @@ function ModalReivindicarAguaGas({ forn, onFechar, onEnviado }: {
           <p className="text-sm text-gray-400">Confirme e atualize os dados do seu fornecedor. Sua solicitação passa por uma revisão antes de valer.</p>
 
           <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3 space-y-3">
-            <p className="text-xs font-semibold text-blue-400">Quem está reivindicando</p>
+            <p className="text-sm font-semibold text-blue-400">Quem está reivindicando</p>
             <div>
               <label className="text-sm text-gray-400">Seu nome (proprietário) *</label>
               <input value={form.nomeProprietario} onChange={(e) => set('nomeProprietario', e.target.value)} className="w-full mt-1 bg-slate-800 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400" />
@@ -670,7 +670,7 @@ export default function AguaGasPage() {
               <Navigation className="w-3.5 h-3.5" />
               {buscandoLocalizacao ? 'Localizando você...' : userPosition ? 'Ordenado por proximidade' : 'Localização indisponível — ordem padrão'}
             </p>
-            <button onClick={() => setCategoria(null)} className="text-xs text-gray-500 hover:text-gray-300 underline">Ver tudo</button>
+            <button onClick={() => setCategoria(null)} className="text-sm text-gray-500 hover:text-gray-300 underline">Ver tudo</button>
           </div>
         )}
 

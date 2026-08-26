@@ -584,7 +584,7 @@ export default function MotoTaxiPage() {
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
           <button onClick={() => router.back()} className="text-white/90 hover:text-white">Voltar</button>
           <h1 className="font-bold text-lg">Moto Taxi {cidadeAtiva ? cidadeAtiva.nome : "Valente"}</h1>
-          <button onClick={() => router.push("/mototaxi/motorista")} className="text-xs bg-white/15 px-3 py-1.5 rounded-full flex items-center gap-1">
+          <button onClick={() => router.push("/mototaxi/motorista")} className="text-sm bg-white/15 px-3 py-1.5 rounded-full flex items-center gap-1">
             <Bike size={13} /> Sou motorista
           </button>
         </div>
@@ -616,7 +616,7 @@ export default function MotoTaxiPage() {
           <section className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-semibold">{tipoCorrida === "encomenda" ? "Enviar encomenda" : "Solicitar corrida"}</h2>
-              <button onClick={() => setTipoCorrida(null)} className="text-xs text-slate-400 hover:text-white">Trocar</button>
+              <button onClick={() => setTipoCorrida(null)} className="text-sm text-slate-400 hover:text-white">Trocar</button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <CampoEnderecoAutocomplete
@@ -634,7 +634,7 @@ export default function MotoTaxiPage() {
                 onSelecionar={(s) => setDestinationPosition({ lat: s.lat, lng: s.lng })}
               />
             </div>
-            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
               <button onClick={capturarPosicaoAtual} className="bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5">
                 {capturandoPosicao ? "Capturando..." : "Usar minha localizacao atual"}
               </button>
@@ -695,13 +695,13 @@ export default function MotoTaxiPage() {
               <h2 className="font-semibold">
                 {corridaAtiva.status === "aguardando_motorista" ? "Procurando motorista..." : "Corrida"}
               </h2>
-              <span className="text-xs px-2 py-1 rounded-full bg-slate-700">{corridaAtiva.status}</span>
+              <span className="text-sm px-2 py-1 rounded-full bg-slate-700">{corridaAtiva.status}</span>
             </div>
 
             {corridaAtiva.status === "aguardando_motorista" && (
               <div className="mt-3 flex items-center justify-between rounded-xl bg-slate-800 p-3">
                 <p className="text-sm text-slate-300">Aguardando algum motorista aceitar sua corrida...</p>
-                <button onClick={cancelarBusca} className="text-xs bg-red-600 px-3 py-1.5 rounded-lg">Cancelar</button>
+                <button onClick={cancelarBusca} className="text-sm bg-red-600 px-3 py-1.5 rounded-lg">Cancelar</button>
               </div>
             )}
 
@@ -717,10 +717,10 @@ export default function MotoTaxiPage() {
                     )}
                     <div>
                       <p className="font-semibold">{motoristaAtivo.nome}</p>
-                      <p className="text-xs text-yellow-300 flex items-center gap-1"><Star size={12} /> {motoristaAtivo.avaliacao.toFixed(1)}</p>
+                      <p className="text-sm text-yellow-300 flex items-center gap-1"><Star size={12} /> {motoristaAtivo.avaliacao.toFixed(1)}</p>
                     </div>
                   </div>
-                  <p className="text-slate-300 text-xs mt-2">{motoristaAtivo.veiculo} · {motoristaAtivo.placa}</p>
+                  <p className="text-slate-300 text-sm mt-2">{motoristaAtivo.veiculo} · {motoristaAtivo.placa}</p>
                   {motoristaAtivo.veiculo_foto_url && (
                     <img src={motoristaAtivo.veiculo_foto_url} alt="Veículo" className="mt-2 w-full h-20 rounded-lg object-cover border border-slate-700" />
                   )}
@@ -733,8 +733,8 @@ export default function MotoTaxiPage() {
                 <div className="rounded-xl bg-slate-800 p-3">
                   <p className="text-slate-400">Pagamento</p>
                   <p className="font-semibold">R$ {Number(corridaAtiva.preco || 0).toFixed(2)}</p>
-                  <p className="text-xs text-slate-300">Metodo: {corridaAtiva.metodo_pagamento}</p>
-                  <p className="text-xs text-green-300">Status: {corridaAtiva.status_pagamento}</p>
+                  <p className="text-sm text-slate-300">Metodo: {corridaAtiva.metodo_pagamento}</p>
+                  <p className="text-sm text-green-300">Status: {corridaAtiva.status_pagamento}</p>
                 </div>
               </div>
             )}
@@ -760,8 +760,8 @@ export default function MotoTaxiPage() {
               {(adsConfig.items || []).filter((item) => item.ativo !== false).map((item) => (
                 <div key={item.id} className="rounded-xl bg-slate-800 p-3 border border-slate-700">
                   <p className="font-semibold text-sm">{item.titulo}</p>
-                  <p className="text-xs text-slate-300 mt-1">{item.mensagem}</p>
-                  <button onClick={() => router.push(item.ctaLink)} className="mt-2 text-xs bg-cyan-600 px-2.5 py-1 rounded">{item.ctaLabel}</button>
+                  <p className="text-sm text-slate-300 mt-1">{item.mensagem}</p>
+                  <button onClick={() => router.push(item.ctaLink)} className="mt-2 text-sm bg-cyan-600 px-2.5 py-1 rounded">{item.ctaLabel}</button>
                 </div>
               ))}
             </div>
@@ -799,7 +799,7 @@ export default function MotoTaxiPage() {
               ))}
             </div>
 
-            <div className="mt-3 rounded-xl bg-slate-800 p-3 text-xs text-slate-300 space-y-1">
+            <div className="mt-3 rounded-xl bg-slate-800 p-3 text-sm text-slate-300 space-y-1">
               <p className="flex items-center gap-1"><ShieldCheck size={12} /> Tokenizacao ativa para metodo de pagamento.</p>
               <p>ID da corrida: {corridaAtiva.id}</p>
             </div>
