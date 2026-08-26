@@ -107,7 +107,7 @@ export default function ConfigBoasVindasPage() {
       </p>
 
       {loading ? (
-        <p className="text-gray-400 text-sm">Carregando...</p>
+        <p className="text-gray-500 text-sm">Carregando...</p>
       ) : (
         <div className="bg-white border rounded-lg p-5 space-y-4">
           <p className="text-sm font-medium text-gray-700">Vídeo atual</p>
@@ -115,11 +115,11 @@ export default function ConfigBoasVindasPage() {
             <>
               <video src={config.url} controls className="w-full max-h-80 rounded-lg bg-black" />
               {config.atualizadoEm && (
-                <p className="text-xs text-gray-400">Atualizado em {new Date(config.atualizadoEm).toLocaleString("pt-BR")}</p>
+                <p className="text-sm text-gray-500">Atualizado em {new Date(config.atualizadoEm).toLocaleString("pt-BR")}</p>
               )}
             </>
           ) : (
-            <div className="h-48 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 text-sm text-center px-4">
+            <div className="h-48 bg-gray-50 rounded-lg flex items-center justify-center text-gray-500 text-sm text-center px-4">
               Nenhum vídeo enviado ainda. Envie o arquivo aqui assim que estiver pronto.
             </div>
           )}
@@ -140,7 +140,7 @@ export default function ConfigBoasVindasPage() {
               <p className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
                 <PlayCircle className="w-4 h-4 text-emerald-600" /> Pop-up ativo
               </p>
-              <p className="text-xs text-gray-400 mt-0.5">
+              <p className="text-sm text-gray-500 mt-0.5">
                 {config.ativo ? "Sendo exibido pros usuários agora." : "Desligado — nada é exibido, mesmo com vídeo enviado."}
               </p>
             </div>

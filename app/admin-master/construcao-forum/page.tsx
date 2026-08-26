@@ -51,9 +51,9 @@ export default function ModeracaoForumConstrucaoPage() {
       <p className="text-sm text-gray-500 mb-6">Posts ativos, com os mais denunciados primeiro.</p>
 
       {loading ? (
-        <p className="text-gray-400 text-sm">Carregando...</p>
+        <p className="text-gray-500 text-sm">Carregando...</p>
       ) : posts.length === 0 ? (
-        <p className="text-gray-400 text-sm">Nenhum post ainda.</p>
+        <p className="text-gray-500 text-sm">Nenhum post ainda.</p>
       ) : (
         <div className="space-y-3">
           {posts.map((post) => (
@@ -61,11 +61,11 @@ export default function ModeracaoForumConstrucaoPage() {
               <div className="flex items-center justify-between gap-2">
                 <div>
                   <p className="font-medium text-gray-800">{post.autor_nome}</p>
-                  <p className="text-xs text-gray-400">{post.autor_whatsapp} · {new Date(post.created_at).toLocaleString("pt-BR")}</p>
+                  <p className="text-sm text-gray-500">{post.autor_whatsapp} · {new Date(post.created_at).toLocaleString("pt-BR")}</p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   {post.denuncias > 0 && (
-                    <span className="text-xs font-semibold bg-red-100 text-red-700 px-2 py-1 rounded-full flex items-center gap-1">
+                    <span className="text-sm font-semibold bg-red-100 text-red-700 px-2 py-1 rounded-full flex items-center gap-1">
                       <Flag className="w-3 h-3" /> {post.denuncias}
                     </span>
                   )}
