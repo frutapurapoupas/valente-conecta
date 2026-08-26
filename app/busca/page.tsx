@@ -140,6 +140,7 @@ export default function BuscaPage() {
           resultadosExternos={resultadosExternos}
           pedirCadastro={pedirCadastro}
           onFecharCadastro={() => setPedirCadastro(false)}
+          mensagemHumanizada={mensagemHumanizada}
         />
       ) : (
         <div className="space-y-8">

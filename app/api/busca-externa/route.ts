@@ -42,9 +42,14 @@ export async function GET(request: NextRequest) {
   if (!termo) return NextResponse.json({ success: false, error: 'q é obrigatório' }, { status: 400 });
 
   if (usuarioId) {
-    const cota = await verificarECConsumirPlanoGeral(usuarioId, 'busca_google');
-    if (!cota.permitido) {
-      return NextResponse.json({ success: true, data: [], configurado: true, limiteAtingido: true, tier: cota.tier });
+    try {
+      const cota = await verificarECConsumirPlanoGeral(usuarioId, 'busca_google');
+      if (!cota.permitido) {
+        return NextResponse.json({ success: true, data: [], configurado: true, limiteAtingido: true, tier: cota.tier });
+      }
+    } catch {
+      // cota indisponivel (erro de banco, usuarioId invalido, etc) nao deve
+      // derrubar o fallback externo — mesmo padrao de interpretarIntencao.ts
     }
   }
 

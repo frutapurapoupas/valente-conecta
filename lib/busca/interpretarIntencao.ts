@@ -28,12 +28,15 @@ const PROMPT_SISTEMA = `Você ajuda a interpretar buscas dentro do Valente Conec
 Dado o texto de busca de um usuário (pode ser uma palavra solta ou uma pergunta em linguagem natural), devolva um JSON com três campos:
 - "termos_diretos": até 6 termos de busca curtos (palavras ou expressões de 1 a 3 palavras, em português) que representam o que a pessoa está procurando DE FORMA DIRETA. Se a busca já for uma palavra simples de comércio/serviço, esse campo pode conter só essa palavra.
 - "termos_relacionados": até 4 termos de busca que fazem sentido como interesse ADICIONAL ligado ao mesmo contexto, mas que não respondem diretamente à pergunta.
-- "mensagem_humanizada": uma frase curta (no máximo 15 palavras), em português, tom natural e acolhedor, pra encabeçar os resultados dessa busca — não diga se encontrou algo ou não (isso é decidido depois, você não sabe o resultado da busca), só apresente o que o app vai tentar mostrar. Nunca repita a pergunta do usuário literalmente.
+- "mensagem_humanizada": uma frase curta (no máximo 15 palavras), em português, tom natural e acolhedor, pra encabeçar os resultados dessa busca. Você NUNCA sabe se a busca vai achar algo dentro do app ou não (isso é decidido depois, sem a sua participação) — por isso a frase precisa funcionar dos dois jeitos, tanto se aparecer 1 resultado quanto se aparecer 0. NUNCA use palavras que afirmem que algo foi encontrado ("encontramos", "achamos", "temos", "aqui estão os resultados") — fale só sobre o que você vai PROCURAR/SEPARAR pra pessoa, nunca sobre o que já apareceu. Nunca repita a pergunta do usuário literalmente.
 
 Responda só com o JSON, sem nenhum texto explicativo antes ou depois.
 
 Exemplo — busca "onde regularizar a documentação do carro":
-{"termos_diretos": ["despachante", "DETRAN", "cartório", "confecção de placas", "emplacamento"], "termos_relacionados": ["oficina mecânica", "chapeação e pintura", "auto peças"], "mensagem_humanizada": "Separamos quem pode te ajudar com a documentação do carro por aqui:"}`;
+{"termos_diretos": ["despachante", "DETRAN", "cartório", "confecção de placas", "emplacamento"], "termos_relacionados": ["oficina mecânica", "chapeação e pintura", "auto peças"], "mensagem_humanizada": "Separamos quem pode te ajudar com a documentação do carro por aqui:"}
+
+Exemplo — busca "preciso de consertar meu carro" (frase neutra, funciona mesmo se nada aparecer):
+{"termos_diretos": ["oficina mecânica", "mecânico", "conserto de carro", "auto elétrica", "borracharia"], "termos_relacionados": ["auto peças", "guincho", "chapeação e pintura"], "mensagem_humanizada": "Vamos procurar oficinas e profissionais pra cuidar do seu carro:"}`;
 
 // Provedores tentados nessa ordem — primeiro com chave configurada vence.
 // Os dois falam o mesmo formato (chat completions estilo OpenAI), so' muda

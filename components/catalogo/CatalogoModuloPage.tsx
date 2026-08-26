@@ -107,6 +107,7 @@ export function CatalogoModuloPage({ modulo, labelModulo, categorias, descricao,
           resultadosExternos={resultadosExternos}
           pedirCadastro={pedirCadastro}
           onFecharCadastro={() => setPedirCadastro(false)}
+          mensagemHumanizada={mensagemHumanizada}
           semTermoExtra={
             <Link href={`/${modulo}/admin`} className="text-blue-600 text-sm font-medium mt-2 inline-block">
               Seja o primeiro a publicar

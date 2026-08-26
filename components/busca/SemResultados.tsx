@@ -23,6 +23,11 @@ interface SemResultadosProps {
   onFecharCadastro: () => void;
   /** Conteudo extra mostrado so' quando nao ha termo digitado (navegacao por categoria vazia). */
   semTermoExtra?: React.ReactNode;
+  /** Frase da IA (lib/busca/interpretarIntencao.ts) pra essa busca — quando
+   *  existe, substitui o texto fixo "Ainda nao achamos..." pela versao
+   *  humanizada; sem IA disponivel (sem chave, cota estourada, erro), cai no
+   *  texto fixo de sempre. */
+  mensagemHumanizada?: string;
 }
 
 export function SemResultados({
@@ -35,13 +40,16 @@ export function SemResultados({
   pedirCadastro,
   onFecharCadastro,
   semTermoExtra,
+  mensagemHumanizada,
 }: SemResultadosProps) {
   const temTermo = Boolean(termo.trim());
 
   return (
     <div className="text-center py-16 bg-gray-50 rounded-lg px-6">
       <p className="text-gray-500 text-lg">
-        {temTermo ? `Ainda não achamos ninguém oferecendo "${termo}" em Valente` : "Nenhum item por aqui ainda"}
+        {temTermo
+          ? mensagemHumanizada || `Ainda não achamos ninguém oferecendo "${termo}" em Valente`
+          : "Nenhum item por aqui ainda"}
       </p>
       <p className="text-gray-400 text-sm mt-1">
         {temTermo ? "Mas podemos te avisar assim que alguém publicar isso por aqui." : "Assim que alguém publicar, aparece aqui."}
