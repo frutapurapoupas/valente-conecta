@@ -222,8 +222,8 @@ export default function AdminMasterMotoTaxiPage() {
               <div key={driver.id} className="border rounded-lg p-3 flex flex-col md:flex-row md:items-center gap-3 md:justify-between">
                 <div>
                   <p className="font-semibold text-sm text-gray-800">{driver.nome}</p>
-                  <p className="text-xs text-gray-600">{driver.veiculo} · {driver.placa}</p>
-                  <p className={`text-xs ${docOk ? "text-green-600" : "text-red-600"}`}>
+                  <p className="text-sm text-gray-600">{driver.veiculo} · {driver.placa}</p>
+                  <p className={`text-sm ${docOk ? "text-green-600" : "text-red-600"}`}>
                     {docOk ? "Documentacao OK" : "Pendencia documental"} · Licenciamento: {driver.licenciamentoVencimento}
                   </p>
                 </div>
@@ -237,7 +237,7 @@ export default function AdminMasterMotoTaxiPage() {
                     <option value="basico">Basico</option>
                     <option value="premium">Premium</option>
                   </select>
-                  <button onClick={() => updateDriver(driver.id, { online: !driver.online })} className="text-xs px-3 py-1 rounded bg-slate-800 text-white">
+                  <button onClick={() => updateDriver(driver.id, { online: !driver.online })} className="text-sm px-3 py-1 rounded bg-slate-800 text-white">
                     {driver.online ? "Ficar offline" : "Ficar online"}
                   </button>
                 </div>
@@ -254,12 +254,12 @@ export default function AdminMasterMotoTaxiPage() {
             <div key={ride.id} className="border rounded-lg p-3 flex flex-col md:flex-row md:items-center gap-3 md:justify-between">
               <div>
                 <p className="text-sm font-semibold text-gray-800">{ride.passengerName} com {ride.driverName}</p>
-                <p className="text-xs text-gray-600">R$ {Number(ride.price || 0).toFixed(2)} · {ride.paymentStatus} · {ride.status}</p>
+                <p className="text-sm text-gray-600">R$ {Number(ride.price || 0).toFixed(2)} · {ride.paymentStatus} · {ride.status}</p>
               </div>
               <div className="flex gap-2">
-                <button onClick={() => updateRideStatus(ride.id, "em_andamento")} className="text-xs px-3 py-1 rounded bg-blue-600 text-white">Iniciar</button>
-                <button onClick={() => updateRideStatus(ride.id, "concluida")} className="text-xs px-3 py-1 rounded bg-green-600 text-white">Concluir</button>
-                <button onClick={() => updateRideStatus(ride.id, "cancelada")} className="text-xs px-3 py-1 rounded bg-red-600 text-white">Cancelar</button>
+                <button onClick={() => updateRideStatus(ride.id, "em_andamento")} className="text-sm px-3 py-1 rounded bg-blue-600 text-white">Iniciar</button>
+                <button onClick={() => updateRideStatus(ride.id, "concluida")} className="text-sm px-3 py-1 rounded bg-green-600 text-white">Concluir</button>
+                <button onClick={() => updateRideStatus(ride.id, "cancelada")} className="text-sm px-3 py-1 rounded bg-red-600 text-white">Cancelar</button>
               </div>
             </div>
           ))}
@@ -305,16 +305,16 @@ export default function AdminMasterMotoTaxiPage() {
       <section className="bg-white rounded-xl border border-gray-200 p-4">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-semibold text-gray-800">Publicidade para passageiros sem plano</h2>
-          <button onClick={addAd} className="text-xs px-3 py-1 rounded bg-slate-800 text-white flex items-center gap-1"><Plus size={13} /> Novo</button>
+          <button onClick={addAd} className="text-sm px-3 py-1 rounded bg-slate-800 text-white flex items-center gap-1"><Plus size={13} /> Novo</button>
         </div>
 
         {adsConfig && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
-              <label className="text-xs text-gray-600">Titulo do popup
+              <label className="text-sm text-gray-600">Titulo do popup
                 <input value={adsConfig.popupTitle} onChange={(e) => setAdsConfig({ ...adsConfig, popupTitle: e.target.value })} className="w-full mt-1 border rounded px-2 py-1.5" />
               </label>
-              <label className="text-xs text-gray-600">Mensagem do popup
+              <label className="text-sm text-gray-600">Mensagem do popup
                 <input value={adsConfig.popupMessage || ""} onChange={(e) => setAdsConfig({ ...adsConfig, popupMessage: e.target.value })} className="w-full mt-1 border rounded px-2 py-1.5" />
               </label>
               <label className="flex items-center gap-2 text-sm">
@@ -334,7 +334,7 @@ export default function AdminMasterMotoTaxiPage() {
                     <input value={item.ctaLabel} onChange={(e) => updateAd(item.id, { ctaLabel: e.target.value })} className="border rounded px-2 py-1.5 text-sm" placeholder="Texto CTA" />
                     <input value={item.ctaLink} onChange={(e) => updateAd(item.id, { ctaLink: e.target.value })} className="border rounded px-2 py-1.5 text-sm" placeholder="Link CTA" />
                   </div>
-                  <label className="mt-2 flex items-center gap-2 text-xs">
+                  <label className="mt-2 flex items-center gap-2 text-sm">
                     <input type="checkbox" checked={item.ativo !== false} onChange={(e) => updateAd(item.id, { ativo: e.target.checked })} /> Ativo
                   </label>
                 </div>
@@ -372,7 +372,7 @@ function CardMetric({ icon, label, value }: { icon: React.ReactNode; label: stri
     <div className="bg-white rounded-xl border border-gray-200 p-3">
       <div className="text-slate-500 mb-1">{icon}</div>
       <p className="text-xl font-bold text-gray-800">{value}</p>
-      <p className="text-xs text-gray-500">{label}</p>
+      <p className="text-sm text-gray-500">{label}</p>
     </div>
   );
 }

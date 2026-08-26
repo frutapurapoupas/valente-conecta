@@ -103,7 +103,7 @@ export default function AdminCidadesAdicionaisPage() {
         <button
           onClick={salvarPreco}
           disabled={salvandoPreco}
-          className="ml-auto flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-lg text-xs font-medium"
+          className="ml-auto flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-lg text-sm font-medium"
         >
           <Save className="w-3.5 h-3.5" /> Salvar
         </button>
@@ -111,25 +111,25 @@ export default function AdminCidadesAdicionaisPage() {
 
       <div className="bg-white border rounded-lg divide-y">
         {carregando ? (
-          <p className="p-4 text-sm text-gray-400">Carregando...</p>
+          <p className="p-4 text-sm text-gray-500">Carregando...</p>
         ) : pedidos.length === 0 ? (
-          <p className="p-4 text-sm text-gray-400">Nenhum pedido ainda.</p>
+          <p className="p-4 text-sm text-gray-500">Nenhum pedido ainda.</p>
         ) : (
           pedidos.map((p) => (
             <div key={p.id} className="p-4">
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div>
                   <p className="text-sm font-medium text-gray-800">
-                    {p.usuario?.nome || "Usuário"} <span className="text-gray-400 font-normal">· {p.usuario?.whatsapp}</span>
+                    {p.usuario?.nome || "Usuário"} <span className="text-gray-500 font-normal">· {p.usuario?.whatsapp}</span>
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-sm text-gray-500">
                     Cidade base: {p.usuario?.cidade_base || "—"} → pediu: <span className="font-medium">{p.cidade}</span>
                   </p>
                   {p.valor_cobrado != null && (
-                    <p className="text-xs text-gray-400">R$ {Number(p.valor_cobrado).toFixed(2)}</p>
+                    <p className="text-sm text-gray-500">R$ {Number(p.valor_cobrado).toFixed(2)}</p>
                   )}
                 </div>
-                <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600 whitespace-nowrap">
+                <span className="text-sm px-2 py-1 rounded-full bg-gray-100 text-gray-600 whitespace-nowrap">
                   {STATUS_LABEL[p.status]}
                 </span>
               </div>
@@ -137,21 +137,21 @@ export default function AdminCidadesAdicionaisPage() {
                 <button
                   onClick={() => mudarStatus(p.id, "aguardando_pagamento")}
                   disabled={atualizandoId === p.id || p.status === "aguardando_pagamento"}
-                  className="flex items-center gap-1 px-2.5 py-1 bg-orange-50 hover:bg-orange-100 disabled:opacity-40 text-orange-700 rounded-lg text-xs"
+                  className="flex items-center gap-1 px-2.5 py-1 bg-orange-50 hover:bg-orange-100 disabled:opacity-40 text-orange-700 rounded-lg text-sm"
                 >
                   <Clock className="w-3 h-3" /> Aguardando pagamento
                 </button>
                 <button
                   onClick={() => mudarStatus(p.id, "ativo")}
                   disabled={atualizandoId === p.id || p.status === "ativo"}
-                  className="flex items-center gap-1 px-2.5 py-1 bg-green-50 hover:bg-green-100 disabled:opacity-40 text-green-700 rounded-lg text-xs"
+                  className="flex items-center gap-1 px-2.5 py-1 bg-green-50 hover:bg-green-100 disabled:opacity-40 text-green-700 rounded-lg text-sm"
                 >
                   <Check className="w-3 h-3" /> Ativar
                 </button>
                 <button
                   onClick={() => mudarStatus(p.id, "recusado")}
                   disabled={atualizandoId === p.id || p.status === "recusado"}
-                  className="flex items-center gap-1 px-2.5 py-1 bg-red-50 hover:bg-red-100 disabled:opacity-40 text-red-700 rounded-lg text-xs"
+                  className="flex items-center gap-1 px-2.5 py-1 bg-red-50 hover:bg-red-100 disabled:opacity-40 text-red-700 rounded-lg text-sm"
                 >
                   <XIcon className="w-3 h-3" /> Recusar
                 </button>

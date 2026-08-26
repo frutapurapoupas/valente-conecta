@@ -148,9 +148,9 @@ export default function CidadesMoedaPage() {
 
       <div className="bg-white border rounded-lg divide-y">
         {loading ? (
-          <p className="p-4 text-sm text-gray-400">Carregando...</p>
+          <p className="p-4 text-sm text-gray-500">Carregando...</p>
         ) : cidades.length === 0 ? (
-          <p className="p-4 text-sm text-gray-400">Nenhuma cidade com usuários ainda.</p>
+          <p className="p-4 text-sm text-gray-500">Nenhuma cidade com usuários ainda.</p>
         ) : (
           cidades.map((c) => (
             <div key={c.cidade}>
@@ -158,9 +158,9 @@ export default function CidadesMoedaPage() {
                 <div className="w-28 shrink-0">
                   <p className="font-medium text-gray-800">{c.cidade}</p>
                   {c.aprovado ? (
-                    <span className="text-[10px] text-green-600 flex items-center gap-1"><Check className="w-3 h-3" /> Aprovada</span>
+                    <span className="text-sm text-green-600 flex items-center gap-1"><Check className="w-3 h-3" /> Aprovada</span>
                   ) : (
-                    <span className="text-[10px] text-amber-600">Sugestão, não aprovada</span>
+                    <span className="text-sm text-amber-600">Sugestão, não aprovada</span>
                   )}
                 </div>
                 <input
@@ -179,7 +179,7 @@ export default function CidadesMoedaPage() {
                 <button
                   onClick={() => salvar(c)}
                   disabled={salvandoCidade === c.cidade}
-                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-lg text-xs font-medium"
+                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-lg text-sm font-medium"
                 >
                   {salvandoCidade === c.cidade ? "Salvando..." : c.aprovado ? "Salvar edição" : "Aprovar"}
                 </button>
@@ -191,7 +191,7 @@ export default function CidadesMoedaPage() {
               {expandida === c.cidade && (
                 <div className="px-4 pb-4 bg-gray-50 space-y-4">
                   <div>
-                    <p className="text-xs font-medium text-gray-600 mb-2 flex items-center gap-1">
+                    <p className="text-sm font-medium text-gray-600 mb-2 flex items-center gap-1">
                       <Building2 className="w-3.5 h-3.5" /> Capacidades do CDL nessa cidade
                     </p>
                     <div className="flex flex-wrap gap-3">
@@ -220,25 +220,25 @@ export default function CidadesMoedaPage() {
                         Relatórios agregados
                       </label>
                     </div>
-                    <p className="text-[10px] text-gray-400 mt-1">Lembre de clicar em "Salvar edição" acima depois de marcar/desmarcar.</p>
+                    <p className="text-sm text-gray-500 mt-1">Lembre de clicar em "Salvar edição" acima depois de marcar/desmarcar.</p>
                   </div>
 
                   <div>
-                    <p className="text-xs font-medium text-gray-600 mb-2">Representantes com acesso</p>
+                    <p className="text-sm font-medium text-gray-600 mb-2">Representantes com acesso</p>
                     <div className="space-y-1.5 mb-3">
                       {(representantes[c.cidade] || []).map((rep) => (
                         <div key={rep.id} className="flex items-center justify-between bg-white border rounded-lg px-3 py-1.5 text-sm">
-                          <span>{rep.nome} {rep.whatsapp && <span className="text-gray-400">· {rep.whatsapp}</span>}</span>
+                          <span>{rep.nome} {rep.whatsapp && <span className="text-gray-500">· {rep.whatsapp}</span>}</span>
                           <button
                             onClick={() => alternarAtivo(c.cidade, rep)}
-                            className={`text-xs px-2 py-0.5 rounded-full ${rep.ativo ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}
+                            className={`text-sm px-2 py-0.5 rounded-full ${rep.ativo ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}
                           >
                             {rep.ativo ? "Ativo" : "Inativo"}
                           </button>
                         </div>
                       ))}
                       {(representantes[c.cidade] || []).length === 0 && (
-                        <p className="text-xs text-gray-400">Nenhum representante cadastrado.</p>
+                        <p className="text-sm text-gray-500">Nenhum representante cadastrado.</p>
                       )}
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -263,7 +263,7 @@ export default function CidadesMoedaPage() {
                       <button
                         onClick={() => cadastrarRepresentante(c.cidade)}
                         disabled={cadastrando}
-                        className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-lg text-xs font-medium"
+                        className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-lg text-sm font-medium"
                       >
                         <UserPlus className="w-3.5 h-3.5" /> Cadastrar
                       </button>
