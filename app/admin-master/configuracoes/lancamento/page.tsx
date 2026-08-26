@@ -85,7 +85,7 @@ export default function ConfigLancamentoPage() {
       </p>
 
       {loading ? (
-        <p className="text-gray-400 text-sm">Carregando...</p>
+        <p className="text-gray-500 text-sm">Carregando...</p>
       ) : (
         <div className="bg-white border rounded-lg p-5 space-y-4">
           <p className="text-sm font-medium text-gray-700">Vídeo atual</p>
@@ -93,11 +93,11 @@ export default function ConfigLancamentoPage() {
             <>
               <video src={videoUrl} controls className="w-full max-h-80 rounded-lg bg-black" />
               {atualizadoEm && (
-                <p className="text-xs text-gray-400">Atualizado em {new Date(atualizadoEm).toLocaleString("pt-BR")}</p>
+                <p className="text-sm text-gray-500">Atualizado em {new Date(atualizadoEm).toLocaleString("pt-BR")}</p>
               )}
             </>
           ) : (
-            <div className="h-48 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 text-sm">
+            <div className="h-48 bg-gray-50 rounded-lg flex items-center justify-center text-gray-500 text-sm">
               Nenhum vídeo configurado ainda.
             </div>
           )}
@@ -144,7 +144,7 @@ function CardsFuncionalidades() {
       </p>
 
       {loading ? (
-        <p className="text-gray-400 text-sm">Carregando...</p>
+        <p className="text-gray-500 text-sm">Carregando...</p>
       ) : (
         <div className="space-y-3">
           {cards.map((card) => (
@@ -237,13 +237,13 @@ function CardFuncionalidadeItem({ card, onAtualizado }: { card: CardFuncionalida
 
       <div className="flex items-center gap-3">
         {card.video_url ? (
-          <span className="text-xs text-emerald-600 flex items-center gap-1">
+          <span className="text-sm text-emerald-600 flex items-center gap-1">
             <Film className="w-3.5 h-3.5" /> Vídeo publicado
           </span>
         ) : (
-          <span className="text-xs text-gray-400">Nenhum vídeo publicado ainda</span>
+          <span className="text-sm text-gray-500">Nenhum vídeo publicado ainda</span>
         )}
-        <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-medium cursor-pointer ml-auto">
+        <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium cursor-pointer ml-auto">
           <Upload className="w-3.5 h-3.5" />
           {enviandoVideo ? "Enviando..." : card.video_url ? "Trocar vídeo" : "Enviar vídeo"}
           <input type="file" accept="video/*" className="hidden" onChange={handleArquivo} disabled={enviandoVideo} />

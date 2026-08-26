@@ -139,13 +139,13 @@ export default function AvisoGeralPage() {
           {publico === "segmentado" && (
             <div className="space-y-3 bg-gray-50 rounded-lg p-3">
               <div>
-                <p className="text-xs font-medium text-gray-600 mb-1.5">Grupos de interesse</p>
+                <p className="text-sm font-medium text-gray-600 mb-1.5">Grupos de interesse</p>
                 <div className="flex flex-wrap gap-1.5">
                   {GRUPOS_INTERESSE.map((g) => (
                     <button
                       key={g.id}
                       onClick={() => alternarGrupo(g.id)}
-                      className={`px-2.5 py-1 rounded-full text-xs border ${
+                      className={`px-2.5 py-1 rounded-full text-sm border ${
                         gruposSelecionados.includes(g.id)
                           ? "bg-blue-600 text-white border-blue-600"
                           : "bg-white text-gray-600 border-gray-200"
@@ -158,16 +158,16 @@ export default function AvisoGeralPage() {
               </div>
 
               <div>
-                <p className="text-xs font-medium text-gray-600 mb-1.5">Cidades</p>
+                <p className="text-sm font-medium text-gray-600 mb-1.5">Cidades</p>
                 {cidadesDisponiveis.length === 0 ? (
-                  <p className="text-xs text-gray-400">Nenhum usuário informou cidade ainda.</p>
+                  <p className="text-sm text-gray-500">Nenhum usuário informou cidade ainda.</p>
                 ) : (
                   <div className="flex flex-wrap gap-1.5">
                     {cidadesDisponiveis.map((c) => (
                       <button
                         key={c}
                         onClick={() => alternarCidade(c)}
-                        className={`px-2.5 py-1 rounded-full text-xs border ${
+                        className={`px-2.5 py-1 rounded-full text-sm border ${
                           cidadesSelecionadas.includes(c)
                             ? "bg-blue-600 text-white border-blue-600"
                             : "bg-white text-gray-600 border-gray-200"
@@ -179,7 +179,7 @@ export default function AvisoGeralPage() {
                   </div>
                 )}
               </div>
-              <p className="text-[11px] text-gray-400">
+              <p className="text-sm text-gray-500">
                 Sem escolher nenhuma cidade, alcança o grupo em todas as cidades. Sem escolher nenhum grupo, alcança todo mundo da(s) cidade(s) marcada(s).
               </p>
             </div>
@@ -195,7 +195,7 @@ export default function AvisoGeralPage() {
         </button>
 
         {ultimoResultado && (
-          <p className="text-xs text-gray-400 text-center">
+          <p className="text-sm text-gray-500 text-center">
             Último envio: {ultimoResultado.enviados} de {ultimoResultado.total} usuários alcançados.
           </p>
         )}
