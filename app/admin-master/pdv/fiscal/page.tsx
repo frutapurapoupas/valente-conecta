@@ -31,7 +31,7 @@ export default function RelatorioFiscalPage() {
       .then((res) => { if (res.success) setDados(res.data); });
   }, []);
 
-  if (!dados) return <p className="p-6 text-gray-400 text-sm">Carregando...</p>;
+  if (!dados) return <p className="p-6 text-gray-500 text-sm">Carregando...</p>;
 
   return (
     <div className="p-4 sm:p-6 space-y-6">
@@ -54,14 +54,14 @@ export default function RelatorioFiscalPage() {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
         <h3 className="text-sm font-semibold text-gray-800 mb-3">Notas pendentes</h3>
         {dados.pendentesDetalhe.length === 0 ? (
-          <p className="text-sm text-gray-400 py-6 text-center">Nenhuma nota pendente.</p>
+          <p className="text-sm text-gray-500 py-6 text-center">Nenhuma nota pendente.</p>
         ) : (
           <div className="space-y-2">
             {dados.pendentesDetalhe.map((n) => (
               <div key={n.id} className="flex items-center justify-between text-sm border-b last:border-0 pb-2 last:pb-0">
                 <div>
                   <p className="text-gray-800 font-medium">{n.lojaNome}</p>
-                  <p className="text-xs text-gray-400">{n.tipo.toUpperCase()} · {new Date(n.created_at).toLocaleDateString("pt-BR")}</p>
+                  <p className="text-sm text-gray-500">{n.tipo.toUpperCase()} · {new Date(n.created_at).toLocaleDateString("pt-BR")}</p>
                 </div>
                 <p className="font-semibold text-amber-600">{formatarMoeda(Number(n.valor))}</p>
               </div>
@@ -76,7 +76,7 @@ export default function RelatorioFiscalPage() {
 function CardStat({ icone, label, valor }: { icone: React.ReactNode; label: string; valor: number | string }) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-      <div className="flex items-center gap-1.5 text-gray-400 text-xs mb-1">{icone} {label}</div>
+      <div className="flex items-center gap-1.5 text-gray-500 text-sm mb-1">{icone} {label}</div>
       <p className="text-2xl font-bold text-gray-800">{valor}</p>
     </div>
   );

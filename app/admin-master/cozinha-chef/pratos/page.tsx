@@ -56,10 +56,10 @@ export default function PratosPage() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Nome</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Categoria</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Preço</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Status</th>
+              <th className="px-4 py-3 text-left text-sm font-medium uppercase tracking-wider text-gray-500">Nome</th>
+              <th className="px-4 py-3 text-left text-sm font-medium uppercase tracking-wider text-gray-500">Categoria</th>
+              <th className="px-4 py-3 text-left text-sm font-medium uppercase tracking-wider text-gray-500">Preço</th>
+              <th className="px-4 py-3 text-left text-sm font-medium uppercase tracking-wider text-gray-500">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white">
@@ -79,8 +79,8 @@ export default function PratosPage() {
                     <span
                       className={
                         prato.status === 'ativo'
-                          ? 'rounded-full bg-green-100 px-2 py-1 text-xs font-semibold text-green-700'
-                          : 'rounded-full bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-700'
+                          ? 'rounded-full bg-green-100 px-2 py-1 text-sm font-semibold text-green-700'
+                          : 'rounded-full bg-gray-100 px-2 py-1 text-sm font-semibold text-gray-700'
                       }
                     >
                       {prato.status === 'ativo' ? 'Ativo' : 'Inativo'}

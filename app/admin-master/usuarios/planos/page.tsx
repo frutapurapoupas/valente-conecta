@@ -244,7 +244,7 @@ export default function AdminPlanosPage() {
             return (
               <div key={p.id} className="border rounded-lg p-3">
                 <div className="flex items-center gap-2 font-semibold text-sm mb-2"><Icon size={15} /> {p.nome}</div>
-                <label className="text-xs text-gray-600">Preço
+                <label className="text-sm text-gray-600">Preço
                   <input
                     type="number"
                     step="0.01"
@@ -254,7 +254,7 @@ export default function AdminPlanosPage() {
                     className="w-full mt-1 p-2 border rounded"
                   />
                 </label>
-                <label className="text-xs text-gray-600 block mt-2">Fotos por item
+                <label className="text-sm text-gray-600 block mt-2">Fotos por item
                   <input
                     type="number"
                     value={p.fotosPorItem}
@@ -262,7 +262,7 @@ export default function AdminPlanosPage() {
                     className="w-full mt-1 p-2 border rounded"
                   />
                 </label>
-                <label className="flex items-center gap-2 text-xs mt-2">
+                <label className="flex items-center gap-2 text-sm mt-2">
                   <input
                     type="checkbox"
                     checked={p.ativo}
@@ -272,7 +272,7 @@ export default function AdminPlanosPage() {
                 </label>
 
                 <div className="mt-3 pt-3 border-t border-gray-100">
-                  <label className="flex items-center gap-2 text-xs">
+                  <label className="flex items-center gap-2 text-sm">
                     <input
                       type="checkbox"
                       checked={!!p.descontoPixRecorrenteAtivo}
@@ -281,7 +281,7 @@ export default function AdminPlanosPage() {
                     Desconto para PIX recorrente (12 meses)
                   </label>
                   {p.descontoPixRecorrenteAtivo && (
-                    <label className="text-xs text-gray-600 block mt-2">
+                    <label className="text-sm text-gray-600 block mt-2">
                       % de desconto (sugestão: valores baixos, ex. 5%)
                       <input
                         type="number"
@@ -312,7 +312,7 @@ export default function AdminPlanosPage() {
               >
                 <div>
                   <h3 className="font-semibold text-gray-800">{service.nome}</h3>
-                  <p className="text-xs text-gray-500">Planos habilitados: {service.enabledPlans.join(", ") || "nenhum"}</p>
+                  <p className="text-sm text-gray-500">Planos habilitados: {service.enabledPlans.join(", ") || "nenhum"}</p>
                 </div>
                 {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
               </button>
@@ -326,7 +326,7 @@ export default function AdminPlanosPage() {
                         <button
                           key={p.id}
                           onClick={() => togglePlanForService(service.id, p.id)}
-                          className={`text-xs px-3 py-1.5 rounded-full border ${enabled ? "bg-green-100 text-green-700 border-green-300" : "bg-gray-100 text-gray-600 border-gray-300"}`}
+                          className={`text-sm px-3 py-1.5 rounded-full border ${enabled ? "bg-green-100 text-green-700 border-green-300" : "bg-gray-100 text-gray-600 border-gray-300"}`}
                         >
                           {enabled ? "✓" : "+"} {p.nome}
                         </button>
@@ -355,7 +355,7 @@ export default function AdminPlanosPage() {
                                 </button>
                               </div>
                             ))}
-                            <button onClick={() => addServiceFeature(service.id, planId)} className="text-xs text-blue-600 flex items-center gap-1">
+                            <button onClick={() => addServiceFeature(service.id, planId)} className="text-sm text-blue-600 flex items-center gap-1">
                               <Plus size={13} /> Adicionar funcionalidade
                             </button>
                           </div>
