@@ -85,7 +85,7 @@ export default function AdminDemandasPage() {
       </p>
 
       {loading ? (
-        <p className="text-gray-400 text-sm">Carregando...</p>
+        <p className="text-gray-500 text-sm">Carregando...</p>
       ) : pendentes.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-lg text-gray-500">Nenhuma demanda em aberto.</div>
       ) : (
@@ -97,12 +97,12 @@ export default function AdminDemandasPage() {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p className="font-bold text-gray-900">"{d.termo}"</p>
-                    <p className="text-xs text-gray-500 mt-0.5">
+                    <p className="text-sm text-gray-500 mt-0.5">
                       {d.modulo ? LABEL_MODULO[d.modulo as ModuloId] || d.modulo : "Sem módulo específico"}
                       {d.usuario_nome && ` · ${d.usuario_nome}`}
                       {d.usuario_telefone && ` · ${d.usuario_telefone}`}
                     </p>
-                    <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
+                    <p className="text-sm text-gray-500 mt-0.5 flex items-center gap-1">
                       <Clock className="w-3 h-3" /> {new Date(d.created_at).toLocaleString("pt-BR")}
                     </p>
                   </div>
@@ -110,14 +110,14 @@ export default function AdminDemandasPage() {
                     <button
                       onClick={() => notificarFornecedores(d.id)}
                       disabled={notificando === d.id}
-                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
+                      className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
                     >
                       <Send className="w-3.5 h-3.5" />
                       {notificando === d.id ? "Avisando..." : "Avisar fornecedores"}
                     </button>
                     <button
                       onClick={() => marcarAtendida(d.id)}
-                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-medium bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+                      className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg font-medium bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" /> Marcar atendida
                     </button>
@@ -127,7 +127,7 @@ export default function AdminDemandasPage() {
                 {resultado && (
                   <div className="mt-3 pt-3 border-t border-gray-100">
                     {resultado.fornecedores.length === 0 ? (
-                      <p className="text-xs text-gray-400">Nenhum fornecedor cadastrado ainda pra avisar manualmente.</p>
+                      <p className="text-sm text-gray-500">Nenhum fornecedor cadastrado ainda pra avisar manualmente.</p>
                     ) : (
                       <div className="flex flex-wrap gap-2">
                         {resultado.fornecedores.map((f, i) => (
@@ -137,12 +137,12 @@ export default function AdminDemandasPage() {
                               href={`https://wa.me/55${f.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá ${f.nome}! Um cliente do Valente Conecta está procurando "${d.termo}" e ainda não achou ninguém oferecendo. Você tem esse produto/serviço? Cadastre em: ${typeof window !== "undefined" ? window.location.origin : ""}${resultado.linkCadastro}`)}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-full bg-green-50 text-green-700 border border-green-200"
+                              className="flex items-center gap-1 text-sm px-2.5 py-1.5 rounded-full bg-green-50 text-green-700 border border-green-200"
                             >
                               <MessageCircle className="w-3 h-3" /> {f.nome || "Fornecedor"}
                             </a>
                           ) : (
-                            <span key={i} className="text-xs px-2.5 py-1.5 rounded-full bg-gray-50 text-gray-500 border border-gray-200">
+                            <span key={i} className="text-sm px-2.5 py-1.5 rounded-full bg-gray-50 text-gray-500 border border-gray-200">
                               {f.nome || "Fornecedor"} (sem WhatsApp)
                             </span>
                           )
@@ -164,7 +164,7 @@ export default function AdminDemandasPage() {
             {atendidas.map((d) => (
               <div key={d.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-2.5 text-sm">
                 <span className="text-gray-600">"{d.termo}"</span>
-                <span className="text-xs text-gray-400">
+                <span className="text-sm text-gray-500">
                   Atendida em {d.atendido_em ? new Date(d.atendido_em).toLocaleDateString("pt-BR") : "-"}
                 </span>
               </div>

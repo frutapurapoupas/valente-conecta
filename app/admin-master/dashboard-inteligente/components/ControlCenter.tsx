@@ -115,10 +115,10 @@ export default function ControlCenter() {
         <div className="bg-indigo-50 rounded-xl p-3 flex flex-wrap gap-2 items-center justify-between">
           <span className="text-sm text-indigo-700">{stats.selecionados} usuário(s) selecionado(s)</span>
           <div className="flex gap-2">
-            <button onClick={() => executarAcao("enviar_push")} className="bg-blue-600 text-white px-3 py-1 rounded-lg text-xs">📱 Push</button>
-            <button onClick={() => executarAcao("enviar_mensagem")} className="bg-green-600 text-white px-3 py-1 rounded-lg text-xs">âœ‰ï¸ Msg</button>
-            <button onClick={() => executarAcao("bloquear")} className="bg-red-600 text-white px-3 py-1 rounded-lg text-xs">🔒 Bloquear</button>
-            <button onClick={() => executarAcao("desbloquear")} className="bg-yellow-600 text-white px-3 py-1 rounded-lg text-xs">🔓 Desbloquear</button>
+            <button onClick={() => executarAcao("enviar_push")} className="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm">📱 Push</button>
+            <button onClick={() => executarAcao("enviar_mensagem")} className="bg-green-600 text-white px-3 py-1 rounded-lg text-sm">âœ‰ï¸ Msg</button>
+            <button onClick={() => executarAcao("bloquear")} className="bg-red-600 text-white px-3 py-1 rounded-lg text-sm">🔒 Bloquear</button>
+            <button onClick={() => executarAcao("desbloquear")} className="bg-yellow-600 text-white px-3 py-1 rounded-lg text-sm">🔓 Desbloquear</button>
           </div>
         </div>
       )}
@@ -153,11 +153,11 @@ export default function ControlCenter() {
             <thead className="bg-gray-50 border-b">
               <tr>
                 <th className="p-3 w-10"><input type="checkbox" onChange={handleSelectAll} className="w-4 h-4" /></th>
-                <th className="p-3 text-left text-xs">Usuário</th>
-                <th className="p-3 text-left text-xs">Tipo</th>
-                <th className="p-3 text-left text-xs">Cidade</th>
-                <th className="p-3 text-left text-xs">Status</th>
-                <th className="p-3 text-left text-xs">Ações</th>
+                <th className="p-3 text-left text-sm">Usuário</th>
+                <th className="p-3 text-left text-sm">Tipo</th>
+                <th className="p-3 text-left text-sm">Cidade</th>
+                <th className="p-3 text-left text-sm">Status</th>
+                <th className="p-3 text-left text-sm">Ações</th>
               </tr>
             </thead>
             <tbody>
@@ -165,9 +165,9 @@ export default function ControlCenter() {
                 <tr key={u.id} className="border-b hover:bg-gray-50">
                   <td className="p-3"><input type="checkbox" checked={selectedUsers.includes(u.id)} onChange={() => handleSelectUser(u.id)} className="w-4 h-4" /></td>
                   <td className="p-3 text-sm font-medium">{u.nome}</td>
-                  <td className="p-3 text-sm"><span className="text-xs px-2 py-0.5 rounded-full bg-gray-100">{u.tipo === "empresa" ? "Empresa" : "Usuario"}</span></td>
+                  <td className="p-3 text-sm"><span className="text-sm px-2 py-0.5 rounded-full bg-gray-100">{u.tipo === "empresa" ? "Empresa" : "Usuario"}</span></td>
                   <td className="p-3 text-sm">{u.cidade || "Valente"}</td>
-                  <td className="p-3 text-sm"><span className="text-xs px-2 py-0.5 rounded-full bg-green-100">{u.status}</span></td>
+                  <td className="p-3 text-sm"><span className="text-sm px-2 py-0.5 rounded-full bg-green-100">{u.status}</span></td>
                   <td className="p-3 text-sm">
                     <div className="flex gap-2">
                       <button onClick={() => { setSelectedUsers([u.id]); setActionType("enviar_mensagem"); setShowActionModal(true); }} className="text-blue-600"><Mail size={14} /></button>

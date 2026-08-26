@@ -66,7 +66,7 @@ export default function AdminAgendaPage() {
       </p>
 
       {loading ? (
-        <p className="text-gray-400 text-sm">Carregando...</p>
+        <p className="text-gray-500 text-sm">Carregando...</p>
       ) : itens.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-lg text-gray-500">Nenhuma solicitação ainda.</div>
       ) : (
@@ -75,7 +75,7 @@ export default function AdminAgendaPage() {
             <div key={item.id} className="bg-white border rounded-lg p-4 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="font-medium">Loja {item.dono_id.slice(0, 8)}</p>
-                <p className="text-xs text-gray-500">
+                <p className="text-sm text-gray-500">
                   Solicitado em {new Date(item.solicitado_em).toLocaleString("pt-BR")}
                   {item.liberado_em && ` · Liberado em ${new Date(item.liberado_em).toLocaleString("pt-BR")}`}
                 </p>
@@ -85,14 +85,14 @@ export default function AdminAgendaPage() {
                   <>
                     <button
                       onClick={() => atualizar(item.id, { gratuito: !item.gratuito })}
-                      className={`flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-full font-medium ${item.gratuito ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}
+                      className={`flex items-center gap-1 text-sm px-2.5 py-1.5 rounded-full font-medium ${item.gratuito ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}
                     >
                       {item.gratuito ? <Gift className="w-3.5 h-3.5" /> : <DollarSign className="w-3.5 h-3.5" />}
                       {item.gratuito ? "Gratuito" : "Pago"}
                     </button>
                     <button
                       onClick={() => atualizar(item.id, { exige_cadastro_previo: !item.exige_cadastro_previo })}
-                      className={`flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-full font-medium ${item.exige_cadastro_previo ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600"}`}
+                      className={`flex items-center gap-1 text-sm px-2.5 py-1.5 rounded-full font-medium ${item.exige_cadastro_previo ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600"}`}
                       title="Exige que o paciente já tenha sido cadastrado presencialmente na loja"
                     >
                       <ShieldCheck className="w-3.5 h-3.5" />
@@ -101,24 +101,24 @@ export default function AdminAgendaPage() {
                   </>
                 )}
                 {item.ativo ? (
-                  <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 font-medium">
+                  <span className="flex items-center gap-1 text-sm px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 font-medium">
                     <CheckCircle2 className="w-3.5 h-3.5" /> Liberado
                   </span>
                 ) : (
-                  <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 font-medium">
+                  <span className="flex items-center gap-1 text-sm px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 font-medium">
                     <Clock className="w-3.5 h-3.5" /> Pendente
                   </span>
                 )}
                 <button
                   onClick={() => atualizar(item.id, { ativo: !item.ativo })}
-                  className={`text-xs px-3 py-1.5 rounded-lg font-medium ${item.ativo ? "bg-red-100 text-red-700 hover:bg-red-200" : "bg-blue-600 text-white hover:bg-blue-700"}`}
+                  className={`text-sm px-3 py-1.5 rounded-lg font-medium ${item.ativo ? "bg-red-100 text-red-700 hover:bg-red-200" : "bg-blue-600 text-white hover:bg-blue-700"}`}
                 >
                   {item.ativo ? "Revogar" : "Liberar"}
                 </button>
                 {item.ativo && (
                   <button
                     onClick={() => setExpandido(expandido === item.dono_id ? null : item.dono_id)}
-                    className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg font-medium bg-slate-800 text-white hover:bg-slate-700"
+                    className="flex items-center gap-1 text-sm px-3 py-1.5 rounded-lg font-medium bg-slate-800 text-white hover:bg-slate-700"
                   >
                     {expandido === item.dono_id ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                     Fila de hoje
@@ -163,14 +163,14 @@ function FilaDaLoja({ donoId }: { donoId: string }) {
   return (
     <div className="mt-3 w-full bg-slate-50 border border-slate-200 rounded-lg p-3">
       {ativos.length === 0 ? (
-        <p className="text-xs text-gray-500 text-center py-3">Nenhum atendimento hoje.</p>
+        <p className="text-sm text-gray-500 text-center py-3">Nenhum atendimento hoje.</p>
       ) : (
         <div className="space-y-1.5">
           {ativos.map((f) => (
             <div key={f.id} className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-slate-100">
-              <div className="text-xs">
+              <div className="text-sm">
                 <span className="font-bold">{f.senha_fila}</span> · {f.cliente_nome}
-                <span className="ml-2 text-gray-400">{f.status}</span>
+                <span className="ml-2 text-gray-500">{f.status}</span>
               </div>
               <button onClick={() => cancelar(f.id)} className="text-red-500 hover:text-red-700" title="Cancelar atendimento">
                 <XCircle className="w-4 h-4" />
