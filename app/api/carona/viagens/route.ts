@@ -19,6 +19,23 @@ async function taxaMotoristaAtual(supabase: ReturnType<typeof createClient>) {
   return Number(config.taxaMotorista || 0);
 }
 
+// Motorista com assinatura ativa na categoria "transporte" (a mais proxima
+// de carona entre as 16 categorias de /api/planos-config -- nao existe uma
+// categoria "carona" dedicada) fica isento da taxa de listagem, mesmo
+// principio ja aplicado no Moto Taxi (ver lib/mototaxi/taxaUso.ts).
+async function motoristaIsentoDaTaxa(supabase: ReturnType<typeof createClient>, motoristaId: string): Promise<boolean> {
+  const { data: motorista } = await supabase.from('carona_motoristas').select('usuario_id').eq('id', motoristaId).maybeSingle();
+  if (!motorista?.usuario_id) return false;
+  const { data: assinatura } = await supabase
+    .from('assinaturas_planos')
+    .select('id')
+    .eq('usuario_id', motorista.usuario_id)
+    .eq('servico_id', 'transporte')
+    .eq('status', 'ativo')
+    .maybeSingle();
+  return !!assinatura;
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const cidadeOrigem = searchParams.get('cidadeOrigem');
@@ -76,7 +93,8 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = createClient();
-    const taxa = await taxaMotoristaAtual(supabase);
+    const isento = await motoristaIsentoDaTaxa(supabase, body.motoristaId);
+    const taxa = isento ? 0 : await taxaMotoristaAtual(supabase);
 
     const { data: viagem, error } = await supabase
       .from('carona_viagens')
