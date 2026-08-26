@@ -232,7 +232,7 @@ export default function AdminProfissionaisPage() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead className="border-b border-white/10">
-                    <tr className="text-xs uppercase tracking-widest text-gray-500">
+                    <tr className="text-sm uppercase tracking-widest text-gray-500">
                       <th className="px-5 py-4 text-left">Profissional</th>
                       <th className="px-5 py-4 text-left">Categoria</th>
                       <th className="px-5 py-4 text-left">Contato</th>
@@ -246,10 +246,10 @@ export default function AdminProfissionaisPage() {
                       <tr key={prof.id} className="hover:bg-white/2 transition-colors">
                         <td className="px-5 py-4">
                           <div className="font-semibold text-white">{prof.nome}</div>
-                          <div className="text-xs text-gray-400 mt-0.5">
+                          <div className="text-sm text-gray-400 mt-0.5">
                             {prof.bairro ? `${prof.bairro}, ` : ''}{prof.cidade || 'Valente'}
                           </div>
-                          {prof.destaque && <span className="text-[10px] bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-1.5 py-0.5 rounded mt-1 inline-block">DESTAQUE</span>}
+                          {prof.destaque && <span className="text-sm bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-1.5 py-0.5 rounded mt-1 inline-block">DESTAQUE</span>}
                         </td>
                         <td className="px-5 py-4">
                           <span className="flex items-center gap-1.5 text-sm text-gray-300">
@@ -259,30 +259,30 @@ export default function AdminProfissionaisPage() {
                         </td>
                         <td className="px-5 py-4">
                           <div className="text-sm text-gray-300">{prof.telefone}</div>
-                          {prof.precoHora > 0 && <div className="text-xs text-green-400">R$ {prof.precoHora.toFixed(2)}/h</div>}
+                          {prof.precoHora > 0 && <div className="text-sm text-green-400">R$ {prof.precoHora.toFixed(2)}/h</div>}
                         </td>
                         <td className="px-5 py-4">
-                          <span className={`text-xs font-semibold px-2 py-1 rounded-full ${prof.plano === 'premium' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-white/5 text-gray-400'}`}>
+                          <span className={`text-sm font-semibold px-2 py-1 rounded-full ${prof.plano === 'premium' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-white/5 text-gray-400'}`}>
                             {prof.plano}
                           </span>
                         </td>
                         <td className="px-5 py-4">
-                          <span className={`text-xs font-semibold px-2 py-1 rounded-full ${prof.status === 'publicado' ? 'bg-green-500/20 text-green-400' : 'bg-orange-500/20 text-orange-400'}`}>
+                          <span className={`text-sm font-semibold px-2 py-1 rounded-full ${prof.status === 'publicado' ? 'bg-green-500/20 text-green-400' : 'bg-orange-500/20 text-orange-400'}`}>
                             {prof.status}
                           </span>
                         </td>
                         <td className="px-5 py-4">
                           <div className="flex flex-wrap gap-1.5">
-                            <button onClick={() => handlePublicar(prof)} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${prof.status === 'publicado' ? 'bg-orange-500/20 text-orange-300 hover:bg-orange-500/30' : 'bg-green-500/20 text-green-300 hover:bg-green-500/30'}`}>
+                            <button onClick={() => handlePublicar(prof)} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm font-semibold transition-colors ${prof.status === 'publicado' ? 'bg-orange-500/20 text-orange-300 hover:bg-orange-500/30' : 'bg-green-500/20 text-green-300 hover:bg-green-500/30'}`}>
                               {prof.status === 'publicado' ? <><EyeOff className="w-3 h-3" />Ocultar</> : <><CheckCircle2 className="w-3 h-3" />Publicar</>}
                             </button>
-                            <button onClick={() => handleDestaque(prof)} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${prof.destaque ? 'bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}>
+                            <button onClick={() => handleDestaque(prof)} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm font-semibold transition-colors ${prof.destaque ? 'bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}>
                               <Star className="w-3 h-3" />{prof.destaque ? 'Remover' : 'Destacar'}
                             </button>
-                            <button onClick={() => setEditando(prof)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 text-xs font-semibold transition-colors">
+                            <button onClick={() => setEditando(prof)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 text-sm font-semibold transition-colors">
                               <Edit3 className="w-3 h-3" />Editar
                             </button>
-                            <button onClick={() => handleDelete(prof.id)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/30 text-xs font-semibold transition-colors">
+                            <button onClick={() => handleDelete(prof.id)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/30 text-sm font-semibold transition-colors">
                               <Trash2 className="w-3 h-3" />Excluir
                             </button>
                           </div>
@@ -309,7 +309,7 @@ export default function AdminProfissionaisPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="border-b border-white/10">
-                  <tr className="text-xs uppercase tracking-widest text-gray-500">
+                  <tr className="text-sm uppercase tracking-widest text-gray-500">
                     <th className="px-5 py-4 text-left">Cliente</th>
                     <th className="px-5 py-4 text-left">Profissional</th>
                     <th className="px-5 py-4 text-left">Servico</th>
@@ -323,36 +323,36 @@ export default function AdminProfissionaisPage() {
                     <tr key={ag.id} className="hover:bg-white/2">
                       <td className="px-5 py-4">
                         <div className="font-semibold text-white text-sm">{ag.clienteNome}</div>
-                        <div className="text-xs text-gray-400 flex items-center gap-1 mt-0.5"><Phone className="w-3 h-3" />{ag.clienteTelefone}</div>
+                        <div className="text-sm text-gray-400 flex items-center gap-1 mt-0.5"><Phone className="w-3 h-3" />{ag.clienteTelefone}</div>
                       </td>
                       <td className="px-5 py-4 text-sm text-gray-300">{ag.profissionalNome}</td>
                       <td className="px-5 py-4">
                         <div className="text-sm text-white">{ag.servico}</div>
-                        {ag.observacoes && <div className="text-xs text-gray-400 line-clamp-1 mt-0.5">{ag.observacoes}</div>}
+                        {ag.observacoes && <div className="text-sm text-gray-400 line-clamp-1 mt-0.5">{ag.observacoes}</div>}
                       </td>
                       <td className="px-5 py-4">
                         {ag.data && <div className="text-sm text-gray-300 flex items-center gap-1"><Calendar className="w-3 h-3" />{new Date(ag.data).toLocaleDateString('pt-BR')}</div>}
-                        {ag.horario && <div className="text-xs text-gray-400 flex items-center gap-1 mt-0.5"><Clock className="w-3 h-3" />{ag.horario}</div>}
+                        {ag.horario && <div className="text-sm text-gray-400 flex items-center gap-1 mt-0.5"><Clock className="w-3 h-3" />{ag.horario}</div>}
                       </td>
                       <td className="px-5 py-4">
-                        <span className={`text-xs font-semibold px-2 py-1 rounded-full ${ag.status === 'confirmado' ? 'bg-green-500/20 text-green-400' : ag.status === 'cancelado' ? 'bg-red-500/20 text-red-400' : 'bg-orange-500/20 text-orange-400'}`}>
+                        <span className={`text-sm font-semibold px-2 py-1 rounded-full ${ag.status === 'confirmado' ? 'bg-green-500/20 text-green-400' : ag.status === 'cancelado' ? 'bg-red-500/20 text-red-400' : 'bg-orange-500/20 text-orange-400'}`}>
                           {ag.status}
                         </span>
                       </td>
                       <td className="px-5 py-4">
                         <div className="flex gap-1.5">
                           {ag.status === 'pendente' && (
-                            <button onClick={() => handleAgendamentoStatus(ag.id, 'confirmado')} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-green-500/20 text-green-300 hover:bg-green-500/30 text-xs font-semibold transition-colors">
+                            <button onClick={() => handleAgendamentoStatus(ag.id, 'confirmado')} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-green-500/20 text-green-300 hover:bg-green-500/30 text-sm font-semibold transition-colors">
                               <CheckCircle2 className="w-3 h-3" />Confirmar
                             </button>
                           )}
                           {ag.status !== 'cancelado' && (
-                            <button onClick={() => handleAgendamentoStatus(ag.id, 'cancelado')} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/30 text-xs font-semibold transition-colors">
+                            <button onClick={() => handleAgendamentoStatus(ag.id, 'cancelado')} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/30 text-sm font-semibold transition-colors">
                               <Trash2 className="w-3 h-3" />Cancelar
                             </button>
                           )}
                           {ag.clienteTelefone && (
-                            <a href={`https://wa.me/55${ag.clienteTelefone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-green-600/20 text-green-300 hover:bg-green-600/30 text-xs font-semibold transition-colors">
+                            <a href={`https://wa.me/55${ag.clienteTelefone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-green-600/20 text-green-300 hover:bg-green-600/30 text-sm font-semibold transition-colors">
                               <MessageCircle className="w-3 h-3" />WA
                             </a>
                           )}

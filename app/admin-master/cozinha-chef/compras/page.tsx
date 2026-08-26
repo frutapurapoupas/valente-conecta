@@ -248,7 +248,7 @@ export default function ListaCompras() {
             <h2 className="text-lg font-semibold">Solicitações de Compra Pendentes ({pendentes.length})</h2>
             <button
               onClick={() => setRequestsCollapsed((v) => !v)}
-              className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-lg text-xs flex items-center gap-1"
+              className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm flex items-center gap-1"
             >
               {requestsCollapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
               {requestsCollapsed ? 'Abrir' : 'Recolher'}
@@ -298,10 +298,10 @@ export default function ListaCompras() {
                         />
                         <div>
                           <p className="font-medium text-white">{req.receitaNome}</p>
-                          <p className="text-xs text-gray-400">
+                          <p className="text-sm text-gray-400">
                             {dataCriacao.toLocaleString('pt-BR')} • Produção: {req.quantidade || 1}x • Itens: {ingredientes.length}
                           </p>
-                          <p className="text-xs text-amber-300 mt-1">
+                          <p className="text-sm text-amber-300 mt-1">
                             Excluídos da soma: {getExcludedIndexes(req.id).length}
                           </p>
                         </div>
@@ -326,7 +326,7 @@ export default function ListaCompras() {
                       <div className="mt-3 border-t border-gray-700 pt-3">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                           {ingredientes.map((ing: any, index: number) => (
-                            <div key={`${req.id}-${index}`} className="text-xs text-gray-300 bg-gray-800/70 rounded p-2">
+                            <div key={`${req.id}-${index}`} className="text-sm text-gray-300 bg-gray-800/70 rounded p-2">
                               <div className="flex items-center justify-between gap-2">
                                 <div>
                                   <span className="font-medium text-white">{ing.ingredientName}</span>
@@ -387,7 +387,7 @@ export default function ListaCompras() {
                       </td>
                       <td className="px-4 py-3 text-gray-300">{item.fornecedor || '-'}</td>
                       <td className="px-4 py-3">
-                        <span className={`text-xs px-2 py-1 rounded-full ${getPrioridadeColor(item.prioridade)}`}>
+                        <span className={`text-sm px-2 py-1 rounded-full ${getPrioridadeColor(item.prioridade)}`}>
                           {getPrioridadeLabel(item.prioridade)}
                         </span>
                       </td>
@@ -435,23 +435,23 @@ export default function ListaCompras() {
         {/* Resumo */}
         <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-gray-800/30 rounded-lg p-3 border border-gray-700 text-center">
-            <p className="text-xs text-gray-400">Total de Itens</p>
+            <p className="text-sm text-gray-400">Total de Itens</p>
             <p className="text-xl font-bold">{items.length}</p>
           </div>
           <div className="bg-gray-800/30 rounded-lg p-3 border border-gray-700 text-center">
-            <p className="text-xs text-gray-400">Comprados</p>
+            <p className="text-sm text-gray-400">Comprados</p>
             <p className="text-xl font-bold text-green-400">
               {items.filter(i => i.comprado).length}
             </p>
           </div>
           <div className="bg-gray-800/30 rounded-lg p-3 border border-gray-700 text-center">
-            <p className="text-xs text-gray-400">Pendentes</p>
+            <p className="text-sm text-gray-400">Pendentes</p>
             <p className="text-xl font-bold text-yellow-400">
               {items.filter(i => !i.comprado).length}
             </p>
           </div>
           <div className="bg-gray-800/30 rounded-lg p-3 border border-gray-700 text-center">
-            <p className="text-xs text-gray-400">Alta Prioridade</p>
+            <p className="text-sm text-gray-400">Alta Prioridade</p>
             <p className="text-xl font-bold text-red-400">
               {items.filter(i => i.prioridade === 'alta' && !i.comprado).length}
             </p>

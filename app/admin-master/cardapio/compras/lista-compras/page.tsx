@@ -399,7 +399,7 @@ export default function ListaComprasPage() {
               />
               <span className="w-12 text-right font-medium">{margemSeguranca}%</span>
             </div>
-            <p className="text-xs text-gray-400 mt-1">Margem extra para imprevistos</p>
+            <p className="text-sm text-gray-500 mt-1">Margem extra para imprevistos</p>
           </div>
           <div className="bg-white rounded-xl p-4 shadow-sm">
             <label className="text-sm text-gray-600 flex items-center gap-2 mb-2">
@@ -407,19 +407,19 @@ export default function ListaComprasPage() {
             </label>
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
-                <p className="text-gray-400">Necessário</p>
+                <p className="text-gray-500">Necessário</p>
                 <p className="font-bold text-blue-600">{formatarQuantidade(totalNecessario, "kg")}</p>
               </div>
               <div>
-                <p className="text-gray-400">Em Estoque</p>
+                <p className="text-gray-500">Em Estoque</p>
                 <p className="font-bold text-green-600">{formatarQuantidade(totalEstoque, "kg")}</p>
               </div>
               <div>
-                <p className="text-gray-400">Comprar</p>
+                <p className="text-gray-500">Comprar</p>
                 <p className="font-bold text-orange-600">{formatarQuantidade(totalComprar, "kg")}</p>
               </div>
               <div>
-                <p className="text-gray-400">Custo</p>
+                <p className="text-gray-500">Custo</p>
                 <p className="font-bold text-purple-600">R$ {totalEstimado.toFixed(2)}</p>
               </div>
             </div>
@@ -437,14 +437,14 @@ export default function ListaComprasPage() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500">Ingrediente</th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500">Necessário</th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500">Em Estoque</th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500">Status</th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500">Comprar</th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500">Custo Est.</th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500">Fornecedor</th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500">Ações</th>
+                  <th className="p-3 text-left text-sm font-medium text-gray-500">Ingrediente</th>
+                  <th className="p-3 text-left text-sm font-medium text-gray-500">Necessário</th>
+                  <th className="p-3 text-left text-sm font-medium text-gray-500">Em Estoque</th>
+                  <th className="p-3 text-left text-sm font-medium text-gray-500">Status</th>
+                  <th className="p-3 text-left text-sm font-medium text-gray-500">Comprar</th>
+                  <th className="p-3 text-left text-sm font-medium text-gray-500">Custo Est.</th>
+                  <th className="p-3 text-left text-sm font-medium text-gray-500">Fornecedor</th>
+                  <th className="p-3 text-left text-sm font-medium text-gray-500">Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -471,7 +471,7 @@ export default function ListaComprasPage() {
                               style={{ width: `${Math.min(100, percentualEstoque)}%` }}
                             />
                           </div>
-                          <p className="text-xs text-gray-400 mt-1">{Math.round(percentualEstoque)}%</p>
+                          <p className="text-sm text-gray-500 mt-1">{Math.round(percentualEstoque)}%</p>
                         </div>
                       </td>
                       <td className="p-3">
@@ -485,7 +485,7 @@ export default function ListaComprasPage() {
                         {item.fornecedor ? (
                           <span className="text-sm text-blue-600">{item.fornecedor}</span>
                         ) : (
-                          <span className="text-sm text-gray-400">-</span>
+                          <span className="text-sm text-gray-500">-</span>
                         )}
                       </td>
                       <td className="p-3">
@@ -523,7 +523,7 @@ export default function ListaComprasPage() {
             </div>
             <div className="flex flex-wrap gap-2">
               {itensCompra.filter(i => i.quantidadeComprar === 0).map(i => (
-                <span key={i.ingrediente} className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
+                <span key={i.ingrediente} className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-sm">
                   {i.ingrediente}
                 </span>
               ))}
@@ -565,11 +565,11 @@ export default function ListaComprasPage() {
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="p-2 text-left text-xs font-medium">Ingrediente</th>
-                    <th className="p-2 text-left text-xs font-medium">Estoque</th>
-                    <th className="p-2 text-left text-xs font-medium">Unidade</th>
-                    <th className="p-2 text-left text-xs font-medium">Última Atualização</th>
-                    <th className="p-2 text-left text-xs font-medium">Ações</th>
+                    <th className="p-2 text-left text-sm font-medium">Ingrediente</th>
+                    <th className="p-2 text-left text-sm font-medium">Estoque</th>
+                    <th className="p-2 text-left text-sm font-medium">Unidade</th>
+                    <th className="p-2 text-left text-sm font-medium">Última Atualização</th>
+                    <th className="p-2 text-left text-sm font-medium">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -586,13 +586,13 @@ export default function ListaComprasPage() {
                         />
                       </td>
                       <td className="p-2 text-sm">{item.unidade}</td>
-                      <td className="p-2 text-xs text-gray-400">
+                      <td className="p-2 text-sm text-gray-500">
                         {estoque.find(e => e.nome === item.ingrediente)?.ultimaAtualizacao || "-"}
                       </td>
                       <td className="p-2">
                         <button
                           onClick={() => atualizarEstoque(item.ingrediente, 0)}
-                          className="text-red-500 text-xs"
+                          className="text-red-500 text-sm"
                         >
                           Zerar
                         </button>
@@ -635,7 +635,7 @@ export default function ListaComprasPage() {
                       <p className="text-sm text-gray-500">{f.contato}</p>
                       <div className="flex flex-wrap gap-1 mt-2">
                         {f.produtos.map(p => (
-                          <span key={p} className="text-xs bg-gray-100 px-2 py-0.5 rounded-full">{p}</span>
+                          <span key={p} className="text-sm bg-gray-100 px-2 py-0.5 rounded-full">{p}</span>
                         ))}
                       </div>
                     </div>
