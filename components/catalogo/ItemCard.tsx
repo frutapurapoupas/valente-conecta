@@ -49,17 +49,17 @@ export function ItemCard({ item, onClick }: ItemCardProps) {
 
         <div className="absolute top-2 left-2 flex flex-col gap-1">
           {item.destaque_posicao && (
-            <span className="flex items-center gap-1 bg-yellow-500 text-white text-[11px] px-2 py-0.5 rounded-full font-medium">
+            <span className="flex items-center gap-1 bg-yellow-500 text-white text-[13px] px-2 py-0.5 rounded-full font-medium">
               <Star className="w-3 h-3" /> Destaque #{item.destaque_posicao}
             </span>
           )}
           {item.menor_preco_categoria && (
-            <span className="flex items-center gap-1 bg-emerald-600 text-white text-[11px] px-2 py-0.5 rounded-full font-medium">
+            <span className="flex items-center gap-1 bg-emerald-600 text-white text-[13px] px-2 py-0.5 rounded-full font-medium">
               <Trophy className="w-3 h-3" /> Menor preço
             </span>
           )}
           {item.interesses_recentes >= 3 && (
-            <span className="flex items-center gap-1 bg-orange-500 text-white text-[11px] px-2 py-0.5 rounded-full font-medium">
+            <span className="flex items-center gap-1 bg-orange-500 text-white text-[13px] px-2 py-0.5 rounded-full font-medium">
               <Flame className="w-3 h-3" /> Alta demanda
             </span>
           )}
@@ -67,11 +67,11 @@ export function ItemCard({ item, onClick }: ItemCardProps) {
       </div>
 
       <div className="p-3 flex-1 flex flex-col">
-        <span className="text-[11px] text-gray-500 uppercase tracking-wide">{item.categoria}</span>
+        <span className="text-[13px] text-gray-600 uppercase tracking-wide">{item.categoria}</span>
         <h3 className="font-semibold text-sm line-clamp-2 mt-0.5">{item.titulo}</h3>
         <p className="text-blue-600 font-bold mt-1">{formatarPreco(item.preco)}</p>
         {distancia && (
-          <span className="flex items-center gap-1 text-xs text-gray-500 mt-auto pt-2">
+          <span className="flex items-center gap-1 text-sm text-gray-600 mt-auto pt-2">
             <MapPin className="w-3.5 h-3.5" /> {distancia}
           </span>
         )}

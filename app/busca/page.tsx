@@ -111,7 +111,7 @@ export default function BuscaPage() {
         ))}
       </div>
 
-      <p className="flex items-center gap-1.5 text-xs text-gray-400 mb-6">
+      <p className="flex items-center gap-1.5 text-sm text-gray-500 mb-6">
         {localizacao ? (
           <>
             <MapPin className="w-3.5 h-3.5" /> Ordenando por distância até você
@@ -147,7 +147,7 @@ export default function BuscaPage() {
               <p className="text-sm text-gray-600 mb-3">{mensagemHumanizada}</p>
             )}
             {relacionados.length > 0 && (
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Resultados diretos</p>
+              <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">Resultados diretos</p>
             )}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {diretos.map((item) => (
@@ -162,7 +162,7 @@ export default function BuscaPage() {
 
           {relacionados.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Também pode te interessar</p>
+              <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">Também pode te interessar</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {relacionados.map((item) => (
                   <ItemCard

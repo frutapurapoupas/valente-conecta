@@ -59,7 +59,7 @@ export function SemResultados({
           ? mensagemHumanizada || `Ainda não achamos ninguém oferecendo "${termoParaAvisar}" em Valente`
           : "Nenhum item por aqui ainda"}
       </p>
-      <p className="text-gray-400 text-sm mt-1">
+      <p className="text-gray-500 text-sm mt-1">
         {temTermo ? "Mas podemos te avisar assim que alguém publicar isso por aqui." : "Assim que alguém publicar, aparece aqui."}
       </p>
 
@@ -81,11 +81,11 @@ export function SemResultados({
 
       {!temTermo && semTermoExtra}
 
-      {buscandoExterno && <p className="text-xs text-gray-400 mt-6">Procurando na internet perto de você...</p>}
+      {buscandoExterno && <p className="text-sm text-gray-500 mt-6">Procurando na internet perto de você...</p>}
 
       {resultadosExternos.length > 0 && (
         <div className="mt-8 text-left max-w-lg mx-auto">
-          <p className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+          <p className="flex items-center gap-1.5 text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">
             <Globe className="w-3.5 h-3.5" /> Encontrado na internet, fora da plataforma
           </p>
           <div className="space-y-2">
@@ -100,12 +100,12 @@ export function SemResultados({
                 <p className="text-sm font-medium text-blue-700 flex items-center gap-1.5">
                   {r.titulo} <ExternalLink className="w-3 h-3 shrink-0" />
                 </p>
-                <p className="text-xs text-gray-500 mt-1 line-clamp-2">{r.trecho}</p>
-                <p className="text-[11px] text-gray-400 mt-1">{r.fonte}</p>
+                <p className="text-sm text-gray-600 mt-1 line-clamp-2">{r.trecho}</p>
+                <p className="text-[13px] text-gray-500 mt-1">{r.fonte}</p>
               </a>
             ))}
           </div>
-          <p className="text-[11px] text-gray-400 mt-2">
+          <p className="text-[13px] text-gray-500 mt-2">
             Resultado externo — o preço, se aparecer no texto, não é garantido pelo Valente Conecta.
           </p>
         </div>

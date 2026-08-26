@@ -59,7 +59,7 @@ export function CatalogoModuloPage({ modulo, labelModulo, categorias, descricao,
           </Link>
         </div>
       </div>
-      {descricao && <p className="text-gray-500 text-sm mb-5">{descricao}</p>}
+      {descricao && <p className="text-gray-600 text-sm mb-5">{descricao}</p>}
 
       <div className="relative mb-4">
         <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -122,7 +122,7 @@ export function CatalogoModuloPage({ modulo, labelModulo, categorias, descricao,
               <p className="text-sm text-gray-600 mb-3">{mensagemHumanizada}</p>
             )}
             {relacionados.length > 0 && (
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Resultados diretos</p>
+              <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">Resultados diretos</p>
             )}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {diretos.map((item) => (
@@ -136,7 +136,7 @@ export function CatalogoModuloPage({ modulo, labelModulo, categorias, descricao,
           </div>
           {relacionados.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Também pode te interessar</p>
+              <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">Também pode te interessar</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {relacionados.map((item) => (
                   <ItemCard
