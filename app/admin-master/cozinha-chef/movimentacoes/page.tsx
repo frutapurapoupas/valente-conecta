@@ -325,7 +325,7 @@ export default function MovimentacaoEstoquePage() {
                         <p className={`font-bold ${mov.type === 'entrada' ? 'text-green-500' : 'text-red-500'}`}>
                           {mov.type === 'entrada' ? '+' : '-'}{mov.quantity} {mov.unit}
                         </p>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-sm text-gray-400">
                           {new Date(mov.createdAt).toLocaleString('pt-BR')}
                         </p>
                       </div>

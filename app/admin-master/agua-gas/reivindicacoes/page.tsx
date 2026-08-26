@@ -87,39 +87,39 @@ export default function AguaGasReivindicacoesPage() {
         {auto ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
         Aprovação automática: {auto ? "Ligada (aprova na hora)" : "Desligada (revisão manual)"}
       </button>
-      <p className="text-xs text-gray-400 -mt-4 mb-6">Esse controle é o mesmo usado em Diretório de Comércios e Saúde.</p>
+      <p className="text-sm text-gray-500 -mt-4 mb-6">Esse controle é o mesmo usado em Diretório de Comércios e Saúde.</p>
 
       {loading ? (
-        <p className="text-sm text-gray-400">Carregando...</p>
+        <p className="text-sm text-gray-500">Carregando...</p>
       ) : lista.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-lg text-gray-500 text-sm">Nenhuma reivindicação pendente.</div>
       ) : (
         <div className="space-y-3">
           {lista.map((r) => (
             <div key={r.id} className="bg-white border rounded-lg p-4">
-              <p className="text-xs text-gray-400 mb-2">
+              <p className="text-sm text-gray-500 mb-2">
                 Solicitado por {r.nome_solicitante || "—"} ({r.telefone_solicitante})
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-sm mb-3">
-                <p><span className="text-gray-400">Nome:</span> {r.dados_novos.nome}</p>
-                <p><span className="text-gray-400">Responsável:</span> {r.dados_novos.responsavel || "—"}</p>
-                <p><span className="text-gray-400">Telefone:</span> {r.dados_novos.telefone}</p>
-                <p><span className="text-gray-400">WhatsApp:</span> {r.dados_novos.whatsapp}</p>
-                <p className="sm:col-span-2"><span className="text-gray-400">Endereço:</span> {r.dados_novos.endereco || "—"}</p>
-                <p className="sm:col-span-2"><span className="text-gray-400">Horário:</span> {r.dados_novos.horario || "—"}</p>
+                <p><span className="text-gray-500">Nome:</span> {r.dados_novos.nome}</p>
+                <p><span className="text-gray-500">Responsável:</span> {r.dados_novos.responsavel || "—"}</p>
+                <p><span className="text-gray-500">Telefone:</span> {r.dados_novos.telefone}</p>
+                <p><span className="text-gray-500">WhatsApp:</span> {r.dados_novos.whatsapp}</p>
+                <p className="sm:col-span-2"><span className="text-gray-500">Endereço:</span> {r.dados_novos.endereco || "—"}</p>
+                <p className="sm:col-span-2"><span className="text-gray-500">Horário:</span> {r.dados_novos.horario || "—"}</p>
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => processar(r.id, "aprovar")}
                   disabled={processando === r.id}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-medium disabled:opacity-60"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-sm font-medium disabled:opacity-60"
                 >
                   <CheckCircle2 className="w-3.5 h-3.5" /> Aprovar
                 </button>
                 <button
                   onClick={() => processar(r.id, "recusar")}
                   disabled={processando === r.id}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-xs font-medium disabled:opacity-60"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-sm font-medium disabled:opacity-60"
                 >
                   <XCircle className="w-3.5 h-3.5" /> Recusar
                 </button>
