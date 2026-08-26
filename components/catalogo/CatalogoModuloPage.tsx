@@ -26,7 +26,7 @@ interface CatalogoModuloPageProps {
 export function CatalogoModuloPage({ modulo, labelModulo, categorias, descricao, linkExtra }: CatalogoModuloPageProps) {
   const router = useRouter();
   const [categoria, setCategoria] = useState<string | undefined>(undefined);
-  const { diretos, relacionados, mensagemHumanizada, carregando: loading, buscar, termo } = useBuscaInteligente({ modulo, categoria });
+  const { diretos, relacionados, mensagemHumanizada, assuntoBusca, carregando: loading, buscar, termo } = useBuscaInteligente({ modulo, categoria });
   const totalResultados = diretos.length + relacionados.length;
   const {
     demandaRegistrada,
@@ -108,6 +108,7 @@ export function CatalogoModuloPage({ modulo, labelModulo, categorias, descricao,
           pedirCadastro={pedirCadastro}
           onFecharCadastro={() => setPedirCadastro(false)}
           mensagemHumanizada={mensagemHumanizada}
+          assuntoBusca={assuntoBusca}
           semTermoExtra={
             <Link href={`/${modulo}/admin`} className="text-blue-600 text-sm font-medium mt-2 inline-block">
               Seja o primeiro a publicar

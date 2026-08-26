@@ -29,7 +29,7 @@ export default function BuscaPage() {
   const [localizacao, setLocalizacao] = useState<{ lat: number; lng: number } | null>(null);
   const [pediuLocalizacao, setPediuLocalizacao] = useState(false);
 
-  const { diretos, relacionados, mensagemHumanizada, carregando: loading, buscarImediato } = useBuscaInteligente({
+  const { diretos, relacionados, mensagemHumanizada, assuntoBusca, carregando: loading, buscarImediato } = useBuscaInteligente({
     modulo: moduloAtivo || undefined,
     lat: localizacao?.lat,
     lng: localizacao?.lng,
@@ -141,6 +141,7 @@ export default function BuscaPage() {
           pedirCadastro={pedirCadastro}
           onFecharCadastro={() => setPedirCadastro(false)}
           mensagemHumanizada={mensagemHumanizada}
+          assuntoBusca={assuntoBusca}
         />
       ) : (
         <div className="space-y-8">

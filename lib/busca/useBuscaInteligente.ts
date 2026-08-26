@@ -29,6 +29,11 @@ export function useBuscaInteligente(filtros: FiltrosBuscaInteligente = {}) {
   const [diretos, setDiretos] = useState<ResultadoAgrupado[]>([]);
   const [relacionados, setRelacionados] = useState<ResultadoAgrupado[]>([]);
   const [mensagemHumanizada, setMensagemHumanizada] = useState<string | undefined>(undefined);
+  // Primeiro termo direto que a IA sugeriu pra essa busca (ex: "oficina
+  // mecanica" pra "preciso de consertar meu carro") -- usado no lugar do
+  // termo digitado inteiro no botao "avise-me", que ficava repetindo a
+  // frase digitada por extenso de forma estranha.
+  const [assuntoBusca, setAssuntoBusca] = useState<string | undefined>(undefined);
   const [carregando, setCarregando] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -46,15 +51,18 @@ export function useBuscaInteligente(filtros: FiltrosBuscaInteligente = {}) {
         setDiretos(resultado.data.diretos);
         setRelacionados(resultado.data.relacionados);
         setMensagemHumanizada(resultado.data.mensagemHumanizada);
+        setAssuntoBusca(resultado.data.termosUsados?.diretos?.[0]);
       } else {
         setDiretos([]);
         setRelacionados([]);
         setMensagemHumanizada(undefined);
+        setAssuntoBusca(undefined);
       }
     } catch {
       setDiretos([]);
       setRelacionados([]);
       setMensagemHumanizada(undefined);
+      setAssuntoBusca(undefined);
     } finally {
       setCarregando(false);
     }
@@ -82,5 +90,5 @@ export function useBuscaInteligente(filtros: FiltrosBuscaInteligente = {}) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtros.modulo, filtros.categoria]);
 
-  return { termo, diretos, relacionados, mensagemHumanizada, carregando, buscar, buscarImediato };
+  return { termo, diretos, relacionados, mensagemHumanizada, assuntoBusca, carregando, buscar, buscarImediato };
 }

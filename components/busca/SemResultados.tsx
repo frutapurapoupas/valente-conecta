@@ -28,6 +28,12 @@ interface SemResultadosProps {
    *  humanizada; sem IA disponivel (sem chave, cota estourada, erro), cai no
    *  texto fixo de sempre. */
   mensagemHumanizada?: string;
+  /** Primeiro termo direto que a IA sugeriu (ex: "oficina mecanica"), usado
+   *  no botao "avise-me" no lugar do termo digitado inteiro — sem isso o
+   *  botao repetia a frase digitada por extenso ("Avise-me quando 'preciso
+   *  de consertar meu carro' aparecer"), que soa estranho/repetitivo. Sem
+   *  IA disponivel, cai no proprio termo digitado. */
+  assuntoBusca?: string;
 }
 
 export function SemResultados({
@@ -41,14 +47,16 @@ export function SemResultados({
   onFecharCadastro,
   semTermoExtra,
   mensagemHumanizada,
+  assuntoBusca,
 }: SemResultadosProps) {
   const temTermo = Boolean(termo.trim());
+  const termoParaAvisar = assuntoBusca || termo;
 
   return (
     <div className="text-center py-16 bg-gray-50 rounded-lg px-6">
       <p className="text-gray-500 text-lg">
         {temTermo
-          ? mensagemHumanizada || `Ainda não achamos ninguém oferecendo "${termo}" em Valente`
+          ? mensagemHumanizada || `Ainda não achamos ninguém oferecendo "${termoParaAvisar}" em Valente`
           : "Nenhum item por aqui ainda"}
       </p>
       <p className="text-gray-400 text-sm mt-1">
@@ -67,7 +75,7 @@ export function SemResultados({
             className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-lg font-medium"
           >
             <BellRing className="w-4 h-4" />
-            {registrandoDemanda ? "Registrando..." : `Avise-me quando "${termo}" aparecer`}
+            {registrandoDemanda ? "Registrando..." : `Avise-me quando "${termoParaAvisar}" aparecer`}
           </button>
         ))}
 
