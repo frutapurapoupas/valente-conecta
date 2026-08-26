@@ -141,10 +141,10 @@ export default function AdminUsuariosCidadesPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-white rounded-xl p-3 shadow-sm text-center"><div className="text-2xl font-bold text-indigo-600">{stats.totalCidades}</div><div className="text-xs text-gray-500">Cidades</div></div>
-        <div className="bg-white rounded-xl p-3 shadow-sm text-center"><div className="text-2xl font-bold text-blue-600">{stats.totalUsuarios}</div><div className="text-xs text-gray-500">Usuários</div></div>
-        <div className="bg-white rounded-xl p-3 shadow-sm text-center"><div className="text-2xl font-bold text-purple-600">{stats.totalEmpresas}</div><div className="text-xs text-gray-500">Empresas</div></div>
-        <div className="bg-white rounded-xl p-3 shadow-sm text-center"><div className="text-2xl font-bold text-green-600">{stats.cidadesComUsuarios}</div><div className="text-xs text-gray-500">Cidades ativas</div></div>
+        <div className="bg-white rounded-xl p-3 shadow-sm text-center"><div className="text-2xl font-bold text-indigo-600">{stats.totalCidades}</div><div className="text-sm text-gray-500">Cidades</div></div>
+        <div className="bg-white rounded-xl p-3 shadow-sm text-center"><div className="text-2xl font-bold text-blue-600">{stats.totalUsuarios}</div><div className="text-sm text-gray-500">Usuários</div></div>
+        <div className="bg-white rounded-xl p-3 shadow-sm text-center"><div className="text-2xl font-bold text-purple-600">{stats.totalEmpresas}</div><div className="text-sm text-gray-500">Empresas</div></div>
+        <div className="bg-white rounded-xl p-3 shadow-sm text-center"><div className="text-2xl font-bold text-green-600">{stats.cidadesComUsuarios}</div><div className="text-sm text-gray-500">Cidades ativas</div></div>
       </div>
 
       {/* Cards de cidades */}
@@ -156,7 +156,7 @@ export default function AdminUsuariosCidadesPage() {
                 <div className="flex items-center gap-2">
                   <MapPin size={18} />
                   <h3 className="font-bold text-lg">{cidade.nome}</h3>
-                  <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">{cidade.estado}</span>
+                  <span className="text-sm bg-white/20 px-2 py-0.5 rounded-full">{cidade.estado}</span>
                 </div>
                 {cidade.usuarios > 0 && <CheckCircle size={16} className="text-green-300" />}
               </div>
@@ -166,18 +166,18 @@ export default function AdminUsuariosCidadesPage() {
                 <div className="text-center p-2 bg-gray-50 rounded-lg">
                   <Users size={20} className="mx-auto text-blue-500 mb-1" />
                   <p className="text-2xl font-bold text-gray-800">{cidade.usuarios}</p>
-                  <p className="text-xs text-gray-500">Usuários</p>
+                  <p className="text-sm text-gray-500">Usuários</p>
                 </div>
                 <div className="text-center p-2 bg-gray-50 rounded-lg">
                   <Building size={20} className="mx-auto text-purple-500 mb-1" />
                   <p className="text-2xl font-bold text-gray-800">{cidade.empresas}</p>
-                  <p className="text-xs text-gray-500">Empresas</p>
+                  <p className="text-sm text-gray-500">Empresas</p>
                 </div>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div className="bg-green-500 h-2 rounded-full" style={{ width: `${Math.min(100, (cidade.usuarios / stats.totalUsuarios) * 100)}%` }}></div>
               </div>
-              <p className="text-[10px] text-gray-400 text-center mt-2">Adicionada em {new Date(cidade.dataAdicao).toLocaleDateString()}</p>
+              <p className="text-sm text-gray-500 text-center mt-2">Adicionada em {new Date(cidade.dataAdicao).toLocaleDateString()}</p>
             </div>
           </div>
         ))}

@@ -166,7 +166,7 @@ export default function AdminDashboardPage() {
               <MetricCard label="Indicações validadas" value={statsUsuarios?.indicacoesValidadas ?? 0} />
               <MetricCard label="Indicações pendentes" value={statsUsuarios?.indicacoesPendentes ?? 0} />
             </div>
-            <p className="text-[11px] text-gray-400 mt-2">
+            <p className="text-sm text-gray-500 mt-2">
               "Ativo" = trial dentro do prazo, viral ativo dentro do prazo, ou admin. "Validada" = quem foi
               indicado ainda está com acesso ativo (mesmo critério usado no extrato de indicações do usuário).
             </p>
@@ -178,7 +178,7 @@ export default function AdminDashboardPage() {
                 <div className="flex items-center gap-2 text-gray-800 font-semibold">
                   <Users size={16} /> Cadastros em detalhe
                 </div>
-                <span className="flex items-center gap-1 text-xs text-green-600 font-medium">
+                <span className="flex items-center gap-1 text-sm text-green-600 font-medium">
                   <Radio className="w-3 h-3 animate-pulse" /> Ao vivo
                 </span>
               </div>
@@ -188,7 +188,7 @@ export default function AdminDashboardPage() {
                 <GraficoPorCidade dados={metricasUsuarios.porCidade} />
                 <GraficoPorStatus status={metricasUsuarios.porStatus} />
               </div>
-              <Link href="/admin-master/usuarios" className="text-xs text-blue-600 hover:underline mt-3 inline-block">
+              <Link href="/admin-master/usuarios" className="text-sm text-blue-600 hover:underline mt-3 inline-block">
                 Ver lista completa de usuários
               </Link>
             </section>
@@ -205,7 +205,7 @@ export default function AdminDashboardPage() {
               <MetricCard label="Receita hoje" value={`R$ ${Number(motoMetrics?.revenueToday || 0).toFixed(2)}`} />
             </div>
             <div className="mt-3">
-              <Link href="/admin-master/mototaxi" className="text-xs text-blue-600 hover:underline">Abrir gestão completa do Moto Táxi</Link>
+              <Link href="/admin-master/mototaxi" className="text-sm text-blue-600 hover:underline">Abrir gestão completa do Moto Táxi</Link>
             </div>
           </section>
 
@@ -220,7 +220,7 @@ export default function AdminDashboardPage() {
               <MetricCard label="Aguardando aprovação" value={mcMetrics.pendentes} />
             </div>
             <div className="mt-3">
-              <Link href="/admin-master/moeda-conecta/transacoes" className="text-xs text-blue-600 hover:underline">Abrir moderação e relatório</Link>
+              <Link href="/admin-master/moeda-conecta/transacoes" className="text-sm text-blue-600 hover:underline">Abrir moderação e relatório</Link>
             </div>
           </section>
 
@@ -238,20 +238,20 @@ export default function AdminDashboardPage() {
 
             <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
               <p className="text-sm font-semibold text-emerald-800">Projecao Mensal de Receita (assinaturas)</p>
-              <p className="text-xs text-emerald-700 mt-0.5">Calculo: quantidade de assinantes por plano x valor do plano configurado.</p>
+              <p className="text-sm text-emerald-700 mt-0.5">Calculo: quantidade de assinantes por plano x valor do plano configurado.</p>
               <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
                 <MetricCard label={`Basico (${projection.basicoAssinantes} assinantes)`} value={`R$ ${projection.basicoMensal.toFixed(2)}`} />
                 <MetricCard label={`Premium (${projection.premiumAssinantes} assinantes)`} value={`R$ ${projection.premiumMensal.toFixed(2)}`} />
                 <MetricCard label="Receita mensal prevista" value={`R$ ${projection.totalMensal.toFixed(2)}`} />
               </div>
-              <p className="text-[11px] text-emerald-700 mt-2">
+              <p className="text-sm text-emerald-700 mt-2">
                 Base atual considerada: profissionais + motoristas cadastrados com plano basico/premium.
               </p>
             </div>
 
             <div className="mt-3 flex flex-wrap gap-4">
-              <Link href="/admin-master/planos" className="text-xs text-blue-600 hover:underline">Controlar planos liberados por serviço</Link>
-              <Link href="/planos" className="text-xs text-blue-600 hover:underline">Abrir visão pública de planos</Link>
+              <Link href="/admin-master/planos" className="text-sm text-blue-600 hover:underline">Controlar planos liberados por serviço</Link>
+              <Link href="/planos" className="text-sm text-blue-600 hover:underline">Abrir visão pública de planos</Link>
             </div>
           </section>
         </>
@@ -264,7 +264,7 @@ function MetricCard({ label, value }: { label: string; value: string | number })
   return (
     <div className="rounded-lg border border-gray-200 p-3">
       <p className="text-lg font-bold text-gray-800">{value}</p>
-      <p className="text-xs text-gray-500">{label}</p>
+      <p className="text-sm text-gray-500">{label}</p>
     </div>
   );
 }
