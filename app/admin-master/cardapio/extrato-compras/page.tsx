@@ -217,11 +217,11 @@ export default function ExtratoComprasPage() {
               <span className="text-sm font-medium">Período:</span>
             </div>
             <div>
-              <label className="text-xs text-gray-500 block">Data Início</label>
+              <label className="text-sm text-gray-500 block">Data Início</label>
               <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} className="p-2 border rounded-lg" />
             </div>
             <div>
-              <label className="text-xs text-gray-500 block">Data Fim</label>
+              <label className="text-sm text-gray-500 block">Data Fim</label>
               <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} className="p-2 border rounded-lg" />
             </div>
             <button onClick={calcularExtrato} className="bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center gap-2">
@@ -233,15 +233,15 @@ export default function ExtratoComprasPage() {
         {/* Resumo */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-orange-500">
-            <p className="text-xs text-gray-500">Total de Ingredientes</p>
+            <p className="text-sm text-gray-500">Total de Ingredientes</p>
             <p className="text-2xl font-bold text-gray-800">{extrato.length}</p>
           </div>
           <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
-            <p className="text-xs text-gray-500">Quantidade Total</p>
+            <p className="text-sm text-gray-500">Quantidade Total</p>
             <p className="text-2xl font-bold text-blue-600">{extrato.reduce((sum, i) => sum + i.quantidadeTotal, 0).toFixed(2)} kg</p>
           </div>
           <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
-            <p className="text-xs text-gray-500">Custo Total</p>
+            <p className="text-sm text-gray-500">Custo Total</p>
             <p className="text-2xl font-bold text-green-600">R$ {totalGeral.toFixed(2)}</p>
           </div>
         </div>
@@ -252,11 +252,11 @@ export default function ExtratoComprasPage() {
             <table className="w-full">
               <thead className="bg-orange-50 border-b">
                 <tr>
-                  <th className="p-3 text-left text-xs font-medium text-gray-700">Ingrediente</th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-700">Quantidade</th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-700">Unidade</th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-700">Custo Unitário</th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-700">Custo Total</th>
+                  <th className="p-3 text-left text-sm font-medium text-gray-700">Ingrediente</th>
+                  <th className="p-3 text-left text-sm font-medium text-gray-700">Quantidade</th>
+                  <th className="p-3 text-left text-sm font-medium text-gray-700">Unidade</th>
+                  <th className="p-3 text-left text-sm font-medium text-gray-700">Custo Unitário</th>
+                  <th className="p-3 text-left text-sm font-medium text-gray-700">Custo Total</th>
                 </tr>
               </thead>
               <tbody>

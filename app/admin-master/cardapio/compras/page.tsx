@@ -179,21 +179,21 @@ export default function ExtratoComprasPage() {
         {/* Resumo */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
-            <p className="text-xs text-gray-500">Total da Semana</p>
+            <p className="text-sm text-gray-500">Total da Semana</p>
             <p className="text-2xl font-bold text-blue-600">
               {Object.values(previsaoVendas).reduce((a, b) => a + b, 0)} marmitas
             </p>
           </div>
           <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-orange-500">
-            <p className="text-xs text-gray-500">Ingredientes</p>
+            <p className="text-sm text-gray-500">Ingredientes</p>
             <p className="text-2xl font-bold text-orange-600">{itensCompra.length} itens</p>
           </div>
           <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-red-500">
-            <p className="text-xs text-gray-500">Quantidade a Comprar</p>
+            <p className="text-sm text-gray-500">Quantidade a Comprar</p>
             <p className="text-2xl font-bold text-red-600">{formatarQuantidade(totalComprar, "kg")}</p>
           </div>
           <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
-            <p className="text-xs text-gray-500">Custo Estimado</p>
+            <p className="text-sm text-gray-500">Custo Estimado</p>
             <p className="text-2xl font-bold text-green-600">R$ {totalEstimado.toFixed(2)}</p>
           </div>
         </div>
@@ -209,12 +209,12 @@ export default function ExtratoComprasPage() {
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500">Ingrediente</th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500">Necessário</th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500">Em Estoque</th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500">Comprar</th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500">Custo Est.</th>
-                  <th className="p-3 text-left text-xs font-medium text-gray-500">Ações</th>
+                  <th className="p-3 text-left text-sm font-medium text-gray-500">Ingrediente</th>
+                  <th className="p-3 text-left text-sm font-medium text-gray-500">Necessário</th>
+                  <th className="p-3 text-left text-sm font-medium text-gray-500">Em Estoque</th>
+                  <th className="p-3 text-left text-sm font-medium text-gray-500">Comprar</th>
+                  <th className="p-3 text-left text-sm font-medium text-gray-500">Custo Est.</th>
+                  <th className="p-3 text-left text-sm font-medium text-gray-500">Ações</th>
                 </tr>
               </thead>
               <tbody>

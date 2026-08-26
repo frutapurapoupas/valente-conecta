@@ -131,7 +131,7 @@ export default function FinanceiroPessoalPage() {
               <div key={t.id} className="flex items-center justify-between p-3 bg-gray-800/30 rounded-lg border border-gray-700">
                 <div>
                   <p className="font-medium text-sm">{t.descricao}</p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-sm text-gray-400">
                     {new Date(t.data).toLocaleDateString('pt-BR')} • {t.categoria || 'Sem categoria'}
                   </p>
                 </div>
@@ -139,7 +139,7 @@ export default function FinanceiroPessoalPage() {
                   <p className={`font-bold text-sm ${t.tipo === 'receita' ? 'text-green-400' : 'text-red-400'}`}>
                     {t.tipo === 'receita' ? '+' : '-'} {formatarMoeda(t.valor)}
                   </p>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                  <span className={`text-sm px-2 py-0.5 rounded-full ${
                     t.tipo === 'receita' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
                   }`}>
                     {t.tipo === 'receita' ? 'Receita' : 'Despesa'}

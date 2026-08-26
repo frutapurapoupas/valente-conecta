@@ -46,7 +46,7 @@ function GraficoEvolucaoSemanal({ dados }: { dados: { label: string; valor: numb
         Novos cadastros por semana (últimas {dados.length} semanas)
       </h3>
       {dados.every((d) => d.valor === 0) ? (
-        <p className="text-xs text-gray-400 text-center py-14">Sem cadastros no período.</p>
+        <p className="text-sm text-gray-500 text-center py-14">Sem cadastros no período.</p>
       ) : (
         <>
           <svg viewBox="0 0 100 50" className="w-full h-32">
@@ -57,7 +57,7 @@ function GraficoEvolucaoSemanal({ dados }: { dados: { label: string; valor: numb
           </svg>
           <div className="flex justify-between mt-2">
             {dados.map((d, idx) => (
-              <span key={idx} className="text-[10px] text-gray-400">{d.label}</span>
+              <span key={idx} className="text-xs text-gray-500">{d.label}</span>
             ))}
           </div>
         </>
@@ -174,7 +174,7 @@ export default function DashboardGraficos() {
             <GraficoPorStatus status={metricasUsuarios.porStatus} />
           </>
         ) : (
-          <p className="text-sm text-gray-400 col-span-2">Sem dados de usuários.</p>
+          <p className="text-sm text-gray-500 col-span-2">Sem dados de usuários.</p>
         )}
       </div>
 
@@ -187,26 +187,26 @@ export default function DashboardGraficos() {
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
           <Users className="w-6 h-6 mx-auto mb-2 text-blue-600" />
           <p className="text-2xl font-bold text-gray-800">{statsUsuarios?.usuariosAtivos ?? 0}</p>
-          <p className="text-xs text-gray-500">Usuários Ativos</p>
+          <p className="text-sm text-gray-500">Usuários Ativos</p>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
           <BarChart3 className="w-6 h-6 mx-auto mb-2 text-emerald-600" />
           <p className="text-2xl font-bold text-gray-800">{assinaturasAtivas}</p>
-          <p className="text-xs text-gray-500">Assinaturas Ativas</p>
+          <p className="text-sm text-gray-500">Assinaturas Ativas</p>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
           <MapPin className="w-6 h-6 mx-auto mb-2 text-indigo-600" />
           <p className="text-2xl font-bold text-gray-800">{metricasUsuarios?.porCidade?.length ?? 0}</p>
-          <p className="text-xs text-gray-500">Cidades Atendidas</p>
+          <p className="text-sm text-gray-500">Cidades Atendidas</p>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
           <ShieldCheck className="w-6 h-6 mx-auto mb-2 text-amber-600" />
           <p className="text-2xl font-bold text-gray-800">{metricasUsuarios?.totalAdmins ?? 0}</p>
-          <p className="text-xs text-gray-500">Admins</p>
+          <p className="text-sm text-gray-500">Admins</p>
         </div>
       </div>
 
-      <div className="text-center text-xs text-gray-400 pt-4">
+      <div className="text-center text-sm text-gray-500 pt-4">
         Atualizado em: {new Date().toLocaleString("pt-BR")}
       </div>
     </div>

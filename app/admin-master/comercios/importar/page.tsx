@@ -122,20 +122,20 @@ export default function ImportarComerciosAdminPage() {
             {importando ? "Buscando..." : "Importar"}
           </button>
         </div>
-        {resumo && <p className="text-xs text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2">{resumo}</p>}
+        {resumo && <p className="text-sm text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2">{resumo}</p>}
       </div>
 
       <div className="bg-white border rounded-lg divide-y">
         {carregando ? (
-          <p className="p-4 text-sm text-gray-400">Carregando...</p>
+          <p className="p-4 text-sm text-gray-500">Carregando...</p>
         ) : lista.length === 0 ? (
-          <p className="p-4 text-sm text-gray-400 text-center">Nenhum estabelecimento nesse módulo ainda.</p>
+          <p className="p-4 text-sm text-gray-500 text-center">Nenhum estabelecimento nesse módulo ainda.</p>
         ) : (
           lista.map((c) => (
             <div key={c.id} className="flex items-center justify-between gap-2 p-3">
               <div className="min-w-0">
-                <p className="text-sm font-medium text-gray-800 truncate">{c.nome} <span className="text-xs text-gray-400">· {c.categoria}</span></p>
-                <p className="text-xs text-gray-400 truncate">{c.telefone || "sem telefone"} · {c.endereco || "sem endereço"}</p>
+                <p className="text-sm font-medium text-gray-800 truncate">{c.nome} <span className="text-sm text-gray-500">· {c.categoria}</span></p>
+                <p className="text-sm text-gray-500 truncate">{c.telefone || "sem telefone"} · {c.endereco || "sem endereço"}</p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <button onClick={() => alternarStatus(c)} className="p-1.5 text-gray-400 hover:text-gray-700" title={c.status === "publicado" ? "Pausar" : "Reativar"}>

@@ -145,22 +145,22 @@ export default function SaudeEstabelecimentosAdminPage() {
             {importando ? "Buscando..." : "Importar do Google Maps"}
           </button>
         </div>
-        {resumo && <p className="text-xs text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2">{resumo}</p>}
+        {resumo && <p className="text-sm text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2">{resumo}</p>}
       </div>
 
       <div className="bg-white border rounded-lg divide-y">
         {carregando ? (
-          <p className="p-4 text-sm text-gray-400">Carregando...</p>
+          <p className="p-4 text-sm text-gray-500">Carregando...</p>
         ) : lista.length === 0 ? (
-          <p className="p-4 text-sm text-gray-400 text-center">Nenhum estabelecimento cadastrado ainda.</p>
+          <p className="p-4 text-sm text-gray-500 text-center">Nenhum estabelecimento cadastrado ainda.</p>
         ) : (
           lista.map((e) => (
             <div key={e.id} className="flex items-center justify-between gap-2 p-3">
               <div className="min-w-0">
                 <p className="text-sm font-medium text-gray-800 truncate">
-                  {e.nome} <span className="text-xs text-gray-400">· {TIPO_LABEL[e.tipo] || e.tipo}</span>
+                  {e.nome} <span className="text-sm text-gray-500">· {TIPO_LABEL[e.tipo] || e.tipo}</span>
                 </p>
-                <p className="text-xs text-gray-400 truncate">{e.telefone || "sem telefone"} · {e.endereco || "sem endereço"}</p>
+                <p className="text-sm text-gray-500 truncate">{e.telefone || "sem telefone"} · {e.endereco || "sem endereço"}</p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <button onClick={() => alternarStatus(e)} className="p-1.5 text-gray-400 hover:text-gray-700" title={e.status === "publicado" ? "Pausar" : "Reativar"}>
