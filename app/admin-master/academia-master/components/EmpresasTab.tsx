@@ -49,12 +49,12 @@ export default function EmpresasTab({
           <div>
             <div className="flex items-center gap-2">
               <p className="font-semibold text-sm text-gray-800">{empresa.nome}</p>
-              <span className={`text-xs px-2 py-0.5 rounded-full ${empresa.ativa ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>
+              <span className={`text-sm px-2 py-0.5 rounded-full ${empresa.ativa ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>
                 {empresa.ativa ? "Ativa" : "Aguardando aprovação"}
               </span>
             </div>
-            <p className="text-xs text-gray-600">{empresa.cidade} · {empresa.responsavel} · {empresa.contato}</p>
-            <p className="text-xs text-gray-500">{empresa.alunos} aluno(s)</p>
+            <p className="text-sm text-gray-600">{empresa.cidade} · {empresa.responsavel} · {empresa.contato}</p>
+            <p className="text-sm text-gray-500">{empresa.alunos} aluno(s)</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <select
@@ -77,7 +77,7 @@ export default function EmpresasTab({
             <button
               onClick={() => handleToggleAtiva(empresa)}
               disabled={busy === empresa.id}
-              className={`text-xs px-3 py-1.5 rounded flex items-center gap-1 text-white ${empresa.ativa ? "bg-red-600" : "bg-green-600"}`}
+              className={`text-sm px-3 py-1.5 rounded flex items-center gap-1 text-white ${empresa.ativa ? "bg-red-600" : "bg-green-600"}`}
             >
               {empresa.ativa ? <><XCircle size={13} /> Suspender</> : <><CheckCircle2 size={13} /> Aprovar</>}
             </button>

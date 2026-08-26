@@ -179,19 +179,19 @@ export default function MetricasGrafico() {
       <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wide">Usuários</p>
+            <p className="text-sm text-gray-500 uppercase tracking-wide">Usuários</p>
             <p className="text-lg font-bold text-blue-600 mt-1">
               {getUltimoValor('usuarios')}
             </p>
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wide">Vendas</p>
+            <p className="text-sm text-gray-500 uppercase tracking-wide">Vendas</p>
             <p className="text-lg font-bold text-green-600 mt-1">
               R$ {getUltimoValor('vendas').toLocaleString()}
             </p>
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wide">Engajamento</p>
+            <p className="text-sm text-gray-500 uppercase tracking-wide">Engajamento</p>
             <p className="text-lg font-bold text-amber-600 mt-1">
               {getUltimoValor('engajamento')}%
             </p>

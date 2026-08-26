@@ -150,14 +150,14 @@ export default function CompensacoesFornecedorPage() {
                   <tr key={c.id} className="border-t border-gray-100">
                     <td className="px-3 py-2 whitespace-nowrap">{new Date(c.created_at).toLocaleString("pt-BR")}</td>
                     <td className="px-3 py-2 whitespace-nowrap">{c.mes_referencia}</td>
-                    <td className="px-3 py-2">{c.portador?.nome || "—"}<br /><span className="text-xs text-gray-400">{c.portador?.whatsapp}</span></td>
-                    <td className="px-3 py-2">{c.fornecedor_nome}<br /><span className="text-xs text-gray-400">{c.fornecedor_whatsapp}</span></td>
+                    <td className="px-3 py-2">{c.portador?.nome || "—"}<br /><span className="text-sm text-gray-500">{c.portador?.whatsapp}</span></td>
+                    <td className="px-3 py-2">{c.fornecedor_nome}<br /><span className="text-sm text-gray-500">{c.fornecedor_whatsapp}</span></td>
                     <td className="px-3 py-2 whitespace-nowrap">{c.cidade}</td>
                     <td className="px-3 py-2">{c.descricao}</td>
                     <td className="px-3 py-2 font-semibold whitespace-nowrap">R$ {Number(c.valor || 0).toFixed(2)}</td>
                     <td className="px-3 py-2">
                       <span
-                        className={`px-2 py-1 rounded-full text-xs whitespace-nowrap ${
+                        className={`px-2 py-1 rounded-full text-sm whitespace-nowrap ${
                           c.status === "paga" ? "bg-emerald-100 text-emerald-700" : c.status === "solicitada" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"
                         }`}
                       >

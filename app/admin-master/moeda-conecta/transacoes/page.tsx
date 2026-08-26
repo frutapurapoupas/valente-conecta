@@ -230,7 +230,7 @@ export default function MoedaConectaTransacoesPage() {
             ))}
           </div>
           {fluxo.pendentesModeracao > 0 && (
-            <p className="text-xs text-amber-600 mt-2">
+            <p className="text-sm text-amber-600 mt-2">
               +{fluxo.pendentesModeracao} transação(ões) entre cidades esperando aprovação (R$ {fluxo.pendentesModeracaoValor.toFixed(2)})
             </p>
           )}
@@ -271,7 +271,7 @@ export default function MoedaConectaTransacoesPage() {
             <span className="text-sm bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full">
               {destinatarioCredito.nome} ({destinatarioCredito.cidade_base})
             </span>
-            <button onClick={() => setDestinatarioCredito(null)} className="text-xs text-gray-400 underline">trocar</button>
+            <button onClick={() => setDestinatarioCredito(null)} className="text-sm text-gray-500 underline">trocar</button>
             <input
               type="number"
               step="0.01"
@@ -369,7 +369,7 @@ export default function MoedaConectaTransacoesPage() {
                     <td className="px-3 py-2 font-semibold whitespace-nowrap">R$ {Number(item.valor || 0).toFixed(2)}</td>
                     <td className="px-3 py-2">
                       <span
-                        className={`px-2 py-1 rounded-full text-xs whitespace-nowrap ${
+                        className={`px-2 py-1 rounded-full text-sm whitespace-nowrap ${
                           item.status === "concluida"
                             ? "bg-emerald-100 text-emerald-700"
                             : item.status === "pendente_moderacao"

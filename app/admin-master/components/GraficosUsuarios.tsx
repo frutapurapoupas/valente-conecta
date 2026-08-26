@@ -31,7 +31,7 @@ const CORES_STATUS: Record<string, string> = {
 function TooltipPadrao({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white p-2.5 rounded-lg shadow-lg border border-gray-200 text-xs">
+    <div className="bg-white p-2.5 rounded-lg shadow-lg border border-gray-200 text-sm">
       {label && <p className="font-semibold text-gray-800 mb-1">{label}</p>}
       {payload.map((entry: any, i: number) => (
         <p key={i} style={{ color: entry.color || entry.payload?.fill }}>
@@ -91,7 +91,7 @@ export function GraficoPorStatus({ status }: { status: MetricasUsuarios["porStat
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
       <h3 className="text-sm font-semibold text-gray-800 mb-3">Usuários por status</h3>
       {dados.length === 0 ? (
-        <p className="text-xs text-gray-400 text-center py-16">Sem dados ainda.</p>
+        <p className="text-sm text-gray-500 text-center py-16">Sem dados ainda.</p>
       ) : (
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
@@ -123,7 +123,7 @@ export function CardsResumoUsuarios({ metricas }: { metricas: MetricasUsuarios }
       {cards.map((c) => (
         <div key={c.label} className="rounded-lg border border-gray-200 bg-white p-3">
           <p className="text-lg font-bold text-gray-800">{c.valor}</p>
-          <p className="text-xs text-gray-500">{c.label}</p>
+          <p className="text-sm text-gray-500">{c.label}</p>
         </div>
       ))}
     </div>

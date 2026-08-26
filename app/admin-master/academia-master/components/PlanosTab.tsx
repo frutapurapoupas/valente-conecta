@@ -58,7 +58,7 @@ export default function PlanosTab({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold text-gray-800">Planos (gratuito e pagos)</h2>
-        <button onClick={() => setMostrarForm((v) => !v)} className="text-xs px-3 py-1.5 rounded bg-slate-800 text-white flex items-center gap-1">
+        <button onClick={() => setMostrarForm((v) => !v)} className="text-sm px-3 py-1.5 rounded bg-slate-800 text-white flex items-center gap-1">
           {mostrarForm ? <X size={13} /> : <Plus size={13} />} {mostrarForm ? "Cancelar" : "Novo plano"}
         </button>
       </div>
@@ -91,8 +91,8 @@ export default function PlanosTab({
                   {plano.preco_mensal > 0 ? `R$ ${Number(plano.preco_mensal).toFixed(2)}/mês` : "Grátis"}
                 </span>
               </div>
-              {plano.descricao && <p className="text-xs text-gray-500 mb-2">{plano.descricao}</p>}
-              <p className="text-xs text-gray-500 mb-3">
+              {plano.descricao && <p className="text-sm text-gray-500 mb-2">{plano.descricao}</p>}
+              <p className="text-sm text-gray-500 mb-3">
                 {plano.limite_alunos ? `Até ${plano.limite_alunos} alunos` : "Alunos ilimitados"} · {plano.limite_usuarios_adicionais} usuário(s) de equipe
               </p>
 

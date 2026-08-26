@@ -49,7 +49,7 @@ export default function CobrancasTab({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold text-gray-800">Cobranças das academias</h2>
-        <button onClick={() => setMostrarForm((v) => !v)} className="text-xs px-3 py-1.5 rounded bg-slate-800 text-white flex items-center gap-1">
+        <button onClick={() => setMostrarForm((v) => !v)} className="text-sm px-3 py-1.5 rounded bg-slate-800 text-white flex items-center gap-1">
           {mostrarForm ? <X size={13} /> : <Plus size={13} />} {mostrarForm ? "Cancelar" : "Gerar cobrança"}
         </button>
       </div>
@@ -80,13 +80,13 @@ export default function CobrancasTab({
             <div key={c.id} className="border rounded-lg p-3 flex flex-col md:flex-row md:items-center gap-3 md:justify-between bg-white">
               <div>
                 <p className="text-sm font-semibold text-gray-800">{nomeEmpresa(c.gym_unit_id)} — {c.referencia_mes}</p>
-                <p className="text-xs text-gray-600">R$ {Number(c.valor).toFixed(2)} · vencimento {new Date(c.vencimento).toLocaleDateString()}</p>
+                <p className="text-sm text-gray-600">R$ {Number(c.valor).toFixed(2)} · vencimento {new Date(c.vencimento).toLocaleDateString()}</p>
               </div>
               <select
                 value={c.status}
                 onChange={(e) => handleStatus(c.id, e.target.value)}
                 disabled={busy === c.id}
-                className={`text-xs px-2 py-1 rounded border ${STATUS_ESTILO[c.status] || ""}`}
+                className={`text-sm px-2 py-1 rounded border ${STATUS_ESTILO[c.status] || ""}`}
               >
                 {STATUS_OPCOES.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>

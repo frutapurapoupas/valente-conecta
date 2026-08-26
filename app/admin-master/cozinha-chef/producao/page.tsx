@@ -54,11 +54,11 @@ export default function ProducaoPage() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Data</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Prato</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Prevista</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Produzida</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Status</th>
+              <th className="px-4 py-3 text-left text-sm font-medium uppercase tracking-wider text-gray-500">Data</th>
+              <th className="px-4 py-3 text-left text-sm font-medium uppercase tracking-wider text-gray-500">Prato</th>
+              <th className="px-4 py-3 text-left text-sm font-medium uppercase tracking-wider text-gray-500">Prevista</th>
+              <th className="px-4 py-3 text-left text-sm font-medium uppercase tracking-wider text-gray-500">Produzida</th>
+              <th className="px-4 py-3 text-left text-sm font-medium uppercase tracking-wider text-gray-500">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white">
