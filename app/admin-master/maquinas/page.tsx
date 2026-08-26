@@ -332,7 +332,7 @@ export default function Page() {
           <div className="mt-8 overflow-x-auto">
             <table className="min-w-full border-separate border-spacing-y-2">
               <thead>
-                <tr className="text-left text-xs uppercase tracking-[0.2em] text-gray-400">
+                <tr className="text-left text-sm uppercase tracking-[0.2em] text-gray-400">
                   <th className="px-4 py-3">Nome</th>
                   <th className="px-4 py-3">Categoria</th>
                   <th className="px-4 py-3">Fornecedor</th>
@@ -351,13 +351,13 @@ export default function Page() {
                     <tr key={item.id} className="border-y border-white/5 bg-slate-950/80">
                       <td className="px-4 py-4 align-top text-white max-w-[250px]">
                         <div className="font-semibold">{item.nome}</div>
-                        <div className="text-xs text-gray-400 line-clamp-2">{item.descricao}</div>
+                        <div className="text-sm text-gray-400 line-clamp-2">{item.descricao}</div>
                       </td>
                       <td className="px-4 py-4 align-top text-gray-300">{item.categoria}</td>
                       <td className="px-4 py-4 align-top text-gray-300">{item.fornecedorNome || 'Admin'}</td>
                       <td className="px-4 py-4 align-top text-emerald-300">R$ {item.preco.toFixed(2)}</td>
                       <td className="px-4 py-4 align-top">
-                        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${item.status === 'publicado' ? 'bg-emerald-500/15 text-emerald-300' : 'bg-orange-500/15 text-orange-300'}`}>
+                        <span className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold ${item.status === 'publicado' ? 'bg-emerald-500/15 text-emerald-300' : 'bg-orange-500/15 text-orange-300'}`}>
                           {item.status}
                         </span>
                       </td>
@@ -365,7 +365,7 @@ export default function Page() {
                         <button
                           type="button"
                           onClick={() => handleToggleStatus(item)}
-                          className="inline-flex items-center gap-2 rounded-2xl bg-white/5 px-3 py-2 text-xs font-semibold text-white transition hover:bg-white/10"
+                          className="inline-flex items-center gap-2 rounded-2xl bg-white/5 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
                         >
                           {item.status === 'publicado' ? <EyeOff className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
                           {item.status === 'publicado' ? 'Despublicar' : 'Publicar'}
@@ -373,14 +373,14 @@ export default function Page() {
                         <button
                           type="button"
                           onClick={() => handleEdit(item)}
-                          className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-500"
+                          className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-blue-500"
                         >
                           <Edit3 className="h-4 w-4" /> Editar
                         </button>
                         <button
                           type="button"
                           onClick={() => handleRemove(item.id)}
-                          className="inline-flex items-center gap-2 rounded-2xl bg-red-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-red-500"
+                          className="inline-flex items-center gap-2 rounded-2xl bg-red-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-red-500"
                         >
                           <Trash2 className="h-4 w-4" /> Excluir
                         </button>

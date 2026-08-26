@@ -160,11 +160,11 @@ export default function FabricaVideosPage() {
           <ArrowLeft size={16} /> Voltar ao Painel
         </Link>
         <div className="flex items-center gap-3">
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 px-3 py-1.5 rounded-full text-xs font-semibold border border-blue-100">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 px-3 py-1.5 rounded-full text-sm font-semibold border border-blue-100">
             <Sparkles size={14} className="inline mr-1" /> Modo Local
           </div>
           {modoBackend === "kling" && (
-            <div className="bg-yellow-500 text-white px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1">
+            <div className="bg-yellow-500 text-white px-3 py-1.5 rounded-full text-sm font-bold flex items-center gap-1">
               <Star size={12} /> Premium Ativo
             </div>
           )}
@@ -179,7 +179,7 @@ export default function FabricaVideosPage() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-900">Fabrica de Videos IA</h1>
-              <p className="text-xs text-gray-500">Crie videos profissionais para seu negocio com inteligencia artificial</p>
+              <p className="text-sm text-gray-500">Crie videos profissionais para seu negocio com inteligencia artificial</p>
             </div>
           </div>
 
@@ -188,7 +188,7 @@ export default function FabricaVideosPage() {
               <button
                 key={modo}
                 onClick={() => setModoEdicao(modo)}
-                className={`py-2.5 text-xs font-semibold rounded-lg capitalize transition-all ${modoEdicao === modo
+                className={`py-2.5 text-sm font-semibold rounded-lg capitalize transition-all ${modoEdicao === modo
                   ? "bg-white text-blue-600 shadow-sm ring-1 ring-blue-100"
                   : "text-gray-500 hover:text-gray-700"
                   }`}
@@ -201,7 +201,7 @@ export default function FabricaVideosPage() {
           {modoEdicao === "valentina" && (
             <div className="space-y-5">
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase mb-2 tracking-wide">
+                <label className="block text-sm font-bold text-gray-700 uppercase mb-2 tracking-wide">
                   1. Imagem de Referencia (ValenTina)
                 </label>
                 <div className="flex items-center gap-4 flex-wrap">
@@ -212,16 +212,16 @@ export default function FabricaVideosPage() {
                       <User size={28} className="text-gray-400" />
                     )}
                   </div>
-                  <label className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-xs font-semibold shadow-sm cursor-pointer hover:bg-gray-50 transition-colors text-gray-700">
+                  <label className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold shadow-sm cursor-pointer hover:bg-gray-50 transition-colors text-gray-700">
                     <Upload size={14} /> Carregar Foto
                     <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
                   </label>
-                  <p className="text-xs text-gray-400">PNG, JPG ate 10MB</p>
+                  <p className="text-sm text-gray-500">PNG, JPG ate 10MB</p>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase mb-2 tracking-wide">
+                <label className="block text-sm font-bold text-gray-700 uppercase mb-2 tracking-wide">
                   2. Mensagem / O que ela vai falar?
                 </label>
                 <textarea
@@ -230,11 +230,11 @@ export default function FabricaVideosPage() {
                   placeholder="Ex: Ola! Seja bem-vindo ao Valente Conecta!"
                   className="w-full h-28 p-3 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 text-gray-800 resize-none transition-all"
                 />
-                <p className="text-xs text-gray-400 mt-1">{valentinaMensagem.length}/500 caracteres</p>
+                <p className="text-sm text-gray-500 mt-1">{valentinaMensagem.length}/500 caracteres</p>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase mb-2 tracking-wide">
+                <label className="block text-sm font-bold text-gray-700 uppercase mb-2 tracking-wide">
                   3. Postura / Expressao Corporal
                 </label>
                 <select
@@ -257,13 +257,13 @@ export default function FabricaVideosPage() {
                       <Star size={16} className="text-yellow-600" />
                       <p className="text-sm font-bold text-gray-800">Modo IA Premium</p>
                     </div>
-                    <p className="text-xs text-gray-500 mt-0.5">
+                    <p className="text-sm text-gray-500 mt-0.5">
                       {usarPremium
                         ? "Movimento real de boca, olhos e expressoes"
                         : "Apenas movimento de zoom na imagem"}
                     </p>
                     {usarPremium && modoBackend !== "kling" && (
-                      <p className="text-xs text-blue-600 mt-1">
+                      <p className="text-sm text-blue-600 mt-1">
                         Teste gratuito por 5 minutos
                       </p>
                     )}
@@ -324,7 +324,7 @@ export default function FabricaVideosPage() {
                 </div>
                 <button
                   onClick={() => handleDownload(videoResultUrl, videoGerado?.titulo || "video")}
-                  className="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 text-white hover:from-emerald-600 hover:to-green-700 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm"
+                  className="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 text-white hover:from-emerald-600 hover:to-green-700 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-sm"
                 >
                   <Download size={14} /> Baixar Video MP4
                 </button>
@@ -334,14 +334,14 @@ export default function FabricaVideosPage() {
                 {gerando ? (
                   <div className="flex flex-col items-center gap-2">
                     <Loader2 size={32} className="animate-spin text-blue-600" />
-                    <p className="text-xs font-semibold text-gray-600">Processando sua midia...</p>
+                    <p className="text-sm font-semibold text-gray-600">Processando sua midia...</p>
                   </div>
                 ) : (
                   <>
                     <div className="bg-gray-200/50 p-4 rounded-full mb-3">
                       <Video size={32} className="text-gray-400" />
                     </div>
-                    <p className="text-xs text-gray-500 font-medium">Nenhum video gerado ainda</p>
+                    <p className="text-sm text-gray-500 font-medium">Nenhum video gerado ainda</p>
                   </>
                 )}
               </div>
@@ -352,13 +352,13 @@ export default function FabricaVideosPage() {
             <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
               <History size={14} className="text-gray-500" /> Historico Recente
               {videos.length > 0 && (
-                <span className="ml-auto text-xs text-gray-400">{videos.length} videos</span>
+                <span className="ml-auto text-sm text-gray-500">{videos.length} videos</span>
               )}
             </h3>
             <div className="space-y-2.5 max-h-64 overflow-y-auto">
               {videos.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-xs text-gray-400">Seu historico esta vazio</p>
+                  <p className="text-sm text-gray-500">Seu historico esta vazio</p>
                 </div>
               ) : (
                 videos.map((vid) => (
@@ -366,12 +366,12 @@ export default function FabricaVideosPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="text-xs font-bold text-gray-700 truncate">{vid.titulo}</p>
+                          <p className="text-sm font-bold text-gray-700 truncate">{vid.titulo}</p>
                           {vid.modo === "premium" && (
-                            <span className="text-xs text-purple-600 font-semibold">Premium</span>
+                            <span className="text-sm text-purple-600 font-semibold">Premium</span>
                           )}
                         </div>
-                        <p className="text-xs text-gray-500 truncate mt-1">{vid.roteiroPersonalizado.substring(0, 50)}...</p>
+                        <p className="text-sm text-gray-500 truncate mt-1">{vid.roteiroPersonalizado.substring(0, 50)}...</p>
                       </div>
                       <CheckCircle size={14} className="text-emerald-500 flex-shrink-0" />
                     </div>
@@ -382,8 +382,8 @@ export default function FabricaVideosPage() {
           </div>
 
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-4 border border-blue-100">
-            <h4 className="text-xs font-bold text-blue-900 mb-2">Dicas para melhores videos:</h4>
-            <ul className="text-xs text-blue-800 space-y-1">
+            <h4 className="text-sm font-bold text-blue-900 mb-2">Dicas para melhores videos:</h4>
+            <ul className="text-sm text-blue-800 space-y-1">
               <li>â€¢ Use imagens nitidas e bem iluminadas</li>
               <li>â€¢ Mensagens curtas (ate 200 caracteres)</li>
               <li>â€¢ Ative o modo Premium para movimento real</li>

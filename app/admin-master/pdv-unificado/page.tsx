@@ -108,7 +108,7 @@ export default function PDVUnificadoPage() {
             <span className="text-2xl font-bold">{stats.totalProdutos}</span>
           </div>
           <p className="text-gray-400 text-sm">Total Produtos</p>
-          <p className="text-green-400 text-xs mt-1">R$ {stats.valorEstoque.toFixed(2)} em estoque</p>
+          <p className="text-green-400 text-sm mt-1">R$ {stats.valorEstoque.toFixed(2)} em estoque</p>
         </div>
 
         <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
@@ -117,7 +117,7 @@ export default function PDVUnificadoPage() {
             <span className="text-2xl font-bold">{stats.vendasHoje}</span>
           </div>
           <p className="text-gray-400 text-sm">Vendas Hoje</p>
-          <p className="text-green-400 text-xs mt-1">+15% vs ontem</p>
+          <p className="text-green-400 text-sm mt-1">+15% vs ontem</p>
         </div>
 
         <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
@@ -126,7 +126,7 @@ export default function PDVUnificadoPage() {
             <span className="text-2xl font-bold">R$ {saldoCaixa.toFixed(2)}</span>
           </div>
           <p className="text-gray-400 text-sm">Saldo Caixa</p>
-          <p className={`text-xs mt-1 ${caixaAberto ? 'text-green-400' : 'text-red-400'}`}>
+          <p className={`text-sm mt-1 ${caixaAberto ? 'text-green-400' : 'text-red-400'}`}>
             {caixaAberto ? 'Caixa Aberto' : 'Caixa Fechado'}
           </p>
         </div>
@@ -137,7 +137,7 @@ export default function PDVUnificadoPage() {
             <span className="text-2xl font-bold">{stats.fiadosAbertos}</span>
           </div>
           <p className="text-gray-400 text-sm">Fiados Abertos</p>
-          <p className="text-orange-400 text-xs mt-1">R$ {fiados.reduce((acc, f) => acc + f.valor, 0).toFixed(2)} total</p>
+          <p className="text-orange-400 text-sm mt-1">R$ {fiados.reduce((acc, f) => acc + f.valor, 0).toFixed(2)} total</p>
         </div>
       </div>
 
@@ -220,7 +220,7 @@ export default function PDVUnificadoPage() {
                       <td className="py-3 px-4">R$ {venda.total.toFixed(2)}</td>
                       <td className="py-3 px-4">{venda.formaPagamento}</td>
                       <td className="py-3 px-4">
-                        <span className={`px-2 py-1 rounded text-xs ${
+                        <span className={`px-2 py-1 rounded text-sm ${
                           venda.status === 'concluida' ? 'bg-green-600' : 'bg-yellow-600'
                         }`}>
                           {venda.status}
@@ -287,7 +287,7 @@ export default function PDVUnificadoPage() {
                       <td className="py-3 px-4 font-mono text-sm">{produto.sku}</td>
                       <td className="py-3 px-4 font-medium">{produto.nome}</td>
                       <td className="py-3 px-4">
-                        <span className="px-2 py-1 bg-gray-700 rounded text-xs">{produto.categoria}</span>
+                        <span className="px-2 py-1 bg-gray-700 rounded text-sm">{produto.categoria}</span>
                       </td>
                       <td className="py-3 px-4">R$ {produto.preco.toFixed(2)}</td>
                       <td className="py-3 px-4">
@@ -449,7 +449,7 @@ export default function PDVUnificadoPage() {
                       <td className="py-3 px-4 font-medium">R$ {fiado.valor.toFixed(2)}</td>
                       <td className="py-3 px-4">{fiado.dataVencimento}</td>
                       <td className="py-3 px-4">
-                        <span className={`px-2 py-1 rounded text-xs ${
+                        <span className={`px-2 py-1 rounded text-sm ${
                           fiado.status === 'aberto' ? 'bg-yellow-600' : 
                           fiado.status === 'pago' ? 'bg-green-600' : 'bg-red-600'
                         }`}>
