@@ -24,8 +24,16 @@ interface FiltrosBuscaInteligente {
   lng?: number;
 }
 
-export function useBuscaInteligente(filtros: FiltrosBuscaInteligente = {}) {
-  const [termo, setTermo] = useState("");
+export function useBuscaInteligente(filtros: FiltrosBuscaInteligente = {}, termoInicial: string = "") {
+  // Comeca ja' com o termo inicial (ex: ?q= da URL) em vez de "" -- assim o
+  // efeito de montagem abaixo dispara UMA busca so', com o termo certo. Sem
+  // isso, quem precisava buscar um termo inicial (app/busca/page.tsx) tinha
+  // que chamar buscarImediato(termoInicial) numa segunda useEffect propria,
+  // e as duas buscas corriam em paralelo — a busca vazia (sem IA, mais
+  // rapida) terminava primeiro e mostrava a listagem generica da vitrine
+  // (podia incluir qualquer item em destaque, tipo Cozinha Chef Neide) por
+  // 1-2s ate' a busca real chegar e substituir.
+  const [termo, setTermo] = useState(termoInicial);
   const [diretos, setDiretos] = useState<ResultadoAgrupado[]>([]);
   const [relacionados, setRelacionados] = useState<ResultadoAgrupado[]>([]);
   const [mensagemHumanizada, setMensagemHumanizada] = useState<string | undefined>(undefined);

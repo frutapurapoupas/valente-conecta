@@ -33,7 +33,7 @@ export default function BuscaPage() {
     modulo: moduloAtivo || undefined,
     lat: localizacao?.lat,
     lng: localizacao?.lng,
-  });
+  }, queryInicial);
 
   const totalResultados = diretos.length + relacionados.length;
 
@@ -56,14 +56,11 @@ export default function BuscaPage() {
     );
   }, []);
 
-  // Busca inicial (query da URL) e re-busca quando a localizacao chega
-  // depois do mount (geolocation e' assincrona) -- modulo ja e' coberto
-  // pelo efeito interno do hook.
-  useEffect(() => {
-    buscarImediato(queryInicial);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
+  // Busca inicial (query da URL) ja' e' feita pelo proprio hook, que recebe
+  // queryInicial como termo de partida (evita a corrida com a busca vazia
+  // interna do hook -- ver comentario em useBuscaInteligente.ts). Aqui so'
+  // falta re-buscar quando a localizacao chega depois do mount (geolocation
+  // e' assincrona) -- modulo ja e' coberto pelo efeito interno do hook.
   useEffect(() => {
     if (localizacao) buscarImediato(termo);
     // eslint-disable-next-line react-hooks/exhaustive-deps
