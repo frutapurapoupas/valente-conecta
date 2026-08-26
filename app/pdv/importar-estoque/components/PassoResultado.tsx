@@ -27,15 +27,15 @@ export function PassoResultado({ resultados, onNovaImportacao }: Props) {
       <div className="grid grid-cols-3 gap-2 text-center">
         <div className="bg-green-50 rounded-xl p-3">
           <p className="text-2xl font-bold text-green-700">{comFotoReal.length}</p>
-          <p className="text-xs text-green-700 mt-1">com foto real</p>
+          <p className="text-sm text-green-700 mt-1">com foto real</p>
         </div>
         <div className="bg-amber-50 rounded-xl p-3">
           <p className="text-2xl font-bold text-amber-700">{comPlaceholder.length}</p>
-          <p className="text-xs text-amber-700 mt-1">aguardando foto</p>
+          <p className="text-sm text-amber-700 mt-1">aguardando foto</p>
         </div>
         <div className="bg-red-50 rounded-xl p-3">
           <p className="text-2xl font-bold text-red-700">{comErro.length}</p>
-          <p className="text-xs text-red-700 mt-1">com erro</p>
+          <p className="text-sm text-red-700 mt-1">com erro</p>
         </div>
       </div>
 
@@ -54,7 +54,7 @@ export function PassoResultado({ resultados, onNovaImportacao }: Props) {
             <XCircle className="w-4 h-4 text-red-600" />
             <p className="text-sm font-medium text-red-800">Linhas com erro</p>
           </div>
-          <ul className="text-xs text-red-700 space-y-0.5 pl-6">
+          <ul className="text-sm text-red-700 space-y-0.5 pl-6">
             {comErro.slice(0, 20).map((r, i) => (
               <li key={i}>
                 Linha {r.linha_index + 2}: {r.erro}

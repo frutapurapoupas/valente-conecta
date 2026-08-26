@@ -97,17 +97,17 @@ export default function ImportacaoPendentesPage() {
 
       <div className="p-4 space-y-3">
         {loading ? (
-          <p className="text-sm text-gray-400 text-center py-8">Carregando...</p>
+          <p className="text-sm text-gray-500 text-center py-8">Carregando...</p>
         ) : itens.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-8">Nenhum produto aguardando foto. 🎉</p>
+          <p className="text-sm text-gray-500 text-center py-8">Nenhum produto aguardando foto. 🎉</p>
         ) : (
           itens.map((item) => (
             <div key={item.id} className="bg-white rounded-xl border p-3 space-y-2">
               <div>
                 <p className="font-medium text-gray-800 text-sm">{item.titulo}</p>
-                {item.preco !== null && <p className="text-xs text-gray-500">R$ {item.preco.toFixed(2)}</p>}
+                {item.preco !== null && <p className="text-sm text-gray-500">R$ {item.preco.toFixed(2)}</p>}
                 {item.metadata.foto_pendente_aprovacao && (
-                  <p className="text-xs text-amber-600 mt-1">Foto enviada, aguardando aprovação do admin.</p>
+                  <p className="text-sm text-amber-600 mt-1">Foto enviada, aguardando aprovação do admin.</p>
                 )}
               </div>
               {!item.metadata.foto_pendente_aprovacao && (

@@ -210,26 +210,26 @@ export default function PdvCaixaPage() {
           <div className="flex items-center gap-2 mb-3 flex-wrap">
             <Calendar className="w-4 h-4 text-gray-400" />
             <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} className="px-2 py-1.5 border rounded-lg text-sm" />
-            <span className="text-gray-400 text-sm">até</span>
+            <span className="text-gray-500 text-sm">até</span>
             <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} className="px-2 py-1.5 border rounded-lg text-sm" />
             <div className="flex gap-1 ml-auto">
-              <button onClick={() => aplicarAtalho(1)} className="px-2.5 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-full">Hoje</button>
-              <button onClick={() => aplicarAtalho(7)} className="px-2.5 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-full">7 dias</button>
-              <button onClick={() => aplicarAtalho(30)} className="px-2.5 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-full">30 dias</button>
+              <button onClick={() => aplicarAtalho(1)} className="px-2.5 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-full">Hoje</button>
+              <button onClick={() => aplicarAtalho(7)} className="px-2.5 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-full">7 dias</button>
+              <button onClick={() => aplicarAtalho(30)} className="px-2.5 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-full">30 dias</button>
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-2">
             <div className="bg-emerald-50 rounded-xl p-3 text-center">
-              <p className="text-[11px] text-emerald-700 flex items-center justify-center gap-1"><TrendingUp className="w-3.5 h-3.5" /> Entradas</p>
+              <p className="text-sm text-emerald-700 flex items-center justify-center gap-1"><TrendingUp className="w-3.5 h-3.5" /> Entradas</p>
               <p className="font-bold text-emerald-700">{formatarMoeda(totais.entradas)}</p>
             </div>
             <div className="bg-red-50 rounded-xl p-3 text-center">
-              <p className="text-[11px] text-red-700 flex items-center justify-center gap-1"><TrendingDown className="w-3.5 h-3.5" /> Saídas</p>
+              <p className="text-sm text-red-700 flex items-center justify-center gap-1"><TrendingDown className="w-3.5 h-3.5" /> Saídas</p>
               <p className="font-bold text-red-700">{formatarMoeda(totais.saidas)}</p>
             </div>
             <div className={`rounded-xl p-3 text-center ${totais.saldo >= 0 ? "bg-blue-50" : "bg-amber-50"}`}>
-              <p className={`text-[11px] flex items-center justify-center gap-1 ${totais.saldo >= 0 ? "text-blue-700" : "text-amber-700"}`}>Saldo</p>
+              <p className={`text-sm flex items-center justify-center gap-1 ${totais.saldo >= 0 ? "text-blue-700" : "text-amber-700"}`}>Saldo</p>
               <p className={`font-bold ${totais.saldo >= 0 ? "text-blue-700" : "text-amber-700"}`}>{formatarMoeda(totais.saldo)}</p>
             </div>
           </div>
@@ -260,9 +260,9 @@ export default function PdvCaixaPage() {
         </div>
 
         {loading ? (
-          <p className="text-center text-sm text-gray-400 py-8">Carregando...</p>
+          <p className="text-center text-sm text-gray-500 py-8">Carregando...</p>
         ) : lancamentos.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-2xl shadow text-gray-400">Nenhum lançamento no período.</div>
+          <div className="text-center py-12 bg-white rounded-2xl shadow text-gray-500">Nenhum lançamento no período.</div>
         ) : visualizacao === "resumo" ? (
           <div className="space-y-4">
             <div className="bg-white rounded-2xl shadow p-4">
@@ -270,7 +270,7 @@ export default function PdvCaixaPage() {
               <div className="space-y-2">
                 {resumoPorCategoria.map((r) => (
                   <div key={r.categoria} className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">{r.label} <span className="text-gray-400">({r.qtd})</span></span>
+                    <span className="text-gray-600">{r.label} <span className="text-gray-500">({r.qtd})</span></span>
                     <span className={`font-semibold ${r.tipo === "entrada" ? "text-emerald-600" : "text-red-600"}`}>
                       {r.tipo === "entrada" ? "+" : "-"} {formatarMoeda(r.total)}
                     </span>
@@ -281,12 +281,12 @@ export default function PdvCaixaPage() {
             <div className="bg-white rounded-2xl shadow p-4">
               <p className="text-sm font-semibold text-gray-700 mb-3">Vendas por forma de pagamento</p>
               {resumoPorFormaPagamento.length === 0 ? (
-                <p className="text-xs text-gray-400">Nenhuma entrada no período.</p>
+                <p className="text-sm text-gray-500">Nenhuma entrada no período.</p>
               ) : (
                 <div className="space-y-2">
                   {resumoPorFormaPagamento.map((r) => (
                     <div key={r.forma} className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">{r.label} <span className="text-gray-400">({r.qtd})</span></span>
+                      <span className="text-gray-600">{r.label} <span className="text-gray-500">({r.qtd})</span></span>
                       <span className="font-semibold text-emerald-600">{formatarMoeda(r.total)}</span>
                     </div>
                   ))}
@@ -303,7 +303,7 @@ export default function PdvCaixaPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-800 truncate">{l.descricao}</p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-sm text-gray-500">
                     {new Date(l.data + "T00:00:00").toLocaleDateString("pt-BR")} · {FORMAS_PAGAMENTO.find((f) => f.id === l.forma_pagamento)?.nome || l.forma_pagamento}
                     {l.categoria && ` · ${LABEL_CATEGORIA[l.categoria] || l.categoria}`}
                   </p>
@@ -311,7 +311,7 @@ export default function PdvCaixaPage() {
                 <p className={`font-bold text-sm ${l.tipo === "entrada" ? "text-emerald-600" : "text-red-600"}`}>
                   {l.tipo === "entrada" ? "+" : "-"} {formatarMoeda(Number(l.valor))}
                 </p>
-                <button onClick={() => excluir(l.id)} className="p-1.5 text-gray-400 hover:text-red-600"><Trash2 className="w-4 h-4" /></button>
+                <button onClick={() => excluir(l.id)} className="p-1.5 text-gray-500 hover:text-red-600"><Trash2 className="w-4 h-4" /></button>
               </div>
             ))}
           </div>
@@ -327,21 +327,21 @@ export default function PdvCaixaPage() {
             </div>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Descrição</label>
+                <label className="block text-sm font-medium text-gray-500 mb-1">Descrição</label>
                 <input value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder={formAberto === "entrada" ? "Ex: Venda no balcão" : "Ex: Compra de mercadoria"} className="w-full px-3 py-2 border rounded-lg text-sm" autoFocus />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Valor</label>
+                <label className="block text-sm font-medium text-gray-500 mb-1">Valor</label>
                 <input type="number" step="0.01" min="0" value={valor} onChange={(e) => setValor(e.target.value === "" ? "" : parseFloat(e.target.value))} className="w-full px-3 py-2 border rounded-lg text-sm" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Forma de pagamento</label>
+                <label className="block text-sm font-medium text-gray-500 mb-1">Forma de pagamento</label>
                 <select value={formaPagamento} onChange={(e) => setFormaPagamento(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm">
                   {FORMAS_PAGAMENTO.map((f) => <option key={f.id} value={f.id}>{f.nome}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Categoria (opcional)</label>
+                <label className="block text-sm font-medium text-gray-500 mb-1">Categoria (opcional)</label>
                 <select value={categoria} onChange={(e) => setCategoria(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm">
                   <option value="">Sem categoria</option>
                   {(formAberto === "entrada" ? CATEGORIAS_ENTRADA : CATEGORIAS_SAIDA).map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}

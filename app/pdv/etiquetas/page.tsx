@@ -191,9 +191,9 @@ export default function PdvEtiquetasPage() {
         </div>
 
         {loading ? (
-          <p className="text-sm text-gray-400 text-center py-8">Carregando...</p>
+          <p className="text-sm text-gray-500 text-center py-8">Carregando...</p>
         ) : produtosFiltrados.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-8">Nenhum produto encontrado.</p>
+          <p className="text-sm text-gray-500 text-center py-8">Nenhum produto encontrado.</p>
         ) : (
           <div className="space-y-2">
             {produtosFiltrados.map((p) => {
@@ -203,7 +203,7 @@ export default function PdvEtiquetasPage() {
                   <button onClick={() => alternarSelecao(p.estoqueId)} className={`w-5 h-5 rounded border shrink-0 ${qtd > 0 ? "bg-blue-600 border-blue-600" : "border-gray-300"}`} />
                   <div className="flex-1 min-w-0" onClick={() => alternarSelecao(p.estoqueId)}>
                     <p className="text-sm font-medium text-gray-800 truncate">{p.nome}{p.variante ? ` — ${p.variante}` : ""}</p>
-                    <p className="text-xs text-gray-400">{formatarMoeda(p.preco)}</p>
+                    <p className="text-sm text-gray-500">{formatarMoeda(p.preco)}</p>
                   </div>
                   {qtd > 0 && (
                     <div className="flex items-center gap-1.5 shrink-0">

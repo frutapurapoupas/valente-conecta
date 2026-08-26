@@ -36,7 +36,7 @@ export function PassoRevisao({ validas, invalidas, enviando, progresso, onPublic
               <strong>{invalidas.length}</strong> {invalidas.length === 1 ? "linha será pulada" : "linhas serão puladas"}
             </p>
           </div>
-          <ul className="text-xs text-amber-700 space-y-0.5 pl-7 max-h-32 overflow-y-auto">
+          <ul className="text-sm text-amber-700 space-y-0.5 pl-7 max-h-32 overflow-y-auto">
             {invalidas.slice(0, 20).map((item, i) => (
               <li key={i}>
                 Linha {item.linha}: {item.motivo}

@@ -163,7 +163,7 @@ export default function PdvEquipePage() {
       <PdvSubNav ativa="equipe" operador={operador} />
 
       <div className="p-4 max-w-lg mx-auto space-y-3">
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-gray-500">
           Cada funcionário loga com nome + PIN direto na tela de venda e só acessa o que você liberar aqui. Você (dono) sempre tem acesso total.
         </p>
 
@@ -175,9 +175,9 @@ export default function PdvEquipePage() {
         </button>
 
         {loading ? (
-          <p className="text-sm text-gray-400 text-center py-8">Carregando...</p>
+          <p className="text-sm text-gray-500 text-center py-8">Carregando...</p>
         ) : funcionarios.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-8">Nenhum funcionário cadastrado ainda — a tela de venda continua abrindo direto pra você.</p>
+          <p className="text-sm text-gray-500 text-center py-8">Nenhum funcionário cadastrado ainda — a tela de venda continua abrindo direto pra você.</p>
         ) : (
           <div className="space-y-2">
             {funcionarios.map((f) => (
@@ -185,17 +185,17 @@ export default function PdvEquipePage() {
                 <div>
                   <p className="font-medium text-gray-800 text-sm flex items-center gap-2">
                     {f.nome}
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${f.ativo ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
+                    <span className={`text-sm px-1.5 py-0.5 rounded-full font-medium ${f.ativo ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
                       {f.ativo ? "ativo" : "inativo"}
                     </span>
                   </p>
-                  <p className="text-xs text-gray-400">{Object.values(f.permissoes || {}).filter(Boolean).length} permissões liberadas</p>
+                  <p className="text-sm text-gray-500">{Object.values(f.permissoes || {}).filter(Boolean).length} permissões liberadas</p>
                 </div>
                 <div className="flex items-center gap-1">
-                  <button onClick={() => abrirEdicao(f)} className="p-2 text-gray-400 hover:text-blue-600" title="Editar permissões / redefinir PIN">
+                  <button onClick={() => abrirEdicao(f)} className="p-2 text-gray-500 hover:text-blue-600" title="Editar permissões / redefinir PIN">
                     <Pencil className="w-4 h-4" />
                   </button>
-                  <button onClick={() => alternarAtivo(f)} className="px-2.5 py-1.5 text-xs font-medium rounded-lg border text-gray-600 hover:bg-gray-50">
+                  <button onClick={() => alternarAtivo(f)} className="px-2.5 py-1.5 text-sm font-medium rounded-lg border text-gray-600 hover:bg-gray-50">
                     {f.ativo ? "Desativar" : "Reativar"}
                   </button>
                 </div>
@@ -214,11 +214,11 @@ export default function PdvEquipePage() {
             </div>
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-medium text-gray-500">Nome</label>
+                <label className="text-sm font-medium text-gray-500">Nome</label>
                 <input value={novoNome} onChange={(e) => setNovoNome(e.target.value)} autoFocus className="w-full mt-1 px-3 py-2 border rounded-lg text-sm" />
               </div>
               <div>
-                <label className="text-xs font-medium text-gray-500">PIN (4 a 6 números)</label>
+                <label className="text-sm font-medium text-gray-500">PIN (4 a 6 números)</label>
                 <input
                   value={novoPin}
                   onChange={(e) => setNovoPin(e.target.value.replace(/\D/g, ""))}
@@ -229,7 +229,7 @@ export default function PdvEquipePage() {
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-gray-500 mb-1.5 block">Permissões</label>
+                <label className="text-sm font-medium text-gray-500 mb-1.5 block">Permissões</label>
                 <ListaPermissoes valores={novoPermissoes} onMudar={(chave, marcado) => setNovoPermissoes((prev) => ({ ...prev, [chave]: marcado }))} />
               </div>
               <button onClick={cadastrarFuncionario} disabled={salvando} className="w-full bg-blue-600 text-white py-2.5 rounded-xl font-semibold disabled:opacity-60">
@@ -249,11 +249,11 @@ export default function PdvEquipePage() {
             </div>
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-medium text-gray-500 mb-1.5 block">Permissões</label>
+                <label className="text-sm font-medium text-gray-500 mb-1.5 block">Permissões</label>
                 <ListaPermissoes valores={editPermissoes} onMudar={(chave, marcado) => setEditPermissoes((prev) => ({ ...prev, [chave]: marcado }))} />
               </div>
               <div>
-                <label className="text-xs font-medium text-gray-500 flex items-center gap-1"><KeyRound className="w-3.5 h-3.5" /> Redefinir PIN (opcional)</label>
+                <label className="text-sm font-medium text-gray-500 flex items-center gap-1"><KeyRound className="w-3.5 h-3.5" /> Redefinir PIN (opcional)</label>
                 <input
                   value={editNovoPin}
                   onChange={(e) => setEditNovoPin(e.target.value.replace(/\D/g, ""))}

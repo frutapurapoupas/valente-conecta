@@ -118,7 +118,7 @@ export default function NotasFiscaisPage() {
       <PdvSubNav ativa="notas-fiscais" operador={operador} />
 
       <main className="max-w-2xl mx-auto p-4 space-y-4">
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-800">
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm text-blue-800">
           Controle manual, pra organização — ainda não emite nota de verdade. Emissão automática (NFC-e/NFe) é a próxima etapa, depende de custo de certificado/integração a ser resolvido antes do lançamento.
         </div>
 
@@ -130,9 +130,9 @@ export default function NotasFiscaisPage() {
         </button>
 
         {loading ? (
-          <p className="text-center text-sm text-gray-400 py-8">Carregando...</p>
+          <p className="text-center text-sm text-gray-500 py-8">Carregando...</p>
         ) : notas.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-2xl shadow text-gray-400">Nenhuma nota registrada ainda.</div>
+          <div className="text-center py-12 bg-white rounded-2xl shadow text-gray-500">Nenhuma nota registrada ainda.</div>
         ) : (
           <div className="bg-white rounded-2xl shadow divide-y">
             {notas.map((n) => {
@@ -144,17 +144,17 @@ export default function NotasFiscaisPage() {
                     <p className="text-sm font-medium text-gray-800">
                       {n.tipo.toUpperCase()} {n.numero ? `· nº ${n.numero}` : ""} — {formatarMoeda(Number(n.valor))}
                     </p>
-                    <p className="text-xs text-gray-400">{new Date(n.created_at).toLocaleDateString("pt-BR")}</p>
+                    <p className="text-sm text-gray-500">{new Date(n.created_at).toLocaleDateString("pt-BR")}</p>
                   </div>
                   {n.status === "pendente" ? (
                     <button
                       onClick={() => mudarStatus(n.id, "emitida")}
-                      className={`text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1 ${info.classe}`}
+                      className={`text-sm font-semibold px-2.5 py-1 rounded-full flex items-center gap-1 ${info.classe}`}
                     >
                       <Icone className="w-3.5 h-3.5" /> {info.label}
                     </button>
                   ) : (
-                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1 ${info.classe}`}>
+                    <span className={`text-sm font-semibold px-2.5 py-1 rounded-full flex items-center gap-1 ${info.classe}`}>
                       <Icone className="w-3.5 h-3.5" /> {info.label}
                     </span>
                   )}
@@ -174,18 +174,18 @@ export default function NotasFiscaisPage() {
             </div>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Tipo</label>
+                <label className="block text-sm font-medium text-gray-500 mb-1">Tipo</label>
                 <select value={tipo} onChange={(e) => setTipo(e.target.value as any)} className="w-full px-3 py-2 border rounded-lg text-sm">
                   <option value="nfce">NFC-e (venda no balcão)</option>
                   <option value="nfe">NF-e (venda p/ empresa)</option>
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Valor</label>
+                <label className="block text-sm font-medium text-gray-500 mb-1">Valor</label>
                 <input type="number" step="0.01" min="0" value={valor} onChange={(e) => setValor(e.target.value === "" ? "" : parseFloat(e.target.value))} className="w-full px-3 py-2 border rounded-lg text-sm" autoFocus />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Número (se já emitiu por fora)</label>
+                <label className="block text-sm font-medium text-gray-500 mb-1">Número (se já emitiu por fora)</label>
                 <input value={numero} onChange={(e) => setNumero(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
               </div>
               <button onClick={registrar} disabled={salvando} className="w-full bg-blue-600 text-white py-2.5 rounded-xl font-semibold disabled:opacity-60">

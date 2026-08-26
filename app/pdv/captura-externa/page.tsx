@@ -200,7 +200,7 @@ export default function CapturaExternaPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-700">Já uso outro sistema de PDV</p>
-              <p className="text-xs text-gray-400 mt-0.5">
+              <p className="text-sm text-gray-500 mt-0.5">
                 {ativo ? "Ativo — fotografe a tela do seu sistema e alimente o Valente Conecta em paralelo." : "Desligado."}
               </p>
             </div>
@@ -250,7 +250,7 @@ export default function CapturaExternaPage() {
                       <img src={c.foto_url} alt="" className="w-12 h-12 rounded-lg object-cover shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-800">{c.tipo === "produto" ? "Produto" : "Venda"}</p>
-                        <p className="text-xs text-gray-400">{new Date(c.created_at).toLocaleString("pt-BR")}</p>
+                        <p className="text-sm text-gray-500">{new Date(c.created_at).toLocaleString("pt-BR")}</p>
                       </div>
                       <button onClick={() => abrirPreenchimento(c)} className="p-2 bg-blue-50 text-blue-600 rounded-lg" title="Preencher"><Check className="w-4 h-4" /></button>
                       <button onClick={() => descartar(c.id)} className="p-2 text-gray-400 hover:text-red-600" title="Descartar"><Trash2 className="w-4 h-4" /></button>

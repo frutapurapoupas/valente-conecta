@@ -30,7 +30,7 @@ export function PassoMapeamento({ cabecalho, linhasBrutas, mapeamento, onChangeM
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1">Onde publicar</label>
+        <label className="block text-sm font-medium text-gray-600 mb-1">Onde publicar</label>
         <select
           value={modulo}
           onChange={(e) => onChangeModulo(e.target.value)}
@@ -47,7 +47,7 @@ export function PassoMapeamento({ cabecalho, linhasBrutas, mapeamento, onChangeM
       <div className="space-y-3">
         {CAMPOS_MAPEAVEIS.map((campo) => (
           <div key={campo.campo}>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
+            <label className="block text-sm font-medium text-gray-600 mb-1">
               {campo.label}
               {campo.obrigatorio && <span className="text-red-500"> *</span>}
             </label>
@@ -71,9 +71,9 @@ export function PassoMapeamento({ cabecalho, linhasBrutas, mapeamento, onChangeM
 
       {amostra.length > 0 && (
         <div>
-          <p className="text-xs font-medium text-gray-600 mb-2">Prévia das 2 primeiras linhas</p>
+          <p className="text-sm font-medium text-gray-600 mb-2">Prévia das 2 primeiras linhas</p>
           <div className="overflow-x-auto rounded-xl border">
-            <table className="text-xs w-full">
+            <table className="text-sm w-full">
               <thead className="bg-gray-50">
                 <tr>
                   {cabecalho.map((coluna, i) => (

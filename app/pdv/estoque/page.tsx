@@ -449,9 +449,9 @@ export default function PdvEstoquePage() {
         </button>
 
         {loading ? (
-          <p className="text-sm text-gray-400 text-center py-8">Carregando...</p>
+          <p className="text-sm text-gray-500 text-center py-8">Carregando...</p>
         ) : itensFiltrados.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-8">Nenhum item no estoque ainda.</p>
+          <p className="text-sm text-gray-500 text-center py-8">Nenhum item no estoque ainda.</p>
         ) : (
           <div className="space-y-2">
             {itensFiltrados.map((item) => (
@@ -459,20 +459,20 @@ export default function PdvEstoquePage() {
                 {item.produto.foto_url ? (
                   <img src={item.produto.foto_url} alt="" className="w-14 h-14 rounded-lg object-cover shrink-0" />
                 ) : (
-                  <div className="w-14 h-14 rounded-lg bg-gray-100 flex items-center justify-center shrink-0"><Package className="w-6 h-6 text-gray-300" /></div>
+                  <div className="w-14 h-14 rounded-lg bg-gray-100 flex items-center justify-center shrink-0"><Package className="w-6 h-6 text-gray-400" /></div>
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-gray-800 truncate flex items-center gap-1.5">
                     {item.produto.nome}{item.variante ? ` — ${item.variante}` : ""}
-                    {item.catalogo_item_id && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-medium shrink-0">No app</span>}
+                    {item.catalogo_item_id && <span className="text-sm px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-medium shrink-0">No app</span>}
                   </p>
-                  <p className="text-xs text-gray-400">{item.produto.ean ? `EAN ${item.produto.ean}` : `SKU ${item.produto.sku}`} · {item.quantidade} {item.produto.unidade}</p>
+                  <p className="text-sm text-gray-500">{item.produto.ean ? `EAN ${item.produto.ean}` : `SKU ${item.produto.sku}`} · {item.quantidade} {item.produto.unidade}</p>
                   <p className="text-sm font-semibold text-green-600">R$ {Number(item.preco_venda).toFixed(2)}</p>
                   {(() => {
                     const dias = diasParaVencer(item.validade);
                     if (dias === null) return null;
-                    if (dias < 0) return <p className="text-xs font-medium text-red-600">Vencido há {Math.abs(dias)} dia{Math.abs(dias) === 1 ? "" : "s"}</p>;
-                    if (dias <= 7) return <p className="text-xs font-medium text-amber-600">Vence em {dias} dia{dias === 1 ? "" : "s"}</p>;
+                    if (dias < 0) return <p className="text-sm font-medium text-red-600">Vencido há {Math.abs(dias)} dia{Math.abs(dias) === 1 ? "" : "s"}</p>;
+                    if (dias <= 7) return <p className="text-sm font-medium text-amber-600">Vence em {dias} dia{dias === 1 ? "" : "s"}</p>;
                     return null;
                   })()}
                 </div>
@@ -544,9 +544,9 @@ export default function PdvEstoquePage() {
               <div className="space-y-3">
                 <p className="text-sm text-gray-600">Encontramos produtos parecidos já cadastrados. É algum destes?</p>
                 {buscandoSugestoes ? (
-                  <p className="text-sm text-gray-400 text-center py-6">Buscando...</p>
+                  <p className="text-sm text-gray-500 text-center py-6">Buscando...</p>
                 ) : sugestoes.length === 0 ? (
-                  <p className="text-sm text-gray-400 text-center py-4">Nenhum produto parecido encontrado.</p>
+                  <p className="text-sm text-gray-500 text-center py-4">Nenhum produto parecido encontrado.</p>
                 ) : (
                   <div className="space-y-2">
                     {sugestoes.map((s) => (
@@ -554,9 +554,9 @@ export default function PdvEstoquePage() {
                         {s.foto_url ? <img src={s.foto_url} className="w-10 h-10 rounded-lg object-cover" /> : <div className="w-10 h-10 rounded-lg bg-gray-100" />}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-800 truncate">{s.nome}</p>
-                          <p className="text-xs text-gray-400">SKU {s.sku}</p>
+                          <p className="text-sm text-gray-500">SKU {s.sku}</p>
                         </div>
-                        <Check className="w-4 h-4 text-gray-300" />
+                        <Check className="w-4 h-4 text-gray-400" />
                       </button>
                     ))}
                   </div>
@@ -654,18 +654,18 @@ export default function PdvEstoquePage() {
               <h2 className="font-bold text-gray-800 flex items-center gap-2"><Megaphone className="w-4.5 h-4.5 text-blue-600" /> Complete o perfil da loja</h2>
               <button onClick={() => setShowCompletarPerfil(false)}><X className="w-5 h-5 text-gray-400" /></button>
             </div>
-            <p className="text-xs text-gray-400 mb-3">Esses dados aparecem junto dos seus produtos na vitrine pública do app — só precisa preencher uma vez.</p>
+            <p className="text-sm text-gray-500 mb-3">Esses dados aparecem junto dos seus produtos na vitrine pública do app — só precisa preencher uma vez.</p>
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-medium text-gray-500">Nome da loja</label>
+                <label className="text-sm font-medium text-gray-500">Nome da loja</label>
                 <input value={perfilNome} onChange={(e) => setPerfilNome(e.target.value)} placeholder="Ex: Mercadinho da Dona Neide" className="w-full mt-1 px-3 py-2 border rounded-lg text-sm" autoFocus />
               </div>
               <div>
-                <label className="text-xs font-medium text-gray-500">Endereço</label>
+                <label className="text-sm font-medium text-gray-500">Endereço</label>
                 <input value={perfilEndereco} onChange={(e) => setPerfilEndereco(e.target.value)} placeholder="Rua, número, bairro — Valente/BA" className="w-full mt-1 px-3 py-2 border rounded-lg text-sm" />
               </div>
               <div>
-                <label className="text-xs font-medium text-gray-500">Categoria do negócio</label>
+                <label className="text-sm font-medium text-gray-500">Categoria do negócio</label>
                 <select value={perfilCategoriaNegocio} onChange={(e) => setPerfilCategoriaNegocio(e.target.value)} className="w-full mt-1 px-3 py-2 border rounded-lg text-sm bg-white">
                   <option value="">Selecione...</option>
                   {categoriasNegocio.map((c) => (

@@ -402,7 +402,7 @@ export default function FiadoPage() {
         </div>
 
         <div className="mb-6">
-          <label className="block text-xs font-medium text-gray-500 mb-1">Nome da loja (aparece no recibo e nas cobranças por WhatsApp)</label>
+          <label className="block text-sm font-medium text-gray-500 mb-1">Nome da loja (aparece no recibo e nas cobranças por WhatsApp)</label>
           <input
             type="text"
             value={lojaNome}
@@ -414,14 +414,14 @@ export default function FiadoPage() {
 
         <div className="mb-6 bg-white rounded-lg shadow p-4 max-w-md">
           <p className="text-sm font-semibold text-gray-700 mb-1">Juros e multa por atraso</p>
-          <p className="text-xs text-gray-400 mb-3">Opcional — deixe em 0 pra não cobrar nada extra em conta atrasada (é assim que fica hoje).</p>
+          <p className="text-sm text-gray-500 mb-3">Opcional — deixe em 0 pra não cobrar nada extra em conta atrasada (é assim que fica hoje).</p>
           <div className="flex gap-3 items-end">
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Juros ao mês (%)</label>
+              <label className="block text-sm text-gray-500 mb-1">Juros ao mês (%)</label>
               <input type="number" step="0.1" min="0" value={jurosMensalPct} onChange={(e) => setJurosMensalPct(parseFloat(e.target.value) || 0)} className="w-24 px-2 py-1.5 border rounded-lg text-sm" />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Multa por atraso (%)</label>
+              <label className="block text-sm text-gray-500 mb-1">Multa por atraso (%)</label>
               <input type="number" step="0.1" min="0" value={multaPct} onChange={(e) => setMultaPct(parseFloat(e.target.value) || 0)} className="w-24 px-2 py-1.5 border rounded-lg text-sm" />
             </div>
             <button onClick={salvarJurosMulta} disabled={salvandoJurosMulta} className="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-medium disabled:opacity-60">
@@ -467,12 +467,12 @@ export default function FiadoPage() {
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Cliente</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Valor</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Saldo Devedor</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Vencimento</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Ações</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Cliente</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Valor</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Saldo Devedor</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Vencimento</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Status</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -486,19 +486,19 @@ export default function FiadoPage() {
                       <tr key={d.id} className="hover:bg-gray-50">
                         <td className="px-4 py-3">
                           <p className="font-medium text-gray-800">{d.fiado_clientes?.nome}</p>
-                          <p className="text-xs text-gray-500">{formatDate(d.data_venda)}</p>
+                          <p className="text-sm text-gray-500">{formatDate(d.data_venda)}</p>
                         </td>
                         <td className="px-4 py-3 font-medium">{formatCurrency(Number(d.valor_total))}</td>
                         <td className="px-4 py-3">
                           <p className="font-bold text-red-600">{formatCurrency(saldo)}</p>
                           {atualizado && (
-                            <p className="text-xs text-amber-600" title={`${atualizado.diasAtraso} dias em atraso · juros ${formatCurrency(atualizado.juros)} + multa ${formatCurrency(atualizado.multa)}`}>
+                            <p className="text-sm text-amber-600" title={`${atualizado.diasAtraso} dias em atraso · juros ${formatCurrency(atualizado.juros)} + multa ${formatCurrency(atualizado.multa)}`}>
                               Com juros/multa: {formatCurrency(atualizado.total)}
                             </p>
                           )}
                         </td>
                         <td className="px-4 py-3">{formatDate(d.data_vencimento)}</td>
-                        <td className="px-4 py-3"><span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(d.status)}`}>{d.status}</span></td>
+                        <td className="px-4 py-3"><span className={`px-2 py-1 text-sm rounded-full ${getStatusColor(d.status)}`}>{d.status}</span></td>
                         <td className="px-4 py-3">
                           {d.status !== 'pago' && (
                             <div className="flex gap-2">
@@ -534,28 +534,28 @@ export default function FiadoPage() {
                       {c.foto_url ? (
                         <img src={c.foto_url} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center shrink-0"><Users className="w-4 h-4 text-gray-300" /></div>
+                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center shrink-0"><Users className="w-4 h-4 text-gray-400" /></div>
                       )}
                       <div>
                         <h3 className="font-semibold text-gray-800">{c.nome}</h3>
                         <div className="flex items-center gap-1 text-gray-500 text-sm"><Phone className="w-3 h-3" />{c.telefone}</div>
-                        {c.endereco && <div className="flex items-center gap-1 text-gray-400 text-xs"><MapPin className="w-3 h-3" />{c.endereco}</div>}
-                        <p className="text-xs text-gray-400 mt-0.5">
+                        {c.endereco && <div className="flex items-center gap-1 text-gray-500 text-sm"><MapPin className="w-3 h-3" />{c.endereco}</div>}
+                        <p className="text-sm text-gray-500 mt-0.5">
                           Devendo {formatCurrency(saldo)} de {formatCurrency(c.limite_credito)} de limite
                         </p>
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-1">
-                      <button onClick={() => abrirEdicaoCliente(c)} className="text-xs text-gray-400 flex items-center gap-1 hover:text-blue-600">
+                      <button onClick={() => abrirEdicaoCliente(c)} className="text-sm text-gray-500 flex items-center gap-1 hover:text-blue-600">
                         <Edit2 className="w-3 h-3" /> Editar
                       </button>
                       {!c.cliente_usuario_id && (
-                        <span className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded-full whitespace-nowrap">Sem app — avisar por fora</span>
+                        <span className="text-sm text-amber-600 bg-amber-50 px-2 py-1 rounded-full whitespace-nowrap">Sem app — avisar por fora</span>
                       )}
                       {saldo > 0 && (
                         <button
                           onClick={() => abrirWhatsapp(c, `Olá, ${c.nome}! Aqui é ${lojaNome || 'a loja'}. Seu saldo em aberto é de R$ ${saldo.toFixed(2)}.`)}
-                          className="text-xs text-emerald-600 flex items-center gap-1 hover:underline"
+                          className="text-sm text-emerald-600 flex items-center gap-1 hover:underline"
                         >
                           <MessageCircle className="w-3 h-3" /> Avisar saldo
                         </button>
@@ -632,7 +632,7 @@ export default function FiadoPage() {
                     <option value="">Selecione...</option>
                     {clientes.map((c) => <option key={c.id} value={c.id}>{c.nome} — {c.telefone}</option>)}
                   </select>
-                  {clientes.length === 0 && <p className="text-xs text-amber-600 mt-1">Cadastre um cliente primeiro.</p>}
+                  {clientes.length === 0 && <p className="text-sm text-amber-600 mt-1">Cadastre um cliente primeiro.</p>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Valor total da compra *</label>
@@ -649,7 +649,7 @@ export default function FiadoPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Observações</label>
                   <textarea value={formDivida.observacoes} onChange={(e) => setFormDivida({ ...formDivida, observacoes: e.target.value })} rows={2} className="w-full px-3 py-2 border rounded-lg" />
                 </div>
-                <p className="text-xs text-gray-400 flex items-start gap-1.5">
+                <p className="text-sm text-gray-500 flex items-start gap-1.5">
                   <Send className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                   O cliente recebe um aviso automático com total, saldo e vencimento — se já tiver o app instalado.
                 </p>
@@ -722,7 +722,7 @@ export default function FiadoPage() {
 
               <div className="text-center border-b pb-3 mb-3">
                 <p className="font-bold text-gray-800">{lojaNome || 'Recibo de compra fiado'}</p>
-                <p className="text-xs text-gray-400">{new Date(recibo.data).toLocaleString('pt-BR')}</p>
+                <p className="text-sm text-gray-500">{new Date(recibo.data).toLocaleString('pt-BR')}</p>
               </div>
 
               <div className="space-y-2 text-sm">

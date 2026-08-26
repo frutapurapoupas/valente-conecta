@@ -43,7 +43,7 @@ export function PassoUpload({ onArquivoSelecionado, erro }: Props) {
 
       {erro && <p className="text-sm text-red-600">{erro}</p>}
 
-      <div className="bg-blue-50 rounded-xl p-3 flex gap-2 text-xs text-blue-700">
+      <div className="bg-blue-50 rounded-xl p-3 flex gap-2 text-sm text-blue-700">
         <FileSpreadsheet className="w-4 h-4 shrink-0 mt-0.5" />
         <p>
           Produtos com código de barras (EAN) cadastrado ganham foto automática sempre que possível. Sem código de barras ou

@@ -93,7 +93,7 @@ export default function ImportarEstoquePage() {
 
       {passo !== "upload" && (
         <div className="px-4 pt-4">
-          <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
+          <div className="flex items-center justify-between text-sm text-gray-500 mb-1">
             <span>{nomeArquivo}</span>
             <span>Passo {["mapeamento", "revisao", "resultado"].indexOf(passo) + 2} de 4</span>
           </div>
