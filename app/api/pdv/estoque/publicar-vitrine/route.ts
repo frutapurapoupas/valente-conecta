@@ -9,8 +9,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { moduloVitrineParaSegmento } from '@/lib/pdv/segmentoParaModuloVitrine';
 import { obterPerfilFornecedor } from '@/lib/pdv/perfilFornecedorPdv';
+import { publicarItemNaVitrine } from '@/lib/pdv/publicarVitrineService';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -63,30 +63,19 @@ export async function POST(request: NextRequest) {
       const produto = item.produto;
       if (!produto) { comErro++; return; }
       try {
-        const { data: novoItem, error: erroCriar } = await supabase
-          .from('catalogo_itens')
-          .insert({
-            dono_id: usuarioId,
-            modulo: moduloVitrineParaSegmento(produto.segmento),
-            categoria: produto.categoria || 'Outros',
-            titulo: item.variante ? `${produto.nome} (${item.variante})` : produto.nome,
-            descricao_publica: null,
-            preco: Number(item.preco_venda) || 0,
-            midia: produto.foto_url ? [{ tipo: 'imagem', url: produto.foto_url, thumb_url: produto.foto_url, ordem: 0 }] : [],
-            latitude,
-            longitude,
-            status: Number(item.quantidade) > 0 ? 'ativo' : 'pausado',
-            metadata: { origem: 'pdv_estoque', pdv_estoque_id: item.id },
-          })
-          .select('id')
-          .single();
-        if (erroCriar) throw erroCriar;
-
-        const { error: erroVinculo } = await supabase
-          .from('pdv_estoque_itens')
-          .update({ catalogo_item_id: novoItem.id })
-          .eq('id', item.id);
-        if (erroVinculo) throw erroVinculo;
+        await publicarItemNaVitrine({
+          usuarioId,
+          itemEstoqueId: item.id,
+          quantidade: item.quantidade,
+          precoVenda: item.preco_venda,
+          variante: item.variante,
+          produtoNome: produto.nome,
+          produtoSegmento: produto.segmento,
+          produtoCategoria: produto.categoria,
+          produtoFotoUrl: produto.foto_url,
+          latitude,
+          longitude,
+        });
 
         publicados++;
       } catch (err) {

@@ -6,6 +6,16 @@
 
 import type { ModuloId } from '@/lib/catalogo/marketplaceTypes';
 
+// Formato minimo do perfil devolvido quando a publicacao falha por perfil
+// incompleto — espelha PerfilFornecedorPdv (lib/pdv/perfilFornecedorPdv.ts)
+// sem importar aquele arquivo aqui (ele puxa @/lib/supabase/server, que não
+// deve entrar no bundle client-side deste hook).
+export interface PerfilIncompletoPdv {
+  nome_exibicao: string;
+  endereco: string | null;
+  categoria_negocio?: string | null;
+}
+
 export interface LinhaPlanilha {
   nome: string;
   ean?: string;
@@ -51,7 +61,9 @@ export interface PayloadLote {
 
 export interface RespostaLote {
   success: boolean;
-  resultados: ResultadoLinha[];
+  resultados?: ResultadoLinha[];
+  error?: string;
+  perfil?: PerfilIncompletoPdv | null;
 }
 
 export const TAMANHO_LOTE = 25;

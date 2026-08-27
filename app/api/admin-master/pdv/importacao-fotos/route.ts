@@ -11,6 +11,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { sincronizarFotoNoCatalogoColaborativo } from '@/lib/pdv/catalogoColaborativoService';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -57,6 +58,8 @@ export async function PATCH(request: NextRequest) {
       .update({ ...patch, updated_at: new Date().toISOString() })
       .eq('id', id);
     if (error) throw error;
+
+    if (aprovar) await sincronizarFotoNoCatalogoColaborativo(item.metadata?.pdv_estoque_id, pendente.url);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

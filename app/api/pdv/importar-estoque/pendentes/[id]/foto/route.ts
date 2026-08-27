@@ -11,6 +11,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { sincronizarFotoNoCatalogoColaborativo } from '@/lib/pdv/catalogoColaborativoService';
 
 const CHAVE_CONFIG = 'pdv_importacao_moderacao_fotos';
 
@@ -47,6 +48,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
         .update({ midia: midiaNova, metadata: { ...restoMetadata, foto_ficticia: false }, updated_at: new Date().toISOString() })
         .eq('id', params.id);
       if (error) throw error;
+      await sincronizarFotoNoCatalogoColaborativo(metadataAtual.pdv_estoque_id, url);
       return NextResponse.json({ success: true, aplicadoDireto: true });
     }
 

@@ -9,10 +9,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 import { ArrowLeft, FileSpreadsheet } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { PdvSubNav } from "@/components/pdv/PdvSubNav";
 import { SemPermissaoPdv } from "@/components/pdv/SemPermissaoPdv";
+import { ModalCompletarPerfilVitrine } from "@/components/pdv/ModalCompletarPerfilVitrine";
 import { getOperadorAtivo, temPermissao, type OperadorAtivo } from "@/lib/pdv/operadorPdv";
 import { PassoUpload } from "./components/PassoUpload";
 import { PassoMapeamento } from "./components/PassoMapeamento";
@@ -28,6 +30,8 @@ export default function ImportarEstoquePage() {
   const [loadingUsuario, setLoadingUsuario] = useState(true);
   const [passo, setPasso] = useState<Passo>("upload");
   const [operador, setOperador] = useState<OperadorAtivo | null>(null);
+  const [categoriasNegocio, setCategoriasNegocio] = useState<{ id: string; nome: string }[]>([]);
+  const [salvandoPerfil, setSalvandoPerfil] = useState(false);
 
   const {
     nomeArquivo,
@@ -43,6 +47,8 @@ export default function ImportarEstoquePage() {
     enviando,
     progresso,
     resultados,
+    perfilIncompleto,
+    limparPerfilIncompleto,
     publicar,
   } = useImportacaoEstoque();
 
@@ -52,6 +58,13 @@ export default function ImportarEstoquePage() {
     setLoadingUsuario(false);
   }, []);
 
+  useEffect(() => {
+    fetch("/api/planos-config")
+      .then((r) => r.json())
+      .then((resp) => { if (resp.success) setCategoriasNegocio(resp.data.services.map((s: any) => ({ id: s.id, nome: s.nome }))); })
+      .catch(() => {});
+  }, []);
+
   const handleArquivo = async (arquivo: File) => {
     await carregarArquivo(arquivo);
     setPasso("mapeamento");
@@ -59,8 +72,32 @@ export default function ImportarEstoquePage() {
 
   const handlePublicar = async () => {
     if (!usuario) return;
-    setPasso("resultado");
-    await publicar(usuario.id);
+    const status = await publicar(usuario.id);
+    if (status === "ok") setPasso("resultado");
+  };
+
+  const confirmarPerfilEPublicar = async (dados: { nome: string; endereco: string; categoriaNegocio: string }) => {
+    if (!usuario) return;
+    if (!dados.nome.trim() || !dados.endereco.trim() || !dados.categoriaNegocio) {
+      toast.error("Preencha nome da loja, endereço e categoria do negócio");
+      return;
+    }
+    setSalvandoPerfil(true);
+    try {
+      const resp = await fetch("/api/pdv/perfil-vitrine", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ usuarioId: usuario.id, nomeExibicao: dados.nome.trim(), endereco: dados.endereco.trim(), categoriaNegocio: dados.categoriaNegocio }),
+      }).then((r) => r.json());
+      if (!resp.success) throw new Error(resp.error);
+
+      const status = await publicar(usuario.id);
+      if (status === "ok") setPasso("resultado");
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao salvar perfil");
+    } finally {
+      setSalvandoPerfil(false);
+    }
   };
 
   const reiniciar = () => {
@@ -143,6 +180,18 @@ export default function ImportarEstoquePage() {
           {passo === "resultado" && <PassoResultado resultados={resultados} onNovaImportacao={reiniciar} />}
         </div>
       </div>
+
+      {perfilIncompleto && (
+        <ModalCompletarPerfilVitrine
+          nomeInicial={perfilIncompleto.nome_exibicao || usuario?.nome || ""}
+          enderecoInicial={perfilIncompleto.endereco || ""}
+          categoriaNegocioInicial={perfilIncompleto.categoria_negocio || ""}
+          categoriasNegocio={categoriasNegocio}
+          salvando={salvandoPerfil || enviando}
+          onClose={() => { limparPerfilIncompleto(); setPasso("revisao"); }}
+          onConfirmar={confirmarPerfilEPublicar}
+        />
+      )}
     </div>
   );
 }

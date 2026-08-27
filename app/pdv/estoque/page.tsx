@@ -20,6 +20,7 @@ import { MidiaUploader } from "@/components/catalogo/MidiaUploader";
 import { BarcodeScanner } from "@/components/pdv/BarcodeScanner";
 import { PdvSubNav } from "@/components/pdv/PdvSubNav";
 import { SemPermissaoPdv } from "@/components/pdv/SemPermissaoPdv";
+import { ModalCompletarPerfilVitrine } from "@/components/pdv/ModalCompletarPerfilVitrine";
 import { getOperadorAtivo, temPermissao, type OperadorAtivo } from "@/lib/pdv/operadorPdv";
 import type { MidiaItem } from "@/lib/catalogo/marketplaceTypes";
 
@@ -143,9 +144,9 @@ export default function PdvEstoquePage() {
     }
   };
 
-  const confirmarPerfilEPublicar = async () => {
+  const confirmarPerfilEPublicar = async (dados: { nome: string; endereco: string; categoriaNegocio: string }) => {
     if (!usuario) return;
-    if (!perfilNome.trim() || !perfilEndereco.trim() || !perfilCategoriaNegocio) {
+    if (!dados.nome.trim() || !dados.endereco.trim() || !dados.categoriaNegocio) {
       toast.error("Preencha nome da loja, endereço e categoria do negócio");
       return;
     }
@@ -154,7 +155,7 @@ export default function PdvEstoquePage() {
       const resp = await fetch("/api/pdv/perfil-vitrine", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ usuarioId: usuario.id, nomeExibicao: perfilNome.trim(), endereco: perfilEndereco.trim(), categoriaNegocio: perfilCategoriaNegocio }),
+        body: JSON.stringify({ usuarioId: usuario.id, nomeExibicao: dados.nome.trim(), endereco: dados.endereco.trim(), categoriaNegocio: dados.categoriaNegocio }),
       }).then((r) => r.json());
       if (!resp.success) throw new Error(resp.error);
 
@@ -648,41 +649,15 @@ export default function PdvEstoquePage() {
       {showScanner && <BarcodeScanner onDetected={buscarPorEan} onClose={() => setShowScanner(false)} />}
 
       {showCompletarPerfil && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-sm w-full p-5">
-            <div className="flex justify-between items-center mb-3">
-              <h2 className="font-bold text-gray-800 flex items-center gap-2"><Megaphone className="w-4.5 h-4.5 text-blue-600" /> Complete o perfil da loja</h2>
-              <button onClick={() => setShowCompletarPerfil(false)}><X className="w-5 h-5 text-gray-400" /></button>
-            </div>
-            <p className="text-sm text-gray-500 mb-3">Esses dados aparecem junto dos seus produtos na vitrine pública do app — só precisa preencher uma vez.</p>
-            <div className="space-y-3">
-              <div>
-                <label className="text-sm font-medium text-gray-500">Nome da loja</label>
-                <input value={perfilNome} onChange={(e) => setPerfilNome(e.target.value)} placeholder="Ex: Mercadinho da Dona Neide" className="w-full mt-1 px-3 py-2 border rounded-lg text-sm" autoFocus />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-500">Endereço</label>
-                <input value={perfilEndereco} onChange={(e) => setPerfilEndereco(e.target.value)} placeholder="Rua, número, bairro — Valente/BA" className="w-full mt-1 px-3 py-2 border rounded-lg text-sm" />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-500">Categoria do negócio</label>
-                <select value={perfilCategoriaNegocio} onChange={(e) => setPerfilCategoriaNegocio(e.target.value)} className="w-full mt-1 px-3 py-2 border rounded-lg text-sm bg-white">
-                  <option value="">Selecione...</option>
-                  {categoriasNegocio.map((c) => (
-                    <option key={c.id} value={c.id}>{c.nome}</option>
-                  ))}
-                </select>
-              </div>
-              <button
-                onClick={confirmarPerfilEPublicar}
-                disabled={salvandoPerfil || publicandoVitrine}
-                className="w-full bg-blue-600 text-white py-2.5 rounded-xl font-semibold disabled:opacity-60"
-              >
-                {salvandoPerfil || publicandoVitrine ? "Publicando..." : "Salvar e publicar"}
-              </button>
-            </div>
-          </div>
-        </div>
+        <ModalCompletarPerfilVitrine
+          nomeInicial={perfilNome}
+          enderecoInicial={perfilEndereco}
+          categoriaNegocioInicial={perfilCategoriaNegocio}
+          categoriasNegocio={categoriasNegocio}
+          salvando={salvandoPerfil || publicandoVitrine}
+          onClose={() => setShowCompletarPerfil(false)}
+          onConfirmar={confirmarPerfilEPublicar}
+        />
       )}
 
       {planoRecomendadoServico && (

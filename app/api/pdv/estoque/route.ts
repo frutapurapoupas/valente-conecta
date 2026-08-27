@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { upsertItemEstoque } from '@/lib/pdv/catalogoColaborativoService';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,25 +33,25 @@ export async function POST(request: NextRequest) {
     const catalogoId = String(body.catalogoId || '').trim();
     if (!usuarioId || !catalogoId) return NextResponse.json({ success: false, error: 'usuarioId e catalogoId são obrigatórios' }, { status: 400 });
 
+    await upsertItemEstoque({
+      usuarioId,
+      catalogoId,
+      quantidade: Number(body.quantidade || 0),
+      precoCusto: body.precoCusto !== undefined && body.precoCusto !== null ? Number(body.precoCusto) : null,
+      precoVenda: Number(body.precoVenda || 0),
+      estoqueMinimo: Number(body.estoqueMinimo || 0),
+      validade: body.validade || null,
+      variante: body.variante,
+      ativo: body.ativo,
+    });
+
     const supabase = createClient();
     const { data, error } = await supabase
       .from('pdv_estoque_itens')
-      .upsert(
-        {
-          usuario_id: usuarioId,
-          catalogo_id: catalogoId,
-          quantidade: Number(body.quantidade || 0),
-          preco_custo: body.precoCusto !== undefined && body.precoCusto !== null ? Number(body.precoCusto) : null,
-          preco_venda: Number(body.precoVenda || 0),
-          estoque_minimo: Number(body.estoqueMinimo || 0),
-          validade: body.validade || null,
-          variante: String(body.variante || '').trim(),
-          ativo: body.ativo !== undefined ? !!body.ativo : true,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'usuario_id,catalogo_id,variante' }
-      )
       .select('*, produto:pdv_produtos_catalogo(id, nome, ean, sku, segmento, categoria, unidade, foto_url)')
+      .eq('usuario_id', usuarioId)
+      .eq('catalogo_id', catalogoId)
+      .eq('variante', String(body.variante || '').trim())
       .single();
     if (error) throw error;
 

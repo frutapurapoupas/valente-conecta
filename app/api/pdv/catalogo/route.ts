@@ -8,6 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { encontrarOuCriarProdutoCatalogo } from '@/lib/pdv/catalogoColaborativoService';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,41 +37,16 @@ export async function POST(request: NextRequest) {
     if (!nome) return NextResponse.json({ success: false, error: 'nome é obrigatório' }, { status: 400 });
     if (!segmento) return NextResponse.json({ success: false, error: 'segmento é obrigatório' }, { status: 400 });
 
-    const supabase = createClient();
+    const { produto, jaExistia } = await encontrarOuCriarProdutoCatalogo({
+      nome,
+      segmento,
+      ean,
+      fotoUrl: body.fotoUrl || null,
+      categoria: body.categoria || null,
+      criadoPor,
+    });
 
-    // Se veio EAN, checa se ja existe no catalogo antes de criar de novo —
-    // dois comerciantes escaneando o mesmo produto tem que cair no mesmo
-    // registro, nunca duplicar.
-    if (ean) {
-      const { data: existente } = await supabase.from('pdv_produtos_catalogo').select('*').eq('ean', ean).maybeSingle();
-      if (existente) return NextResponse.json({ success: true, data: existente, jaExistia: true });
-    }
-
-    let sku = String(body.sku || '').trim() || null;
-    if (!sku) {
-      const { data: skuGerado, error: erroSku } = await supabase.rpc('pdv_proximo_sku_v1', { p_segmento: segmento });
-      if (erroSku) throw erroSku;
-      sku = skuGerado;
-    }
-
-    const { data, error } = await supabase
-      .from('pdv_produtos_catalogo')
-      .insert({
-        ean,
-        sku,
-        nome,
-        segmento,
-        categoria: body.categoria || null,
-        unidade: body.unidade || 'un',
-        foto_url: body.fotoUrl || null,
-        foto_codigo_barras_url: body.fotoCodigoBarrasUrl || null,
-        criado_por: criadoPor,
-      })
-      .select('*')
-      .single();
-    if (error) throw error;
-
-    return NextResponse.json({ success: true, data, jaExistia: false });
+    return NextResponse.json({ success: true, data: produto, jaExistia });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message || 'Erro ao cadastrar produto no catálogo' }, { status: 400 });
   }

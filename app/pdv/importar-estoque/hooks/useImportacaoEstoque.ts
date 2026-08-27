@@ -15,6 +15,7 @@ import {
   type CampoMapeavel,
   type LinhaPlanilha,
   type MapeamentoColunas,
+  type PerfilIncompletoPdv,
   type ResultadoLinha,
 } from "@/lib/pdv/importacaoEstoqueTypes";
 
@@ -55,6 +56,7 @@ export function useImportacaoEstoque() {
   const [progresso, setProgresso] = useState({ enviadas: 0, total: 0 });
   const [resultados, setResultados] = useState<ResultadoLinha[]>([]);
   const [erroArquivo, setErroArquivo] = useState("");
+  const [perfilIncompleto, setPerfilIncompleto] = useState<PerfilIncompletoPdv | null>(null);
 
   const carregarArquivo = async (arquivo: File) => {
     setErroArquivo("");
@@ -106,11 +108,19 @@ export function useImportacaoEstoque() {
     return { validas, invalidas };
   }, [linhasBrutas, mapeamento]);
 
-  const publicar = async (donoId: string) => {
+  // Publicação na vitrine é automática (POST /api/pdv/importar-estoque/lote
+  // já publica direto), e essa rota exige perfil de fornecedor completo
+  // antes de processar qualquer linha (mesma regra do botão "Publicar
+  // estoque no app" do cadastro individual). Se faltar, a PRIMEIRA chamada
+  // já devolve 'perfil_incompleto' sem processar nada — aborta o envio
+  // inteiro (não marca linhas como erro) e deixa a tela pedir os dados
+  // antes de tentar de novo via publicar(donoId).
+  const publicar = async (donoId: string): Promise<"ok" | "perfil_incompleto"> => {
     const { validas } = linhasProcessadas;
     setEnviando(true);
     setProgresso({ enviadas: 0, total: validas.length });
     setResultados([]);
+    setPerfilIncompleto(null);
 
     const todosResultados: ResultadoLinha[] = [];
     for (let i = 0; i < validas.length; i += TAMANHO_LOTE) {
@@ -123,8 +133,12 @@ export function useImportacaoEstoque() {
         });
         const resultado = await resposta.json();
         if (resultado.success) {
-          const ajustados = resultado.resultados.map((r: ResultadoLinha) => ({ ...r, linha_index: r.linha_index + i }));
+          const ajustados = (resultado.resultados || []).map((r: ResultadoLinha) => ({ ...r, linha_index: r.linha_index + i }));
           todosResultados.push(...ajustados);
+        } else if (resultado.error === "perfil_incompleto") {
+          setPerfilIncompleto(resultado.perfil || null);
+          setEnviando(false);
+          return "perfil_incompleto";
         } else {
           lote.forEach((_, idx) => todosResultados.push({ linha_index: i + idx, status: "erro", erro: resultado.error }));
         }
@@ -135,6 +149,7 @@ export function useImportacaoEstoque() {
       setResultados([...todosResultados]);
     }
     setEnviando(false);
+    return "ok";
   };
 
   return {
@@ -151,6 +166,8 @@ export function useImportacaoEstoque() {
     enviando,
     progresso,
     resultados,
+    perfilIncompleto,
+    limparPerfilIncompleto: () => setPerfilIncompleto(null),
     publicar,
   };
 }
