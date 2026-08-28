@@ -10,6 +10,15 @@ import { createClient } from '@/lib/supabase/server';
 // pede 25g de ovo -> unidade de compra e' "un" (nao da' pra comprar meio
 // ovo) -> vira 1 un na lista final. Farinha/leite (kg, L, ml) continuam
 // fracionados, porque normalmente dao pra comprar por peso/volume.
+//
+// A lista final precisa ser UNICA por ingrediente -- se "Farinha de trigo"
+// ja esta aprovada (aguardando compra) de uma receita e outra remessa
+// tambem pede farinha, as duas juntam numa linha so' (quantidade somada),
+// em vez de duplicar a linha. So' funde com linhas ainda 'aprovado' (nao
+// mexe em linhas ja' 'comprado', que ja' fecharam ciclo). Processado em
+// sequencia (nao em paralelo) de proposito: se a mesma leva aprovar dois
+// itens iguais de receitas diferentes, o segundo precisa enxergar a linha
+// que o primeiro acabou de criar/atualizar pra fundir com ela tambem.
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -26,6 +35,20 @@ function arredondarParaUnidadeMinima(quantidade: number, unidade: string): numbe
     return Math.round(quantidade * 100) / 100;
   }
   return Math.max(1, Math.ceil(quantidade));
+}
+
+// Mesmo ingrediente = mesma linha na lista final. Prefere o vinculo com o
+// estoque (ingrediente_id); sem ele (linha antiga, criada antes dessa
+// coluna existir), cai pro nome+unidade.
+function chaveDoIngrediente(item: { ingrediente_id?: string | null; ingrediente_nome: string; unidade: string }): string {
+  if (item.ingrediente_id) return `id:${item.ingrediente_id}`;
+  return `nome:${item.ingrediente_nome.trim().toLowerCase()}|${item.unidade.trim().toLowerCase()}`;
+}
+
+function mesclarOrigem(origemAtual: string | null, origemNova: string): string {
+  const nomes = (origemAtual || '').split(',').map((n) => n.trim()).filter(Boolean);
+  if (!nomes.includes(origemNova)) nomes.push(origemNova);
+  return nomes.join(', ');
 }
 
 export async function POST(request: Request) {
@@ -56,10 +79,46 @@ export async function POST(request: Request) {
       .in('id', itemIds);
     if (erroBusca) throw erroBusca;
 
-    const atualizados = await Promise.all(
-      (itens || []).map(async (item) => {
-        const quantidadeArredondada = arredondarParaUnidadeMinima(Number(item.quantidade) || 0, item.unidade || 'un');
-        const { data, error } = await supabase
+    const { data: aprovadosExistentes, error: erroAprovados } = await supabase
+      .from('lista_compras_itens')
+      .select('*')
+      .eq('status', 'aprovado');
+    if (erroAprovados) throw erroAprovados;
+
+    const poolPorChave = new Map<string, any>();
+    for (const linha of aprovadosExistentes || []) {
+      poolPorChave.set(chaveDoIngrediente(linha), linha);
+    }
+
+    const resultado: any[] = [];
+
+    // Sequencial de proposito -- ver comentario no topo do arquivo.
+    for (const item of itens || []) {
+      const quantidadeArredondada = arredondarParaUnidadeMinima(Number(item.quantidade) || 0, item.unidade || 'un');
+      const chave = chaveDoIngrediente(item);
+      const existente = poolPorChave.get(chave);
+
+      if (existente && existente.id !== item.id) {
+        const { data: linhaMesclada, error: erroMerge } = await supabase
+          .from('lista_compras_itens')
+          .update({
+            quantidade: Number(existente.quantidade || 0) + quantidadeArredondada,
+            custo_estimado: Number(existente.custo_estimado || 0) + Number(item.custo_estimado || 0),
+            origem_nome: mesclarOrigem(existente.origem_nome, item.origem_nome),
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existente.id)
+          .select()
+          .single();
+        if (erroMerge) throw erroMerge;
+
+        const { error: erroDelete } = await supabase.from('lista_compras_itens').delete().eq('id', item.id);
+        if (erroDelete) throw erroDelete;
+
+        poolPorChave.set(chave, linhaMesclada);
+        resultado.push(linhaMesclada);
+      } else {
+        const { data: linhaAprovada, error: erroUpdate } = await supabase
           .from('lista_compras_itens')
           .update({
             status: 'aprovado',
@@ -69,12 +128,14 @@ export async function POST(request: Request) {
           .eq('id', item.id)
           .select()
           .single();
-        if (error) throw error;
-        return data;
-      })
-    );
+        if (erroUpdate) throw erroUpdate;
 
-    return NextResponse.json({ success: true, data: atualizados });
+        poolPorChave.set(chave, linhaAprovada);
+        resultado.push(linhaAprovada);
+      }
+    }
+
+    return NextResponse.json({ success: true, data: resultado });
   } catch (error) {
     console.error('Erro ao revisar itens da lista de compras:', error);
     return NextResponse.json({ success: false, error: 'Erro ao revisar itens' }, { status: 500 });

@@ -96,16 +96,22 @@ export function calcularListaCompras(
   receita: ReceitaCanonicaCompat,
   ingredientesDisponiveis: IngredienteDisponivel[]
 ): { itens: ItemCompra[]; total: number } {
+  // Ingredientes da receita representam UMA porcao (mesma convencao de
+  // calcularFinanceiroReceita) -- a lista de compras precisa ser pra
+  // "porcoes" unidades de producao, senao manda comprar so' o suficiente
+  // pra 1 porcao mesmo quando o admin configurou produzir varias.
+  const porcoes = Math.max(1, toNumber(receita.porcoes, 1));
   const itens = (receita.ingredientes || []).map((ing) => {
     const disponivel = ingredientesDisponiveis.find((i) => i.id === ing.ingrediente_id);
     const fator = toNumber(disponivel?.fator_conversao, 1);
-    const quantidadeCompra = fator > 0 ? toNumber(ing.quantidade, 0) / fator : toNumber(ing.quantidade, 0);
+    const quantidadeTotal = toNumber(ing.quantidade, 0) * porcoes;
+    const quantidadeCompra = fator > 0 ? quantidadeTotal / fator : quantidadeTotal;
     return {
       ingredienteId: ing.ingrediente_id,
       nome: ing.ingrediente_nome,
       quantidadeCompra,
       unidadeCompra: disponivel?.unidade || ing.unidade,
-      custo: toNumber(ing.custo_total, 0),
+      custo: toNumber(ing.custo_total, 0) * porcoes,
     };
   });
   const total = itens.reduce((soma, item) => soma + item.custo, 0);
