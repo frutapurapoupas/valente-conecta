@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
 
 // Caminho: C:\valente_conecta\app\api\cozinha\lista-compras\route.ts
 //
@@ -18,6 +18,13 @@ import { createClient } from '@/lib/supabase/server';
 // que antes lia de uma tabela "compras" sempre vazia -- sem essa ligacao,
 // o botao ate' "funcionaria" mas o item enviado sumiria sem aparecer em
 // lugar nenhum.
+//
+// createAdminClient (service role) em vez do client comum: diferente das
+// outras tabelas da cozinha (estoque/receitas/cardapio), lista_compras_itens
+// tem RLS habilitado sem policy nenhuma pra escrita anonima (confirmado ao
+// vivo -- insert com a chave anon batia "42501 new row violates row-level
+// security policy"). Mesma excecao ja documentada em lib/supabase/server.ts
+// pra usuarios, aplicada aqui pelo mesmo motivo.
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -25,7 +32,7 @@ export const revalidate = 0;
 
 export async function GET() {
   try {
-    const supabase = createClient();
+    const supabase = createAdminClient();
     const { data, error } = await supabase
       .from('lista_compras_itens')
       .select('*')
@@ -41,7 +48,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const supabase = createClient();
+    const supabase = createAdminClient();
     const body = await request.json();
 
     const receitaId = String(body?.receita_id ?? '');
@@ -75,7 +82,7 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
   try {
-    const supabase = createClient();
+    const supabase = createAdminClient();
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     const body = await request.json();
@@ -104,7 +111,7 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    const supabase = createClient();
+    const supabase = createAdminClient();
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 
