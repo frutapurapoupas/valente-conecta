@@ -17,6 +17,23 @@ const DIAS_SEMANA = [
   { value: 6, label: 'Sábado' },
 ];
 
+// Ordem e rotulo de exibicao das subcategorias dentro de cada aba -- os
+// valores batem com o campo `categoria` das receitas (ver useCatalogo.ts,
+// CATEGORIAS_DOCES/CATEGORIAS_SALGADOS).
+const ORDEM_DOCES: Array<{ chave: string; label: string }> = [
+  { chave: 'bolo', label: 'Bolos' },
+  { chave: 'torta doce', label: 'Tortas Doces' },
+  { chave: 'pudim', label: 'Pudins' },
+  { chave: 'cocada', label: 'Cocadas' },
+  { chave: 'sobremesa', label: 'Outras Sobremesas' },
+];
+const ORDEM_SALGADOS: Array<{ chave: string; label: string }> = [
+  { chave: 'salgado', label: 'Salgados' },
+  { chave: 'torta salgada', label: 'Tortas Salgadas' },
+];
+
+type Aba = 'pratos' | 'doces' | 'salgados';
+
 function CardItem({ item }: { item: ItemCardapio }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300">
@@ -40,9 +57,33 @@ function CardItem({ item }: { item: ItemCardapio }) {
   );
 }
 
+function SecaoPorCategoria({ itens, ordem, corBorda }: { itens: ItemCardapio[]; ordem: Array<{ chave: string; label: string }>; corBorda: string }) {
+  if (itens.length === 0) {
+    return <div className="text-center py-8 text-gray-500 bg-white rounded-lg shadow-sm">Nenhum item disponível por aqui ainda.</div>;
+  }
+
+  const grupos = ordem
+    .map((grupo) => ({ ...grupo, itensDoGrupo: itens.filter((item) => item.categoria === grupo.chave) }))
+    .filter((grupo) => grupo.itensDoGrupo.length > 0);
+
+  return (
+    <div className="space-y-8">
+      {grupos.map((grupo) => (
+        <div key={grupo.chave}>
+          <h3 className={`text-lg font-semibold text-gray-700 border-b-2 ${corBorda} pb-1.5 mb-4`}>{grupo.label}</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {grupo.itensDoGrupo.map((item) => <CardItem key={item.id} item={item} />)}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function CatalogoPage() {
   const router = useRouter();
-  const { pratos, sobremesas, loading, perfil, desconto } = useCatalogo();
+  const { pratos, doces, salgados, loading, perfil, desconto } = useCatalogo();
+  const [aba, setAba] = useState<Aba>('pratos');
   const [diaSelecionado, setDiaSelecionado] = useState(() => new Date().getDay());
 
   const diaLabel = DIAS_SEMANA.find((d) => d.value === diaSelecionado)?.label || 'Segunda';
@@ -56,6 +97,12 @@ export default function CatalogoPage() {
     );
   }
 
+  const ABAS: Array<{ id: Aba; label: string }> = [
+    { id: 'pratos', label: 'Pratos' },
+    { id: 'doces', label: 'Sobremesas e Doces' },
+    { id: 'salgados', label: 'Salgados' },
+  ];
+
   return (
     <div className="bg-gray-50 min-h-screen">
       <div className="max-w-5xl mx-auto p-4 sm:p-6">
@@ -65,42 +112,54 @@ export default function CatalogoPage() {
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Cardápio Chef Neide</h1>
         <p className="text-gray-600 mb-6">Exibindo preços para o perfil: <span className="font-semibold text-orange-600 capitalize">{perfil}</span> {desconto > 0 && `(${desconto}% OFF)`}</p>
 
-        <h2 className="text-2xl font-semibold text-gray-800 border-b-2 border-orange-500 pb-2 mb-4">Pratos do Dia</h2>
-
-        <div className="flex flex-wrap gap-2 mb-5">
-          {DIAS_SEMANA.map((dia) => (
+        <div className="flex flex-wrap gap-2 mb-6 border-b border-gray-200">
+          {ABAS.map((item) => (
             <button
-              key={dia.value}
-              onClick={() => setDiaSelecionado(dia.value)}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
-                diaSelecionado === dia.value
-                  ? 'bg-orange-500 border-orange-500 text-white'
-                  : 'bg-white border-gray-300 text-gray-600 hover:border-orange-400'
+              key={item.id}
+              onClick={() => setAba(item.id)}
+              className={`px-4 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors ${
+                aba === item.id
+                  ? 'border-orange-500 text-orange-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-800'
               }`}
             >
-              {dia.label}
+              {item.label}
             </button>
           ))}
         </div>
 
-        {pratosDoDia.length === 0 ? (
-          <div className="text-center py-8 text-gray-500 bg-white rounded-lg shadow-sm">Nenhum prato disponível em {diaLabel.toLowerCase()}.</div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {pratosDoDia.map((item) => <CardItem key={item.id} item={item} />)}
-          </div>
+        {aba === 'pratos' && (
+          <>
+            <div className="flex flex-wrap gap-2 mb-5">
+              {DIAS_SEMANA.map((dia) => (
+                <button
+                  key={dia.value}
+                  onClick={() => setDiaSelecionado(dia.value)}
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                    diaSelecionado === dia.value
+                      ? 'bg-orange-500 border-orange-500 text-white'
+                      : 'bg-white border-gray-300 text-gray-600 hover:border-orange-400'
+                  }`}
+                >
+                  {dia.label}
+                </button>
+              ))}
+            </div>
+
+            {pratosDoDia.length === 0 ? (
+              <div className="text-center py-8 text-gray-500 bg-white rounded-lg shadow-sm">Nenhum prato disponível em {diaLabel.toLowerCase()}.</div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {pratosDoDia.map((item) => <CardItem key={item.id} item={item} />)}
+              </div>
+            )}
+          </>
         )}
 
-        <h2 className="text-2xl font-semibold text-gray-800 border-b-2 border-purple-500 pb-2 my-8">Sobremesas e Lanches</h2>
-        {sobremesas.length === 0 ? (
-          <div className="text-center py-8 text-gray-500 bg-white rounded-lg shadow-sm">Nenhuma sobremesa disponível.</div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sobremesas.map((item) => <CardItem key={item.id} item={item} />)}
-          </div>
-        )}
+        {aba === 'doces' && <SecaoPorCategoria itens={doces} ordem={ORDEM_DOCES} corBorda="border-purple-400" />}
+
+        {aba === 'salgados' && <SecaoPorCategoria itens={salgados} ordem={ORDEM_SALGADOS} corBorda="border-amber-500" />}
       </div>
     </div>
   );
 }
-

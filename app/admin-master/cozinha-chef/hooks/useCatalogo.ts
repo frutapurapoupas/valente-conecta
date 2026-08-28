@@ -26,13 +26,21 @@ const DIA_SEMANA_LABEL: Record<number, string> = {
   6: 'Sábado'
 };
 
+// Categorias de receita (campo `categoria`) que caem em cada aba do
+// catálogo público -- "Pratos" segue o cardápio por dia da semana (tabela
+// cardapio), enquanto doces/sobremesas e salgados mostram TODAS as receitas
+// dessas categorias sempre, sem depender de estarem no cardápio do dia.
+const CATEGORIAS_DOCES = new Set(['bolo', 'torta doce', 'pudim', 'cocada', 'sobremesa']);
+const CATEGORIAS_SALGADOS = new Set(['salgado', 'torta salgada']);
+
 export const useCatalogo = () => {
   const searchParams = useSearchParams();
   // 🔥 CORREÇÃO: Verificar se searchParams é null
   const perfil = searchParams?.get('perfil') || 'publico';
-  
+
   const [pratos, setPratos] = useState<ItemCardapio[]>([]);
-  const [sobremesas, setSobremesas] = useState<ItemCardapio[]>([]);
+  const [doces, setDoces] = useState<ItemCardapio[]>([]);
+  const [salgados, setSalgados] = useState<ItemCardapio[]>([]);
   const [loading, setLoading] = useState(true);
   const [quantidades, setQuantidades] = useState<Record<string, number>>({});
   const [desconto, setDesconto] = useState(0);
@@ -81,7 +89,7 @@ export const useCatalogo = () => {
             if (!receita) return null;
 
             const categoria = String(receita.category || 'prato').toLowerCase();
-            if (categoria === 'sobremesa' || categoria === 'bolo') return null;
+            if (CATEGORIAS_DOCES.has(categoria) || CATEGORIAS_SALGADOS.has(categoria)) return null;
 
             const usaPrecoDaReceita = item.usarPrecoDaReceita !== false;
             const precoBase = usaPrecoDaReceita
@@ -104,39 +112,47 @@ export const useCatalogo = () => {
           })
           .filter(Boolean) as ItemCardapio[];
 
-        // Regra de sobremesas: seguem todas as receitas por tipo.
-        const sobremesasPorTipo: ItemCardapio[] = receitasValidas
-          .filter((receita: any) => {
-            const categoria = String(receita.category || '').toLowerCase();
-            return categoria === 'sobremesa' || categoria === 'bolo' || categoria === 'salgado';
-          })
-          .map((receita: any) => {
-            const precoBase = Number(receita.price || 0);
-            const precoComDesconto = precoBase * (1 - descontoAtual / 100);
+        // Doces/sobremesas e salgados seguem todas as receitas da categoria,
+        // sempre disponiveis (nao dependem do cardapio do dia) -- diferente
+        // dos pratos, que so' aparecem quando o admin da cozinha configura
+        // no cardapio semanal.
+        const mapearReceitaParaItem = (receita: any): ItemCardapio => {
+          const precoBase = Number(receita.price || 0);
+          const precoComDesconto = precoBase * (1 - descontoAtual / 100);
+          return {
+            id: receita.id,
+            dia: '',
+            titulo: receita.name,
+            descricao: receita.description || '',
+            preco: parseFloat(precoComDesconto.toFixed(2)),
+            precoOriginal: descontoAtual > 0 ? precoBase : undefined,
+            imagem: receita.images?.[0] || '',
+            categoria: String(receita.category || '').toLowerCase(),
+            images: receita.images || []
+          };
+        };
 
-            return {
-              id: receita.id,
-              dia: 'Sobremesas',
-              titulo: receita.name,
-              descricao: receita.description || 'Sobremesa especial',
-              preco: parseFloat(precoComDesconto.toFixed(2)),
-              precoOriginal: descontoAtual > 0 ? precoBase : undefined,
-              imagem: receita.images?.[0] || '',
-              categoria: String(receita.category || 'sobremesa').toLowerCase(),
-              images: receita.images || []
-            } as ItemCardapio;
-          });
+        const docesDoCatalogo: ItemCardapio[] = receitasValidas
+          .filter((receita: any) => CATEGORIAS_DOCES.has(String(receita.category || '').toLowerCase()))
+          .map(mapearReceitaParaItem);
+
+        const salgadosDoCatalogo: ItemCardapio[] = receitasValidas
+          .filter((receita: any) => CATEGORIAS_SALGADOS.has(String(receita.category || '').toLowerCase()))
+          .map(mapearReceitaParaItem);
 
         setPratos(pratosDaPreview);
-        setSobremesas(sobremesasPorTipo);
+        setDoces(docesDoCatalogo);
+        setSalgados(salgadosDoCatalogo);
         return;
       }
       setPratos([]);
-      setSobremesas([]);
+      setDoces([]);
+      setSalgados([]);
     } catch (error) {
       console.error('Erro ao carregar cardápio:', error);
       setPratos([]);
-      setSobremesas([]);
+      setDoces([]);
+      setSalgados([]);
     } finally {
       setLoading(false);
     }
@@ -176,7 +192,8 @@ export const useCatalogo = () => {
 
   return {
     pratos,
-    sobremesas,
+    doces,
+    salgados,
     loading,
     quantidades,
     desconto,
