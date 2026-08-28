@@ -1,8 +1,21 @@
 'use client';
 
+import { useState } from 'react';
 import { useCatalogo, ItemCardapio } from '../../admin-master/cozinha-chef/hooks/useCatalogo';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+
+// Mesma ordem/rotulo usada no admin (Preview Cardapio, design.config.ts) —
+// 0=domingo, seguindo Date.getDay().
+const DIAS_SEMANA = [
+  { value: 0, label: 'Domingo' },
+  { value: 1, label: 'Segunda' },
+  { value: 2, label: 'Terça' },
+  { value: 3, label: 'Quarta' },
+  { value: 4, label: 'Quinta' },
+  { value: 5, label: 'Sexta' },
+  { value: 6, label: 'Sábado' },
+];
 
 function CardItem({ item }: { item: ItemCardapio }) {
   return (
@@ -30,6 +43,10 @@ function CardItem({ item }: { item: ItemCardapio }) {
 export default function CatalogoPage() {
   const router = useRouter();
   const { pratos, sobremesas, loading, perfil, desconto } = useCatalogo();
+  const [diaSelecionado, setDiaSelecionado] = useState(() => new Date().getDay());
+
+  const diaLabel = DIAS_SEMANA.find((d) => d.value === diaSelecionado)?.label || 'Segunda';
+  const pratosDoDia = pratos.filter((item) => item.dia === diaLabel);
 
   if (loading) {
     return (
@@ -49,11 +66,28 @@ export default function CatalogoPage() {
         <p className="text-gray-600 mb-6">Exibindo preços para o perfil: <span className="font-semibold text-orange-600 capitalize">{perfil}</span> {desconto > 0 && `(${desconto}% OFF)`}</p>
 
         <h2 className="text-2xl font-semibold text-gray-800 border-b-2 border-orange-500 pb-2 mb-4">Pratos do Dia</h2>
-        {pratos.length === 0 ? (
-          <div className="text-center py-8 text-gray-500 bg-white rounded-lg shadow-sm">Nenhum prato disponível hoje.</div>
+
+        <div className="flex flex-wrap gap-2 mb-5">
+          {DIAS_SEMANA.map((dia) => (
+            <button
+              key={dia.value}
+              onClick={() => setDiaSelecionado(dia.value)}
+              className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                diaSelecionado === dia.value
+                  ? 'bg-orange-500 border-orange-500 text-white'
+                  : 'bg-white border-gray-300 text-gray-600 hover:border-orange-400'
+              }`}
+            >
+              {dia.label}
+            </button>
+          ))}
+        </div>
+
+        {pratosDoDia.length === 0 ? (
+          <div className="text-center py-8 text-gray-500 bg-white rounded-lg shadow-sm">Nenhum prato disponível em {diaLabel.toLowerCase()}.</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {pratos.map((item) => <CardItem key={item.id} item={item} />)}
+            {pratosDoDia.map((item) => <CardItem key={item.id} item={item} />)}
           </div>
         )}
 
