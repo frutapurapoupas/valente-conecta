@@ -8,7 +8,7 @@ import type { ModuloId } from "./marketplaceTypes";
 
 export const CATEGORIAS_POR_MODULO: Record<ModuloId, string[]> = {
   "agua-gas": ["Água Mineral", "Garrafão 20L", "Gás P13", "Gás P20", "Gás P45", "Gás Granel"],
-  servicos: ["Profissional autônomo", "Assistência técnica", "Beleza e estética", "Eventos", "Aulas particulares", "Outros serviços"],
+  servicos: ["Profissional autônomo", "Assistência técnica", "Automotivo", "Beleza e estética", "Eventos", "Aulas particulares", "Outros serviços"],
   mercados: ["Mercearia", "Hortifruti", "Açougue", "Padaria", "Bebidas"],
   imoveis: ["Casa", "Apartamento", "Terreno", "Comercial", "Rural", "Temporada"],
   emprego: ["CLT", "PJ", "Freelancer", "Estágio", "Temporário"],

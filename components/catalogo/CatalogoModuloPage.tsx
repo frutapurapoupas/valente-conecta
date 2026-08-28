@@ -8,7 +8,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Search, Store } from "lucide-react";
 import { useBuscaInteligente } from "@/lib/busca/useBuscaInteligente";
 import { useFallbackExterno } from "@/lib/busca/useFallbackExterno";
@@ -27,7 +27,14 @@ interface CatalogoModuloPageProps {
 
 export function CatalogoModuloPage({ modulo, labelModulo, categorias, descricao, linkExtra }: CatalogoModuloPageProps) {
   const router = useRouter();
-  const [categoria, setCategoria] = useState<string | undefined>(undefined);
+  const searchParams = useSearchParams();
+  // Permite chegar aqui com uma categoria ja' pre-selecionada via link (ex:
+  // "/servicos?categoria=Automotivo" no icone da home) -- sem isso, todo
+  // link pra um modulo generico caia sempre na lista inteira sem filtro,
+  // dominada por quem quer que tenha mais cadastro (ver achado ao vivo:
+  // 40 dos 44 comercios de "servicos" sao "Beleza e estetica", entao
+  // qualquer icone sem filtro proprio acabava mostrando salao de beleza).
+  const [categoria, setCategoria] = useState<string | undefined>(() => searchParams?.get("categoria") || undefined);
   const { diretos, relacionados, mensagemHumanizada, assuntoBusca, carregando: loading, buscar, termo } = useBuscaInteligente({ modulo, categoria });
   const totalResultados = diretos.length + relacionados.length;
   const {

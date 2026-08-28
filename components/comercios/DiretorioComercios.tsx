@@ -56,7 +56,7 @@ export function DiretorioComercios({ modulo, titulo, categorias }: { modulo: str
   const searchParams = useSearchParams();
   const [lista, setLista] = useState<Comercio[]>([]);
   const [loading, setLoading] = useState(true);
-  const [categoriaFiltro, setCategoriaFiltro] = useState("");
+  const [categoriaFiltro, setCategoriaFiltro] = useState(() => searchParams?.get("categoria") || "");
   const [busca, setBusca] = useState(() => searchParams?.get("busca") || "");
   const [userPosition, setUserPosition] = useState<{ lat: number; lng: number } | null>(null);
   const [comercioReivindicar, setComercioReivindicar] = useState<Comercio | null>(null);
