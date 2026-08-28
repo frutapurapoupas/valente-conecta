@@ -1,107 +1,90 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
-import { comprasService } from '../services/comprasService';
 
-export interface Compra {
+// Caminho: C:\valente_conecta\app\admin-master\cozinha-chef\hooks\useCompras.ts
+//
+// Antes lia direto da tabela "compras" via cliente Supabase -- tabela que
+// nunca recebia nada (nada gravava nela), entao a Lista de Compras ficava
+// sempre vazia mesmo depois de mandar itens pela tela de receita. O botao
+// "Enviar para Lista de Compras" grava em lista_compras_itens (ver
+// app/api/cozinha/lista-compras/route.ts) -- esse hook agora le' dali, pra
+// os itens enviados realmente aparecerem aqui.
+
+export interface CompraItem {
   id: string;
-  fornecedor_id: string;
-  data: string;
-  status: 'pendente' | 'aprovada' | 'recebida' | 'cancelada';
-  total: number;
-  itens: CompraItem[];
+  nome: string;
+  unidade: string;
+  quantidade: number;
+  preco_estimado: number;
+  preco_real?: number;
+  origem?: string;
+  comprado: boolean;
+  prioridade: string;
   created_at: string;
   updated_at: string;
 }
 
-export interface CompraItem {
-  id: string;
-  compra_id: string;
-  produto: string;
-  quantidade: number;
-  preco_unitario: number;
-  total: number;
-}
-
 export function useCompras() {
-  const [compras, setCompras] = useState<Compra[]>([]);
+  const [itensBrutos, setItensBrutos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchCompras = useCallback(async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('compras')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setCompras(data || []);
+      const resp = await fetch('/api/cozinha/lista-compras').then((r) => r.json());
+      if (!resp.success) throw new Error(resp.error || 'Erro ao carregar lista de compras');
+      setItensBrutos(Array.isArray(resp.data) ? resp.data : []);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao carregar compras');
+      setError(err instanceof Error ? err.message : 'Erro ao carregar lista de compras');
+      setItensBrutos([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const createCompra = useCallback(async (compra: Omit<Compra, 'id' | 'created_at' | 'updated_at'>) => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('compras')
-        .insert([compra])
-        .select()
-        .single();
+  const carregar = fetchCompras;
 
-      if (error) throw error;
+  const items: CompraItem[] = itensBrutos.map((item: any) => ({
+    id: String(item.id),
+    nome: item.ingrediente_nome || 'Item sem nome',
+    unidade: item.unidade || 'un',
+    quantidade: Number(item.quantidade || 0),
+    preco_estimado: Number(item.custo_estimado || 0),
+    origem: item.origem_nome || undefined,
+    comprado: Boolean(item.comprado),
+    prioridade: 'media',
+    created_at: item.created_at,
+    updated_at: item.updated_at,
+  }));
+
+  const toggleComprado = useCallback(async (id: string) => {
+    const atual = itensBrutos.find((item) => String(item.id) === id);
+    if (!atual) return null;
+    try {
+      const resp = await fetch(`/api/cozinha/lista-compras?id=${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ comprado: !atual.comprado }),
+      }).then((r) => r.json());
+      if (!resp.success) throw new Error(resp.error);
       await fetchCompras();
-      return data;
+      return resp.data;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao criar compra');
+      setError(err instanceof Error ? err.message : 'Erro ao atualizar item');
       return null;
-    } finally {
-      setLoading(false);
     }
-  }, [fetchCompras]);
+  }, [itensBrutos, fetchCompras]);
 
-  const updateCompra = useCallback(async (id: string, updates: Partial<Compra>) => {
+  const excluir = useCallback(async (id: string) => {
     try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('compras')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      await fetchCompras();
-      return data;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao atualizar compra');
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchCompras]);
-
-  const deleteCompra = useCallback(async (id: string) => {
-    try {
-      setLoading(true);
-      const { error } = await supabase
-        .from('compras')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      const resp = await fetch(`/api/cozinha/lista-compras?id=${id}`, { method: 'DELETE' }).then((r) => r.json());
+      if (!resp.success) throw new Error(resp.error);
       await fetchCompras();
       return true;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao deletar compra');
+      setError(err instanceof Error ? err.message : 'Erro ao excluir item');
       return false;
-    } finally {
-      setLoading(false);
     }
   }, [fetchCompras]);
 
@@ -109,54 +92,13 @@ export function useCompras() {
     fetchCompras();
   }, [fetchCompras]);
 
-  const items = (compras || []).map((compra: any) => {
-    const itens = Array.isArray(compra.itens) ? compra.itens : [];
-    const firstItem = itens[0] || {};
-    const quantidade = Number(firstItem.quantidade ?? compra.quantidade ?? 0);
-    const precoEstimado = Number(firstItem.preco_unitario ?? compra.preco_estimado ?? 0);
-
-    return {
-      id: String(compra.id),
-      nome: firstItem.produto || compra.produto || compra.nome || 'Item sem nome',
-      unidade: firstItem.unidade || compra.unidade || 'un',
-      quantidade,
-      preco_estimado: precoEstimado,
-      preco_real: Number(compra.preco_real ?? 0) || undefined,
-      fornecedor: compra.fornecedor || compra.fornecedor_id || undefined,
-      comprado: compra.status === 'recebida' || compra.status === 'comprado' || compra.comprado === true,
-      prioridade: compra.prioridade || 'media',
-      created_at: compra.created_at,
-      updated_at: compra.updated_at,
-    };
-  });
-
-  const carregar = fetchCompras;
-
-  const toggleComprado = useCallback(async (id: string) => {
-    const current = items.find((item) => item.id === id);
-    if (!current) return null;
-
-    const nextStatus = current.comprado ? 'pendente' : 'recebida';
-    return updateCompra(id, { status: nextStatus as any });
-  }, [items, updateCompra]);
-
-  const excluir = useCallback(async (id: string) => {
-    return deleteCompra(id);
-  }, [deleteCompra]);
-
   return {
-    compras,
     items,
     loading,
     error,
     fetchCompras,
     carregar,
-    createCompra,
-    updateCompra,
-    deleteCompra,
     toggleComprado,
     excluir,
   };
 }
-
-

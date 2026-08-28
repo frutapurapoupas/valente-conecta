@@ -11,7 +11,7 @@ export { useProducao } from './hooks/useProducao';
 export { DashboardUI } from './components/DashboardUI';
 
 // Tipos dos hooks
-export type { Compra, CompraItem } from './hooks/useCompras';
+export type { CompraItem } from './hooks/useCompras';
 export type { CompraRequest } from './hooks/useComprasRequests';
 export type { EstoqueItem } from './hooks/useEstoque';
 export type { Prato } from './hooks/usePratos';

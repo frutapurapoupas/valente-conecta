@@ -127,7 +127,7 @@ export default function ListaCompras() {
             <td>${item.nome}</td>
             <td>${item.quantidade}</td>
             <td>${item.unidade}</td>
-            <td>${item.fornecedor || '-'}</td>
+            <td>${(item as any).origem || '-'}</td>
             <td>R$ ${Number(item.preco_real || item.preco_estimado || 0).toFixed(2)}</td>
             <td>R$ ${(Number(item.quantidade || 0) * Number(item.preco_real || item.preco_estimado || 0)).toFixed(2)}</td>
           </tr>`
@@ -157,7 +157,7 @@ export default function ListaCompras() {
               <th>Item</th>
               <th>Quantidade</th>
               <th>Unidade</th>
-              <th>Fornecedor</th>
+              <th>Origem</th>
               <th>Valor Unitário</th>
               <th>Total</th>
             </tr>
@@ -362,7 +362,7 @@ export default function ListaCompras() {
                   <th className="px-4 py-3 text-left text-gray-400">Qtd</th>
                   <th className="px-4 py-3 text-left text-gray-400">Unidade</th>
                   <th className="px-4 py-3 text-left text-gray-400">Preço Est.</th>
-                  <th className="px-4 py-3 text-left text-gray-400">Fornecedor</th>
+                  <th className="px-4 py-3 text-left text-gray-400">Origem</th>
                   <th className="px-4 py-3 text-left text-gray-400">Prioridade</th>
                   <th className="px-4 py-3 text-left text-gray-400">Status</th>
                   <th className="px-4 py-3 text-center text-gray-400">Ações</th>
@@ -385,7 +385,7 @@ export default function ListaCompras() {
                       <td className="px-4 py-3 text-blue-400">
                         R$ {item.preco_estimado?.toFixed(2) || '0.00'}
                       </td>
-                      <td className="px-4 py-3 text-gray-300">{item.fornecedor || '-'}</td>
+                      <td className="px-4 py-3 text-gray-300">{item.origem || '-'}</td>
                       <td className="px-4 py-3">
                         <span className={`text-sm px-2 py-1 rounded-full ${getPrioridadeColor(item.prioridade)}`}>
                           {getPrioridadeLabel(item.prioridade)}
