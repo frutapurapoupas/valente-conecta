@@ -184,21 +184,21 @@ export default function HomePage() {
 
   const categoriasExtras: CategoriaItem[] = [
     { nome: "Moda", Icone: Shirt, href: "/moda" },
-    { nome: "Agro e Campo", Icone: Sprout, href: "/servicos" },
+    { nome: "Agro e Campo", Icone: Sprout, href: "/servicos?categoria=" + encodeURIComponent("Agro e Campo") },
     { nome: "Construção", Icone: Hammer, href: "/construcao" },
     { nome: "Emprego", Icone: Briefcase, href: "/empregos" },
     { nome: "Imóvel", Icone: HomeIcon, href: "/imoveis" },
     { nome: "Aluguel Máquinas", Icone: Wrench, href: "/publico/maquinas" },
-    { nome: "Tecnologia", Icone: Laptop, href: "/servicos" },
+    { nome: "Tecnologia", Icone: Laptop, href: "/servicos?categoria=" + encodeURIComponent("Tecnologia") },
     { nome: "Automotivo", Icone: Car, href: "/servicos?categoria=" + encodeURIComponent("Automotivo") },
-    { nome: "Educação", Icone: GraduationCap, href: "/servicos" },
+    { nome: "Educação", Icone: GraduationCap, href: "/servicos?categoria=" + encodeURIComponent("Educação") },
     { nome: "Saúde", Icone: HeartPulse, href: "/saude" },
     { nome: "Moda Masculina", Icone: Shirt, href: "/moda?categoria=" + encodeURIComponent("Moda Masculina") },
     { nome: "Moda Feminina", Icone: Shirt, href: "/moda?categoria=" + encodeURIComponent("Moda Feminina") },
     { nome: "Beleza & Estética", Icone: Sparkles, href: "/servicos?categoria=" + encodeURIComponent("Beleza e estética") },
     { nome: "Eventos", Icone: PartyPopper, href: "/servicos?categoria=" + encodeURIComponent("Eventos") },
     { nome: "Pet Shop", Icone: PawPrint, href: "/pet" },
-    { nome: "Financeiro", Icone: DollarSign, href: "/servicos" },
+    { nome: "Financeiro", Icone: DollarSign, href: "/servicos?categoria=" + encodeURIComponent("Financeiro") },
     { nome: "Carona Solidária", Icone: Users, href: "/carona" },
   ];
 
