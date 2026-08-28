@@ -53,6 +53,7 @@ export default function PratosPage() {
       </div>
 
       <div className="overflow-hidden rounded-lg border bg-white">
+        <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -91,6 +92,7 @@ export default function PratosPage() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

@@ -69,7 +69,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               // Layout com Sidebar para áreas administrativas
               <div className="min-h-screen flex">
                 <Sidebar />
-                <main className="flex-1 w-full bg-white">
+                <main className="flex-1 min-w-0 w-full bg-white overflow-x-hidden">
                   {children}
                 </main>
               </div>
