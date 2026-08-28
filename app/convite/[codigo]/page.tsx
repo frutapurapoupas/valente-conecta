@@ -18,6 +18,7 @@ import { isUserLoggedIn } from "@/lib/auth";
 import toast from "react-hot-toast";
 import { Gift, CheckCircle, Share2, Lock, TrendingUp, Smartphone } from "lucide-react";
 import { CadastroPopup } from "@/components/CadastroPopup";
+import { BotaoInstalarApp } from "@/components/BotaoInstalarApp";
 
 export default function ConvitePage() {
   const params = useParams();
@@ -126,10 +127,10 @@ export default function ConvitePage() {
         )}
 
         {jaCadastrado ? (
-          <div className="bg-emerald-500/10 border border-emerald-500 rounded-2xl p-4 space-y-3">
+          <div className="bg-emerald-950 border border-emerald-400 rounded-2xl p-4 space-y-3">
             <div className="flex items-center gap-3">
-              <CheckCircle className="w-6 h-6 text-emerald-400 shrink-0" />
-              <p className="text-emerald-300 text-sm">Você já tem cadastro no Valente Conecta — aproveite!</p>
+              <CheckCircle className="w-6 h-6 text-emerald-300 shrink-0" />
+              <p className="text-emerald-50 text-sm">Você já tem cadastro no Valente Conecta — aproveite!</p>
             </div>
             <a
               href="/"
@@ -137,10 +138,18 @@ export default function ConvitePage() {
             >
               Entrar no Valente Conecta
             </a>
+            {/* Icone pode ter sumido (nunca instalado, ou removido do
+                celular) -- diferente do InstallPrompt.tsx global, este
+                botao nao depende de nenhum flag de "ja mostrei antes",
+                entao sempre da uma forma de reinstalar. */}
+            <BotaoInstalarApp
+              texto="Reinstalar ícone na tela inicial"
+              className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-emerald-400/50 text-emerald-50 font-semibold py-3 rounded-xl transition"
+            />
           </div>
         ) : (
-          <div className="bg-blue-500/10 border border-blue-500/40 rounded-2xl p-4 flex items-center gap-2 text-blue-200 text-sm">
-            <Smartphone className="w-4 h-4 shrink-0" />
+          <div className="bg-blue-950 border border-blue-400 rounded-2xl p-4 flex items-center gap-2 text-blue-50 text-sm">
+            <Smartphone className="w-4 h-4 shrink-0 text-blue-300" />
             Preencha nome e WhatsApp abaixo — leva 10 segundos.
           </div>
         )}
