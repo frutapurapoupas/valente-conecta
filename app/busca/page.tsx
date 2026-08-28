@@ -16,6 +16,8 @@ import { LABEL_MODULO, type ModuloId } from "@/lib/catalogo/marketplaceTypes";
 import { useBuscaInteligente } from "@/lib/busca/useBuscaInteligente";
 import { useFallbackExterno } from "@/lib/busca/useFallbackExterno";
 import { SemResultados } from "@/components/busca/SemResultados";
+import { AvisoBuscaExterna } from "@/components/busca/AvisoBuscaExterna";
+import { CadastroPopup } from "@/components/CadastroPopup";
 
 const MODULOS = Object.keys(LABEL_MODULO) as ModuloId[];
 
@@ -45,7 +47,7 @@ export default function BuscaPage() {
     resultadosExternos,
     buscandoExterno,
     registrarDemanda,
-  } = useFallbackExterno({ termo, modulo: moduloAtivo || undefined, localizacao, loading, totalResultados });
+  } = useFallbackExterno({ termo, termoBusca: assuntoBusca, modulo: moduloAtivo || undefined, localizacao, loading, totalResultadosDiretos: diretos.length });
 
   useEffect(() => {
     if (!("geolocation" in navigator)) return;
@@ -161,6 +163,26 @@ export default function BuscaPage() {
                   ))}
                 </div>
               </>
+            )}
+
+            {diretos.length === 0 && (
+              <div className="bg-gray-50 rounded-lg p-5 max-w-lg">
+                <AvisoBuscaExterna
+                  termoParaAvisar={assuntoBusca || termo}
+                  demandaRegistrada={demandaRegistrada}
+                  registrandoDemanda={registrandoDemanda}
+                  onRegistrarDemanda={registrarDemanda}
+                  buscandoExterno={buscandoExterno}
+                  resultadosExternos={resultadosExternos}
+                />
+                {pedirCadastro && (
+                  <CadastroPopup
+                    forceShow
+                    codigoIndicacao={typeof window !== "undefined" ? localStorage.getItem("convite_codigo") || undefined : undefined}
+                    onSuccess={() => setPedirCadastro(false)}
+                  />
+                )}
+              </div>
             )}
           </div>
 

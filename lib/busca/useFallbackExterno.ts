@@ -2,12 +2,20 @@
 
 // Caminho: C:\valente_conecta\lib\busca\useFallbackExterno.ts
 //
-// Fallback pra quando a busca inteligente nao acha nada dentro da
-// plataforma: procura na internet (Google, via /api/busca-externa) e
-// oferece "avise-me quando aparecer" (/api/demandas-busca). Compartilhado
+// Fallback pra quando a busca inteligente nao acha nenhum resultado DIRETO
+// dentro da plataforma: procura na internet (Google, via /api/busca-externa)
+// e oferece "avise-me quando aparecer" (/api/demandas-busca). Compartilhado
 // entre a busca da home (app/busca/page.tsx) e as paginas de modulo
 // (CatalogoModuloPage) -- as duas tem exatamente o mesmo comportamento
 // nesse cenario, so' mudava o "modulo" enviado no registro da demanda.
+//
+// Dispara com base em resultados DIRETOS, nao no total (diretos +
+// relacionados): um "tambem pode te interessar" pode bater por coincidencia
+// de termo (ex: buscar "abastecer o carro" batendo com uma padaria que tem
+// "Conveniencias" no nome) sem responder de verdade o que a pessoa pediu —
+// nessa fase, com o catalogo ainda com poucas categorias cadastradas, isso
+// nao pode deixar a pessoa sem opcao nenhuma de achar o que precisa de
+// verdade (ex: um posto de combustivel de fato, via Google).
 
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -23,13 +31,22 @@ export interface ResultadoExterno {
 
 interface UseFallbackExternoOpts {
   termo: string;
+  /** Termo direto que a IA identificou pra essa busca (ex: "posto de
+   *  combustivel" pra "preciso abastecer meu carro") -- usado na consulta ao
+   *  Google no lugar da frase inteira digitada, que devolve resultados bem
+   *  piores numa Text Search. Sem IA disponivel, cai no proprio `termo`. */
+  termoBusca?: string;
   modulo?: string;
   localizacao?: { lat: number; lng: number } | null;
   loading: boolean;
-  totalResultados: number;
+  /** Quantidade de resultados DIRETOS (nao conta "tambem pode te
+   *  interessar") -- so' com isso em 0 faz sentido gastar cota buscando
+   *  fora da plataforma. */
+  totalResultadosDiretos: number;
 }
 
-export function useFallbackExterno({ termo, modulo, localizacao, loading, totalResultados }: UseFallbackExternoOpts) {
+export function useFallbackExterno({ termo, termoBusca, modulo, localizacao, loading, totalResultadosDiretos }: UseFallbackExternoOpts) {
+  const termoParaGoogle = termoBusca?.trim() || termo;
   const [demandaRegistrada, setDemandaRegistrada] = useState(false);
   const [registrandoDemanda, setRegistrandoDemanda] = useState(false);
   const [pedirCadastro, setPedirCadastro] = useState(false);
@@ -83,7 +100,7 @@ export function useFallbackExterno({ termo, modulo, localizacao, loading, totalR
   // So busca fora da plataforma quando a busca interna terminou e nao achou
   // nada — evita gastar cota da API em toda letra digitada.
   useEffect(() => {
-    if (loading || totalResultados > 0 || !termo.trim()) {
+    if (loading || totalResultadosDiretos > 0 || !termo.trim()) {
       setResultadosExternos([]);
       return;
     }
@@ -92,7 +109,7 @@ export function useFallbackExterno({ termo, modulo, localizacao, loading, totalR
     const usuario = getCurrentUser();
     const cidade = (usuario as any)?.cidade_base || undefined;
     setBuscandoExterno(true);
-    const params = new URLSearchParams({ q: termo, usuarioId: usuario?.id || obterUsuarioLocalId() });
+    const params = new URLSearchParams({ q: termoParaGoogle, usuarioId: usuario?.id || obterUsuarioLocalId() });
     if (cidade) params.set("cidade", cidade);
     if (localizacao) {
       params.set("lat", String(localizacao.lat));
@@ -103,7 +120,7 @@ export function useFallbackExterno({ termo, modulo, localizacao, loading, totalR
       .then((res) => setResultadosExternos(res.success ? res.data : []))
       .catch(() => setResultadosExternos([]))
       .finally(() => setBuscandoExterno(false));
-  }, [loading, totalResultados, termo, localizacao]);
+  }, [loading, totalResultadosDiretos, termo, termoParaGoogle, localizacao]);
 
   const registrarDemanda = useCallback(async () => {
     if (!isUserLoggedIn()) {

@@ -13,6 +13,8 @@ import { Search, Store } from "lucide-react";
 import { useBuscaInteligente } from "@/lib/busca/useBuscaInteligente";
 import { useFallbackExterno } from "@/lib/busca/useFallbackExterno";
 import { SemResultados } from "@/components/busca/SemResultados";
+import { AvisoBuscaExterna } from "@/components/busca/AvisoBuscaExterna";
+import { CadastroPopup } from "@/components/CadastroPopup";
 import { ItemCard } from "./ItemCard";
 
 interface CatalogoModuloPageProps {
@@ -36,7 +38,7 @@ export function CatalogoModuloPage({ modulo, labelModulo, categorias, descricao,
     resultadosExternos,
     buscandoExterno,
     registrarDemanda,
-  } = useFallbackExterno({ termo, modulo, localizacao: null, loading, totalResultados });
+  } = useFallbackExterno({ termo, termoBusca: assuntoBusca, modulo, localizacao: null, loading, totalResultadosDiretos: diretos.length });
 
   return (
     <div className="max-w-6xl mx-auto p-4 sm:p-6">
@@ -136,6 +138,26 @@ export function CatalogoModuloPage({ modulo, labelModulo, categorias, descricao,
                   ))}
                 </div>
               </>
+            )}
+
+            {diretos.length === 0 && (
+              <div className="bg-gray-50 rounded-lg p-5 max-w-lg">
+                <AvisoBuscaExterna
+                  termoParaAvisar={assuntoBusca || termo}
+                  demandaRegistrada={demandaRegistrada}
+                  registrandoDemanda={registrandoDemanda}
+                  onRegistrarDemanda={registrarDemanda}
+                  buscandoExterno={buscandoExterno}
+                  resultadosExternos={resultadosExternos}
+                />
+                {pedirCadastro && (
+                  <CadastroPopup
+                    forceShow
+                    codigoIndicacao={typeof window !== "undefined" ? localStorage.getItem("convite_codigo") || undefined : undefined}
+                    onSuccess={() => setPedirCadastro(false)}
+                  />
+                )}
+              </div>
             )}
           </div>
           {relacionados.length > 0 && (
