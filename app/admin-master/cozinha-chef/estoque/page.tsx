@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Search, Edit, Trash2, X } from 'lucide-react';
+import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { ModalIngredienteEstoque, type PayloadIngredienteEstoque } from '@/components/cozinha/ModalIngredienteEstoque';
 
 interface ItemEstoque {
   id: string;
@@ -34,18 +35,6 @@ export default function EstoquePage() {
   const [itemEditando, setItemEditando] = useState<ItemEstoque | null>(null);
   const [salvando, setSalvando] = useState(false);
   const [excluindoId, setExcluindoId] = useState<string | null>(null);
-
-  // Campos do formulario
-  const [nome, setNome] = useState('');
-  const [categoria, setCategoria] = useState('Geral');
-  const [unidadeCompra, setUnidadeCompra] = useState('kg');
-  const [quantidadeCampo, setQuantidadeCampo] = useState(0);
-  const [precoUnitario, setPrecoUnitario] = useState(0);
-  const [estoqueMinimo, setEstoqueMinimo] = useState(0);
-  const [unidadeUso, setUnidadeUso] = useState('g');
-  const [pesoEmbalagemValor, setPesoEmbalagemValor] = useState(1);
-  const [pesoEmbalagemUnidade, setPesoEmbalagemUnidade] = useState<'g' | 'kg'>('kg');
-  const [pesoGramasUnidadeUso, setPesoGramasUnidadeUso] = useState(1);
 
   async function carregarEstoque() {
     try {
@@ -84,56 +73,12 @@ export default function EstoquePage() {
     item.categoria?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const fatorConversaoCalculado =
-    pesoEmbalagemUnidade === 'kg' ? pesoEmbalagemValor * 1000 : pesoEmbalagemValor;
-
-  const handleUnidadeUsoChange = (valor: string) => {
-    setUnidadeUso(valor);
-    if (valor.trim().toLowerCase() === 'un') {
-      setPesoGramasUnidadeUso(50);
-    } else {
-      setPesoGramasUnidadeUso(1);
-    }
-  };
-
-  const resetForm = () => {
-    setNome('');
-    setCategoria('Geral');
-    setUnidadeCompra('kg');
-    setQuantidadeCampo(0);
-    setPrecoUnitario(0);
-    setEstoqueMinimo(0);
-    setUnidadeUso('g');
-    setPesoEmbalagemValor(1);
-    setPesoEmbalagemUnidade('kg');
-    setPesoGramasUnidadeUso(1);
-  };
-
   const abrirNovo = () => {
-    resetForm();
     setItemEditando(null);
     setModo('novo');
   };
 
   const abrirEditar = (item: ItemEstoque) => {
-    setNome(item.nome);
-    setCategoria(item.categoria || 'Geral');
-    setUnidadeCompra(item.unidade || 'kg');
-    setQuantidadeCampo(0); // quantidade digitada aqui e' somada a atual (nova compra)
-    setPrecoUnitario(item.preco_unitario || 0);
-    setEstoqueMinimo(item.quantidade_minima || 0);
-    setUnidadeUso(item.unidade_uso || item.unidade || 'g');
-
-    const fator = item.fator_conversao || 1;
-    if (fator >= 1000 && fator % 1000 === 0) {
-      setPesoEmbalagemValor(fator / 1000);
-      setPesoEmbalagemUnidade('kg');
-    } else {
-      setPesoEmbalagemValor(fator);
-      setPesoEmbalagemUnidade('g');
-    }
-    setPesoGramasUnidadeUso(item.peso_gramas_unidade_uso || 1);
-
     setItemEditando(item);
     setModo('editar');
   };
@@ -141,29 +86,12 @@ export default function EstoquePage() {
   const fecharModal = () => {
     setModo(null);
     setItemEditando(null);
-    resetForm();
   };
 
-  const handleSalvar = async () => {
-    if (!nome.trim()) {
-      toast.error('Informe o nome do ingrediente.');
-      return;
-    }
+  const handleSalvar = async (payload: PayloadIngredienteEstoque) => {
     setSalvando(true);
     try {
-      const payload: Record<string, unknown> = {
-        nome: nome.trim(),
-        categoria: categoria.trim() || 'Geral',
-        unidade: unidadeCompra.trim() || 'un',
-        preco_unitario: toNumber(precoUnitario, 0),
-        quantidade_minima: toNumber(estoqueMinimo, 0),
-        unidade_uso: unidadeUso.trim() || 'un',
-        fator_conversao: fatorConversaoCalculado > 0 ? fatorConversaoCalculado : 1,
-        peso_gramas_unidade_uso: toNumber(pesoGramasUnidadeUso, 1),
-      };
-
       if (modo === 'novo') {
-        payload.quantidade = toNumber(quantidadeCampo, 0);
         const response = await fetch('/api/cozinha/estoque', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -173,11 +101,14 @@ export default function EstoquePage() {
         if (!result.success) throw new Error(result.error || 'Erro ao criar item');
         toast.success('Ingrediente cadastrado no estoque.');
       } else if (modo === 'editar' && itemEditando) {
-        payload.quantidade = toNumber(itemEditando.quantidade, 0) + toNumber(quantidadeCampo, 0);
+        const payloadEdicao = {
+          ...payload,
+          quantidade: toNumber(itemEditando.quantidade, 0) + payload.quantidade,
+        };
         const response = await fetch(`/api/cozinha/estoque?id=${encodeURIComponent(itemEditando.id)}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
+          body: JSON.stringify(payloadEdicao),
         });
         const result = await response.json();
         if (!result.success) throw new Error(result.error || 'Erro ao atualizar item');
@@ -319,146 +250,13 @@ export default function EstoquePage() {
       </div>
 
       {modo && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-lg space-y-3 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center">
-              <h3 className="font-semibold text-lg">
-                {modo === 'novo' ? 'Novo ingrediente no estoque' : `Editar / Reabastecer: ${itemEditando?.nome}`}
-              </h3>
-              <button onClick={fecharModal} className="text-gray-400 hover:text-gray-600">
-                <X size={20} />
-              </button>
-            </div>
-
-            <label className="block text-sm">
-              Nome
-              <input
-                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
-                value={nome}
-                onChange={(e) => setNome(e.target.value)}
-                placeholder="Ex: Farinha de trigo"
-              />
-            </label>
-
-            <label className="block text-sm">
-              Categoria
-              <input
-                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
-                value={categoria}
-                onChange={(e) => setCategoria(e.target.value)}
-              />
-            </label>
-
-            <div className="grid grid-cols-2 gap-3">
-              <label className="block text-sm">
-                Unidade de compra
-                <input
-                  className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
-                  value={unidadeCompra}
-                  onChange={(e) => setUnidadeCompra(e.target.value)}
-                  placeholder="kg, L, un"
-                />
-              </label>
-              <label className="block text-sm">
-                Unidade usada na receita
-                <input
-                  className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
-                  value={unidadeUso}
-                  onChange={(e) => handleUnidadeUsoChange(e.target.value)}
-                  placeholder="g, ml, un"
-                />
-              </label>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <label className="block text-sm">
-                Peso da embalagem (1 {unidadeCompra || 'compra'})
-                <input
-                  type="number"
-                  step="0.01"
-                  className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
-                  value={pesoEmbalagemValor}
-                  onChange={(e) => setPesoEmbalagemValor(toNumber(e.target.value, 1))}
-                />
-              </label>
-              <label className="block text-sm">
-                Unidade do peso informado
-                <select
-                  className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
-                  value={pesoEmbalagemUnidade}
-                  onChange={(e) => setPesoEmbalagemUnidade(e.target.value as 'g' | 'kg')}
-                >
-                  <option value="g">g</option>
-                  <option value="kg">kg</option>
-                </select>
-              </label>
-            </div>
-            <p className="text-sm text-gray-500">
-              Equivale a: 1 {unidadeCompra || 'compra'} = {fatorConversaoCalculado} {unidadeUso || 'uso'}
-            </p>
-
-            {unidadeUso.trim().toLowerCase() === 'un' && (
-              <label className="block text-sm">
-                Peso (g) de 1 unidade (ex: 1 ovo ≈ 50g)
-                <input
-                  type="number"
-                  step="0.01"
-                  className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
-                  value={pesoGramasUnidadeUso}
-                  onChange={(e) => setPesoGramasUnidadeUso(toNumber(e.target.value, 1))}
-                />
-              </label>
-            )}
-
-            <div className="grid grid-cols-2 gap-3">
-              <label className="block text-sm">
-                {modo === 'novo' ? 'Quantidade inicial' : `Quantidade a adicionar (atual: ${itemEditando?.quantidade ?? 0} ${itemEditando?.unidade})`}
-                <input
-                  type="number"
-                  step="0.01"
-                  className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
-                  value={quantidadeCampo}
-                  onChange={(e) => setQuantidadeCampo(toNumber(e.target.value, 0))}
-                />
-              </label>
-              <label className="block text-sm">
-                Preco por {unidadeCompra || 'unidade de compra'}
-                <input
-                  type="number"
-                  step="0.01"
-                  className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
-                  value={precoUnitario}
-                  onChange={(e) => setPrecoUnitario(toNumber(e.target.value, 0))}
-                />
-              </label>
-            </div>
-
-            <label className="block text-sm">
-              Quantidade minima
-              <input
-                type="number"
-                step="0.01"
-                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
-                value={estoqueMinimo}
-                onChange={(e) => setEstoqueMinimo(toNumber(e.target.value, 0))}
-              />
-            </label>
-
-            <div className="flex justify-end gap-2 pt-2">
-              <button type="button" onClick={fecharModal} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={() => void handleSalvar()}
-                disabled={salvando}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-60"
-              >
-                {salvando ? 'Salvando...' : modo === 'novo' ? 'Cadastrar' : 'Salvar alteracoes'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <ModalIngredienteEstoque
+          modo={modo}
+          itemEditando={itemEditando}
+          salvando={salvando}
+          onFechar={fecharModal}
+          onSalvar={handleSalvar}
+        />
       )}
     </div>
   );

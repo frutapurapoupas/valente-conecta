@@ -79,13 +79,14 @@ export default function EditarReceitaPage({ params }: Props) {
         });
       }}
       onRemoverIngrediente={(index) => removerIngrediente(index)}
+      onAdicionarIngredienteDireto={(item) => adicionarIngrediente(item)}
       onCriarIngrediente={async (novo) => {
         const response = await fetch('/api/cozinha/estoque', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             nome: novo.nome,
-            categoria: 'Geral',
+            categoria: novo.categoria,
             quantidade: 0,
             unidade: novo.unidade,
             unidade_uso: novo.unidade_uso,
@@ -100,6 +101,7 @@ export default function EditarReceitaPage({ params }: Props) {
           throw new Error(result.error || 'Erro ao criar ingrediente');
         }
         await carregarIngredientes();
+        return { id: String(result.data.id) };
       }}
       onSalvar={async () => {
         const result = await salvarReceita();

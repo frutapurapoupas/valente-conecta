@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { ReceitaCanonicaCompat } from '@/types/receita-canonica';
+import { ModalIngredienteEstoque, type PayloadIngredienteEstoque } from '@/components/cozinha/ModalIngredienteEstoque';
 import {
   IngredienteDisponivel,
   toNumber,
@@ -16,8 +17,17 @@ type NovoIngrediente = {
   unidade: string;
 };
 
+type IngredienteDiretoNaReceita = {
+  ingrediente_id: string;
+  ingrediente_nome: string;
+  quantidade: number;
+  unidade: string;
+  custo_total: number;
+};
+
 type NovoItemEstoque = {
   nome: string;
+  categoria: string;
   unidade: string;
   unidade_uso: string;
   fator_conversao: number;
@@ -32,8 +42,9 @@ type Props = {
   salvando: boolean;
   onChange: (next: ReceitaCanonicaCompat) => void;
   onAdicionarIngrediente: (item: NovoIngrediente) => void;
+  onAdicionarIngredienteDireto: (item: IngredienteDiretoNaReceita) => void;
   onRemoverIngrediente: (index: number) => void;
-  onCriarIngrediente: (item: NovoItemEstoque) => Promise<void>;
+  onCriarIngrediente: (item: NovoItemEstoque) => Promise<{ id: string }>;
   onSalvar: () => Promise<void>;
   onEnviarListaCompras: (itens: any[], total: number) => Promise<void>;
 };
@@ -45,6 +56,7 @@ export default function ReceitaFormularioCanonico({
   salvando,
   onChange,
   onAdicionarIngrediente,
+  onAdicionarIngredienteDireto,
   onRemoverIngrediente,
   onCriarIngrediente,
   onSalvar,
@@ -55,13 +67,12 @@ export default function ReceitaFormularioCanonico({
   // Modal de novo ingrediente
   const [modalAberto, setModalAberto] = useState(false);
   const [criandoIngrediente, setCriandoIngrediente] = useState(false);
-  const [novoNome, setNovoNome] = useState('');
-  const [novaUnidadeCompra, setNovaUnidadeCompra] = useState('kg');
-  const [novaUnidadeUso, setNovaUnidadeUso] = useState('g');
-  const [novoFatorConversao, setNovoFatorConversao] = useState(1000);
-  const [novoPesoGramas, setNovoPesoGramas] = useState(1);
-  const [novoPrecoUnitario, setNovoPrecoUnitario] = useState(0);
   const [margemAlvo, setMargemAlvo] = useState(50);
+  // Guarda o ingrediente recem-criado (id + custo) pra usar no callback
+  // onAdicionarNaReceita, chamado logo em seguida pelo proprio modal — ref em
+  // vez de state porque precisa estar disponivel de forma sincrona, sem
+  // esperar um novo render (a chamada acontece na mesma sequencia de eventos).
+  const ultimoIngredienteCriadoRef = useRef<{ id: string; nome: string; precoUnitario: number; fatorConversao: number } | null>(null);
 
   // ============================================================
   // TODOS OS INDICADORES DERIVADOS VEM DE UMA UNICA FUNCAO PURA
@@ -118,47 +129,40 @@ export default function ReceitaFormularioCanonico({
     }
   };
 
-  const handleUnidadeUsoChange = (valor: string) => {
-    setNovaUnidadeUso(valor);
-    if (valor.trim().toLowerCase() === 'un') {
-      setNovoPesoGramas(50);
-    } else {
-      setNovoPesoGramas(1);
-    }
-  };
-
-  const resetModal = () => {
-    setModalAberto(false);
-    setNovoNome('');
-    setNovaUnidadeCompra('kg');
-    setNovaUnidadeUso('g');
-    setNovoFatorConversao(1000);
-    setNovoPesoGramas(1);
-    setNovoPrecoUnitario(0);
-  };
-
-  const handleCriarIngrediente = async () => {
-    if (!novoNome.trim()) {
-      toast.error('Informe o nome do ingrediente.');
-      return;
-    }
+  const handleCriarIngrediente = async (payload: PayloadIngredienteEstoque) => {
     setCriandoIngrediente(true);
     try {
-      await onCriarIngrediente({
-        nome: novoNome.trim(),
-        unidade: novaUnidadeCompra.trim() || 'un',
-        unidade_uso: novaUnidadeUso.trim() || 'un',
-        fator_conversao: toNumber(novoFatorConversao, 1),
-        peso_gramas_unidade_uso: toNumber(novoPesoGramas, 1),
-        preco_unitario: toNumber(novoPrecoUnitario, 0),
+      const { id } = await onCriarIngrediente({
+        nome: payload.nome,
+        categoria: payload.categoria,
+        unidade: payload.unidade,
+        unidade_uso: payload.unidade_uso,
+        fator_conversao: payload.fator_conversao,
+        peso_gramas_unidade_uso: payload.peso_gramas_unidade_uso,
+        preco_unitario: payload.preco_unitario,
       });
+      ultimoIngredienteCriadoRef.current = { id, nome: payload.nome, precoUnitario: payload.preco_unitario, fatorConversao: payload.fator_conversao };
       toast.success('Ingrediente criado no estoque.');
-      resetModal();
+      setModalAberto(false);
     } catch (error) {
       toast.error('Erro ao criar ingrediente.');
+      throw error;
     } finally {
       setCriandoIngrediente(false);
     }
+  };
+
+  const handleIngredienteCriadoAdicionarNaReceita = (quantidade: number, unidade: string) => {
+    const criado = ultimoIngredienteCriadoRef.current;
+    if (!criado) return;
+    const custoPorUnidadeUso = criado.fatorConversao > 0 ? criado.precoUnitario / criado.fatorConversao : criado.precoUnitario;
+    onAdicionarIngredienteDireto({
+      ingrediente_id: criado.id,
+      ingrediente_nome: criado.nome,
+      quantidade,
+      unidade,
+      custo_total: quantidade * custoPorUnidadeUso,
+    });
   };
 
   return (
@@ -582,100 +586,14 @@ export default function ReceitaFormularioCanonico({
       </div>
 
       {modalAberto && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md space-y-3">
-            <h3 className="font-semibold text-lg">Novo ingrediente no estoque</h3>
-
-            <label className="block text-sm">
-              Nome
-              <input
-                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
-                value={novoNome}
-                onChange={(e) => setNovoNome(e.target.value)}
-                placeholder="Ex: Farinha de trigo"
-              />
-            </label>
-
-            <div className="grid grid-cols-2 gap-3">
-              <label className="block text-sm">
-                Unidade de compra
-                <input
-                  className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
-                  value={novaUnidadeCompra}
-                  onChange={(e) => setNovaUnidadeCompra(e.target.value)}
-                  placeholder="kg, L, un"
-                />
-              </label>
-              <label className="block text-sm">
-                Unidade usada na receita
-                <input
-                  className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
-                  value={novaUnidadeUso}
-                  onChange={(e) => handleUnidadeUsoChange(e.target.value)}
-                  placeholder="g, ml, un"
-                />
-              </label>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <label className="block text-sm">
-                1 {novaUnidadeCompra || 'compra'} = quantos {novaUnidadeUso || 'uso'}
-                <input
-                  type="number"
-                  step="0.01"
-                  className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
-                  value={novoFatorConversao}
-                  onChange={(e) => setNovoFatorConversao(toNumber(e.target.value, 1))}
-                />
-              </label>
-              <label className="block text-sm">
-                Peso (g) de 1 {novaUnidadeUso || 'unidade de uso'}
-                <input
-                  type="number"
-                  step="0.01"
-                  className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
-                  value={novoPesoGramas}
-                  onChange={(e) => setNovoPesoGramas(toNumber(e.target.value, 1))}
-                />
-              </label>
-            </div>
-
-            <label className="block text-sm">
-              Preco por {novaUnidadeCompra || 'unidade de compra'} (opcional, pode ajustar depois)
-              <input
-                type="number"
-                step="0.01"
-                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
-                value={novoPrecoUnitario}
-                onChange={(e) => setNovoPrecoUnitario(toNumber(e.target.value, 0))}
-                placeholder="0.00"
-              />
-            </label>
-
-            <p className="text-sm text-gray-500">
-              O fator de conversao vem da embalagem/compra (ex: 1kg = 1000g). O peso em gramas so precisa ser ajustado
-              para itens contados em unidades (ex: 1 ovo ~50g) — para itens ja comprados em kg/L, deixe 1.
-            </p>
-
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                type="button"
-                onClick={resetModal}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={() => void handleCriarIngrediente()}
-                disabled={criandoIngrediente}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-60"
-              >
-                {criandoIngrediente ? 'Criando...' : 'Criar ingrediente'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <ModalIngredienteEstoque
+          modo="novo"
+          salvando={criandoIngrediente}
+          paraReceita
+          onFechar={() => setModalAberto(false)}
+          onSalvar={handleCriarIngrediente}
+          onAdicionarNaReceita={handleIngredienteCriadoAdicionarNaReceita}
+        />
       )}
     </div>
   );
