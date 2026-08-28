@@ -7,11 +7,22 @@ const nextConfig = {
     unoptimized: true 
   },
   staticPageGenerationTimeout: 60,
-  
+
+  // Precisa ser UNICO por deploy (era fixo 'valente-conecta-v2' antes —
+  // nenhum mecanismo de deteccao de versao nova, incluindo o verificador em
+  // components/VerificadorAtualizacao.tsx, conseguia perceber que existia
+  // deploy novo, deixando quem ja tinha o app aberto/instalado preso na
+  // versao antiga indefinidamente). VERCEL_GIT_COMMIT_SHA e' preenchido
+  // automaticamente pela Vercel a cada deploy; fallback com timestamp cobre
+  // rodar local (npm run dev/build fora da Vercel).
   generateBuildId: async () => {
-    return 'valente-conecta-v2'
+    return process.env.VERCEL_GIT_COMMIT_SHA || `dev-${Date.now()}`;
   },
-  
+
+  env: {
+    NEXT_PUBLIC_BUILD_ID: process.env.VERCEL_GIT_COMMIT_SHA || `dev-${Date.now()}`,
+  },
+
   async headers() {
     return [
       {

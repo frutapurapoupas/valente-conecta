@@ -10,6 +10,7 @@ import { QuizPerfilPopup } from '@/components/QuizPerfilPopup';
 import { InteressesPopup } from '@/components/InteressesPopup';
 import { InstallPrompt } from '@/components/InstallPrompt';
 import PushSubscriptionManager from '@/components/PushSubscriptionManager';
+import { VerificadorAtualizacao } from '@/components/VerificadorAtualizacao';
 import { Suspense } from 'react';
 import Sidebar from '@/components/admin/Sidebar';
 import { BottomNav } from '@/components/layout/BottomNav';
@@ -63,6 +64,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body className={`${inter.className} h-full bg-gray-50 text-gray-900`}>
+        <VerificadorAtualizacao />
         <AppProvider>
           <Suspense fallback={<LoadingSpinner />}>
             {isAdminPage ? (
