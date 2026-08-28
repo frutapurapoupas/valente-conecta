@@ -85,6 +85,7 @@ export function calcularRankingIngredientes(receita: ReceitaCanonicaCompat): Ite
 }
 
 export type ItemCompra = {
+  ingredienteId: string;
   nome: string;
   quantidadeCompra: number;
   unidadeCompra: string;
@@ -100,6 +101,7 @@ export function calcularListaCompras(
     const fator = toNumber(disponivel?.fator_conversao, 1);
     const quantidadeCompra = fator > 0 ? toNumber(ing.quantidade, 0) / fator : toNumber(ing.quantidade, 0);
     return {
+      ingredienteId: ing.ingrediente_id,
       nome: ing.ingrediente_nome,
       quantidadeCompra,
       unidadeCompra: disponivel?.unidade || ing.unidade,

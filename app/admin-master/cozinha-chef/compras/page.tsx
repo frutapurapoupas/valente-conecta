@@ -2,24 +2,21 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { 
-  ArrowLeft, 
+import {
+  ArrowLeft,
   ChevronDown,
   ChevronUp,
-  CheckCircle, 
-  XCircle, 
-  Trash2,
+  CheckCircle,
   Package,
-  AlertCircle,
   Loader2,
   Printer
 } from 'lucide-react';
 import { useCompras } from '../hooks/useCompras';
 import { useComprasRequests } from '../hooks/useComprasRequests';
-import { CompraItem } from '@/types/cozinha';
+import { LinhaListaCompras } from './_components/LinhaListaCompras';
 
 export default function ListaCompras() {
-  const { items, loading, carregar, toggleComprado, excluir } = useCompras();
+  const { items, loading, carregar, marcarComprado, desmarcarComprado, excluir, salvarFornecedor } = useCompras();
   const { items: requests, loading: loadingRequests, aprovar, reload: reloadRequests } = useComprasRequests();
   const [requestsCollapsed, setRequestsCollapsed] = useState(true);
   const [expandedRequestIds, setExpandedRequestIds] = useState<Record<string, boolean>>({});
@@ -127,7 +124,8 @@ export default function ListaCompras() {
             <td>${item.nome}</td>
             <td>${item.quantidade}</td>
             <td>${item.unidade}</td>
-            <td>${(item as any).origem || '-'}</td>
+            <td>${item.receita_origem || '-'}</td>
+            <td>${item.fornecedor || '-'}</td>
             <td>R$ ${Number(item.preco_real || item.preco_estimado || 0).toFixed(2)}</td>
             <td>R$ ${(Number(item.quantidade || 0) * Number(item.preco_real || item.preco_estimado || 0)).toFixed(2)}</td>
           </tr>`
@@ -158,11 +156,12 @@ export default function ListaCompras() {
               <th>Quantidade</th>
               <th>Unidade</th>
               <th>Origem</th>
+              <th>Fornecedor</th>
               <th>Valor Unitário</th>
               <th>Total</th>
             </tr>
           </thead>
-          <tbody>${linhas || '<tr><td colspan="6">Sem itens pendentes.</td></tr>'}</tbody>
+          <tbody>${linhas || '<tr><td colspan="7">Sem itens pendentes.</td></tr>'}</tbody>
         </table>
         <div class="total">Valor total previsto: R$ ${total.toFixed(2)}</div>
       </body>
@@ -176,25 +175,6 @@ export default function ListaCompras() {
     w.print();
   };
 
-  // Função para obter cor da prioridade
-  const getPrioridadeColor = (prioridade?: string) => {
-    switch (prioridade) {
-      case 'alta': return 'text-red-400 bg-red-500/20';
-      case 'media': return 'text-yellow-400 bg-yellow-500/20';
-      case 'baixa': return 'text-green-400 bg-green-500/20';
-      default: return 'text-gray-400 bg-gray-500/20';
-    }
-  };
-
-  // Função para obter label da prioridade
-  const getPrioridadeLabel = (prioridade?: string) => {
-    switch (prioridade) {
-      case 'alta': return '🔴 Alta';
-      case 'media': return '🟡 Média';
-      case 'baixa': return '🟢 Baixa';
-      default: return '⚪ N/A';
-    }
-  };
 
   if (loading) {
     return (
@@ -363,7 +343,8 @@ export default function ListaCompras() {
                   <th className="px-4 py-3 text-left text-gray-400">Unidade</th>
                   <th className="px-4 py-3 text-left text-gray-400">Preço Est.</th>
                   <th className="px-4 py-3 text-left text-gray-400">Origem</th>
-                  <th className="px-4 py-3 text-left text-gray-400">Prioridade</th>
+                  <th className="px-4 py-3 text-left text-gray-400">Fornecedor</th>
+                  <th className="px-4 py-3 text-left text-gray-400">Preço Real</th>
                   <th className="px-4 py-3 text-left text-gray-400">Status</th>
                   <th className="px-4 py-3 text-center text-gray-400">Ações</th>
                 </tr>
@@ -371,60 +352,21 @@ export default function ListaCompras() {
               <tbody className="divide-y divide-gray-700">
                 {items.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-4 py-8 text-center text-gray-400">
+                    <td colSpan={9} className="px-4 py-8 text-center text-gray-400">
                       <Package size={32} className="mx-auto opacity-30 mb-2" />
                       Nenhum item na lista de compras
                     </td>
                   </tr>
                 ) : (
                   items.map((item) => (
-                    <tr key={item.id} className="hover:bg-gray-800/30 transition">
-                      <td className="px-4 py-3 font-medium">{item.nome}</td>
-                      <td className="px-4 py-3">{item.quantidade}</td>
-                      <td className="px-4 py-3 text-gray-400">{item.unidade}</td>
-                      <td className="px-4 py-3 text-blue-400">
-                        R$ {item.preco_estimado?.toFixed(2) || '0.00'}
-                      </td>
-                      <td className="px-4 py-3 text-gray-300">{item.origem || '-'}</td>
-                      <td className="px-4 py-3">
-                        <span className={`text-sm px-2 py-1 rounded-full ${getPrioridadeColor(item.prioridade)}`}>
-                          {getPrioridadeLabel(item.prioridade)}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        {item.comprado ? (
-                          <span className="text-green-400 flex items-center gap-1">
-                            <CheckCircle size={14} /> Comprado
-                          </span>
-                        ) : (
-                          <span className="text-yellow-400 flex items-center gap-1">
-                            <AlertCircle size={14} /> Pendente
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <button
-                            onClick={() => toggleComprado(item.id)}
-                            className={`p-1 rounded transition ${
-                              item.comprado 
-                                ? 'text-yellow-400 hover:bg-yellow-500/20' 
-                                : 'text-green-400 hover:bg-green-500/20'
-                            }`}
-                            title={item.comprado ? 'Desmarcar comprado' : 'Marcar comprado'}
-                          >
-                            {item.comprado ? <XCircle size={16} /> : <CheckCircle size={16} />}
-                          </button>
-                          <button
-                            onClick={() => excluir(item.id)}
-                            className="p-1 text-red-400 hover:bg-red-500/20 rounded transition"
-                            title="Excluir item"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
+                    <LinhaListaCompras
+                      key={item.id}
+                      item={item}
+                      onSalvarFornecedor={salvarFornecedor}
+                      onMarcarComprado={marcarComprado}
+                      onDesmarcarComprado={desmarcarComprado}
+                      onExcluir={excluir}
+                    />
                   ))
                 )}
               </tbody>

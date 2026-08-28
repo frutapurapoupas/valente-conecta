@@ -3,28 +3,17 @@ import { createClient } from '@/lib/supabase/server';
 
 // Caminho: C:\valente_conecta\app\api\cozinha\lista-compras\route.ts
 //
-// Faltava essa rota inteira -- o botao "Enviar para Lista de Compras" na
-// tela de receita (ReceitaFormularioCanonico.tsx) ja chamava
-// POST /api/cozinha/lista-compras desde que foi criado, mas a rota nunca
-// existiu, entao todo clique batia num 404 e caia direto no
-// "Erro ao gerar lista de compras." (achado ao vivo: fetch contra rota
-// inexistente).
-//
-// Grava em lista_compras_itens (tabela que ja existia no banco, criada por
-// fora de migration, com o schema exato pra isso -- origem_tipo/origem_id/
-// origem_nome/ingrediente_nome/quantidade/unidade/custo_estimado/comprado --
-// so' que nada lia ou escrevia nela ainda). GET tambem devolvido aqui pra
-// alimentar a tela /admin-master/cozinha-chef/compras (useCompras.ts),
-// que antes lia de uma tabela "compras" sempre vazia -- sem essa ligacao,
-// o botao ate' "funcionaria" mas o item enviado sumiria sem aparecer em
-// lugar nenhum.
-//
-// Precisa da migration 084_lista_compras_itens_rls.sql rodada antes -- a
-// tabela tinha RLS habilitado sem nenhuma policy de escrita (confirmado ao
-// vivo: insert com a chave anon batia "42501 new row violates row-level
-// security policy"), diferente das outras tabelas da cozinha
-// (estoque/receitas/cardapio), que ja aceitam escrita anonima. Sem essa
-// migration, POST/PUT/DELETE aqui continuam falhando com 500.
+// Fluxo completo (migration 085_lista_compras_workflow.sql):
+// 1. POST cria uma REMESSA (todos os itens de um clique em "Enviar para
+//    Lista de Compras", ligados por remessa_id) com status 'pendente' --
+//    aparece recolhida na tela, com nome da receita + data/hora.
+// 2. POST /aprovar (route.ts irmao) aprova a remessa inteira ou so' alguns
+//    itens dela -- so' NESSE momento a quantidade e' arredondada pra cima
+//    ate' a unidade minima vendida (ex: 25g de ovo -> 1 ovo), nunca antes.
+// 3. Itens aprovados formam a lista final unica (status 'aprovado'), com
+//    fornecedor e preco real editaveis (PUT).
+// 4. PUT marcando comprado=true credita a quantidade comprada no estoque e
+//    atualiza o preco unitario pro que foi pago de verdade.
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -59,7 +48,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'receita_id e itens são obrigatórios' }, { status: 400 });
     }
 
+    const remessaId = crypto.randomUUID();
+
     const payload = itens.map((item: any) => ({
+      remessa_id: remessaId,
+      ingrediente_id: item?.ingredienteId || null,
       origem_tipo: 'receita',
       origem_id: receitaId,
       origem_nome: receitaNome,
@@ -67,6 +60,7 @@ export async function POST(request: Request) {
       quantidade: Number(item?.quantidadeCompra ?? item?.quantidade ?? 0),
       unidade: String(item?.unidadeCompra ?? item?.unidade ?? 'un'),
       custo_estimado: Number(item?.custo ?? item?.custo_estimado ?? 0),
+      status: 'pendente',
       comprado: false,
     }));
 
@@ -91,8 +85,52 @@ export async function PUT(request: Request) {
       return NextResponse.json({ success: false, error: 'ID não informado' }, { status: 400 });
     }
 
+    const { data: atual, error: erroAtual } = await supabase
+      .from('lista_compras_itens')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (erroAtual || !atual) {
+      return NextResponse.json({ success: false, error: 'Item não encontrado' }, { status: 404 });
+    }
+
     const updatePayload: Record<string, unknown> = { updated_at: new Date().toISOString() };
-    if ('comprado' in body) updatePayload.comprado = Boolean(body.comprado);
+    if ('fornecedor' in body) updatePayload.fornecedor = body.fornecedor ? String(body.fornecedor) : null;
+    if ('preco_real' in body) updatePayload.preco_real = body.preco_real === null ? null : Number(body.preco_real);
+    if ('comprado' in body) {
+      const marcandoComprado = Boolean(body.comprado) && !atual.comprado;
+      updatePayload.comprado = Boolean(body.comprado);
+      updatePayload.status = body.comprado ? 'comprado' : 'aprovado';
+
+      // So' credita no estoque na transicao pendente/aprovado -> comprado
+      // (nunca de novo se ja estava comprado, senao duplicaria estoque a
+      // cada PUT). Precisa de ingrediente_id (liga pro estoque) e
+      // preco_real (senao nao da pra saber o preco unitario pago).
+      if (marcandoComprado && atual.ingrediente_id) {
+        const precoReal = 'preco_real' in body ? Number(body.preco_real) : Number(atual.preco_real);
+        const quantidade = Number(atual.quantidade) || 0;
+
+        const { data: itemEstoque } = await supabase
+          .from('estoque')
+          .select('id, quantidade, preco_unitario')
+          .eq('id', atual.ingrediente_id)
+          .maybeSingle();
+
+        if (itemEstoque && quantidade > 0) {
+          const novaQuantidade = Number(itemEstoque.quantidade || 0) + quantidade;
+          const novoPrecoUnitario = precoReal > 0 ? precoReal / quantidade : Number(itemEstoque.preco_unitario || 0);
+          await supabase
+            .from('estoque')
+            .update({
+              quantidade: novaQuantidade,
+              preco_unitario: novoPrecoUnitario,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', itemEstoque.id);
+        }
+      }
+    }
 
     const { data, error } = await supabase
       .from('lista_compras_itens')
