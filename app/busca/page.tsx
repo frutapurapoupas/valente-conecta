@@ -146,18 +146,22 @@ export default function BuscaPage() {
             {mensagemHumanizada && (
               <p className="text-sm text-gray-600 mb-3">{mensagemHumanizada}</p>
             )}
-            {relacionados.length > 0 && (
-              <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">Resultados diretos</p>
+            {diretos.length > 0 && (
+              <>
+                {relacionados.length > 0 && (
+                  <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">Resultados diretos</p>
+                )}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {diretos.map((item) => (
+                    <ItemCard
+                      key={item.id}
+                      item={item}
+                      onClick={() => router.push(item.metadata?.link_externo || `/item/${item.id}`)}
+                    />
+                  ))}
+                </div>
+              </>
             )}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {diretos.map((item) => (
-                <ItemCard
-                  key={item.id}
-                  item={item}
-                  onClick={() => router.push(item.metadata?.link_externo || `/item/${item.id}`)}
-                />
-              ))}
-            </div>
           </div>
 
           {relacionados.length > 0 && (
