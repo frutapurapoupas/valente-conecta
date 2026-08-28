@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createAdminClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 
 // Caminho: C:\valente_conecta\app\api\cozinha\lista-compras\route.ts
 //
@@ -19,12 +19,12 @@ import { createAdminClient } from '@/lib/supabase/server';
 // o botao ate' "funcionaria" mas o item enviado sumiria sem aparecer em
 // lugar nenhum.
 //
-// createAdminClient (service role) em vez do client comum: diferente das
-// outras tabelas da cozinha (estoque/receitas/cardapio), lista_compras_itens
-// tem RLS habilitado sem policy nenhuma pra escrita anonima (confirmado ao
-// vivo -- insert com a chave anon batia "42501 new row violates row-level
-// security policy"). Mesma excecao ja documentada em lib/supabase/server.ts
-// pra usuarios, aplicada aqui pelo mesmo motivo.
+// Precisa da migration 084_lista_compras_itens_rls.sql rodada antes -- a
+// tabela tinha RLS habilitado sem nenhuma policy de escrita (confirmado ao
+// vivo: insert com a chave anon batia "42501 new row violates row-level
+// security policy"), diferente das outras tabelas da cozinha
+// (estoque/receitas/cardapio), que ja aceitam escrita anonima. Sem essa
+// migration, POST/PUT/DELETE aqui continuam falhando com 500.
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -32,7 +32,7 @@ export const revalidate = 0;
 
 export async function GET() {
   try {
-    const supabase = createAdminClient();
+    const supabase = createClient();
     const { data, error } = await supabase
       .from('lista_compras_itens')
       .select('*')
@@ -48,7 +48,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const supabase = createAdminClient();
+    const supabase = createClient();
     const body = await request.json();
 
     const receitaId = String(body?.receita_id ?? '');
@@ -82,7 +82,7 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
   try {
-    const supabase = createAdminClient();
+    const supabase = createClient();
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     const body = await request.json();
@@ -111,7 +111,7 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    const supabase = createAdminClient();
+    const supabase = createClient();
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 
