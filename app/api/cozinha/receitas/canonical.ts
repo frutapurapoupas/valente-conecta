@@ -97,16 +97,18 @@ export function fromDbToCanonical(row: ReceitaDb): ReceitaCanonicaCompat {
         : []
   );
 
+  // Custo/lucro/margem sao sempre por porcao (mesma convencao de
+  // custoService.ts calcularFinanceiroReceita) -- "porcoes" so multiplica
+  // os totais de producao, nunca divide os valores por porcao.
   const porcoes = toNumber(meta.porcoes ?? meta.servings ?? row.porcoes, 0);
   const custoIngredientes = toNumber(meta.custo_receita ?? meta.custo_total ?? row.custo_total, 0);
   const custosExtrasUnitario = toNumber(meta.custos_extras_unitario, 0);
-  const custoReceita = custoIngredientes + custosExtrasUnitario * porcoes;
+  const custoReceita = custoIngredientes + custosExtrasUnitario;
   const precoSugerido = toNumber(meta.preco_sugerido ?? row.preco_sugerido, 0);
   const precoVenda = toNumber(meta.preco_venda ?? meta.preco ?? precoSugerido, precoSugerido);
-  const custoPorUnidade = porcoes > 0 ? custoReceita / porcoes : 0;
-  const receitaTotal = precoVenda * porcoes;
-  const lucro = receitaTotal - custoReceita;
-  const margemPercentual = receitaTotal > 0 ? (lucro / receitaTotal) * 100 : 0;
+  const custoPorUnidade = custoReceita;
+  const lucro = precoVenda - custoReceita;
+  const margemPercentual = precoVenda > 0 ? (lucro / precoVenda) * 100 : 0;
 
   return {
     id: String(row.id ?? ''),
@@ -164,6 +166,8 @@ export function fromPayloadToCanonical(
         : current?.ingredientes || []
   );
 
+  // Mesma convencao de fromDbToCanonical/calcularFinanceiroReceita: tudo
+  // por porcao, "porcoes" so multiplica os totais de producao.
   const porcoes = toNumber(payload?.porcoes ?? payload?.servings ?? current?.porcoes, current?.porcoes ?? 0);
   const custoIngredientes = ingredientes.reduce((sum, ing) => sum + toNumber(ing.custo_total, 0), 0);
   const custosExtrasUnitario = toNumber(
@@ -172,7 +176,7 @@ export function fromPayloadToCanonical(
   );
   const custoReceita = toNumber(
     payload?.custo_receita ?? payload?.custo_total ?? current?.custo_receita,
-    custoIngredientes + custosExtrasUnitario * porcoes
+    custoIngredientes + custosExtrasUnitario
   );
 
   const precoSugerido = toNumber(
@@ -184,10 +188,9 @@ export function fromPayloadToCanonical(
     precoSugerido
   );
 
-  const custoPorUnidade = porcoes > 0 ? custoReceita / porcoes : 0;
-  const receitaTotal = precoVenda * porcoes;
-  const lucro = receitaTotal - custoReceita;
-  const margemPercentual = receitaTotal > 0 ? (lucro / receitaTotal) * 100 : 0;
+  const custoPorUnidade = custoReceita;
+  const lucro = precoVenda - custoReceita;
+  const margemPercentual = precoVenda > 0 ? (lucro / precoVenda) * 100 : 0;
 
   return {
     id: String(payload?.id ?? current?.id ?? ''),

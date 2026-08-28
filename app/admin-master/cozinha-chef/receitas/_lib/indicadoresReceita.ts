@@ -137,14 +137,20 @@ export function calcularIndicadoresReceita(
   margemAlvoPct: number
 ) {
   // Custo total SEMPRE recalculado a partir dos ingredientes atuais,
-  // nunca lido do campo salvo (que so atualiza ao salvar a receita)
+  // nunca lido do campo salvo (que so atualiza ao salvar a receita).
+  // As quantidades de ingrediente ja representam UMA porcao/prato (e' assim
+  // que a tela de "Novo ingrediente"/"Adicionar" pede a quantidade) -- ou
+  // seja, custoReceita ja E' o custo por porcao, nao um total pra dividir
+  // por "porcoes". "porcoes" e' quantos pratos identicos essa producao
+  // esta fazendo (multiplicador pros totais), nao o rendimento de um unico
+  // lote de ingredientes.
   const custoReceita = (receita.ingredientes || []).reduce(
     (soma, ing) => soma + toNumber(ing.custo_total, 0),
     0
   );
 
   const porcoes = toNumber(receita.porcoes, 0);
-  const custoPorUnidade = porcoes > 0 ? custoReceita / porcoes : 0;
+  const custoPorUnidade = custoReceita;
 
   const margem = toNumber(receita.margem_percentual, 0);
   const lucro = toNumber(receita.lucro, 0);
@@ -152,7 +158,9 @@ export function calcularIndicadoresReceita(
   const precoSugeridoValor = toNumber(receita.preco_sugerido, 0);
   const custosExtrasValor = toNumber(receita.custos_extras_unitario, 0);
   const faturamentoTotal = precoVendaValor * porcoes;
-  const lucroPorPorcao = porcoes > 0 ? lucro / porcoes : 0;
+  const custoTotalProducao = custoReceita * porcoes;
+  const lucroTotalProducao = lucro * porcoes;
+  const lucroPorPorcao = lucro;
 
   const margemBadge = calcularMargemBadge(margem);
   const precoSugeridoCalculado = calcularPrecoSugeridoPorMargem(custoPorUnidade, margemAlvoPct);
@@ -183,6 +191,8 @@ export function calcularIndicadoresReceita(
     precoSugeridoValor,
     custosExtrasValor,
     faturamentoTotal,
+    custoTotalProducao,
+    lucroTotalProducao,
     lucroPorPorcao,
     margemBadge,
     precoSugeridoCalculado,

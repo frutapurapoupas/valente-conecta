@@ -87,6 +87,8 @@ export default function ReceitaFormularioCanonico({
     precoVendaValor,
     precoSugeridoValor,
     faturamentoTotal,
+    custoTotalProducao,
+    lucroTotalProducao,
     lucroPorPorcao,
     margemBadge,
     precoSugeridoCalculado,
@@ -384,7 +386,7 @@ export default function ReceitaFormularioCanonico({
         </div>
         <div>
           <span className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold block">Custo total</span>
-          <span className="text-lg font-bold">R$ {custoReceita.toFixed(2)}</span>
+          <span className="text-lg font-bold">R$ {custoTotalProducao.toFixed(2)}</span>
         </div>
         <div>
           <span className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold block">Faturamento total</span>
@@ -392,7 +394,7 @@ export default function ReceitaFormularioCanonico({
         </div>
         <div>
           <span className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold block">Lucro total</span>
-          <span className={`text-xl font-bold ${lucro < 0 ? 'text-red-400' : 'text-emerald-400'}`}>R$ {lucro.toFixed(2)}</span>
+          <span className={`text-xl font-bold ${lucroTotalProducao < 0 ? 'text-red-400' : 'text-emerald-400'}`}>R$ {lucroTotalProducao.toFixed(2)}</span>
         </div>
       </div>
 

@@ -65,23 +65,26 @@ export function calcularFinanceiroReceita(params: {
   custo_receita?: number;
   custos_extras_unitario?: number;
 }) {
+  // Ingredientes, custo, preco e lucro sao SEMPRE por porcao/prato (e' assim
+  // que a quantidade de cada ingrediente e' cadastrada — pra UM prato).
+  // "porcoes" e' so' quantos pratos identicos estao sendo produzidos:
+  // entra como multiplicador dos TOTAIS (faturamento/custo/lucro total),
+  // nunca como divisor dos valores por porcao.
   const ingredientes = (params.ingredientes || []).map(normalizarIngredienteCanonico);
   const custoReceitaCalculado = ingredientes.reduce((acc, item) => acc + toNumber(item.custo_total, 0), 0);
   const custoIngredientes = toNumber(params.custo_receita, custoReceitaCalculado);
   const porcoes = toNumber(params.porcoes, 0);
 
   const custosExtrasUnitario = toNumber(params.custos_extras_unitario, 0);
-  const custosExtrasTotal = custosExtrasUnitario * porcoes;
-  const custoReceita = custoIngredientes + custosExtrasTotal;
+  const custoReceita = custoIngredientes + custosExtrasUnitario;
 
   const precoSugerido = toNumber(params.preco_sugerido, toNumber(params.preco_venda, 0));
   const precoVenda = toNumber(params.preco_venda, precoSugerido);
 
-  const custoPorUnidade = porcoes > 0 ? custoReceita / porcoes : 0;
+  const custoPorUnidade = custoReceita;
 
-  const receitaTotal = precoVenda * porcoes;
-  const lucro = receitaTotal - custoReceita;
-  const margemPercentual = receitaTotal > 0 ? (lucro / receitaTotal) * 100 : 0;
+  const lucro = precoVenda - custoReceita;
+  const margemPercentual = precoVenda > 0 ? (lucro / precoVenda) * 100 : 0;
 
   return {
     ingredientes,
