@@ -193,7 +193,7 @@ export default function Sidebar() {
         className={`bg-gray-900 text-white overflow-y-auto
           fixed inset-y-0 left-0 z-50 w-72 transition-transform duration-200 ease-in-out
           ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
-          md:static md:z-auto md:w-64 md:min-h-screen md:translate-x-0 p-4`}
+          md:sticky md:top-0 md:z-auto md:w-64 md:h-screen md:translate-x-0 p-4`}
       >
         <div className="flex items-center justify-between mb-4 px-2">
           <h2 className="text-xl font-bold">Valente Conecta</h2>
