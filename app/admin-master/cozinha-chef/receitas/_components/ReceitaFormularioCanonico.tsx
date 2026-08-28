@@ -10,6 +10,7 @@ import {
   toNumber,
   calcularIndicadoresReceita,
 } from '../_lib/indicadoresReceita';
+import { buildReceitaPayload } from '../../services/custoService';
 
 type NovoIngrediente = {
   ingrediente_id: string;
@@ -119,8 +120,26 @@ export default function ReceitaFormularioCanonico({
       });
       const result = await response.json();
       if (result.success && result.imageUrl) {
-        onChange({ ...receita, imagem: result.imageUrl, images: [result.imageUrl] });
-        toast.success('Imagem enviada com sucesso!');
+        const receitaComImagem = { ...receita, imagem: result.imageUrl, images: [result.imageUrl] };
+        onChange(receitaComImagem);
+        // Salva direto no banco aqui — sem isso, a imagem só persistia se o
+        // usuário clicasse em "Salvar Receita" depois, e o toast de sucesso
+        // dava a entender que já tinha salvo (levava a foto a se perder).
+        // Só funciona pra receita que já existe no banco — receita nova
+        // (ainda não salva pela primeira vez) cai no aviso de sempre.
+        const salvamento = await fetch(`/api/cozinha/receitas/${receita.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(buildReceitaPayload(receitaComImagem)),
+        });
+        const salvamentoResult = await salvamento.json();
+        if (salvamentoResult.success) {
+          toast.success('Imagem enviada e salva na receita!');
+        } else if (salvamento.status === 404) {
+          toast.success('Imagem carregada — clique em "Salvar Receita" pra concluir o cadastro.');
+        } else {
+          throw new Error(salvamentoResult.error || 'Erro ao salvar imagem na receita');
+        }
       } else {
         toast.error('Erro ao enviar imagem.');
       }
