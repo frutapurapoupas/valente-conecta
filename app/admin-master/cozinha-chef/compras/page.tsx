@@ -111,25 +111,29 @@ export default function ListaCompras() {
   };
 
   const imprimirExtrato = () => {
+    // item.preco_estimado/preco_real ja' sao o CUSTO TOTAL daquela linha
+    // (soma de todos os ingredientes iguais mesclados de varias receitas —
+    // ver /api/cozinha/lista-compras/revisar), nao um preco por unidade.
+    // Multiplicar de novo pela quantidade aqui inflava o total absurdamente
+    // (ex: R$ 4,97 de frango virava R$ 1.243,75 por causa dos 250g).
     const pendentesCompra = items.filter((i) => !i.comprado);
-    const total = pendentesCompra.reduce(
-      (acc, item) => acc + Number(item.quantidade || 0) * Number(item.preco_estimado || 0),
-      0
-    );
+    const total = pendentesCompra.reduce((acc, item) => acc + Number(item.preco_estimado || 0), 0);
 
     const linhas = pendentesCompra
-      .map(
-        (item) => `
+      .map((item) => {
+        const valorTotal = Number(item.preco_real || item.preco_estimado || 0);
+        const valorUnitario = item.quantidade > 0 ? valorTotal / item.quantidade : 0;
+        return `
           <tr>
             <td>${item.nome}</td>
             <td>${item.quantidade}</td>
             <td>${item.unidade}</td>
             <td>${item.receita_origem || '-'}</td>
             <td>${item.fornecedor || '-'}</td>
-            <td>R$ ${Number(item.preco_real || item.preco_estimado || 0).toFixed(2)}</td>
-            <td>R$ ${(Number(item.quantidade || 0) * Number(item.preco_real || item.preco_estimado || 0)).toFixed(2)}</td>
-          </tr>`
-      )
+            <td>R$ ${valorUnitario.toFixed(2)}</td>
+            <td>R$ ${valorTotal.toFixed(2)}</td>
+          </tr>`;
+      })
       .join('');
 
     const html = `
@@ -341,7 +345,7 @@ export default function ListaCompras() {
                   <th className="px-4 py-3 text-left text-gray-400">Item</th>
                   <th className="px-4 py-3 text-left text-gray-400">Qtd</th>
                   <th className="px-4 py-3 text-left text-gray-400">Unidade</th>
-                  <th className="px-4 py-3 text-left text-gray-400">Preço Est.</th>
+                  <th className="px-4 py-3 text-left text-gray-400">Custo Total Est.</th>
                   <th className="px-4 py-3 text-left text-gray-400">Origem</th>
                   <th className="px-4 py-3 text-left text-gray-400">Fornecedor</th>
                   <th className="px-4 py-3 text-left text-gray-400">Preço Real</th>
@@ -393,9 +397,9 @@ export default function ListaCompras() {
             </p>
           </div>
           <div className="bg-gray-800/30 rounded-lg p-3 border border-gray-700 text-center">
-            <p className="text-sm text-gray-400">Alta Prioridade</p>
-            <p className="text-xl font-bold text-red-400">
-              {items.filter(i => i.prioridade === 'alta' && !i.comprado).length}
+            <p className="text-sm text-gray-400">Valor Total (pendentes)</p>
+            <p className="text-xl font-bold text-blue-400">
+              R$ {items.filter(i => !i.comprado).reduce((soma, i) => soma + Number(i.preco_estimado || 0), 0).toFixed(2)}
             </p>
           </div>
         </div>

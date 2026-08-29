@@ -85,6 +85,19 @@ export async function POST(request: Request) {
       .eq('status', 'aprovado');
     if (erroAprovados) throw erroAprovados;
 
+    // Preco unitario ATUAL do estoque -- pra recalcular o custo estimado
+    // com base na quantidade JA arredondada (o custo salvo na receita e'
+    // fracionado, pre-arredondamento; sem isso, arredondar 0.5 ovo pra 1
+    // ovo mantinha o custo de meio ovo, subestimando o total). Sem
+    // ingrediente_id (linha antiga) ou sem preco no estoque, mantem o
+    // custo que ja estava salvo.
+    const idsIngredientes = [...new Set((itens || []).map((i) => i.ingrediente_id).filter(Boolean))];
+    const precosPorIngrediente = new Map<string, number>();
+    if (idsIngredientes.length > 0) {
+      const { data: estoqueItens } = await supabase.from('estoque').select('id, preco_unitario').in('id', idsIngredientes);
+      for (const e of estoqueItens || []) precosPorIngrediente.set(e.id, Number(e.preco_unitario || 0));
+    }
+
     const poolPorChave = new Map<string, any>();
     for (const linha of aprovadosExistentes || []) {
       poolPorChave.set(chaveDoIngrediente(linha), linha);
@@ -95,6 +108,8 @@ export async function POST(request: Request) {
     // Sequencial de proposito -- ver comentario no topo do arquivo.
     for (const item of itens || []) {
       const quantidadeArredondada = arredondarParaUnidadeMinima(Number(item.quantidade) || 0, item.unidade || 'un');
+      const precoUnitario = item.ingrediente_id ? precosPorIngrediente.get(item.ingrediente_id) : undefined;
+      const custoRecalculado = precoUnitario != null ? precoUnitario * quantidadeArredondada : Number(item.custo_estimado || 0);
       const chave = chaveDoIngrediente(item);
       const existente = poolPorChave.get(chave);
 
@@ -103,7 +118,7 @@ export async function POST(request: Request) {
           .from('lista_compras_itens')
           .update({
             quantidade: Number(existente.quantidade || 0) + quantidadeArredondada,
-            custo_estimado: Number(existente.custo_estimado || 0) + Number(item.custo_estimado || 0),
+            custo_estimado: Number(existente.custo_estimado || 0) + custoRecalculado,
             origem_nome: mesclarOrigem(existente.origem_nome, item.origem_nome),
             updated_at: new Date().toISOString(),
           })
@@ -123,6 +138,7 @@ export async function POST(request: Request) {
           .update({
             status: 'aprovado',
             quantidade: quantidadeArredondada,
+            custo_estimado: custoRecalculado,
             updated_at: new Date().toISOString(),
           })
           .eq('id', item.id)
