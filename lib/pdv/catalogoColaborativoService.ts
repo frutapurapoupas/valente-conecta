@@ -18,6 +18,7 @@ export interface ProdutoCatalogo {
   segmento: string;
   categoria: string | null;
   foto_url: string | null;
+  foto_codigo_barras_url: string | null;
 }
 
 export async function encontrarOuCriarProdutoCatalogo(input: {

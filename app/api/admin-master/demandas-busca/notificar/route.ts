@@ -41,11 +41,17 @@ export async function POST(request: NextRequest) {
 
     const fornecedores = perfis || [];
 
-    // Rota do painel de cadastro certo pra esse modulo (sistema novo, com
-    // titulo pre-preenchido e fechamento automatico da demanda ao publicar
-    // — ver components/catalogo/LojaAdminShell.tsx). Sem modulo definido,
-    // cai no generico de servicos.
-    const linkCadastro = `/${demanda.modulo || 'servicos'}/admin?demanda=${demanda.id}&termo=${encodeURIComponent(demanda.termo)}`;
+    // Rota do painel de cadastro certo pra esse modulo. Demanda de produto
+    // fisico com codigo de barras (segmento do catalogo colaborativo do PDV,
+    // ver 038_pdv_catalogo_colaborativo.sql) vai pro "quiz" do PDV, que pede
+    // foto do codigo de barras + preco/estoque e fecha a demanda sozinho
+    // (app/api/pdv/responder-demanda/route.ts). Os demais modulos (servicos,
+    // saude etc) continuam no painel generico com fechamento automatico ao
+    // publicar — ver components/catalogo/LojaAdminShell.tsx.
+    const SEGMENTOS_PDV = ['mercado', 'farmacia', 'auto_pecas', 'acougue', 'moda', 'papelaria'];
+    const linkCadastro = SEGMENTOS_PDV.includes(demanda.modulo || '')
+      ? `/pdv/responder-demanda?demanda=${demanda.id}&termo=${encodeURIComponent(demanda.termo)}`
+      : `/${demanda.modulo || 'servicos'}/admin?demanda=${demanda.id}&termo=${encodeURIComponent(demanda.termo)}`;
 
     await Promise.all(
       fornecedores.map((f: any) =>

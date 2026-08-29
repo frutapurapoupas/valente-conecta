@@ -21,6 +21,10 @@
     {
       "path": "/api/agua-gas/cron/lembretes-taxa",
       "schedule": "30 12 * * *"
+    },
+    {
+      "path": "/api/pdv/cron/lembrete-estoque",
+      "schedule": "0 9 * * 1"
     }
   ],
   "headers": [
