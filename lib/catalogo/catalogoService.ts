@@ -8,6 +8,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { calcularDistanciaMetros } from '@/utils/geo';
 import { verificarECConsumirPlanoGeral } from '@/lib/planoGeral';
+import { fromDbToCanonical } from '@/app/api/cozinha/receitas/canonical';
 import type {
   CatalogoItem,
   NovoCatalogoItem,
@@ -113,6 +114,60 @@ export async function buscarDiretoriosLivres(filtros: FiltrosBusca): Promise<Res
 
   resultados.sort((a, b) => (a.distancia_km ?? Infinity) - (b.distancia_km ?? Infinity));
   return resultados;
+}
+
+// A busca inteligente da home nunca alcancava a Cozinha Chef Neide: os
+// pratos dela vivem em `receitas` (RECEITA e' a fonte unica da verdade do
+// modulo, ver docs/cozinha-chef-neide/00_FILOSOFIA_DO_MODULO.md), nunca
+// publicados em catalogo_itens -- publicar la' duplicaria preco/imagem,
+// contrariando esse principio. Por isso essa busca aqui e' uma fonte a
+// parte, no mesmo espirito de buscarDiretoriosLivres acima, lendo direto de
+// `receitas` sem duplicar nada.
+//
+// "marmita"/"quentinha" e' tratado como sinonimo de TODOS os pratos
+// principais da cozinha (categoria='Prato Principal') -- e' literalmente
+// o que a Chef Neide vende, mas nenhuma receita se chama "marmita" no
+// nome, entao um ILIKE simples nunca acharia nada pra esse termo (pedido
+// explicito do dono do projeto: quem procurar "marmita" em Valente
+// precisa achar o cardapio dela).
+export async function buscarCozinhaChefNeide(filtros: FiltrosBusca): Promise<ResultadoVitrine[]> {
+  const supabase = createClient();
+  const termo = filtros.termo?.trim();
+  if (!termo) return [];
+
+  const buscandoMarmita = /marmita|marmitex|quentinha/i.test(termo);
+
+  let query = supabase.from('receitas').select('id, nome, categoria, imagem_url, instrucoes');
+  query = buscandoMarmita
+    ? query.eq('categoria', 'Prato Principal')
+    : query.or(`nome.ilike.%${termo}%,categoria.ilike.%${termo}%`);
+
+  const { data, error } = await query.limit(15);
+  if (error || !data) return [];
+
+  return data
+    .map((row): ResultadoVitrine | null => {
+      const canonica = fromDbToCanonical(row as any);
+      if (canonica.status === 'inativo') return null;
+      const midia: ResultadoVitrine['midia'] = canonica.imagem
+        ? [{ tipo: 'imagem', url: canonica.imagem, thumb_url: canonica.imagem, ordem: 0 }]
+        : [];
+      return {
+        id: canonica.id,
+        modulo: 'alimentacao',
+        categoria: canonica.categoria || 'Cozinha Chef Neide',
+        titulo: canonica.nome,
+        descricao_publica: canonica.descricao || null,
+        preco: canonica.preco_venda || null,
+        midia,
+        distancia_km: null,
+        interesses_recentes: 0,
+        menor_preco_categoria: false,
+        destaque_posicao: null,
+        metadata: { link_externo: '/cozinha/catalogo' },
+      };
+    })
+    .filter((item): item is ResultadoVitrine => item !== null);
 }
 
 export async function listarItens(modulo?: string, donoId?: string): Promise<CatalogoItem[]> {

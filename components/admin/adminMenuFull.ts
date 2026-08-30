@@ -135,6 +135,7 @@ export const adminMenuFull: MenuGroup[] = [
       { name: "Nome da moeda por cidade", path: "/admin-master/moeda-conecta/cidades", icon: Coins, status: 'active' },
       { name: "Compensações a fornecedores", path: "/admin-master/moeda-conecta/compensacoes", icon: Store, status: 'active' },
       { name: "Bônus por indicação por cidade", path: "/admin-master/configuracoes/bonus", icon: UserPlus, status: 'active' },
+      { name: "Bônus catálogo colaborativo (EAN novo)", path: "/admin-master/configuracoes/bonus-catalogo-colaborativo", icon: Package, status: 'active' },
       { name: "Plano Geral (limites e preço)", path: "/admin-master/configuracoes/plano-geral", icon: Sparkles, status: 'active' },
     ]
   },
@@ -171,8 +172,6 @@ export const adminMenuFull: MenuGroup[] = [
       { name: "Dashboard Cozinha", path: "/admin-master/cozinha-chef", icon: LayoutDashboard, status: 'active' },
       // ✅ 2º - FINANCEIRO (MOVIDO PARA CÁ)
       { name: "Financeiro Cozinha", path: "/admin-master/cozinha-chef/financeiro", icon: DollarSign, status: 'active' },
-      // ✅ 3º - PRATOS
-      { name: "Pratos & Produtos", path: "/admin-master/cozinha-chef/pratos", icon: Utensils, status: 'active' },
       // ✅ 4º - RECEITAS
       { name: "Receitas", path: "/admin-master/cozinha-chef/receitas", icon: ChefHat, status: 'active' },
       // ✅ 5º - ESTOQUE
@@ -187,6 +186,10 @@ export const adminMenuFull: MenuGroup[] = [
       { name: "Preview Cardápio", path: "/admin-master/cozinha-chef/preview", icon: Eye, status: 'active' },
       // ✅ 9º - DESCONTOS POR PERFIL
       { name: "Descontos por Perfil", path: "/admin-master/cozinha-chef/descontos", icon: Percent, status: 'active' },
+      // ✅ 10º - CHECKOUT (pagamento, entrega, revendedores)
+      { name: "Checkout (pagamento e entrega)", path: "/admin-master/cozinha-chef/checkout-config", icon: CreditCard, status: 'active' },
+      { name: "Revendedores", path: "/admin-master/cozinha-chef/revendedores", icon: UserCheck, status: 'active' },
+      { name: "Entregadores próprios", path: "/admin-master/cozinha-chef/entregadores", icon: Truck, status: 'active' },
     ]
   },
 
@@ -636,6 +639,7 @@ export const adminMenuFull: MenuGroup[] = [
       { name: "Relatório do catálogo", path: "/admin-master/pdv/relatorios", icon: Package, status: 'active' },
       { name: "Base fiscal (NFe/NFC-e)", path: "/admin-master/pdv/fiscal", icon: FileText, status: 'active' },
       { name: "Captura externa (modo espião)", path: "/admin-master/pdv/captura-externa", icon: Eye, status: 'active' },
+      { name: "Moderação de comprovantes (bônus EAN)", path: "/admin-master/pdv-catalogo/moderacao", icon: UserCheck, status: 'active' },
     ]
   },
 

@@ -46,9 +46,12 @@ export default function ResponderDemandaPage() {
   const [carregandoAuth, setCarregandoAuth] = useState(true);
 
   const [ean, setEan] = useState("");
-  const [fotoCodigoBarrasUrl, setFotoCodigoBarrasUrl] = useState<string | null>(null);
+  const [fotoCodigoBarrasPath, setFotoCodigoBarrasPath] = useState<string | null>(null);
   const [buscandoNoCatalogo, setBuscandoNoCatalogo] = useState(false);
   const [produtoJaExistia, setProdutoJaExistia] = useState(false);
+
+  const [recusados, setRecusados] = useState<{ id: string; nome_produto: string; ean: string | null; motivo_recusa: string | null }[]>([]);
+  const [reenviandoId, setReenviandoId] = useState<string | null>(null);
 
   const [nome, setNome] = useState(termo);
   const [categoria, setCategoria] = useState("");
@@ -78,6 +81,14 @@ export default function ResponderDemandaPage() {
       .catch(() => {});
   }, []);
 
+  useEffect(() => {
+    if (!usuario?.id) return;
+    fetch(`/api/pdv/catalogo-moderacao/recusados?usuarioId=${usuario.id}`)
+      .then((r) => r.json())
+      .then((resp) => { if (resp.success) setRecusados(resp.data); })
+      .catch(() => {});
+  }, [usuario?.id]);
+
   // Quando o EAN vem preenchido (foto decodificada), verifica se o produto
   // ja existe no catalogo colaborativo pra pre-preencher — isso e' o que
   // faz essa mesma tela servir tanto pra produto novo quanto pra "eu ja
@@ -106,6 +117,10 @@ export default function ResponderDemandaPage() {
     if (!usuario) return;
     if (!nome.trim()) { toast.error("Informe o nome do produto"); return; }
     if (!preco || Number(preco) <= 0) { toast.error("Informe o preço de venda"); return; }
+    if (!produtoJaExistia && !fotoCodigoBarrasPath) {
+      toast.error("Anexe a foto do código de barras (ou da embalagem) para cadastrar produto novo");
+      return;
+    }
 
     setEnviando(true);
     try {
@@ -122,7 +137,7 @@ export default function ResponderDemandaPage() {
           quantidade: Number(quantidade) || 0,
           ean: ean || undefined,
           fotoProdutoUrl: midiaProduto[0]?.url || null,
-          fotoCodigoBarrasUrl: fotoCodigoBarrasUrl || undefined,
+          fotoCodigoBarrasPath: fotoCodigoBarrasPath || undefined,
         }),
       }).then((r) => r.json());
 
@@ -132,7 +147,7 @@ export default function ResponderDemandaPage() {
           setShowCompletarPerfil(true);
           return;
         }
-        throw new Error(resp.error);
+        throw new Error(resp.message || resp.error);
       }
 
       setSucesso(true);
@@ -207,7 +222,59 @@ export default function ResponderDemandaPage() {
       </div>
 
       <div className="p-4 max-w-md mx-auto space-y-5">
-        <CapturaCodigoBarras fotoUrl={fotoCodigoBarrasUrl} ean={ean} onEanChange={setEan} onFotoChange={setFotoCodigoBarrasUrl} />
+        {recusados.length > 0 && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2">
+            <p className="text-sm font-semibold text-amber-800">Foto recusada — reenvie pra liberar o bônus</p>
+            {recusados.map((item) => (
+              <div key={item.id} className="text-xs text-amber-700 bg-white/60 rounded-lg p-2">
+                <p className="font-medium">{item.nome_produto}{item.ean ? ` (EAN ${item.ean})` : ""}</p>
+                {item.motivo_recusa && <p className="mt-0.5">Motivo: {item.motivo_recusa}</p>}
+                <button
+                  type="button"
+                  disabled={reenviandoId === item.id}
+                  onClick={() => setReenviandoId(item.id)}
+                  className="mt-1.5 text-blue-600 font-semibold"
+                >
+                  Tirar nova foto e reenviar
+                </button>
+                {reenviandoId === item.id && (
+                  <div className="mt-2">
+                    <CapturaCodigoBarras
+                      fotoPath={null}
+                      donoId={usuario.id}
+                      ean=""
+                      onEanChange={() => {}}
+                      onFotoPathChange={async (path) => {
+                        if (!path) return;
+                        const resp = await fetch("/api/pdv/catalogo-moderacao/reenviar", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ moderacaoId: item.id, donoId: usuario.id, fotoCodigoBarrasPath: path }),
+                        }).then((r) => r.json());
+                        if (resp.success) {
+                          toast.success("Foto reenviada — aguarde a análise");
+                          setRecusados((prev) => prev.filter((r) => r.id !== item.id));
+                          setReenviandoId(null);
+                        } else {
+                          toast.error(resp.error || "Erro ao reenviar foto");
+                        }
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        <CapturaCodigoBarras
+          fotoPath={fotoCodigoBarrasPath}
+          donoId={usuario.id}
+          ean={ean}
+          obrigatoria={!produtoJaExistia}
+          onEanChange={setEan}
+          onFotoPathChange={setFotoCodigoBarrasPath}
+        />
         {buscandoNoCatalogo && <p className="text-xs text-gray-400">Verificando se esse produto já existe no catálogo...</p>}
         {produtoJaExistia && (
           <p className="text-sm bg-blue-50 text-blue-700 px-3 py-2 rounded-lg">
@@ -230,7 +297,7 @@ export default function ResponderDemandaPage() {
         {!produtoJaExistia && (
           <div>
             <label className="text-sm font-medium text-gray-700 mb-2 block">Foto do produto</label>
-            <MidiaUploader midia={midiaProduto} onChange={setMidiaProduto} maximo={1} />
+            <MidiaUploader midia={midiaProduto} onChange={setMidiaProduto} maximo={1} permitirRemoverFundo />
           </div>
         )}
 

@@ -6,6 +6,13 @@ import { useSearchParams } from 'next/navigation';
 
 export interface ItemCardapio {
   id: string | number;
+  // O id acima e' ambiguo: pra "Pratos" e' o id da linha de `cardapio`, pra
+  // "Doces"/"Salgados" e' o id da receita direto. O checkout precisa dos
+  // dois separados (cardapioId fica null quando o item nao vem do cardapio
+  // do dia) pra recalcular preco no servidor sem adivinhar em qual tabela
+  // procurar.
+  receitaId: string;
+  cardapioId: string | null;
   dia: string;
   titulo: string;
   descricao: string;
@@ -14,6 +21,17 @@ export interface ItemCardapio {
   imagem: string;
   categoria?: string;
   images?: string[];
+}
+
+const CARRINHO_STORAGE_KEY = 'cozinha_carrinho';
+
+interface CarrinhoItemPersistido {
+  quantidade: number;
+  receitaId: string;
+  cardapioId: string | null;
+  titulo: string;
+  preco: number;
+  imagem: string;
 }
 
 const DIA_SEMANA_LABEL: Record<number, string> = {
@@ -42,7 +60,28 @@ export const useCatalogo = () => {
   const [doces, setDoces] = useState<ItemCardapio[]>([]);
   const [salgados, setSalgados] = useState<ItemCardapio[]>([]);
   const [loading, setLoading] = useState(true);
-  const [quantidades, setQuantidades] = useState<Record<string, number>>({});
+  // Restaura o carrinho persistido (ver useEffect de gravacao mais abaixo)
+  // logo no primeiro render -- sem isso, o carrinho gravado no localStorage
+  // nunca volta pro estado, e a barra de carrinho some ao recarregar a
+  // pagina mesmo com o dado ainda salvo. Chave = cardapioId (pratos) ou
+  // receitaId (doces/salgados), mesmo esquema de `String(item.id)` usado
+  // por aumentar/diminuir/getQuantidade.
+  const [quantidades, setQuantidades] = useState<Record<string, number>>(() => {
+    if (typeof window === 'undefined') return {};
+    try {
+      const raw = localStorage.getItem(CARRINHO_STORAGE_KEY);
+      if (!raw) return {};
+      const carrinhoSalvo: CarrinhoItemPersistido[] = JSON.parse(raw);
+      const inicial: Record<string, number> = {};
+      for (const item of carrinhoSalvo) {
+        const chave = item.cardapioId || item.receitaId;
+        if (chave) inicial[chave] = item.quantidade;
+      }
+      return inicial;
+    } catch {
+      return {};
+    }
+  });
   const [desconto, setDesconto] = useState(0);
 
   const carregarCardapio = useCallback(async () => {
@@ -100,6 +139,8 @@ export const useCatalogo = () => {
 
             return {
               id: item.id,
+              receitaId: receita.id,
+              cardapioId: String(item.id),
               dia: diaLabel,
               titulo: receita.name,
               descricao: receita.description || 'Deliciosa opção do dia',
@@ -121,6 +162,8 @@ export const useCatalogo = () => {
           const precoComDesconto = precoBase * (1 - descontoAtual / 100);
           return {
             id: receita.id,
+            receitaId: receita.id,
+            cardapioId: null,
             dia: '',
             titulo: receita.name,
             descricao: receita.description || '',
@@ -165,6 +208,42 @@ export const useCatalogo = () => {
     window.addEventListener('catalogo_itens_updated', carregarCardapio);
     return () => window.removeEventListener('catalogo_itens_updated', carregarCardapio);
   }, [carregarCardapio]);
+
+  // O carrinho (`quantidades`) e' so' useState -- some ao trocar de pagina.
+  // Como o fluxo e' catalogo -> checkout (duas rotas diferentes), persiste
+  // um snapshot resolvido (com receitaId/cardapioId/titulo/preco/imagem) em
+  // localStorage a cada mudanca. O preco aqui e' so' cosmetico pro resumo do
+  // checkout -- o valor que vale sempre e' recalculado no servidor.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const todosItens = [...pratos, ...doces, ...salgados];
+    const carrinho: CarrinhoItemPersistido[] = Object.entries(quantidades)
+      .filter(([, quantidade]) => quantidade > 0)
+      .map(([chave, quantidade]) => {
+        const item = todosItens.find((i) => String(i.id) === chave);
+        if (!item) return null;
+        return {
+          quantidade,
+          receitaId: item.receitaId,
+          cardapioId: item.cardapioId,
+          titulo: item.titulo,
+          preco: item.preco,
+          imagem: item.imagem,
+        };
+      })
+      .filter(Boolean) as CarrinhoItemPersistido[];
+
+    try {
+      if (carrinho.length > 0) {
+        localStorage.setItem(CARRINHO_STORAGE_KEY, JSON.stringify(carrinho));
+      } else {
+        localStorage.removeItem(CARRINHO_STORAGE_KEY);
+      }
+    } catch {
+      // localStorage indisponivel (modo privado, etc.) -- carrinho so' nao
+      // sobrevive a troca de pagina, sem quebrar a navegacao.
+    }
+  }, [quantidades, pratos, doces, salgados]);
 
   const aumentar = useCallback((id: string | number) => {
     const key = String(id);

@@ -305,6 +305,42 @@ async function processWebhookAguaGasPedido(pedidoId: string, payment: any) {
 	return NextResponse.json({ success: true, pedidoId, status: statusPagamento });
 }
 
+// Cliente pagou um pedido da Cozinha Chef Neide online (ver
+// app/api/cozinha/pedidos/route.ts) -- confirma o pagamento, avanca o
+// pedido pra 'confirmado' e avisa o cliente por push (se ele tiver
+// cliente_usuario_id resolvido e inscricao de push ativa).
+async function processWebhookCozinhaPedido(pedidoId: string, payment: any) {
+	const supabase = createClient();
+	const statusPagamento = normalizeStatus(String(payment?.status || ''));
+
+	const { data: pedido, error } = await supabase
+		.from('cozinha_pedidos')
+		.update({
+			status_pagamento: statusPagamento === 'pago' ? 'pago_online' : 'aguardando_pagamento',
+			status: statusPagamento === 'pago' ? 'confirmado' : 'aguardando_confirmacao',
+			confirmado_em: statusPagamento === 'pago' ? new Date().toISOString() : null,
+			mp_payment_id: String(payment?.id || ''),
+			updated_at: new Date().toISOString(),
+		})
+		.eq('id', pedidoId)
+		.select('*')
+		.single();
+
+	if (error || !pedido) {
+		return NextResponse.json({ success: true, ignored: true, reason: 'pedido nao encontrado' });
+	}
+
+	if (statusPagamento === 'pago' && pedido.cliente_usuario_id) {
+		await enviarPushParaUsuario(pedido.cliente_usuario_id, {
+			titulo: 'Pedido confirmado!',
+			corpo: 'Seu pagamento foi aprovado — a Cozinha Chef Neide já vai começar a preparar.',
+			url: `/cozinha/pedido/${pedido.id}`,
+		});
+	}
+
+	return NextResponse.json({ success: true, pedidoId, status: statusPagamento });
+}
+
 // Comprador pagou pra desbloquear o contato de um item da vitrine (cota
 // diaria gratis do Plano Geral ja estourada — ver
 // lib/catalogo/catalogoService.ts::criarInteresse).
@@ -391,6 +427,9 @@ async function processWebhook(request: NextRequest, payload: any) {
 		}
 		if (pedidoId.startsWith('agua_gas_pedido_')) {
 			return processWebhookAguaGasPedido(pedidoId.replace('agua_gas_pedido_', ''), payment);
+		}
+		if (pedidoId.startsWith('cozinha_pedido_')) {
+			return processWebhookCozinhaPedido(pedidoId.replace('cozinha_pedido_', ''), payment);
 		}
 
 		const pedidos = readPedidos();

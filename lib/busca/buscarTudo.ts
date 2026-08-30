@@ -8,7 +8,7 @@
 // módulo, tudo em "diretos" — só busca de verdade (com texto) passa pela
 // interpretação de intenção.
 
-import { buscarVitrine, buscarDiretoriosLivres } from '@/lib/catalogo/catalogoService';
+import { buscarVitrine, buscarDiretoriosLivres, buscarCozinhaChefNeide } from '@/lib/catalogo/catalogoService';
 import type { ResultadoVitrine, FiltrosBusca } from '@/lib/catalogo/marketplaceTypes';
 import { interpretarIntencaoBusca } from './interpretarIntencao';
 
@@ -39,11 +39,12 @@ async function buscarPorTermo(termo: string | undefined, filtros: FiltrosBuscaIn
     latUsuario: filtros.latUsuario,
     lngUsuario: filtros.lngUsuario,
   };
-  const [vitrine, diretorios] = await Promise.all([
+  const [vitrine, diretorios, cozinha] = await Promise.all([
     buscarVitrine(filtrosBusca).catch(() => []),
     buscarDiretoriosLivres(filtrosBusca).catch(() => []),
+    buscarCozinhaChefNeide(filtrosBusca).catch(() => []),
   ]);
-  return [...vitrine, ...diretorios];
+  return [...vitrine, ...diretorios, ...cozinha];
 }
 
 export async function buscarInteligente(query: string, filtros: FiltrosBuscaInteligente = {}): Promise<BuscaInteligenteResultado> {

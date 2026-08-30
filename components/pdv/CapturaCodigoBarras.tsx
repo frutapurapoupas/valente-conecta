@@ -4,9 +4,16 @@
 //
 // Captura a FOTO do codigo de barras (nao so' o valor decodificado) —
 // pedido explicito do dono do produto: a foto fica registrada em
-// pdv_produtos_catalogo.foto_codigo_barras_url pra auditoria/consulta,
+// pdv_produtos_catalogo.foto_codigo_barras_path pra auditoria/consulta,
 // alem do EAN em si. `capture="environment"` abre a camera traseira direto
 // no celular, sem passar por galeria.
+//
+// Essa foto e' o "comprovante" da campanha de bonus em Moeda Conecta
+// (086_catalogo_colaborativo_bonus_moderacao.sql): sobe pro bucket PRIVADO
+// catalogo-comprovantes via /api/upload/comprovante-catalogo (nunca pro
+// bucket publico "catalogo") e so' o admin master ve, via signed URL, antes
+// de aprovar o credito. Por isso o preview em tela usa so' o blob local
+// (URL.createObjectURL) — a rota de upload nao devolve URL exibivel.
 //
 // Tenta decodificar o EAN da propria foto com @zxing/browser (mesma lib do
 // BarcodeScanner.tsx, mas em modo imagem estatica em vez de video ao vivo).
@@ -15,22 +22,34 @@
 // branco (produto sem codigo de barras e' um caminho normal no PDV, ver
 // 038_pdv_catalogo_colaborativo.sql).
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Barcode, Camera, Loader2, RotateCcw } from "lucide-react";
 import { comprimirImagem } from "@/utils/comprimirImagem";
 
 interface Props {
-  fotoUrl: string | null;
+  fotoPath: string | null;
+  donoId: string;
   ean: string;
+  obrigatoria?: boolean;
   onEanChange: (ean: string) => void;
-  onFotoChange: (url: string | null) => void;
+  onFotoPathChange: (path: string | null) => void;
 }
 
-export function CapturaCodigoBarras({ fotoUrl, ean, onEanChange, onFotoChange }: Props) {
+export function CapturaCodigoBarras({ fotoPath, donoId, ean, obrigatoria, onEanChange, onFotoPathChange }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [processando, setProcessando] = useState(false);
   const [decodificado, setDecodificado] = useState<boolean | null>(null);
   const [erro, setErro] = useState("");
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  // O blob de preview so' existe enquanto o componente estiver montado
+  // nesta sessao — se fotoPath vier preenchido sem preview (ex: volta de
+  // outra tela), mostra o estado textual em vez de tentar exibir imagem.
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
 
   const handleSelecao = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const arquivo = e.target.files?.[0];
@@ -57,15 +76,17 @@ export function CapturaCodigoBarras({ fotoUrl, ean, onEanChange, onFotoChange }:
       const comprimida = await comprimirImagem(arquivo);
       const formData = new FormData();
       formData.append("arquivo", comprimida.arquivoPrincipal);
-      formData.append("thumb", comprimida.arquivoThumb);
-      const resposta = await fetch("/api/upload/catalogo", { method: "POST", body: formData });
+      formData.append("donoId", donoId);
+      const resposta = await fetch("/api/upload/comprovante-catalogo", { method: "POST", body: formData });
       const resultadoUpload = await resposta.json();
       if (!resultadoUpload.success) throw new Error(resultadoUpload.error || "Falha no upload");
-      onFotoChange(resultadoUpload.url);
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(urlObjeto);
+      onFotoPathChange(resultadoUpload.path);
     } catch (err: any) {
+      URL.revokeObjectURL(urlObjeto);
       setErro(err?.message || "Não foi possível processar a foto.");
     } finally {
-      URL.revokeObjectURL(urlObjeto);
       setProcessando(false);
       if (inputRef.current) inputRef.current.value = "";
     }
@@ -74,12 +95,23 @@ export function CapturaCodigoBarras({ fotoUrl, ean, onEanChange, onFotoChange }:
   return (
     <div>
       <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5 mb-2">
-        <Barcode className="w-4 h-4" /> Foto do código de barras
+        <Barcode className="w-4 h-4" /> Foto do código de barras{obrigatoria && <span className="text-red-500">*</span>}
       </label>
+      {obrigatoria && !fotoPath && (
+        <p className="text-xs text-gray-500 mb-2">
+          Obrigatória pra produto novo — é a prova usada pra liberar o bônus em Moeda Conecta. Sem código de barras, tire uma foto da embalagem.
+        </p>
+      )}
 
-      {fotoUrl ? (
+      {fotoPath ? (
         <div className="flex items-center gap-3">
-          <img src={fotoUrl} alt="Código de barras" className="w-20 h-20 object-cover rounded-lg border" />
+          {previewUrl ? (
+            <img src={previewUrl} alt="Código de barras" className="w-20 h-20 object-cover rounded-lg border" />
+          ) : (
+            <div className="w-20 h-20 rounded-lg border bg-emerald-50 flex items-center justify-center text-emerald-600 text-xs font-medium text-center px-1">
+              Foto enviada ✓
+            </div>
+          )}
           <div className="flex-1">
             {decodificado === true && <p className="text-sm text-emerald-600 font-medium">Código lido: {ean}</p>}
             {decodificado === false && <p className="text-sm text-amber-600">Não deu pra ler o código sozinho — confira o campo abaixo.</p>}

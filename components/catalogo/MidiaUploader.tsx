@@ -6,9 +6,14 @@
 // funil obrigatorio de compressao client-side antes de habilitar o envio
 // (ver VALENTE_CONECTA_MODULO_MARKETPLACE_MONETIZACAO.md, secao 3.1 e
 // utils/comprimirImagem.ts) — nunca deixa subir o arquivo bruto.
+//
+// "Remover fundo" (Deep Infra, /api/upload/remover-fundo) e' opt-in via
+// prop `permitirRemoverFundo` — e' uma chamada paga por imagem, entao so'
+// aparece nos modulos que pedirem explicitamente, nao em todo lugar que usa
+// esse componente.
 
 import { useRef, useState } from "react";
-import { Upload, X, Loader2 } from "lucide-react";
+import { Upload, X, Loader2, Wand2 } from "lucide-react";
 import { comprimirImagem } from "@/utils/comprimirImagem";
 import type { MidiaItem } from "@/lib/catalogo/marketplaceTypes";
 
@@ -17,12 +22,34 @@ interface MidiaUploaderProps {
   onChange: (midia: MidiaItem[]) => void;
   maximo?: number;
   uploadUrl?: string; // endpoint que recebe FormData e devolve { url, thumb_url }
+  permitirRemoverFundo?: boolean;
 }
 
-export function MidiaUploader({ midia, onChange, maximo = 6, uploadUrl = "/api/upload/catalogo" }: MidiaUploaderProps) {
+export function MidiaUploader({ midia, onChange, maximo = 6, uploadUrl = "/api/upload/catalogo", permitirRemoverFundo = false }: MidiaUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [processando, setProcessando] = useState(false);
   const [erro, setErro] = useState("");
+  const [removendoFundoIndex, setRemovendoFundoIndex] = useState<number | null>(null);
+
+  const removerFundo = async (index: number) => {
+    setErro("");
+    setRemovendoFundoIndex(index);
+    try {
+      const resp = await fetch("/api/upload/remover-fundo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: midia[index].url }),
+      }).then((r) => r.json());
+      if (!resp.success) throw new Error(resp.error || "Falha ao remover fundo");
+      const novaMidia = [...midia];
+      novaMidia[index] = { ...novaMidia[index], url: resp.url, thumb_url: resp.url };
+      onChange(novaMidia);
+    } catch (err: any) {
+      setErro(err?.message || "Não foi possível remover o fundo.");
+    } finally {
+      setRemovendoFundoIndex(null);
+    }
+  };
 
   const handleSelecao = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const arquivos = Array.from(e.target.files || []);
@@ -85,6 +112,17 @@ export function MidiaUploader({ midia, onChange, maximo = 6, uploadUrl = "/api/u
               <span className="absolute bottom-1 left-1 text-[10px] bg-black/60 text-white px-1.5 py-0.5 rounded">
                 Capa
               </span>
+            )}
+            {permitirRemoverFundo && (
+              <button
+                type="button"
+                onClick={() => removerFundo(index)}
+                disabled={removendoFundoIndex === index}
+                title="Remover fundo"
+                className="absolute bottom-1 right-1 p-1 bg-white/90 text-gray-700 rounded-full hover:bg-white disabled:opacity-60"
+              >
+                {removendoFundoIndex === index ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />}
+              </button>
             )}
           </div>
         ))}

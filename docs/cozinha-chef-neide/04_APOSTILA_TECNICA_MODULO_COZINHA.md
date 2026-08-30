@@ -55,7 +55,6 @@ Capacidades principais:
 - /admin-master/cozinha-chef/movimentacoes
 - /admin-master/cozinha-chef/compras
 - /admin-master/cozinha-chef/producao
-- /admin-master/cozinha-chef/pratos
 - /admin-master/cozinha-chef/pedidos
 - /admin-master/cozinha-chef/financeiro
 
@@ -188,20 +187,22 @@ Capacidades:
 - registro de entradas/saidas manuais;
 - fallback localStorage para historico de movimentacoes.
 
-### 3.5 Producao, pratos, pedidos e financeiro
+### 3.5 Producao, pedidos e financeiro
 
 Arquivos base:
 
 - app/admin-master/cozinha-chef/producao/page.tsx + hook useProducao
-- app/admin-master/cozinha-chef/pratos/page.tsx + hook usePratos
 - app/admin-master/cozinha-chef/pedidos/page.tsx + hook useDashboard
 - app/admin-master/cozinha-chef/financeiro/page.tsx + hooks useFinanceiro/useFinanceiroPessoal
 
 Estado atual:
 
-- producao e pratos consumem Supabase via hooks;
-- pedidos depende de ultimos pedidos no hook de dashboard;
+- producao consome Supabase direto via hook (tabela `producao`), tela hoje so' le (create/update/delete do hook nao estao ligados a nenhum botao) — nao serve ainda como ferramenta real de planejamento;
+- pedidos depende de ultimos pedidos no hook de dashboard, que tambem faz select direto em tabelas genericas (`vendas`, `compras`, `pedidos`, `alertas`, `movimentacoes`) nao confirmadas nas migrations do projeto — tela e' so' leitura, sem acao de status;
+- causa raiz de "pedidos" estar vazio/sem uso: o catalogo publico (app/cozinha/catalogo/page.tsx) tem um botao "Adicionar" em cada item SEM nenhum onClick — hoje nao existe nenhum fluxo de checkout que gere pedido de verdade;
 - financeiro possui tela em modo simplificado e hook dedicado para API financeira.
+
+REMOVIDO (2026-08-30): pagina/hook "Pratos & Produtos" (app/admin-master/cozinha-chef/pratos + hooks/usePratos.ts + types/pratos.ts). Motivo: consumia uma tabela `pratos` propria e desconectada, violando a regra de nao-duplicacao (00_FILOSOFIA_DO_MODULO.md secao 7) — a propria tela so' tinha um botao "Ir para Receitas", sem nenhuma acao de criar/editar/destacar ligada, apesar do hook ter CRUD completo. O conceito documentado em 01_ARQUITETURA_FUNCIONAL.md secao 5 ("visualizacao comercial das receitas: organizar apresentacao, categorias, disponibilidade, destaque") continua valido para uma reconstrucao futura — so' precisa nascer de `receitas` publicadas, nunca de cadastro proprio.
 
 ---
 

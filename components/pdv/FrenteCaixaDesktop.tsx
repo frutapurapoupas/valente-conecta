@@ -355,6 +355,23 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
     setGrupoParaEscolher(grupo);
   };
 
+  // Preview ao vivo do produto conforme o codigo e' digitado/escaneado, ANTES
+  // de apertar Enter -- pedido do dono do produto: hoje nao tem retorno
+  // visual nenhum nessa hora, o operador so' descobre se acertou o produto
+  // depois que ele ja' caiu na tabela. So' mostra quando ha' match exato (o
+  // mapa e' por codigo completo, nao prefixo) -- nao mostra "nao encontrado"
+  // enquanto ainda esta' digitando, isso ja' aparece via toast no Enter.
+  const produtoPreview = useMemo(() => {
+    const cod = codigo.trim();
+    if (!cod) return null;
+    let grupo = produtosPorEan.get(cod);
+    if (!grupo) {
+      const porId = produtos.find((p) => p.estoqueId === cod);
+      if (porId) grupo = [porId];
+    }
+    return grupo && grupo.length > 0 ? grupo[0] : null;
+  }, [codigo, produtosPorEan, produtos]);
+
   const adicionarPorCodigo = (valor: string) => {
     const cod = valor.trim();
     if (!cod) return;
@@ -552,6 +569,26 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
             <Search className="w-5 h-5" />
           </button>
         </div>
+
+        {/* Preview do produto batido pelo codigo, antes de confirmar com Enter */}
+        {produtoPreview && (
+          <div className="bg-blue-50 border-b border-blue-100 px-5 py-2.5 flex items-center gap-3">
+            <div className="w-12 h-12 rounded-lg bg-white border overflow-hidden shrink-0 flex items-center justify-center">
+              {produtoPreview.fotoUrl ? (
+                <img src={produtoPreview.fotoUrl} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <ShoppingCart className="w-5 h-5 text-gray-300" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-gray-800 text-sm truncate">{produtoPreview.nome}</p>
+              <p className="text-xs text-gray-500">
+                {produtoPreview.estoque} {produtoPreview.unidade || "un"} em estoque · {formatarMoeda(produtoPreview.preco)}
+              </p>
+            </div>
+            <span className="text-xs text-blue-600 font-medium whitespace-nowrap">Enter pra adicionar</span>
+          </div>
+        )}
 
         {/* Tabela corrida de itens */}
         <div className="flex-1 overflow-y-auto px-5 py-3">
