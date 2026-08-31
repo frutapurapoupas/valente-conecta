@@ -108,6 +108,21 @@ async function processWebhookPlanoGeral(assinaturaId: string, payment: any) {
 			plano_geral: assinatura.tier,
 			plano_geral_valido_ate: validoAte.toISOString(),
 		}).eq('id', assinatura.usuario_id);
+
+		// Avisa o indicador em tempo real quando quem ele indicou vira
+		// assinante do Plano Geral -- fecha o ciclo mostrado em /qr-code.
+		const { data: assinanteInfo } = await supabase
+			.from('usuarios')
+			.select('nome, convidado_por_id')
+			.eq('id', assinatura.usuario_id)
+			.maybeSingle();
+		if (assinanteInfo?.convidado_por_id) {
+			enviarPushParaUsuario(String(assinanteInfo.convidado_por_id), {
+				titulo: '🎉 Sua indicação virou assinante!',
+				corpo: `${assinanteInfo.nome || 'Alguém que você indicou'} assinou o Plano Geral. Você ajudou a fortalecer o Valente Conecta!`,
+				url: '/qr-code',
+			}).catch(() => {});
+		}
 	} else if (statusPagamento === 'cancelado') {
 		await supabase.from('plano_geral_assinaturas').update({
 			status: 'cancelado',

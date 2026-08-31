@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 
 export interface AccessStatus {
   hasAccess: boolean;
-  reason: 'trial' | 'viral' | 'paid' | 'expired' | 'blocked';
+  reason: 'trial' | 'viral' | 'paid' | 'expired' | 'blocked' | 'campanha_viral';
   daysLeft: number;
   showMessage?: string;
 }
@@ -17,6 +17,13 @@ export async function checkUserAccess(userId: number): Promise<AccessStatus> {
 
   if (error || !user) {
     return { hasAccess: false, reason: 'blocked', daysLeft: 0 };
+  }
+
+  // Campanha de lancamento da cidade ainda ativa quando o usuario se
+  // cadastrou -- acesso gratuito garantido, sem prazo (ver cadastroSimples
+  // em lib/auth.ts e 089_campanha_viral_populacao.sql).
+  if (user.acesso_campanha_viral) {
+    return { hasAccess: true, reason: 'campanha_viral', daysLeft: -1 };
   }
 
   const now = new Date();

@@ -98,8 +98,8 @@ export async function cadastroSimples(
     // Criar código de indicação único
     const codigo = `VALENTE_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
     const trialEndAt = new Date();
-    trialEndAt.setDate(trialEndAt.getDate() + 2); // 2 dias grátis
-    
+    trialEndAt.setDate(trialEndAt.getDate() + 2); // 2 dias grátis (usado so' se a campanha viral da cidade nao estiver ativa)
+
     // Buscar ID do usuário que indicou
     let convidadoPorId = null;
     if (codigoIndicacao) {
@@ -108,12 +108,33 @@ export async function cadastroSimples(
         .select('id')
         .eq('codigo_indicacao', codigoIndicacao)
         .maybeSingle();
-      
+
       if (indicador) {
         convidadoPorId = indicador.id;
       }
     }
-    
+
+    // Campanha de lancamento por cidade: enquanto a populacao cadastrada
+    // nao bate a meta configurada pelo admin master, todo cadastro novo
+    // ganha acesso gratuito indefinido -- setado uma unica vez aqui, nunca
+    // retroage se a meta for batida depois (ver 089_campanha_viral_populacao.sql).
+    let acessoCampanhaViral = false;
+    if (cidadeBase?.trim()) {
+      const cidadeNorm = cidadeBase.trim().toUpperCase();
+      const { data: campanha } = await supabase
+        .from('campanha_viral_cidades')
+        .select('meta_populacao')
+        .eq('cidade', cidadeNorm)
+        .maybeSingle();
+      if (campanha) {
+        const { count } = await supabase
+          .from('usuarios')
+          .select('*', { count: 'exact', head: true })
+          .eq('cidade_base', cidadeBase.trim());
+        if ((count || 0) < campanha.meta_populacao) acessoCampanhaViral = true;
+      }
+    }
+
     // Criar novo usuário
     const { data: newUser, error: insertError } = await supabase
       .from('usuarios')
@@ -126,6 +147,7 @@ export async function cadastroSimples(
         trial_started_at: new Date().toISOString(),
         trial_end_at: trialEndAt.toISOString(),
         is_viral_active: false,
+        acesso_campanha_viral: acessoCampanhaViral,
         total_earned: 0,
         role: 'user'
       })
@@ -179,27 +201,33 @@ export function logout(): void {
 // Verificar acesso do usuário (trial, viral, etc.)
 export async function checkUserAccess(userId: string): Promise<{
   hasAccess: boolean;
-  reason: 'trial' | 'viral' | 'paid' | 'expired';
+  reason: 'trial' | 'viral' | 'paid' | 'expired' | 'campanha_viral';
   daysLeft: number;
   message?: string;
 }> {
   const { data: user, error } = await supabase
     .from('usuarios')
-    .select('trial_end_at, is_viral_active, viral_end_at, role')
+    .select('trial_end_at, is_viral_active, viral_end_at, role, acesso_campanha_viral')
     .eq('id', userId)
     .single();
-  
+
   if (error || !user) {
     return { hasAccess: false, reason: 'expired', daysLeft: 0, message: 'Usuário não encontrado' };
   }
-  
+
   // Admin tem acesso total
   if (user.role === 'admin') {
     return { hasAccess: true, reason: 'paid', daysLeft: 999 };
   }
-  
+
+  // Campanha de lancamento da cidade ainda ativa quando o usuario se
+  // cadastrou -- acesso gratuito garantido, sem prazo (ver cadastroSimples).
+  if (user.acesso_campanha_viral) {
+    return { hasAccess: true, reason: 'campanha_viral', daysLeft: -1 };
+  }
+
   const now = new Date();
-  
+
   // Verificar trial (2 dias)
   if (user.trial_end_at && new Date(user.trial_end_at) > now) {
     const daysLeft = Math.ceil((new Date(user.trial_end_at).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));

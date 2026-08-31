@@ -65,6 +65,7 @@ import {
   Percent,
   Timer,
   LifeBuoy,
+  Rocket,
   type LucideIcon
 } from "lucide-react";
 
@@ -135,6 +136,7 @@ export const adminMenuFull: MenuGroup[] = [
       { name: "Nome da moeda por cidade", path: "/admin-master/moeda-conecta/cidades", icon: Coins, status: 'active' },
       { name: "Compensações a fornecedores", path: "/admin-master/moeda-conecta/compensacoes", icon: Store, status: 'active' },
       { name: "Bônus por indicação por cidade", path: "/admin-master/configuracoes/bonus", icon: UserPlus, status: 'active' },
+      { name: "Campanha viral (meta de população)", path: "/admin-master/configuracoes/campanha-viral", icon: Rocket, status: 'active' },
       { name: "Bônus catálogo colaborativo (EAN novo)", path: "/admin-master/configuracoes/bonus-catalogo-colaborativo", icon: Package, status: 'active' },
       { name: "Plano Geral (limites e preço)", path: "/admin-master/configuracoes/plano-geral", icon: Sparkles, status: 'active' },
     ]

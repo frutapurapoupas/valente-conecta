@@ -29,6 +29,7 @@ export interface Usuario {
   trial_end_at?: string;
   is_viral_active?: boolean;
   viral_end_at?: string;
+  acesso_campanha_viral?: boolean;
   total_earned?: number;
   role: string;
 }

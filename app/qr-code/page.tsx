@@ -20,6 +20,12 @@ interface BonusRule {
   descricao?: string;
 }
 
+interface StatusCampanhaViral {
+  ativa: boolean;
+  metaPopulacao: number | null;
+  populacaoAtual: number;
+}
+
 export default function QRCodePage() {
   const router = useRouter();
   // getCurrentUser le' a sessao real (localStorage, gravada por
@@ -42,6 +48,7 @@ export default function QRCodePage() {
   const [indicadosEmpresas, setIndicadosEmpresas] = useState<any[]>([]);
   const [indicadosProfissionais, setIndicadosProfissionais] = useState<any[]>([]);
   const [showBonusInfo, setShowBonusInfo] = useState(false);
+  const [campanhaViral, setCampanhaViral] = useState<StatusCampanhaViral | null>(null);
 
   // PEGAR A URL BASE DINAMICAMENTE (funciona em qualquer ambiente)
   useEffect(() => {
@@ -77,16 +84,20 @@ export default function QRCodePage() {
 
       const cidade = (user.cidade_base || '').trim().toUpperCase();
 
-      const [configResp, usuariosResp, estabelecimentosResp] = await Promise.all([
+      const [configResp, usuariosResp, estabelecimentosResp, campanhaResp] = await Promise.all([
         cidade
           ? fetch(`/api/referrals/config-cidade?cidade=${encodeURIComponent(cidade)}`).then((res) => res.json()).catch(() => ({ success: false }))
           : Promise.resolve({ success: false }),
-        supabase.from('usuarios').select('id, nome, whatsapp, created_at, trial_end_at').eq('convidado_por_id', user.id).order('created_at', { ascending: false }),
-        supabase.from('indicacoes_estabelecimentos').select('*').eq('usuario_id', user.id).order('created_at', { ascending: false })
+        supabase.from('usuarios').select('id, nome, whatsapp, created_at, trial_end_at, acesso_campanha_viral').eq('convidado_por_id', user.id).order('created_at', { ascending: false }),
+        supabase.from('indicacoes_estabelecimentos').select('*').eq('usuario_id', user.id).order('created_at', { ascending: false }),
+        cidade
+          ? fetch(`/api/campanha-viral/status?cidade=${encodeURIComponent(cidade)}`).then((res) => res.json()).catch(() => ({ success: false }))
+          : Promise.resolve({ success: false }),
       ]);
 
       const rules: BonusRule[] = configResp?.success ? configResp.data.rules : [];
       setBonusRules(rules);
+      setCampanhaViral(campanhaResp?.success ? campanhaResp.data : null);
 
       const usuarios = Array.isArray(usuariosResp.data) ? usuariosResp.data : [];
       const estabelecimentos = Array.isArray(estabelecimentosResp.data) ? estabelecimentosResp.data : [];
@@ -97,7 +108,7 @@ export default function QRCodePage() {
       setIndicadosEmpresas(empresas);
       setIndicadosProfissionais(profissionais);
 
-      const usuariosValidados = usuarios.filter((item: any) => item.trial_end_at && new Date(item.trial_end_at) > new Date());
+      const usuariosValidados = usuarios.filter((item: any) => item.acesso_campanha_viral || (item.trial_end_at && new Date(item.trial_end_at) > new Date()));
       const empresasValidadas = empresas.filter((item: any) => item.status === 'aprovado' || item.status === 'pago');
       const profissionaisValidados = profissionais.filter((item: any) => item.status === 'aprovado' || item.status === 'pago');
 
@@ -333,6 +344,15 @@ export default function QRCodePage() {
           </div>
         </div>
 
+        {campanhaViral?.ativa && (
+          <div className="bg-gradient-to-r from-green-600/20 to-emerald-600/20 border border-green-500/30 rounded-2xl p-4 flex items-start gap-2">
+            <span className="text-xl">🚀</span>
+            <p className="text-green-200 text-sm">
+              Campanha de lançamento ativa em {user?.cidade_base}! Quem se cadastrar agora fica com acesso grátis garantido, mesmo depois que o teste normal venceria.
+            </p>
+          </div>
+        )}
+
         <div className="bg-white/5 rounded-2xl p-4">
           <p className="text-white font-bold mb-1">WhatsApps indicados e validados</p>
           <p className="text-gray-500 text-xs mb-3">
@@ -343,7 +363,8 @@ export default function QRCodePage() {
               <p className="text-gray-500 text-sm">Nenhum usuário indicado ainda.</p>
             ) : (
               indicadosUsuarios.map((item) => {
-                const validado = Boolean(item.trial_end_at && new Date(item.trial_end_at) > new Date());
+                const acessoGarantido = Boolean(item.acesso_campanha_viral);
+                const validado = acessoGarantido || Boolean(item.trial_end_at && new Date(item.trial_end_at) > new Date());
                 return (
                   <div key={item.id} className="bg-white/5 rounded-xl px-3 py-2 text-sm">
                     <div className="flex items-center justify-between gap-2">
@@ -356,11 +377,13 @@ export default function QRCodePage() {
                       </span>
                     </div>
                     <p className={`text-xs mt-1 ${validado ? 'text-green-300/70' : 'text-yellow-300/70'}`}>
-                      {validado
-                        ? `Indicação válida — teste dele vence em ${new Date(item.trial_end_at).toLocaleDateString('pt-BR')}.`
-                        : item.trial_end_at
-                          ? `Indicação expirada — teste grátis venceu em ${new Date(item.trial_end_at).toLocaleDateString('pt-BR')} sem virar assinante.`
-                          : 'Ainda sem data de teste registrada.'}
+                      {acessoGarantido
+                        ? 'Acesso gratuito garantido (campanha de lançamento) — conta pro seu bônus enquanto durar.'
+                        : validado
+                          ? `Indicação válida — teste dele vence em ${new Date(item.trial_end_at).toLocaleDateString('pt-BR')}.`
+                          : item.trial_end_at
+                            ? `Indicação expirada — teste grátis venceu em ${new Date(item.trial_end_at).toLocaleDateString('pt-BR')} sem virar assinante.`
+                            : 'Ainda sem data de teste registrada.'}
                     </p>
                   </div>
                 );

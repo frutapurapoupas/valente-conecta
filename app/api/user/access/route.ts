@@ -2,6 +2,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
+// GET parametrizado por querystring que le' status de acesso do usuario
+// (trial/campanha viral/expirado) -- precisa ser sempre fresco, nunca
+// servir cache velho do Supabase (ver nota de app/api/admin-master/config-lancamento/route.ts).
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
+
 export async function GET(request: NextRequest) {
   const userId = request.nextUrl.searchParams.get('userId');
   
@@ -11,16 +18,22 @@ export async function GET(request: NextRequest) {
   
   const { data: user, error } = await supabase
     .from('usuarios')
-    .select('id, trial_end_at, is_viral_active, viral_end_at, plano')
+    .select('id, trial_end_at, is_viral_active, viral_end_at, plano, acesso_campanha_viral')
     .eq('id', parseInt(userId))
     .single();
-  
+
   if (error || !user) {
     return NextResponse.json({ hasAccess: false, message: 'Usuário não encontrado' });
   }
-  
+
+  // Campanha de lancamento da cidade ainda ativa quando o usuario se
+  // cadastrou -- acesso gratuito garantido, sem prazo.
+  if (user.acesso_campanha_viral) {
+    return NextResponse.json({ hasAccess: true, daysLeft: -1, reason: 'campanha_viral' });
+  }
+
   const now = new Date();
-  
+
   // Verificar trial (2 dias)
   if (user.trial_end_at && new Date(user.trial_end_at) > now) {
     const daysLeft = Math.ceil((new Date(user.trial_end_at).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
