@@ -30,6 +30,8 @@ export interface Usuario {
   is_viral_active?: boolean;
   viral_end_at?: string;
   acesso_campanha_viral?: boolean;
+  aceitou_politica_conteudo_versao?: number | null;
+  aceitou_politica_conteudo_em?: string | null;
   total_earned?: number;
   role: string;
 }

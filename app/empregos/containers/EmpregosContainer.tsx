@@ -8,6 +8,8 @@ import toast from "react-hot-toast";
 import { useEmpregos } from "../hooks/useEmpregos";
 import { Vaga, FiltrosVaga } from "../types";
 import { filtrarVagas, calcularEstatisticasVagas } from "../utils/empregosUtils";
+import { useExigirAceitePolitica } from "@/lib/hooks/useExigirAceitePolitica";
+import { PoliticaConteudoModal } from "@/components/PoliticaConteudoModal";
 
 import {
   EmpregosHeader,
@@ -32,6 +34,7 @@ export function EmpregosContainer() {
   // se declarar empregador — o antigo gate por isAdmin (admin master) deixava
   // essa area impossivel de alcançar, ja que isAdmin nunca fica true sem login.
   const [souEmpregador, setSouEmpregador] = useState(false);
+  const { aberto: politicaAberta, enviando: politicaEnviando, executarComAceite, aceitar: aceitarPolitica, cancelar: cancelarPolitica } = useExigirAceitePolitica();
 
   // ==========================================================================
   // HOOKS DE NEGÃ“CIO
@@ -96,11 +99,17 @@ export function EmpregosContainer() {
   const handleSalvarVaga = async (dados: any) => {
     if (editandoVaga) {
       await atualizarVaga(editandoVaga.id, dados);
-    } else {
-      await criarVaga(dados);
+      setShowVagaModal(false);
+      setEditandoVaga(null);
+      return;
     }
-    setShowVagaModal(false);
-    setEditandoVaga(null);
+    // Publicar vaga nova e' insercao de conteudo -- exige aceite da
+    // politica de protecao antes de criar (ver lib/hooks/useExigirAceitePolitica.ts).
+    executarComAceite(async () => {
+      await criarVaga(dados);
+      setShowVagaModal(false);
+      setEditandoVaga(null);
+    });
   };
 
   const handleExcluirVaga = async (id: string) => {
@@ -242,6 +251,13 @@ export function EmpregosContainer() {
             onSave={handleSalvarCurriculo}
           />
         )}
+
+        <PoliticaConteudoModal
+          aberto={politicaAberta}
+          enviando={politicaEnviando}
+          onAceitar={aceitarPolitica}
+          onCancelar={cancelarPolitica}
+        />
 
         {/* MODAL DE DETALHES */}
         {vagaSelecionada && (
