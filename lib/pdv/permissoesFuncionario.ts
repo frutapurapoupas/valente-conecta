@@ -11,6 +11,7 @@ export const PERMISSOES_PDV = [
   { chave: "fiado", label: "Gerenciar clientes e cobranças de fiado" },
   { chave: "caixa", label: "Ver lançamentos e fechar caixa" },
   { chave: "notas-fiscais", label: "Ver notas fiscais" },
+  { chave: "relatorios", label: "Ver relatórios de vendas" },
   { chave: "captura-externa", label: "Acessar o modo espião" },
   { chave: "aplicar_desconto", label: "Aplicar desconto na venda" },
   { chave: "vender_fiado", label: "Vender fiado" },

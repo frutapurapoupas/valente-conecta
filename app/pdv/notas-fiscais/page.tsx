@@ -15,6 +15,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { PdvSubNav } from "@/components/pdv/PdvSubNav";
 import { SemPermissaoPdv } from "@/components/pdv/SemPermissaoPdv";
 import { getOperadorAtivo, temPermissao, type OperadorAtivo } from "@/lib/pdv/operadorPdv";
+import { DadosFiscaisLoja } from "@/components/pdv/DadosFiscaisLoja";
 
 interface Nota {
   id: string;
@@ -121,6 +122,8 @@ export default function NotasFiscaisPage() {
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm text-blue-800">
           Controle manual, pra organização — ainda não emite nota de verdade. Emissão automática (NFC-e/NFe) é a próxima etapa, depende de custo de certificado/integração a ser resolvido antes do lançamento.
         </div>
+
+        {usuario && <DadosFiscaisLoja usuarioId={usuario.id} />}
 
         <button
           onClick={() => setFormAberto(true)}
