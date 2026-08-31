@@ -14,6 +14,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
 import { ArrowLeft, Copy, Loader2, MapPin, MessageCircle, Store } from "lucide-react";
 import { getCurrentUser, cadastroSimples } from "@/lib/auth";
+import { PagamentoMercadoPago } from "@/components/cozinha/PagamentoMercadoPago";
 
 const CARRINHO_STORAGE_KEY = "cozinha_carrinho";
 
@@ -56,6 +57,7 @@ export default function CheckoutCozinhaPage() {
   const [enviando, setEnviando] = useState(false);
 
   const [confirmacao, setConfirmacao] = useState<{ pedidoId: string; checkoutUrl: string | null } | null>(null);
+  const [pagamentoAprovado, setPagamentoAprovado] = useState(false);
 
   useEffect(() => {
     const u = getCurrentUser();
@@ -195,13 +197,14 @@ export default function CheckoutCozinhaPage() {
           <MessageCircle className="w-4 h-4" /> Guardar no meu WhatsApp
         </button>
 
-        {confirmacao.checkoutUrl ? (
-          <button
-            onClick={() => window.location.href = confirmacao.checkoutUrl!}
-            className="w-full max-w-sm bg-blue-600 text-white py-3 rounded-xl font-semibold"
-          >
-            Pagar agora
-          </button>
+        {formaPagamento === "mercado_pago" && !pagamentoAprovado ? (
+          <div className="w-full max-w-sm">
+            <PagamentoMercadoPago
+              pedidoId={confirmacao.pedidoId}
+              total={total}
+              onAprovado={() => setPagamentoAprovado(true)}
+            />
+          </div>
         ) : (
           <button
             onClick={() => router.push(`/cozinha/pedido/${confirmacao.pedidoId}`)}

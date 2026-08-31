@@ -233,12 +233,11 @@ export async function POST(request: NextRequest) {
       .single();
     if (error) throw error;
 
-    let checkoutUrl: string | null = null;
-    if (resolucao.formaPagamento === 'mercado_pago') {
-      checkoutUrl = await criarPreferenciaMercadoPago(pedido, request);
-    }
-
-    return NextResponse.json({ success: true, data: pedido, checkoutUrl });
+    // Pagamento online agora acontece embutido no proprio checkout via
+    // Payment Brick (components/cozinha/PagamentoMercadoPago.tsx), sem
+    // preferencia/redirect -- criarPreferenciaMercadoPago fica sem uso
+    // aqui de proposito, mantida abaixo caso outro fluxo precise dela.
+    return NextResponse.json({ success: true, data: pedido, checkoutUrl: null });
   } catch (error: any) {
     console.error('Erro ao criar pedido da Cozinha:', error);
     return NextResponse.json({ success: false, error: error.message || 'Erro ao criar pedido' }, { status: 500 });
