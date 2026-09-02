@@ -74,7 +74,7 @@ export function ModalAvaliarViagem({ tipoViagem, viagemId, motoristaId, passagei
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-[60] p-4">
       <div className="bg-white rounded-2xl w-full max-w-sm p-5">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-bold text-gray-800">Como foi sua viagem?</h2>
