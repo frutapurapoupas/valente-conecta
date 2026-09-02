@@ -10,6 +10,7 @@
 
 import { useState } from "react";
 import { Megaphone, X } from "lucide-react";
+import { AceiteTermoCheckbox } from "@/components/termos/AceiteTermoCheckbox";
 
 interface Props {
   nomeInicial?: string;
@@ -18,7 +19,7 @@ interface Props {
   categoriasNegocio: { id: string; nome: string }[];
   salvando: boolean;
   onClose: () => void;
-  onConfirmar: (dados: { nome: string; endereco: string; categoriaNegocio: string }) => void;
+  onConfirmar: (dados: { nome: string; endereco: string; categoriaNegocio: string; aceitouLimitacaoResponsabilidade: boolean }) => void;
 }
 
 export function ModalCompletarPerfilVitrine({
@@ -33,6 +34,7 @@ export function ModalCompletarPerfilVitrine({
   const [nome, setNome] = useState(nomeInicial);
   const [endereco, setEndereco] = useState(enderecoInicial);
   const [categoriaNegocio, setCategoriaNegocio] = useState(categoriaNegocioInicial);
+  const [aceitouTermos, setAceitouTermos] = useState(false);
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
@@ -60,9 +62,18 @@ export function ModalCompletarPerfilVitrine({
               ))}
             </select>
           </div>
+          <AceiteTermoCheckbox
+            checked={aceitouTermos}
+            onChange={setAceitouTermos}
+            textoAntes="Estou ciente dos"
+            textoLink="Termos de Limitação de Responsabilidade"
+            href="/termos/limitacao-responsabilidade"
+            textoDepois=", compreendendo que a plataforma atua como facilitadora das minhas vendas e não assume o risco de inadimplência nas transações com meus clientes."
+          />
+
           <button
-            onClick={() => onConfirmar({ nome: nome.trim(), endereco: endereco.trim(), categoriaNegocio })}
-            disabled={salvando}
+            onClick={() => onConfirmar({ nome: nome.trim(), endereco: endereco.trim(), categoriaNegocio, aceitouLimitacaoResponsabilidade: aceitouTermos })}
+            disabled={salvando || !aceitouTermos}
             className="w-full bg-blue-600 text-white py-2.5 rounded-xl font-semibold disabled:opacity-60"
           >
             {salvando ? "Publicando..." : "Salvar e publicar"}

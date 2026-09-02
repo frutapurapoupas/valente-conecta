@@ -40,6 +40,8 @@ export async function POST(request: NextRequest) {
       if (!body?.[campo]) return NextResponse.json({ success: false, error: `Campo obrigatório: ${campo}` }, { status: 400 });
     }
     if (!body.cnhValida) return NextResponse.json({ success: false, error: 'CNH inválida. Não é possível concluir o cadastro.' }, { status: 400 });
+    if (!body.aceitouTermosMotorista) return NextResponse.json({ success: false, error: 'É preciso aceitar o Termo de Uso e Condições de Parceria.' }, { status: 400 });
+    if (!body.aceitouLimitacaoResponsabilidade) return NextResponse.json({ success: false, error: 'É preciso aceitar os Termos de Limitação de Responsabilidade.' }, { status: 400 });
 
     const supabase = createClient();
     const { data, error } = await supabase
@@ -56,6 +58,8 @@ export async function POST(request: NextRequest) {
           placa: String(body.placa).toUpperCase(),
           cnh_numero: body.cnhNumero,
           cnh_valida: !!body.cnhValida,
+          aceitou_termos_motorista_em: new Date().toISOString(),
+          aceitou_limitacao_responsabilidade_em: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         },
         { onConflict: 'usuario_id' }

@@ -15,12 +15,15 @@ import { AlertTriangle, Car } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { MidiaUploader } from "@/components/catalogo/MidiaUploader";
 import type { MidiaItem } from "@/lib/catalogo/marketplaceTypes";
+import { AceiteTermoCheckbox } from "@/components/termos/AceiteTermoCheckbox";
 
 export default function CadastroMotoristaCaronaPage() {
   const router = useRouter();
   const [usuario, setUsuario] = useState<any>(null);
   const [enviando, setEnviando] = useState(false);
   const [form, setForm] = useState({ veiculo: "", placa: "", cnhNumero: "", cnhValida: false });
+  const [aceitouTermosMotorista, setAceitouTermosMotorista] = useState(false);
+  const [aceitouLimitacaoResponsabilidade, setAceitouLimitacaoResponsabilidade] = useState(false);
   const [fotoRosto, setFotoRosto] = useState<MidiaItem[]>([]);
   const [fotoVeiculo, setFotoVeiculo] = useState<MidiaItem[]>([]);
   const [fotoCnh, setFotoCnh] = useState<MidiaItem[]>([]);
@@ -46,6 +49,10 @@ export default function CadastroMotoristaCaronaPage() {
       toast.error("Confirme que sua CNH está válida.");
       return;
     }
+    if (!aceitouTermosMotorista || !aceitouLimitacaoResponsabilidade) {
+      toast.error("Você precisa aceitar os dois termos pra concluir o cadastro.");
+      return;
+    }
 
     setEnviando(true);
     try {
@@ -63,6 +70,8 @@ export default function CadastroMotoristaCaronaPage() {
           placa: form.placa,
           cnhNumero: form.cnhNumero,
           cnhValida: form.cnhValida,
+          aceitouTermosMotorista,
+          aceitouLimitacaoResponsabilidade,
         }),
       });
       const resultado = await resp.json();
@@ -113,6 +122,25 @@ export default function CadastroMotoristaCaronaPage() {
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" checked={form.cnhValida} onChange={(e) => setForm((p) => ({ ...p, cnhValida: e.target.checked }))} /> CNH válida confirmada
             </label>
+
+            <div className="space-y-2">
+              <AceiteTermoCheckbox
+                checked={aceitouTermosMotorista}
+                onChange={setAceitouTermosMotorista}
+                textoAntes="Declaro que li e concordo com os"
+                textoLink="Termos de Uso e Condições de Parceria"
+                href="/termos/uso-motorista"
+                textoDepois=", ciente de que atuo de forma autônoma, sem vínculo empregatício com a plataforma."
+              />
+              <AceiteTermoCheckbox
+                checked={aceitouLimitacaoResponsabilidade}
+                onChange={setAceitouLimitacaoResponsabilidade}
+                textoAntes="Estou ciente dos"
+                textoLink="Termos de Limitação de Responsabilidade"
+                href="/termos/limitacao-responsabilidade"
+                textoDepois=", compreendendo que a plataforma é uma ferramenta tecnológica de intermediação e não se responsabiliza por acidentes ou manutenção veicular."
+              />
+            </div>
 
             <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 text-amber-800 text-xs flex items-start gap-2">
               <AlertTriangle size={14} className="mt-0.5 shrink-0" />

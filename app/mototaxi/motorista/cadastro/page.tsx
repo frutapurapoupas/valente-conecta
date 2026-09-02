@@ -14,6 +14,7 @@ import toast from "react-hot-toast";
 import { AlertTriangle, Bike } from "lucide-react";
 import { MidiaUploader } from "@/components/catalogo/MidiaUploader";
 import type { MidiaItem } from "@/lib/catalogo/marketplaceTypes";
+import { AceiteTermoCheckbox } from "@/components/termos/AceiteTermoCheckbox";
 
 export default function CadastroMotoristaPage() {
   const router = useRouter();
@@ -29,6 +30,8 @@ export default function CadastroMotoristaPage() {
     licenciamento_vencimento: "",
     plano: "gratis",
   });
+  const [aceitouTermosMotorista, setAceitouTermosMotorista] = useState(false);
+  const [aceitouLimitacaoResponsabilidade, setAceitouLimitacaoResponsabilidade] = useState(false);
   const [fotoRosto, setFotoRosto] = useState<MidiaItem[]>([]);
   const [fotoVeiculo, setFotoVeiculo] = useState<MidiaItem[]>([]);
   const [fotoCnh, setFotoCnh] = useState<MidiaItem[]>([]);
@@ -36,6 +39,10 @@ export default function CadastroMotoristaPage() {
   const cadastrar = async () => {
     if (!fotoRosto[0] || !fotoVeiculo[0] || !fotoCnh[0]) {
       toast.error("Envie as 3 fotos: seu rosto, o veículo e a CNH.");
+      return;
+    }
+    if (!aceitouTermosMotorista || !aceitouLimitacaoResponsabilidade) {
+      toast.error("Você precisa aceitar os dois termos pra concluir o cadastro.");
       return;
     }
     setEnviando(true);
@@ -49,6 +56,8 @@ export default function CadastroMotoristaPage() {
           foto_url: fotoRosto[0].url,
           veiculo_foto_url: fotoVeiculo[0].url,
           cnh_foto_url: fotoCnh[0].url,
+          aceitou_termos_motorista: aceitouTermosMotorista,
+          aceitou_limitacao_responsabilidade: aceitouLimitacaoResponsabilidade,
         }),
       });
       const data = await res.json();
@@ -119,6 +128,27 @@ export default function CadastroMotoristaPage() {
             <label className="flex items-center gap-2">
               <input type="checkbox" checked={form.documento_veiculo_ok} onChange={(e) => setForm((p) => ({ ...p, documento_veiculo_ok: e.target.checked }))} /> Documentacao do veiculo valida
             </label>
+          </div>
+
+          <div className="space-y-2">
+            <AceiteTermoCheckbox
+              checked={aceitouTermosMotorista}
+              onChange={setAceitouTermosMotorista}
+              variante="escura"
+              textoAntes="Declaro que li e concordo com os"
+              textoLink="Termos de Uso e Condições de Parceria"
+              href="/termos/uso-motorista"
+              textoDepois=", ciente de que atuo de forma autônoma, sem vínculo empregatício com a plataforma."
+            />
+            <AceiteTermoCheckbox
+              checked={aceitouLimitacaoResponsabilidade}
+              onChange={setAceitouLimitacaoResponsabilidade}
+              variante="escura"
+              textoAntes="Estou ciente dos"
+              textoLink="Termos de Limitação de Responsabilidade"
+              href="/termos/limitacao-responsabilidade"
+              textoDepois=", compreendendo que a plataforma é uma ferramenta tecnológica de intermediação e não se responsabiliza por acidentes ou manutenção veicular."
+            />
           </div>
 
           <div className="rounded-xl bg-amber-950/40 border border-amber-700/50 p-3 text-amber-200 text-xs flex items-start gap-2">

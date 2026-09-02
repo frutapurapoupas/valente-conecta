@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { obterPerfilFornecedor, salvarCamposPerfilFornecedor } from '@/lib/pdv/perfilFornecedorPdv';
+import { createAdminClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,8 +30,22 @@ export async function POST(request: NextRequest) {
     if (!nomeExibicao) return NextResponse.json({ success: false, error: 'Nome da loja é obrigatório' }, { status: 400 });
     if (!endereco) return NextResponse.json({ success: false, error: 'Endereço é obrigatório' }, { status: 400 });
     if (!categoriaNegocio) return NextResponse.json({ success: false, error: 'Categoria do negócio é obrigatória' }, { status: 400 });
+    if (!body.aceitouLimitacaoResponsabilidade) {
+      return NextResponse.json({ success: false, error: 'É preciso aceitar os Termos de Limitação de Responsabilidade' }, { status: 400 });
+    }
 
     const data = await salvarCamposPerfilFornecedor(usuarioId, { nomeExibicao, endereco, categoriaNegocio });
+
+    // aceitou_limitacao_responsabilidade_em nao passa pela RPC versionada
+    // salvar_perfil_fornecedor_v4 (evita criar uma v5 so' pra esse campo) --
+    // mesmo desvio ja usado em app/api/pdv/validacao-proprietario/route.ts:
+    // update direto via createAdminClient (perfis_fornecedor nao tem policy
+    // de update publica pra chave anon).
+    await createAdminClient()
+      .from('perfis_fornecedor')
+      .update({ aceitou_limitacao_responsabilidade_em: new Date().toISOString() })
+      .eq('usuario_id', usuarioId);
+
     return NextResponse.json({ success: true, data });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message || 'Erro ao salvar perfil' }, { status: 500 });

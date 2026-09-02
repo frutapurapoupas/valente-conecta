@@ -16,6 +16,8 @@ function validarMotoristaPayload(payload: any) {
   if (licDate.getTime() < Date.now()) return 'Licenciamento vencido. Regularize para cadastrar.';
   if (!payload?.cnh_valida) return 'CNH invalida. Nao e possivel concluir cadastro.';
   if (!payload?.documento_veiculo_ok) return 'Documentacao do veiculo invalida.';
+  if (!payload?.aceitou_termos_motorista) return 'E preciso aceitar o Termo de Uso e Condicoes de Parceria.';
+  if (!payload?.aceitou_limitacao_responsabilidade) return 'E preciso aceitar os Termos de Limitacao de Responsabilidade.';
   return null;
 }
 
@@ -223,6 +225,8 @@ export async function POST(request: NextRequest) {
           cnh_valida: Boolean(body.cnh_valida),
           documento_veiculo_ok: Boolean(body.documento_veiculo_ok),
           licenciamento_vencimento: body.licenciamento_vencimento,
+          aceitou_termos_motorista_em: new Date().toISOString(),
+          aceitou_limitacao_responsabilidade_em: new Date().toISOString(),
         }])
         .select()
         .single();

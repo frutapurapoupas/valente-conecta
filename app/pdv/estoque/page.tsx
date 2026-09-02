@@ -144,10 +144,14 @@ export default function PdvEstoquePage() {
     }
   };
 
-  const confirmarPerfilEPublicar = async (dados: { nome: string; endereco: string; categoriaNegocio: string }) => {
+  const confirmarPerfilEPublicar = async (dados: { nome: string; endereco: string; categoriaNegocio: string; aceitouLimitacaoResponsabilidade: boolean }) => {
     if (!usuario) return;
     if (!dados.nome.trim() || !dados.endereco.trim() || !dados.categoriaNegocio) {
       toast.error("Preencha nome da loja, endereço e categoria do negócio");
+      return;
+    }
+    if (!dados.aceitouLimitacaoResponsabilidade) {
+      toast.error("Você precisa aceitar os Termos de Limitação de Responsabilidade");
       return;
     }
     setSalvandoPerfil(true);
@@ -155,7 +159,13 @@ export default function PdvEstoquePage() {
       const resp = await fetch("/api/pdv/perfil-vitrine", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ usuarioId: usuario.id, nomeExibicao: dados.nome.trim(), endereco: dados.endereco.trim(), categoriaNegocio: dados.categoriaNegocio }),
+        body: JSON.stringify({
+          usuarioId: usuario.id,
+          nomeExibicao: dados.nome.trim(),
+          endereco: dados.endereco.trim(),
+          categoriaNegocio: dados.categoriaNegocio,
+          aceitouLimitacaoResponsabilidade: dados.aceitouLimitacaoResponsabilidade,
+        }),
       }).then((r) => r.json());
       if (!resp.success) throw new Error(resp.error);
 

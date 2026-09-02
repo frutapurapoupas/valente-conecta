@@ -2,6 +2,7 @@
 'use client';
 
 import { supabase, type Usuario } from './supabase';
+import { PRIVACIDADE_VERSAO } from './termos/politicaPrivacidade';
 
 // Função alternativa para gerar UUID (funciona em qualquer navegador)
 function gerarUUID(): string {
@@ -67,32 +68,46 @@ export async function cadastroSimples(
   nome: string,
   whatsapp: string,
   codigoIndicacao?: string,
-  cidadeBase?: string
+  cidadeBase?: string,
+  aceitouPrivacidade?: boolean
 ): Promise<{ success: boolean; user?: Usuario; error?: string }> {
   try {
     // Limpar WhatsApp (remover espaços e caracteres especiais)
     const whatsappLimpo = whatsapp.replace(/\D/g, '');
-    
+
     // Verificar se usuário já existe
     const { data: existing, error: searchError } = await supabase
       .from('usuarios')
       .select('*')
       .eq('whatsapp', whatsappLimpo)
       .maybeSingle();
-    
+
     if (searchError && searchError.code !== 'PGRST116') {
       console.error('Erro ao buscar usuário:', searchError);
     }
-    
+
     if (existing) {
-      // Usuário já existe, apenas logar
+      // Usuário já existe, apenas logar. Se ele nunca tinha aceitado a
+      // Política de Privacidade (cadastro anterior a esse recurso), carimba
+      // agora que o popup exigiu o aceite pra deixar passar.
+      let usuarioAtualizado = existing;
+      if (aceitouPrivacidade && !existing.aceitou_privacidade_em) {
+        const { data: atualizado } = await supabase
+          .from('usuarios')
+          .update({ aceitou_privacidade_versao: PRIVACIDADE_VERSAO, aceitou_privacidade_em: new Date().toISOString() })
+          .eq('id', existing.id)
+          .select()
+          .single();
+        if (atualizado) usuarioAtualizado = atualizado;
+      }
+
       localStorage.setItem('user_logged_in', 'true');
-      localStorage.setItem('user_data', JSON.stringify(existing));
-      
+      localStorage.setItem('user_data', JSON.stringify(usuarioAtualizado));
+
       // Renovar cookie
       document.cookie = `user_logged_in=true; path=/; max-age=86400`;
-      
-      return { success: true, user: existing };
+
+      return { success: true, user: usuarioAtualizado };
     }
     
     // Criar código de indicação único
@@ -149,7 +164,9 @@ export async function cadastroSimples(
         is_viral_active: false,
         acesso_campanha_viral: acessoCampanhaViral,
         total_earned: 0,
-        role: 'user'
+        role: 'user',
+        aceitou_privacidade_versao: aceitouPrivacidade ? PRIVACIDADE_VERSAO : null,
+        aceitou_privacidade_em: aceitouPrivacidade ? new Date().toISOString() : null,
       })
       .select()
       .single();

@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { X, User, Phone, MapPin, ArrowRight } from 'lucide-react';
 import { cadastroSimples, isSessaoTempValida, isUserLoggedIn } from '@/lib/auth';
 import toast from 'react-hot-toast';
+import { AceiteTermoCheckbox } from '@/components/termos/AceiteTermoCheckbox';
 
 interface CadastroPopupProps {
   onSuccess?: () => void;
@@ -20,6 +21,7 @@ export function CadastroPopup({ onSuccess, codigoIndicacao, forceShow }: Cadastr
   const [whatsapp, setWhatsapp] = useState('');
   const [cidade, setCidade] = useState('');
   const [loading, setLoading] = useState(false);
+  const [aceitouPrivacidade, setAceitouPrivacidade] = useState(false);
 
   useEffect(() => {
     if (forceShow) {
@@ -64,9 +66,14 @@ export function CadastroPopup({ onSuccess, codigoIndicacao, forceShow }: Cadastr
       return;
     }
 
+    if (!aceitouPrivacidade) {
+      toast.error('Você precisa aceitar a Política de Privacidade pra continuar.');
+      return;
+    }
+
     setLoading(true);
 
-    const result = await cadastroSimples(nome, whatsapp, codigoIndicacao, cidade);
+    const result = await cadastroSimples(nome, whatsapp, codigoIndicacao, cidade, aceitouPrivacidade);
     
     if (result.success) {
       toast.success('✅ Cadastro realizado! Agora você tem acesso completo.');
@@ -145,6 +152,16 @@ export function CadastroPopup({ onSuccess, codigoIndicacao, forceShow }: Cadastr
                 />
               </div>
             </div>
+
+            <AceiteTermoCheckbox
+              checked={aceitouPrivacidade}
+              onChange={setAceitouPrivacidade}
+              variante="escura"
+              textoAntes="Ao prosseguir com o cadastro, você concorda com a nossa"
+              textoLink="Política de Privacidade"
+              href="/termos/privacidade"
+              textoDepois=" e autoriza o tratamento de dados pessoais e de geolocalização em tempo real para o funcionamento das corridas."
+            />
 
             <button
               type="submit"
