@@ -5,7 +5,7 @@
 // linkava pra outra antes, cada uma só era alcançável por URL direta.
 
 import Link from "next/link";
-import { ShoppingCart, Package, Receipt, Wallet, FileText, Eye, FileSpreadsheet, Tag, Users, BarChart3 } from "lucide-react";
+import { ShoppingCart, Package, Receipt, Wallet, FileText, Eye, FileSpreadsheet, Tag, Users, BarChart3, UserCheck } from "lucide-react";
 import { temPermissao, type OperadorAtivo } from "@/lib/pdv/operadorPdv";
 import type { ChavePermissaoPdv } from "@/lib/pdv/permissoesFuncionario";
 
@@ -18,6 +18,7 @@ const ABAS: { href: string; chave: string; label: string; icone: typeof Shopping
   { href: "/pdv/caixa", chave: "caixa", label: "Caixa", icone: Wallet, permissao: "caixa" },
   { href: "/pdv/notas-fiscais", chave: "notas-fiscais", label: "Notas", icone: FileText, permissao: "notas-fiscais" },
   { href: "/pdv/relatorios", chave: "relatorios", label: "Relatórios", icone: BarChart3, permissao: "relatorios" },
+  { href: "/pdv/aprovacoes-consumidor", chave: "aprovacoes-consumidor", label: "Aprovações", icone: UserCheck, permissao: "aprovacoes-consumidor" },
   { href: "/pdv/captura-externa", chave: "captura-externa", label: "Captura", icone: Eye, permissao: "captura-externa" },
   { href: "/pdv/equipe", chave: "equipe", label: "Equipe", icone: Users, soDono: true },
 ];
@@ -26,7 +27,7 @@ export function PdvSubNav({
   ativa,
   operador,
 }: {
-  ativa: "vender" | "estoque" | "importar-estoque" | "etiquetas" | "fiado" | "caixa" | "notas-fiscais" | "relatorios" | "captura-externa" | "equipe";
+  ativa: "vender" | "estoque" | "importar-estoque" | "etiquetas" | "fiado" | "caixa" | "notas-fiscais" | "relatorios" | "aprovacoes-consumidor" | "captura-externa" | "equipe";
   operador?: OperadorAtivo | null;
 }) {
   const abasVisiveis = ABAS.filter((aba) => {

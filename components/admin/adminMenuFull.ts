@@ -35,6 +35,8 @@ import {
   Wrench,
   Store,
   UserCheck,
+  Gift,
+  ShieldCheck,
   Home,
   Smartphone,
   Car,
@@ -138,6 +140,7 @@ export const adminMenuFull: MenuGroup[] = [
       { name: "Bônus por indicação por cidade", path: "/admin-master/configuracoes/bonus", icon: UserPlus, status: 'active' },
       { name: "Campanha viral (meta de população)", path: "/admin-master/configuracoes/campanha-viral", icon: Rocket, status: 'active' },
       { name: "Bônus catálogo colaborativo (EAN novo)", path: "/admin-master/configuracoes/bonus-catalogo-colaborativo", icon: Package, status: 'active' },
+      { name: "Ciclo cadastro colaborativo (consumidor)", path: "/admin-master/configuracoes/ciclo-cadastro-consumidor", icon: Gift, status: 'active' },
       { name: "Plano Geral (limites e preço)", path: "/admin-master/configuracoes/plano-geral", icon: Sparkles, status: 'active' },
     ]
   },
@@ -642,6 +645,7 @@ export const adminMenuFull: MenuGroup[] = [
       { name: "Base fiscal (NFe/NFC-e)", path: "/admin-master/pdv/fiscal", icon: FileText, status: 'active' },
       { name: "Captura externa (modo espião)", path: "/admin-master/pdv/captura-externa", icon: Eye, status: 'active' },
       { name: "Moderação de comprovantes (bônus EAN)", path: "/admin-master/pdv-catalogo/moderacao", icon: UserCheck, status: 'active' },
+      { name: "Validação de dono/responsável de loja", path: "/admin-master/pdv/validacao-proprietario", icon: ShieldCheck, status: 'active' },
     ]
   },
 

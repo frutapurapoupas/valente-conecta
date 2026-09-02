@@ -31,11 +31,22 @@ interface Props {
   donoId: string;
   ean: string;
   obrigatoria?: boolean;
+  titulo?: string;
+  textoObrigatoria?: string;
   onEanChange: (ean: string) => void;
   onFotoPathChange: (path: string | null) => void;
 }
 
-export function CapturaCodigoBarras({ fotoPath, donoId, ean, obrigatoria, onEanChange, onFotoPathChange }: Props) {
+export function CapturaCodigoBarras({
+  fotoPath,
+  donoId,
+  ean,
+  obrigatoria,
+  titulo = "Foto do código de barras",
+  textoObrigatoria = "Obrigatória pra produto novo — é a prova usada pra liberar o bônus em Moeda Conecta. Sem código de barras, tire uma foto da embalagem.",
+  onEanChange,
+  onFotoPathChange,
+}: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [processando, setProcessando] = useState(false);
   const [decodificado, setDecodificado] = useState<boolean | null>(null);
@@ -95,12 +106,10 @@ export function CapturaCodigoBarras({ fotoPath, donoId, ean, obrigatoria, onEanC
   return (
     <div>
       <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5 mb-2">
-        <Barcode className="w-4 h-4" /> Foto do código de barras{obrigatoria && <span className="text-red-500">*</span>}
+        <Barcode className="w-4 h-4" /> {titulo}{obrigatoria && <span className="text-red-500">*</span>}
       </label>
       {obrigatoria && !fotoPath && (
-        <p className="text-xs text-gray-500 mb-2">
-          Obrigatória pra produto novo — é a prova usada pra liberar o bônus em Moeda Conecta. Sem código de barras, tire uma foto da embalagem.
-        </p>
+        <p className="text-xs text-gray-500 mb-2">{textoObrigatoria}</p>
       )}
 
       {fotoPath ? (

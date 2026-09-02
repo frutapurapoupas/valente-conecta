@@ -13,9 +13,32 @@ export const dynamic = 'force-dynamic';
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, RefreshCw, Landmark, ArrowDownCircle, ArrowUpCircle, FileText, Gift, Clock, Ban } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Landmark, ArrowDownCircle, ArrowUpCircle, FileText, Gift, Clock, Ban, PackagePlus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getCurrentUser } from '@/lib/auth';
+import { QuizCadastroProduto } from '@/components/consumidor/QuizCadastroProduto';
+
+const CATEGORIA_LABEL: Record<string, string> = {
+  mercado: 'Mercado / Mercearia',
+  farmacia: 'Farmácia',
+  auto_pecas: 'Auto Peças',
+  acougue: 'Açougue',
+  moda: 'Moda / Roupas',
+  papelaria: 'Papelaria',
+  geral: 'Outro',
+};
+
+const STATUS_CADASTRO_LABEL: Record<string, string> = {
+  pendente: 'Aguardando aprovação da loja',
+  aprovado: 'Aprovado',
+  recusado: 'Recusado',
+};
+
+const STATUS_CADASTRO_COR: Record<string, string> = {
+  pendente: 'bg-yellow-100 text-yellow-700',
+  aprovado: 'bg-emerald-100 text-emerald-700',
+  recusado: 'bg-red-100 text-red-700',
+};
 
 type TipoLinha = 'credito_mc' | 'debito_mc' | 'bonus_indicacao';
 
@@ -68,6 +91,18 @@ export default function ExtratoPage() {
   const [moedaConfig, setMoedaConfig] = useState<{ moeda_nome: string; moeda_prefixo: string } | null>(null);
   const [items, setItems] = useState<ExtratoLine[]>([]);
   const [filtro, setFiltro] = useState<'todos' | 'creditos' | 'debitos' | 'bonus'>('todos');
+  const [progressoCiclos, setProgressoCiclos] = useState<any[]>([]);
+  const [meusCadastros, setMeusCadastros] = useState<any[]>([]);
+  const [quizAberto, setQuizAberto] = useState(false);
+
+  const carregarCadastroConsumidor = (usuarioId: string) => {
+    fetch(`/api/consumidor/cadastro-produto/progresso?usuarioId=${usuarioId}`, { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((res) => res.success && setProgressoCiclos(res.data));
+    fetch(`/api/consumidor/cadastro-produto?usuarioId=${usuarioId}`, { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((res) => res.success && setMeusCadastros(res.data));
+  };
 
   const carregarExtrato = async (u: any) => {
     setLoading(true);
@@ -135,8 +170,12 @@ export default function ExtratoPage() {
   useEffect(() => {
     const u = getCurrentUser();
     setUsuario(u);
-    if (u) carregarExtrato(u);
-    else setLoading(false);
+    if (u) {
+      carregarExtrato(u);
+      carregarCadastroConsumidor(u.id);
+    } else {
+      setLoading(false);
+    }
   }, []);
 
   const filtrados = useMemo(() => {
@@ -216,6 +255,48 @@ export default function ExtratoPage() {
           </div>
         </section>
 
+        <section className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="font-semibold text-slate-800 text-sm flex items-center gap-1.5"><PackagePlus size={16} className="text-emerald-600" /> Cadastre produtos e ganhe</p>
+              <p className="text-xs text-slate-500 mt-0.5">Comprou algo em loja/serviço parceiro? Cadastre com a nota fiscal e ganhe Moeda Conecta quando a loja aprovar.</p>
+            </div>
+            <button
+              onClick={() => setQuizAberto(true)}
+              className="shrink-0 bg-emerald-600 text-white text-xs font-semibold px-3 py-2 rounded-xl whitespace-nowrap"
+            >
+              Cadastrar produto
+            </button>
+          </div>
+
+          {progressoCiclos.length > 0 && (
+            <div className="space-y-2">
+              {progressoCiclos.map((p) => (
+                <div key={p.categoria} className="bg-emerald-50 border border-emerald-200 rounded-xl p-2.5">
+                  <div className="flex items-center justify-between text-xs text-emerald-800 mb-1">
+                    <span className="font-medium">{CATEGORIA_LABEL[p.categoria] || p.categoria}</span>
+                    <span>{p.noCicloAtual}/{p.meta} · +{Number(p.bonus).toFixed(2)} {sigla}</span>
+                  </div>
+                  <div className="h-1.5 bg-emerald-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${(p.noCicloAtual / p.meta) * 100}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {meusCadastros.length > 0 && (
+            <div className="divide-y divide-slate-100 border-t border-slate-100 pt-2">
+              {meusCadastros.slice(0, 5).map((c) => (
+                <div key={c.id} className="py-1.5 flex items-center justify-between gap-2">
+                  <p className="text-xs text-slate-600 truncate">{c.nome_produto}</p>
+                  <span className={`text-[9px] px-1.5 py-0.5 rounded-full whitespace-nowrap ${STATUS_CADASTRO_COR[c.status]}`}>{STATUS_CADASTRO_LABEL[c.status]}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
         <div className="flex gap-2 overflow-x-auto pb-1">
           {(['todos', 'creditos', 'debitos', 'bonus'] as const).map((current) => (
             <button
@@ -275,6 +356,17 @@ export default function ExtratoPage() {
           )}
         </section>
       </main>
+
+      {quizAberto && usuario && (
+        <QuizCadastroProduto
+          usuarioId={usuario.id}
+          onClose={() => setQuizAberto(false)}
+          onSucesso={() => {
+            setQuizAberto(false);
+            carregarCadastroConsumidor(usuario.id);
+          }}
+        />
+      )}
     </div>
   );
 }
