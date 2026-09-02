@@ -43,7 +43,7 @@ const CATEGORIAS = [
 ];
 
 export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
-  const [etapa, setEtapa] = useState<Etapa>("loja");
+  const [etapa, setEtapa] = useState<Etapa>("codigo");
 
   const [buscaLoja, setBuscaLoja] = useState("");
   const [resultadosLoja, setResultadosLoja] = useState<Loja[]>([]);
@@ -92,10 +92,9 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
         // Ja existe no catalogo -- avisa na hora, sem fazer o consumidor
         // tirar as 3 fotos (nota fiscal, produto, QR code) pra so' descobrir
         // isso no final (mesmo bloqueio que ja existia no POST, so' que mais cedo).
-        toast.error("Esse produto já existe no catálogo. Escolha um diferente.");
+        toast.error("Esse produto já existe no catálogo. Escaneie outro produto.");
         setAlertaDuplicidade(resp.nome || codigo);
         setEan("");
-        setEtapa("produto");
         return;
       }
       setEan(codigo);
@@ -114,7 +113,7 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
       return;
     }
     setAlertaDuplicidade(null);
-    setEtapa("codigo");
+    setEtapa("nota");
   };
 
   const enviar = async () => {
@@ -162,7 +161,7 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
   };
 
   const voltar = () => {
-    const ordem: Etapa[] = ["loja", "produto", "codigo", "nota", "foto", "qrcode", "detalhes"];
+    const ordem: Etapa[] = ["codigo", "loja", "produto", "nota", "foto", "qrcode", "detalhes"];
     const idx = ordem.indexOf(etapa);
     if (idx > 0) setEtapa(ordem[idx - 1]);
   };
@@ -172,7 +171,7 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
       <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-md p-5 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            {etapa !== "loja" && (
+            {etapa !== "codigo" && (
               <button onClick={voltar}><ArrowLeft className="w-5 h-5 text-gray-500" /></button>
             )}
             <h2 className="font-bold text-gray-800">Cadastrar produto comprado</h2>
@@ -268,16 +267,24 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
 
         {etapa === "codigo" && (
           <div className="space-y-3">
-            <p className="text-sm text-gray-600">Esse produto tem código de barras? Se tiver, ajuda a evitar duplicidade.</p>
+            {alertaDuplicidade && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex gap-2 text-amber-800">
+                <AlertTriangle className="w-5 h-5 shrink-0" />
+                <p className="text-sm">
+                  O produto <strong>"{alertaDuplicidade}"</strong> já existe no app. Escaneie outro produto ou continue sem código de barras.
+                </p>
+              </div>
+            )}
+            <p className="text-sm text-gray-600">Esse produto tem código de barras? Escaneie primeiro — ajuda a evitar duplicidade antes de você tirar as fotos.</p>
             <button
-              onClick={() => setShowScanner(true)}
+              onClick={() => { setAlertaDuplicidade(null); setShowScanner(true); }}
               disabled={verificandoEan}
               className="w-full py-3 border-2 border-dashed rounded-xl text-sm text-gray-600 hover:border-blue-500 disabled:opacity-60"
             >
               {verificandoEan ? "Verificando código..." : "Escanear código de barras"}
             </button>
             {ean && <p className="text-sm text-emerald-600 text-center">Código lido: {ean}</p>}
-            <button onClick={() => setEtapa("nota")} className="w-full bg-blue-600 text-white py-2.5 rounded-xl text-sm font-semibold">
+            <button onClick={() => setEtapa("loja")} className="w-full bg-blue-600 text-white py-2.5 rounded-xl text-sm font-semibold">
               {ean ? "Continuar" : "Não tem código de barras"}
             </button>
           </div>
