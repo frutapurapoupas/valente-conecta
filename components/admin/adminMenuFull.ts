@@ -646,6 +646,7 @@ export const adminMenuFull: MenuGroup[] = [
       { name: "Captura externa (modo espião)", path: "/admin-master/pdv/captura-externa", icon: Eye, status: 'active' },
       { name: "Moderação de comprovantes (bônus EAN)", path: "/admin-master/pdv-catalogo/moderacao", icon: UserCheck, status: 'active' },
       { name: "Validação de dono/responsável de loja", path: "/admin-master/pdv/validacao-proprietario", icon: ShieldCheck, status: 'active' },
+      { name: "Validação de motoristas (selo)", path: "/admin-master/validacao-motorista", icon: ShieldCheck, status: 'active' },
     ]
   },
 

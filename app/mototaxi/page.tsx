@@ -13,6 +13,7 @@ import CampoEnderecoAutocomplete from "./_components/CampoEnderecoAutocomplete";
 import { getCurrentUser } from "@/lib/auth";
 import { obterUsuarioLocalId } from "@/lib/usuarioLocal";
 import { ModalAvaliarViagem } from "@/components/avaliacao/ModalAvaliarViagem";
+import { SeloValidado } from "@/components/avaliacao/SeloValidado";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +46,7 @@ type MotoristaApi = {
   veiculo: string;
   placa: string;
   avaliacao: number;
+  validacao_status?: "pendente" | "aprovado" | "recusado";
 };
 
 type TipoCorrida = "passageiro" | "encomenda";
@@ -724,6 +726,7 @@ export default function MotoTaxiPage() {
                     </div>
                   </div>
                   <p className="text-slate-300 text-sm mt-2">{motoristaAtivo.veiculo} · {motoristaAtivo.placa}</p>
+                  <div className="mt-1.5"><SeloValidado validado={motoristaAtivo.validacao_status === "aprovado"} /></div>
                   {motoristaAtivo.veiculo_foto_url && (
                     <img src={motoristaAtivo.veiculo_foto_url} alt="Veículo" className="mt-2 w-full h-20 rounded-lg object-cover border border-slate-700" />
                   )}

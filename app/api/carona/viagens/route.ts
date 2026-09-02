@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
   if (id) {
     const { data, error } = await supabase
       .from('carona_viagens')
-      .select('*, motorista:carona_motoristas(id, nome, foto_url, veiculo_foto_url, veiculo, placa)')
+      .select('*, motorista:carona_motoristas(id, nome, foto_url, veiculo_foto_url, veiculo, placa, validacao_status)')
       .eq('id', id)
       .maybeSingle();
     if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
   // abaixo -- NUNCA sai na resposta (e' credencial do motorista).
   let query = supabase
     .from('carona_viagens')
-    .select('*, motorista:carona_motoristas(id, nome, foto_url, veiculo_foto_url, veiculo, placa, mp_access_token)')
+    .select('*, motorista:carona_motoristas(id, nome, foto_url, veiculo_foto_url, veiculo, placa, validacao_status, mp_access_token)')
     .order('data_viagem', { ascending: true });
 
   if (motoristaId) {

@@ -15,6 +15,7 @@ import { ArrowLeft, Car, Clock, Lock, MapPin, MessageCircle, Phone, Search, Star
 import { getCurrentUser } from "@/lib/auth";
 import { obterUsuarioLocalId } from "@/lib/usuarioLocal";
 import { ModalAvaliarViagem } from "@/components/avaliacao/ModalAvaliarViagem";
+import { SeloValidado } from "@/components/avaliacao/SeloValidado";
 
 interface Viagem {
   id: string;
@@ -26,7 +27,7 @@ interface Viagem {
   preco_sugerido_vaga: number | null;
   observacoes: string | null;
   status?: string;
-  motorista: { id: string; nome: string; foto_url: string; veiculo_foto_url: string; veiculo: string; placa: string; mp_conectado?: boolean };
+  motorista: { id: string; nome: string; foto_url: string; veiculo_foto_url: string; veiculo: string; placa: string; mp_conectado?: boolean; validacao_status?: "pendente" | "aprovado" | "recusado" };
 }
 
 interface Solicitacao {
@@ -390,6 +391,7 @@ export default function CaronaSolidariaPage() {
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-gray-800 truncate">{v.motorista?.nome}</p>
                       <p className="text-sm text-gray-500">{v.motorista?.veiculo} · {v.motorista?.placa}</p>
+                      <div className="mt-1"><SeloValidado validado={v.motorista?.validacao_status === "aprovado"} /></div>
                     </div>
                   </div>
 
