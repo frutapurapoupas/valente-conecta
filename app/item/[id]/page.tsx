@@ -12,6 +12,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, MapPin, Users } from "lucide-react";
 import { InteresseButton } from "@/components/catalogo/InteresseButton";
 import { BadgeAbertoAgora } from "@/components/catalogo/BadgeAbertoAgora";
+import { NotaFornecedor } from "@/components/catalogo/NotaFornecedor";
 import { SolicitarAgendaItem } from "@/components/construcao/SolicitarAgendaItem";
 import { LABEL_MODULO, ARQUETIPO_POR_MODULO, type CatalogoItem, type ModuloId } from "@/lib/catalogo/marketplaceTypes";
 
@@ -104,6 +105,7 @@ export default function ItemPublicoPage() {
             <BadgeAbertoAgora usuarioId={item.dono_id} />
           </div>
           <h1 className="text-2xl font-bold mt-1">{item.titulo}</h1>
+          <div className="mt-1.5"><NotaFornecedor donoId={item.dono_id} /></div>
           <p className="text-2xl font-bold text-blue-600 mt-2">
             {item.preco === null
               ? "Sob consulta"

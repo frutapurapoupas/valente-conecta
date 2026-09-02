@@ -187,3 +187,35 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: error.message || 'Erro ao anunciar viagem' }, { status: 500 });
   }
 }
+
+// Motorista conclui a viagem -- so' depois disso os passageiros conseguem
+// avaliar (ver 096_avaliacoes.sql e app/carona/page.tsx, polling que
+// detecta a mudanca de status pra abrir o ModalAvaliarViagem).
+export async function PATCH(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const viagemId = String(body.viagemId || '').trim();
+    const motoristaId = String(body.motoristaId || '').trim();
+    const status = String(body.status || '').trim();
+    if (!viagemId || !motoristaId) return NextResponse.json({ success: false, error: 'viagemId e motoristaId são obrigatórios' }, { status: 400 });
+    if (status !== 'concluida') return NextResponse.json({ success: false, error: 'status inválido' }, { status: 400 });
+
+    const supabase = createClient();
+    const { data: viagem } = await supabase.from('carona_viagens').select('id, motorista_id, status').eq('id', viagemId).maybeSingle();
+    if (!viagem) return NextResponse.json({ success: false, error: 'Viagem não encontrada' }, { status: 404 });
+    if (viagem.motorista_id !== motoristaId) return NextResponse.json({ success: false, error: 'Essa viagem não é sua' }, { status: 403 });
+    if (viagem.status !== 'publicada') return NextResponse.json({ success: false, error: 'Só é possível concluir viagens publicadas' }, { status: 409 });
+
+    const { data, error } = await supabase
+      .from('carona_viagens')
+      .update({ status: 'concluida', updated_at: new Date().toISOString() })
+      .eq('id', viagemId)
+      .select('*')
+      .single();
+    if (error) throw error;
+
+    return NextResponse.json({ success: true, data });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message || 'Erro ao concluir viagem' }, { status: 500 });
+  }
+}

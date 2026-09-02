@@ -13,6 +13,7 @@ export const PERMISSOES_PDV = [
   { chave: "notas-fiscais", label: "Ver notas fiscais" },
   { chave: "relatorios", label: "Ver relatórios de vendas" },
   { chave: "aprovacoes-consumidor", label: "Aprovar cadastros de consumidores" },
+  { chave: "interesses", label: "Ver interesses da vitrine" },
   { chave: "captura-externa", label: "Acessar o modo espião" },
   { chave: "aplicar_desconto", label: "Aplicar desconto na venda" },
   { chave: "vender_fiado", label: "Vender fiado" },

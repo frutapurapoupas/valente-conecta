@@ -18,19 +18,34 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   const usuarioId = request.nextUrl.searchParams.get('usuarioId');
   const viagemId = request.nextUrl.searchParams.get('viagemId');
-  if (!usuarioId || !viagemId) return NextResponse.json({ success: false, error: 'usuarioId e viagemId são obrigatórios' }, { status: 400 });
+  if (!usuarioId) return NextResponse.json({ success: false, error: 'usuarioId é obrigatório' }, { status: 400 });
 
   const supabase = createClient();
+
+  if (viagemId) {
+    const { data, error } = await supabase
+      .from('carona_reservas')
+      .select('*')
+      .eq('usuario_id', usuarioId)
+      .eq('viagem_id', viagemId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: true, data: data || null });
+  }
+
+  // Sem viagemId: lista TODAS as reservas pagas do usuario -- usado pelo
+  // passageiro pra acompanhar viagens que ele reservou direto (sem passar
+  // por carona_solicitacoes), ver app/carona/page.tsx.
   const { data, error } = await supabase
     .from('carona_reservas')
-    .select('*')
+    .select('*, viagem:carona_viagens(*, motorista:carona_motoristas(id, nome, foto_url, veiculo_foto_url, veiculo, placa))')
     .eq('usuario_id', usuarioId)
-    .eq('viagem_id', viagemId)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .eq('status', 'pago')
+    .order('created_at', { ascending: false });
   if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
-  return NextResponse.json({ success: true, data: data || null });
+  return NextResponse.json({ success: true, data: data || [] });
 }
 
 export async function POST(request: NextRequest) {

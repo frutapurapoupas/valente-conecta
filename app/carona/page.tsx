@@ -8,12 +8,13 @@
 // depois que o usuario paga a taxa de desbloqueio (por viagem, nao por
 // assinatura).
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { ArrowLeft, Car, Clock, Lock, MapPin, MessageCircle, Phone, Search, Star, Unlock, User, Send, Navigation, X, CheckCircle2 } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { obterUsuarioLocalId } from "@/lib/usuarioLocal";
+import { ModalAvaliarViagem } from "@/components/avaliacao/ModalAvaliarViagem";
 
 interface Viagem {
   id: string;
@@ -54,6 +55,8 @@ export default function CaronaSolidariaPage() {
   const [mostrarSolicitar, setMostrarSolicitar] = useState(false);
   const [minhasSolicitacoes, setMinhasSolicitacoes] = useState<Solicitacao[]>([]);
   const [viagensAceitas, setViagensAceitas] = useState<Record<string, Viagem>>({});
+  const [viagemParaAvaliar, setViagemParaAvaliar] = useState<Viagem | null>(null);
+  const statusAnteriorRef = useRef<Record<string, string | undefined>>({});
 
   useEffect(() => {
     const u = getCurrentUser();
@@ -73,6 +76,8 @@ export default function CaronaSolidariaPage() {
       setMinhasSolicitacoes(lista);
 
       const aceitas = lista.filter((s) => s.status === "atendida" && s.viagem_id);
+      const viagensPorId: Record<string, Viagem> = {};
+
       if (aceitas.length) {
         const pares = await Promise.all(
           aceitas.map(async (s) => {
@@ -80,7 +85,7 @@ export default function CaronaSolidariaPage() {
             return [s.viagem_id as string, r.success ? r.data : null] as const;
           })
         );
-        setViagensAceitas(Object.fromEntries(pares.filter(([, v]) => v)) as Record<string, Viagem>);
+        for (const [id, v] of pares) if (v) viagensPorId[id] = v;
 
         if (usuario) {
           const checagens = await Promise.all(
@@ -93,6 +98,30 @@ export default function CaronaSolidariaPage() {
           setDesbloqueios((prev) => ({ ...prev, ...Object.fromEntries(checagens.filter(([, v]) => v !== undefined)) }));
         }
       }
+
+      // Quem reservou direto (carona_reservas, pagou pela vaga) nunca passa
+      // por carona_solicitacoes -- sem isso, essas viagens nunca apareciam
+      // aqui pro passageiro acompanhar o status ate' a conclusao.
+      if (usuario) {
+        const respReservas = await fetch(`/api/carona/reservas?usuarioId=${usuario.id}`, { cache: "no-store" }).then((r) => r.json());
+        const reservas: any[] = respReservas.success ? respReservas.data : [];
+        for (const reserva of reservas) {
+          if (reserva.viagem) viagensPorId[reserva.viagem.id] = reserva.viagem;
+        }
+      }
+
+      setViagensAceitas(viagensPorId);
+
+      // Detecta viagem que acabou de virar "concluida" desde a ultima
+      // consulta -- abre o modal de avaliacao so' nessa transicao, nao a
+      // cada poll (mesmo principio do polling do Moto-Taxi).
+      for (const [id, viagem] of Object.entries(viagensPorId)) {
+        const statusAnterior = statusAnteriorRef.current[id];
+        if (statusAnterior && statusAnterior !== "concluida" && viagem.status === "concluida") {
+          setViagemParaAvaliar(viagem);
+        }
+      }
+      statusAnteriorRef.current = Object.fromEntries(Object.entries(viagensPorId).map(([id, v]) => [id, v.status]));
     } catch {
       // silencioso — a lista de viagens continua funcionando normalmente
     }
@@ -433,6 +462,19 @@ export default function CaronaSolidariaPage() {
 
       {mostrarSolicitar && (
         <ModalSolicitar usuario={usuario} onFechar={() => { setMostrarSolicitar(false); carregarMinhasSolicitacoes(); }} />
+      )}
+
+      {viagemParaAvaliar && usuario && (
+        <ModalAvaliarViagem
+          tipoViagem="carona"
+          viagemId={viagemParaAvaliar.id}
+          motoristaId={viagemParaAvaliar.motorista.id}
+          passageiroId={usuario.id}
+          nomeMotorista={viagemParaAvaliar.motorista.nome}
+          fotoMotorista={viagemParaAvaliar.motorista.foto_url}
+          onFechar={() => setViagemParaAvaliar(null)}
+          onEnviado={() => setViagemParaAvaliar(null)}
+        />
       )}
     </div>
   );

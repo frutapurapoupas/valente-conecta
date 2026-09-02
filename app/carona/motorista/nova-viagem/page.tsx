@@ -110,6 +110,7 @@ export default function NovaViagemCaronaPage() {
           <>
             <ContaMercadoPagoCard motorista={motorista} />
             <PedidosAbertos onAceitar={setSolicitacaoAceita} />
+            <MinhasViagens motoristaId={motorista.id} />
             <FormularioViagem
               motorista={motorista}
               taxa={taxa}
@@ -288,6 +289,71 @@ function PedidosAbertos({ onAceitar }: { onAceitar: (s: Solicitacao) => void }) 
               className="mt-2 w-full flex items-center justify-center gap-1.5 bg-orange-100 text-orange-700 hover:bg-orange-200 rounded-lg py-1.5 text-xs font-semibold"
             >
               <Send className="w-3.5 h-3.5" /> Aceitar e anunciar essa viagem
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Viagens publicadas do proprio motorista, pra ele marcar como concluida
+// assim que a viagem acabar -- e' o gatilho que libera os passageiros pra
+// avaliar (ver 096_avaliacoes.sql e app/carona/page.tsx).
+function MinhasViagens({ motoristaId }: { motoristaId: string }) {
+  const [lista, setLista] = useState<any[]>([]);
+  const [concluindo, setConcluindo] = useState<string | null>(null);
+
+  const carregar = () => {
+    fetch(`/api/carona/viagens?motoristaId=${motoristaId}`)
+      .then((r) => r.json())
+      .then((res) => res.success && setLista((res.data || []).filter((v: any) => v.status === "publicada")));
+  };
+
+  useEffect(() => {
+    carregar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [motoristaId]);
+
+  const concluir = async (viagemId: string) => {
+    setConcluindo(viagemId);
+    try {
+      const resp = await fetch("/api/carona/viagens", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ viagemId, motoristaId, status: "concluida" }),
+      }).then((r) => r.json());
+      if (!resp.success) throw new Error(resp.error);
+      toast.success("Viagem concluída! Os passageiros já podem avaliar.");
+      carregar();
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao concluir viagem");
+    } finally {
+      setConcluindo(null);
+    }
+  };
+
+  if (lista.length === 0) return null;
+
+  return (
+    <div className="bg-white rounded-2xl shadow p-4">
+      <p className="font-bold text-gray-800 flex items-center gap-1.5 mb-3">
+        <Car className="w-4 h-4 text-orange-500" /> Minhas viagens publicadas ({lista.length})
+      </p>
+      <div className="space-y-2">
+        {lista.map((v) => (
+          <div key={v.id} className="border rounded-xl p-3">
+            <p className="text-sm font-medium text-gray-800">{v.cidade_origem} → {v.cidade_destino}</p>
+            <p className="text-xs text-gray-500">
+              {new Date(v.data_viagem + "T00:00:00").toLocaleDateString("pt-BR")}
+              {v.horario_saida ? ` · ${v.horario_saida.slice(0, 5)}` : ""}
+            </p>
+            <button
+              onClick={() => concluir(v.id)}
+              disabled={concluindo === v.id}
+              className="mt-2 w-full flex items-center justify-center gap-1.5 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 rounded-lg py-1.5 text-xs font-semibold disabled:opacity-60"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" /> {concluindo === v.id ? "Concluindo..." : "Concluir viagem"}
             </button>
           </div>
         ))}

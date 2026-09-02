@@ -12,6 +12,7 @@ import toast from "react-hot-toast";
 import CampoEnderecoAutocomplete from "./_components/CampoEnderecoAutocomplete";
 import { getCurrentUser } from "@/lib/auth";
 import { obterUsuarioLocalId } from "@/lib/usuarioLocal";
+import { ModalAvaliarViagem } from "@/components/avaliacao/ModalAvaliarViagem";
 
 export const dynamic = "force-dynamic";
 
@@ -307,6 +308,7 @@ export default function MotoTaxiPage() {
 
   const [corridaAtiva, setCorridaAtiva] = useState<CorridaApi | null>(null);
   const [motoristaAtivo, setMotoristaAtivo] = useState<MotoristaApi | null>(null);
+  const [corridaParaAvaliar, setCorridaParaAvaliar] = useState<CorridaApi | null>(null);
 
   const [showAdModal, setShowAdModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -472,8 +474,9 @@ export default function MotoTaxiPage() {
           else setShowPaymentModal(true);
         }
 
-        if (atualizada.status === "concluida") {
+        if (corridaAtiva.status !== "concluida" && atualizada.status === "concluida") {
           toast.success("Corrida concluida com sucesso!");
+          setCorridaParaAvaliar(atualizada);
         }
       } catch {
         // silencioso — proxima tentativa corrige
@@ -813,6 +816,19 @@ export default function MotoTaxiPage() {
             </button>
           </div>
         </div>
+      )}
+
+      {corridaParaAvaliar && (
+        <ModalAvaliarViagem
+          tipoViagem="mototaxi"
+          viagemId={corridaParaAvaliar.id}
+          motoristaId={corridaParaAvaliar.motorista_id || ""}
+          passageiroId={corridaParaAvaliar.passageiro_id}
+          nomeMotorista={motoristaAtivo?.nome || "Motorista"}
+          fotoMotorista={motoristaAtivo?.foto_url}
+          onFechar={() => setCorridaParaAvaliar(null)}
+          onEnviado={() => setCorridaParaAvaliar(null)}
+        />
       )}
     </div>
   );
