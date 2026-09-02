@@ -46,10 +46,13 @@ export function BarcodeScanner({
   useEffect(() => {
     if (modo !== "camera") return;
     let cancelado = false;
+    let tentativas = 0;
+    const MAX_TENTATIVAS = 5;
 
     async function iniciar() {
       try {
         const { BrowserMultiFormatReader } = await import("@zxing/browser");
+        const { NotFoundException } = await import("@zxing/library");
         const codeReader = new BrowserMultiFormatReader();
 
         if (!videoRef.current) return;
@@ -67,6 +70,21 @@ export function BarcodeScanner({
           if (resultado) {
             const texto = resultado.getText();
             onDetected(texto);
+            return;
+          }
+          // NotFoundException e' esperado a cada frame sem codigo visivel --
+          // o proprio zxing tenta de novo sozinho nesse caso. Qualquer OUTRO
+          // erro (ex: canvas com dimensao 0 no primeiro frame, antes do video
+          // reportar largura/altura reais -- comum logo apos abrir a camera
+          // no celular) faz o loop de decodificacao do zxing MORRER de vez
+          // (sem chamar de novo), deixando o video parado na tela sem nunca
+          // mais tentar ler nada. Reinicia o scanner do zero nesse caso.
+          const isNotFound = erro instanceof NotFoundException || erro?.name === "NotFoundException";
+          if (erro && !isNotFound && tentativas < MAX_TENTATIVAS) {
+            tentativas += 1;
+            controlsRef.current?.stop();
+            controlsRef.current = null;
+            setTimeout(() => { if (!cancelado) iniciar(); }, 300);
           }
         });
         controlsRef.current = controls;
