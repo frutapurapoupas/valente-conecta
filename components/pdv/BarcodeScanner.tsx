@@ -51,19 +51,18 @@ export function BarcodeScanner({
       try {
         const { BrowserMultiFormatReader } = await import("@zxing/browser");
         const codeReader = new BrowserMultiFormatReader();
-        const dispositivos = await BrowserMultiFormatReader.listVideoInputDevices();
-        // Prefere a camera traseira (facing environment) quando da' pra
-        // identificar pelo label — celular costuma ter a de tras melhor
-        // pra ler codigo de barras de perto.
-        const traseira = dispositivos.find((d) => /back|tras|rear|environment/i.test(d.label));
-        const deviceId = (traseira || dispositivos[0])?.deviceId;
 
-        if (!deviceId || !videoRef.current) {
-          setErroCamera("Nenhuma câmera encontrada neste dispositivo.");
-          return;
-        }
+        if (!videoRef.current) return;
 
-        const controls = await codeReader.decodeFromVideoDevice(deviceId, videoRef.current, (resultado, erro) => {
+        // Passa deviceId undefined de proposito: isso faz o zxing pedir a
+        // camera via getUserMedia({video: {facingMode: 'environment'}}) direto,
+        // sem precisar listar dispositivos antes. listVideoInputDevices()
+        // (usado antes aqui) depende de enumerateDevices(), que no celular
+        // devolve lista VAZIA ate' a permissao de camera ja' ter sido concedida
+        // -- ou seja, sempre falhava com "nenhuma camera encontrada" no
+        // primeiro uso, mesmo o aparelho tendo camera. facingMode:
+        // 'environment' ja' pede a permissao E prefere a camera traseira.
+        const controls = await codeReader.decodeFromVideoDevice(undefined, videoRef.current, (resultado, erro) => {
           if (cancelado) return;
           if (resultado) {
             const texto = resultado.getText();
