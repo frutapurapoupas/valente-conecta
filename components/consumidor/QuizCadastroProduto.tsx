@@ -57,6 +57,7 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
 
   const [ean, setEan] = useState("");
   const [showScanner, setShowScanner] = useState(false);
+  const [verificandoEan, setVerificandoEan] = useState(false);
 
   const [fotoNotaFiscalPath, setFotoNotaFiscalPath] = useState<string | null>(null);
   const [fotoQrcodePath, setFotoQrcodePath] = useState<string | null>(null);
@@ -79,6 +80,31 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
       setResultadosLoja(resp.success ? resp.data : []);
     } finally {
       setBuscandoLoja(false);
+    }
+  };
+
+  const handleEanDetectado = async (codigo: string) => {
+    setShowScanner(false);
+    setVerificandoEan(true);
+    try {
+      const resp = await fetch(`/api/consumidor/cadastro-produto/verificar-ean?ean=${encodeURIComponent(codigo)}`).then((r) => r.json());
+      if (resp.success && resp.existe) {
+        // Ja existe no catalogo -- avisa na hora, sem fazer o consumidor
+        // tirar as 3 fotos (nota fiscal, produto, QR code) pra so' descobrir
+        // isso no final (mesmo bloqueio que ja existia no POST, so' que mais cedo).
+        toast.error("Esse produto já existe no catálogo. Escolha um diferente.");
+        setAlertaDuplicidade(resp.nome || codigo);
+        setEan("");
+        setEtapa("produto");
+        return;
+      }
+      setEan(codigo);
+    } catch {
+      // Falha na checagem nao deve travar o cadastro -- segue com o codigo
+      // lido normalmente, o POST final ainda confere de novo por garantia.
+      setEan(codigo);
+    } finally {
+      setVerificandoEan(false);
     }
   };
 
@@ -245,9 +271,10 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
             <p className="text-sm text-gray-600">Esse produto tem código de barras? Se tiver, ajuda a evitar duplicidade.</p>
             <button
               onClick={() => setShowScanner(true)}
-              className="w-full py-3 border-2 border-dashed rounded-xl text-sm text-gray-600 hover:border-blue-500"
+              disabled={verificandoEan}
+              className="w-full py-3 border-2 border-dashed rounded-xl text-sm text-gray-600 hover:border-blue-500 disabled:opacity-60"
             >
-              Escanear código de barras
+              {verificandoEan ? "Verificando código..." : "Escanear código de barras"}
             </button>
             {ean && <p className="text-sm text-emerald-600 text-center">Código lido: {ean}</p>}
             <button onClick={() => setEtapa("nota")} className="w-full bg-blue-600 text-white py-2.5 rounded-xl text-sm font-semibold">
@@ -346,7 +373,7 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
 
       {showScanner && (
         <BarcodeScanner
-          onDetected={(codigo) => { setEan(codigo); setShowScanner(false); }}
+          onDetected={handleEanDetectado}
           onClose={() => setShowScanner(false)}
         />
       )}
