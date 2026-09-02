@@ -38,16 +38,21 @@ export function BarcodeScanner({
 }: BarcodeScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const controlsRef = useRef<{ stop: () => void } | null>(null);
+  const previewBoxRef = useRef<HTMLDivElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const [modo, setModo] = useState<"camera" | "leitor">("camera");
   const [erroCamera, setErroCamera] = useState<string | null>(null);
   const [leitorBuffer, setLeitorBuffer] = useState("");
 
+  // INSET_PX precisa bater com o "inset-8" (2rem = 32px) do quadro-guia
+  // desenhado por cima do video mais abaixo -- e' usado aqui pra recortar
+  // exatamente essa mesma area antes de tentar ler o codigo.
+  const INSET_PX = 32;
+
   useEffect(() => {
     if (modo !== "camera") return;
     let cancelado = false;
-    let tentativas = 0;
-    const MAX_TENTATIVAS = 5;
+    let loopTimeoutId: ReturnType<typeof setTimeout> | undefined;
 
     async function iniciar() {
       try {
@@ -57,11 +62,10 @@ export function BarcodeScanner({
         // Restringe aos formatos de codigo de barras de PRODUTO (o que
         // aparece em nota fiscal/embalagem) em vez de tentar todos os
         // formatos que o zxing sabe ler (inclusive 2D tipo QR/DataMatrix,
-        // que nunca vao aparecer aqui) -- isso deixa cada tentativa de
-        // decodificacao mais rapida e mais precisa. TRY_HARDER liga uma
-        // varredura mais caprichada (mais lenta por frame, mas le' codigo
-        // borrado/torto melhor -- combinacao clara pra codigo de barras 1D
-        // parado na frente da camera, ao contrario de video em movimento).
+        // que nunca vao aparecer aqui). TRY_HARDER liga uma varredura mais
+        // caprichada (mais lenta, mas le' codigo borrado/torto melhor --
+        // faz sentido aqui porque decodificamos so' um recorte por vez,
+        // nao o video inteiro a toda hora).
         const hints = new Map();
         hints.set(DecodeHintType.POSSIBLE_FORMATS, [
           BarcodeFormat.EAN_13, BarcodeFormat.EAN_8, BarcodeFormat.UPC_A, BarcodeFormat.UPC_E,
@@ -72,47 +76,78 @@ export function BarcodeScanner({
 
         if (!videoRef.current) return;
 
-        // decodeFromConstraints (em vez de decodeFromVideoDevice) pra poder
-        // pedir resolucao maior e autofoco continuo -- resolucao baixa e
-        // foco fixo/lento sao a causa mais comum de "camera abre mas nunca
-        // le" com codigo de barras 1D fino, mesmo bem enquadrado. facingMode
-        // 'environment' (nao listVideoInputDevices(), ver correcao anterior)
-        // continua pedindo a camera traseira sem depender de enumerar
-        // dispositivos antes de ter permissao.
-        const controls = await codeReader.decodeFromConstraints(
-          {
-            video: {
-              facingMode: { ideal: "environment" },
-              width: { ideal: 1920 },
-              height: { ideal: 1080 },
-              advanced: [{ focusMode: "continuous" } as any],
-            },
+        // facingMode 'environment' pede a camera traseira direto via
+        // getUserMedia, sem depender de listVideoInputDevices()/
+        // enumerateDevices() (que no celular devolve lista vazia ate' a
+        // permissao ja' ter sido concedida antes -- causava "nenhuma camera
+        // encontrada" no primeiro uso mesmo com camera disponivel).
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: "environment" },
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+            advanced: [{ focusMode: "continuous" } as any],
           },
-          videoRef.current,
-          (resultado, erro) => {
-            if (cancelado) return;
-            if (resultado) {
-              const texto = resultado.getText();
-              onDetected(texto);
+        });
+        if (cancelado) { stream.getTracks().forEach((t) => t.stop()); return; }
+        streamRef.current = stream;
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+
+        // Em vez de deixar o zxing decodificar o VIDEO INTEIRO a cada
+        // quadro (o que ele faz sozinho com decodeFromConstraints/
+        // decodeFromVideoDevice), o loop abaixo recorta so' a area do
+        // quadro-guia azul antes de cada tentativa. Isso ajuda de duas
+        // formas: 1) tira do meio do caminho a mesa, a embalagem ao redor
+        // etc., que so' atrapalham o decodificador; 2) ao ampliar esse
+        // recorte antes de ler, o codigo de barras fica com mais pixels de
+        // largura (mais facil de distinguir as listras), em vez de ser so'
+        // uma fatia pequena dentro do quadro inteiro em alta resolucao.
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+
+        const tentarLer = () => {
+          if (cancelado || !videoRef.current || !previewBoxRef.current || !ctx) return;
+          const video = videoRef.current;
+          const vw = video.videoWidth;
+          const vh = video.videoHeight;
+
+          if (vw > 0 && vh > 0) {
+            const caixa = previewBoxRef.current.getBoundingClientRect();
+            const fracX = Math.min(0.4, INSET_PX / caixa.width);
+            const fracY = Math.min(0.4, INSET_PX / caixa.height);
+
+            // object-cover: o video preenche o quadrado cortando o excesso
+            // no eixo mais largo, centralizado -- reproduz esse mesmo corte
+            // pra achar, dentro do frame NATIVO da camera, a mesma area que
+            // o usuario ve dentro do quadro-guia na tela.
+            const lado = Math.min(vw, vh);
+            const offX = (vw - lado) / 2;
+            const offY = (vh - lado) / 2;
+            const gx = offX + lado * fracX;
+            const gy = offY + lado * fracY;
+            const gw = lado * (1 - 2 * fracX);
+            const gh = lado * (1 - 2 * fracY);
+
+            const ESCALA = 2;
+            canvas.width = Math.round(gw * ESCALA);
+            canvas.height = Math.round(gh * ESCALA);
+            ctx.drawImage(video, gx, gy, gw, gh, 0, 0, canvas.width, canvas.height);
+
+            try {
+              const resultado = codeReader.decodeFromCanvas(canvas);
+              onDetected(resultado.getText());
               return;
-            }
-            // NotFoundException e' esperado a cada frame sem codigo visivel --
-            // o proprio zxing tenta de novo sozinho nesse caso. Qualquer OUTRO
-            // erro (ex: canvas com dimensao 0 no primeiro frame, antes do video
-            // reportar largura/altura reais -- comum logo apos abrir a camera
-            // no celular) faz o loop de decodificacao do zxing MORRER de vez
-            // (sem chamar de novo), deixando o video parado na tela sem nunca
-            // mais tentar ler nada. Reinicia o scanner do zero nesse caso.
-            const isNotFound = erro instanceof NotFoundException || erro?.name === "NotFoundException";
-            if (erro && !isNotFound && tentativas < MAX_TENTATIVAS) {
-              tentativas += 1;
-              controlsRef.current?.stop();
-              controlsRef.current = null;
-              setTimeout(() => { if (!cancelado) iniciar(); }, 300);
+            } catch (erro: any) {
+              const isNotFound = erro instanceof NotFoundException || erro?.name === "NotFoundException";
+              if (!isNotFound) console.error("Erro ao decodificar código de barras:", erro);
             }
           }
-        );
-        controlsRef.current = controls;
+
+          loopTimeoutId = setTimeout(tentarLer, 300);
+        };
+
+        tentarLer();
       } catch (error: any) {
         setErroCamera(error?.message || "Não foi possível acessar a câmera. Verifique a permissão do navegador.");
       }
@@ -122,8 +157,9 @@ export function BarcodeScanner({
 
     return () => {
       cancelado = true;
-      controlsRef.current?.stop();
-      controlsRef.current = null;
+      clearTimeout(loopTimeoutId);
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
     };
   }, [modo, onDetected]);
 
@@ -168,7 +204,7 @@ export function BarcodeScanner({
           erroCamera ? (
             <p className="text-red-400 text-center text-sm max-w-xs">{erroCamera}</p>
           ) : (
-            <div className="relative w-full max-w-md aspect-square rounded-2xl overflow-hidden border-2 border-white/30">
+            <div ref={previewBoxRef} className="relative w-full max-w-md aspect-square rounded-2xl overflow-hidden border-2 border-white/30">
               <video ref={videoRef} className="w-full h-full object-cover" muted playsInline />
               <div className="absolute inset-8 border-2 border-blue-400 rounded-xl pointer-events-none" />
             </div>
