@@ -78,34 +78,34 @@ export default function ConvitePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-950/40 to-slate-900 text-white pb-20">
-      <header className="bg-gradient-to-r from-green-400 to-green-700 p-4 text-center sticky top-0 z-40">
+    <div className="min-h-screen bg-slate-50 text-slate-800 pb-20">
+      <header className="bg-gradient-to-r from-green-500 to-green-700 p-4 text-center sticky top-0 z-40 shadow-sm">
         <h1 className="text-white font-bold text-lg">Convite Valente Conecta</h1>
       </header>
 
       <main className="max-w-2xl mx-auto p-6 space-y-6">
         <div className="text-center">
-          <div className="w-24 h-24 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+          <div className="w-24 h-24 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
             <Gift className="w-12 h-12 text-white" />
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Você foi convidado!</h2>
-          <p className="text-gray-400">
+          <h2 className="text-2xl font-bold text-slate-800 mb-2">Você foi convidado!</h2>
+          <p className="text-slate-500">
             {convidadoPor ? `${convidadoPor} te convidou para experimentar o Valente Conecta` : "Alguém te convidou para experimentar o Valente Conecta"}
           </p>
         </div>
 
-        <div className="bg-white/10 rounded-2xl p-6 space-y-4">
-          <h3 className="font-bold text-white text-lg">🎁 Benefícios exclusivos:</h3>
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-4">
+          <h3 className="font-bold text-slate-800 text-lg">🎁 Benefícios exclusivos:</h3>
           <div className="space-y-3">
             {beneficios.map((beneficio, index) => (
               <div key={index} className="flex items-start gap-3">
-                {beneficio.bloqueado ? <Lock className="w-5 h-5 text-yellow-400 mt-0.5 shrink-0" /> : <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 shrink-0" />}
+                {beneficio.bloqueado ? <Lock className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" /> : <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 shrink-0" />}
                 <div>
-                  <span className={beneficio.bloqueado ? "text-yellow-400" : "text-white"}>{beneficio.texto}</span>
+                  <span className={beneficio.bloqueado ? "text-amber-600 font-medium" : "text-slate-700"}>{beneficio.texto}</span>
                   {beneficio.bloqueado && beneficio.meta && (
                     <div className="flex items-center gap-1 mt-1">
-                      <TrendingUp className="w-3 h-3 text-gray-400" />
-                      <span className="text-gray-400 text-xs">{beneficio.meta}</span>
+                      <TrendingUp className="w-3 h-3 text-slate-400" />
+                      <span className="text-slate-400 text-xs">{beneficio.meta}</span>
                     </div>
                   )}
                 </div>
@@ -115,11 +115,11 @@ export default function ConvitePage() {
         </div>
 
         {codigo && (
-          <div className="bg-white/10 rounded-2xl p-4">
-            <p className="text-gray-400 text-sm mb-2">📋 Compartilhe este convite</p>
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
+            <p className="text-slate-500 text-sm mb-2">📋 Compartilhe este convite</p>
             <div className="flex gap-2">
-              <input type="text" value={codigo} readOnly className="flex-1 bg-white/20 rounded-xl p-3 text-white text-sm font-mono text-center" />
-              <button onClick={handleCompartilhar} className="bg-green-500 text-white px-4 py-3 rounded-xl hover:bg-green-600 transition">
+              <input type="text" value={codigo} readOnly className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-700 text-sm font-mono text-center" />
+              <button onClick={handleCompartilhar} className="bg-green-600 text-white px-4 py-3 rounded-xl hover:bg-green-700 transition">
                 <Share2 className="w-4 h-4" />
               </button>
             </div>
@@ -127,14 +127,14 @@ export default function ConvitePage() {
         )}
 
         {jaCadastrado ? (
-          <div className="bg-emerald-950 border border-emerald-400 rounded-2xl p-4 space-y-3">
+          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 space-y-3">
             <div className="flex items-center gap-3">
-              <CheckCircle className="w-6 h-6 text-emerald-300 shrink-0" />
-              <p className="text-emerald-50 text-sm">Você já tem cadastro no Valente Conecta — aproveite!</p>
+              <CheckCircle className="w-6 h-6 text-emerald-600 shrink-0" />
+              <p className="text-emerald-800 text-sm">Você já tem cadastro no Valente Conecta — aproveite!</p>
             </div>
             <a
               href="/"
-              className="block w-full text-center bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl transition"
+              className="block w-full text-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition"
             >
               Entrar no Valente Conecta
             </a>
@@ -144,12 +144,12 @@ export default function ConvitePage() {
                 entao sempre da uma forma de reinstalar. */}
             <BotaoInstalarApp
               texto="Reinstalar ícone na tela inicial"
-              className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-emerald-400/50 text-emerald-50 font-semibold py-3 rounded-xl transition"
+              className="w-full flex items-center justify-center gap-2 bg-white hover:bg-emerald-50 border border-emerald-200 text-emerald-700 font-semibold py-3 rounded-xl transition"
             />
           </div>
         ) : (
-          <div className="bg-blue-950 border border-blue-400 rounded-2xl p-4 flex items-center gap-2 text-blue-50 text-sm">
-            <Smartphone className="w-4 h-4 shrink-0 text-blue-300" />
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-center gap-2 text-blue-800 text-sm">
+            <Smartphone className="w-4 h-4 shrink-0 text-blue-500" />
             Preencha nome e WhatsApp abaixo — leva 10 segundos.
           </div>
         )}
