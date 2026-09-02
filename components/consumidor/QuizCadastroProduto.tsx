@@ -49,6 +49,7 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
   const [resultadosLoja, setResultadosLoja] = useState<Loja[]>([]);
   const [buscandoLoja, setBuscandoLoja] = useState(false);
   const [lojaSelecionada, setLojaSelecionada] = useState<Loja | null>(null);
+  const [nomeLojaTexto, setNomeLojaTexto] = useState<string | null>(null);
 
   const [nomeProduto, setNomeProduto] = useState("");
   const [categoria, setCategoria] = useState("mercado");
@@ -91,7 +92,7 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
   };
 
   const enviar = async () => {
-    if (!lojaSelecionada) return;
+    if (!lojaSelecionada && !nomeLojaTexto) return;
     if (!fotoNotaFiscalPath || !midiaProduto[0]?.url || !fotoQrcodePath) {
       toast.error("Faltam fotos obrigatórias.");
       return;
@@ -103,7 +104,8 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           usuarioId,
-          fornecedorId: lojaSelecionada.usuarioId,
+          fornecedorId: lojaSelecionada?.usuarioId || null,
+          nomeLojaTexto: lojaSelecionada ? null : nomeLojaTexto,
           nomeProduto: nomeProduto.trim(),
           categoria,
           ean: ean || null,
@@ -173,6 +175,7 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
                     key={loja.usuarioId}
                     onClick={() => {
                       setLojaSelecionada(loja);
+                      setNomeLojaTexto(null);
                       setEtapa("produto");
                     }}
                     className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm"
@@ -184,7 +187,19 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
               </div>
             )}
             {!buscandoLoja && buscaLoja.trim().length >= 2 && resultadosLoja.length === 0 && (
-              <p className="text-sm text-gray-400">Nenhuma loja encontrada com esse nome.</p>
+              <div className="space-y-2">
+                <p className="text-sm text-gray-400">Nenhuma loja encontrada com esse nome.</p>
+                <button
+                  onClick={() => {
+                    setLojaSelecionada(null);
+                    setNomeLojaTexto(buscaLoja.trim());
+                    setEtapa("produto");
+                  }}
+                  className="w-full py-2.5 border-2 border-dashed rounded-xl text-sm text-gray-600 hover:border-blue-500"
+                >
+                  A loja ainda não tem cadastro no app — continuar assim mesmo
+                </button>
+              </div>
             )}
           </div>
         )}
@@ -199,7 +214,12 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
                 </p>
               </div>
             )}
-            <p className="text-sm text-gray-500">Comprado em: <strong>{lojaSelecionada?.nomeExibicao}</strong></p>
+            <p className="text-sm text-gray-500">Comprado em: <strong>{lojaSelecionada?.nomeExibicao || nomeLojaTexto}</strong></p>
+            {!lojaSelecionada && nomeLojaTexto && (
+              <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg p-2">
+                Essa loja ainda não tem cadastro no app. Seu produto fica registrado e, quando ela se cadastrar e for validada, poderá aprovar e você ganha normalmente.
+              </p>
+            )}
             <div>
               <label className="block text-sm font-medium text-gray-500 mb-1">Nome do produto</label>
               <input

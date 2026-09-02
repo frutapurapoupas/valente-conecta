@@ -26,6 +26,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const usuarioId = String(body.usuarioId || '').trim();
     const fornecedorId = String(body.fornecedorId || '').trim();
+    const nomeLojaTexto = String(body.nomeLojaTexto || '').trim();
     const nomeProduto = String(body.nomeProduto || '').trim();
     const categoria = String(body.categoria || '').trim();
     const ean = body.ean ? String(body.ean).trim() : null;
@@ -33,7 +34,10 @@ export async function POST(request: NextRequest) {
     const fotoNotaFiscalPath = String(body.fotoNotaFiscalPath || '').trim();
     const fotoQrcodePath = String(body.fotoQrcodePath || '').trim();
 
-    if (!usuarioId || !fornecedorId) return NextResponse.json({ success: false, error: 'usuarioId e fornecedorId são obrigatórios' }, { status: 400 });
+    if (!usuarioId) return NextResponse.json({ success: false, error: 'usuarioId é obrigatório' }, { status: 400 });
+    if (!fornecedorId && !nomeLojaTexto) {
+      return NextResponse.json({ success: false, error: 'Informe a loja onde comprou (selecione da lista ou digite o nome)' }, { status: 400 });
+    }
     if (!nomeProduto) return NextResponse.json({ success: false, error: 'Informe o nome do produto' }, { status: 400 });
     if (!categoria) return NextResponse.json({ success: false, error: 'Informe a categoria' }, { status: 400 });
     if (!fotoProdutoUrl || !fotoNotaFiscalPath || !fotoQrcodePath) {
@@ -63,7 +67,8 @@ export async function POST(request: NextRequest) {
       .from('consumidor_cadastros_produto')
       .insert({
         usuario_id: usuarioId,
-        fornecedor_id: fornecedorId,
+        fornecedor_id: fornecedorId || null,
+        nome_loja_texto: fornecedorId ? null : nomeLojaTexto,
         cidade: consumidor.cidade_base,
         nome_produto: nomeProduto,
         categoria,
@@ -79,11 +84,13 @@ export async function POST(request: NextRequest) {
       .single();
     if (error) throw error;
 
-    await enviarPushParaUsuario(fornecedorId, {
-      titulo: 'Novo produto pra aprovar',
-      corpo: `Um cliente cadastrou "${nomeProduto}" como comprado na sua loja. Confira e aprove.`,
-      url: '/pdv/aprovacoes-consumidor',
-    });
+    if (fornecedorId) {
+      await enviarPushParaUsuario(fornecedorId, {
+        titulo: 'Novo produto pra aprovar',
+        corpo: `Um cliente cadastrou "${nomeProduto}" como comprado na sua loja. Confira e aprove.`,
+        url: '/pdv/aprovacoes-consumidor',
+      });
+    }
 
     return NextResponse.json({ success: true, data });
   } catch (error: any) {

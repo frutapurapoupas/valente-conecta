@@ -12,7 +12,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { ArrowLeft, CheckCircle2, XCircle, UserCheck } from "lucide-react";
+import { ArrowLeft, CheckCircle2, XCircle, UserCheck, Flag } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { PdvSubNav } from "@/components/pdv/PdvSubNav";
 import { SemPermissaoPdv } from "@/components/pdv/SemPermissaoPdv";
@@ -32,11 +32,23 @@ interface ItemPendente {
   created_at: string;
 }
 
+interface ItemNaoReivindicado {
+  id: string;
+  nome_produto: string;
+  categoria: string;
+  nome_loja_texto: string | null;
+  cidade: string | null;
+  foto_produto_url: string | null;
+  created_at: string;
+}
+
 export default function AprovacoesConsumidorPage() {
   const router = useRouter();
   const [usuario, setUsuario] = useState<any>(null);
   const [operador, setOperador] = useState<OperadorAtivo | null>(null);
   const [lista, setLista] = useState<ItemPendente[]>([]);
+  const [naoReivindicados, setNaoReivindicados] = useState<ItemNaoReivindicado[]>([]);
+  const [aba, setAba] = useState<"pendentes" | "sem_loja">("pendentes");
   const [loading, setLoading] = useState(true);
   const [processando, setProcessando] = useState<string | null>(null);
   const [motivoPorId, setMotivoPorId] = useState<Record<string, string>>({});
@@ -48,6 +60,12 @@ export default function AprovacoesConsumidorPage() {
       .then((r) => r.json())
       .then((resp) => setLista(resp.success ? resp.data : []))
       .finally(() => setLoading(false));
+  };
+
+  const carregarNaoReivindicados = () => {
+    fetch(`/api/pdv/reivindicar-cadastro-consumidor`, { cache: "no-store" })
+      .then((r) => r.json())
+      .then((resp) => setNaoReivindicados(resp.success ? resp.data : []));
   };
 
   const carregarValidacao = (usuarioId: string) => {
@@ -63,10 +81,32 @@ export default function AprovacoesConsumidorPage() {
     if (u) {
       carregar(u.id);
       carregarValidacao(u.id);
+      carregarNaoReivindicados();
     } else {
       setLoading(false);
     }
   }, []);
+
+  const reivindicar = async (id: string) => {
+    if (!usuario) return;
+    setProcessando(id);
+    try {
+      const resp = await fetch(`/api/pdv/reivindicar-cadastro-consumidor?id=${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fornecedorId: usuario.id }),
+      });
+      const resultado = await resp.json();
+      if (!resultado.success) throw new Error(resultado.error);
+      toast.success("Reivindicado! Agora aparece na aba \"Pendentes\" pra você aprovar.");
+      setNaoReivindicados((prev) => prev.filter((r) => r.id !== id));
+      carregar(usuario.id);
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao reivindicar");
+    } finally {
+      setProcessando(null);
+    }
+  };
 
   const processar = async (id: string, acao: "aprovar" | "recusar") => {
     if (!usuario) return;
@@ -118,9 +158,67 @@ export default function AprovacoesConsumidorPage() {
             motivoRecusa={validacao.motivoRecusa}
             onEnviado={() => carregarValidacao(usuario.id)}
           />
-        ) : lista.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-2xl shadow text-gray-500">Nenhum cadastro pendente.</div>
         ) : (
+          <>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setAba("pendentes")}
+                className={`flex-1 py-2 rounded-xl text-sm font-semibold ${aba === "pendentes" ? "bg-blue-600 text-white" : "bg-white border text-gray-600"}`}
+              >
+                Pendentes ({lista.length})
+              </button>
+              <button
+                onClick={() => setAba("sem_loja")}
+                className={`flex-1 py-2 rounded-xl text-sm font-semibold ${aba === "sem_loja" ? "bg-blue-600 text-white" : "bg-white border text-gray-600"}`}
+              >
+                Sem loja identificada ({naoReivindicados.length})
+              </button>
+            </div>
+
+            {aba === "sem_loja" && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-sm text-amber-800">
+                Clientes cadastraram esses produtos citando uma loja que a busca não achou (ainda sem cadastro no app, ou com nome diferente). Se algum for da sua loja, reivindique pra revisar e aprovar.
+              </div>
+            )}
+
+            {aba === "pendentes" && lista.length === 0 && (
+              <div className="text-center py-12 bg-white rounded-2xl shadow text-gray-500">Nenhum cadastro pendente.</div>
+            )}
+
+            {aba === "sem_loja" && naoReivindicados.length === 0 && (
+              <div className="text-center py-12 bg-white rounded-2xl shadow text-gray-500">Nenhum cadastro sem loja identificada.</div>
+            )}
+
+            {aba === "sem_loja" && naoReivindicados.length > 0 && (
+              <div className="space-y-3">
+                {naoReivindicados.map((item) => (
+                  <div key={item.id} className="bg-white border rounded-lg p-4">
+                    <div className="flex gap-3 mb-3">
+                      {item.foto_produto_url && (
+                        <img src={item.foto_produto_url} alt="Produto" className="w-20 h-20 object-cover rounded-lg border" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm text-gray-800">{item.nome_produto}</p>
+                        <p className="text-sm text-gray-500">{item.categoria}</p>
+                        <p className="text-sm text-blue-700 mt-1">Loja citada: <strong>{item.nome_loja_texto || "—"}</strong></p>
+                        {item.cidade && <p className="text-xs text-gray-400">{item.cidade}</p>}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => reivindicar(item.id)}
+                      disabled={processando === item.id}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-medium disabled:opacity-60"
+                    >
+                      <Flag className="w-3.5 h-3.5" /> Essa é a minha loja, reivindicar
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {!loading && validacao?.status === "aprovado" && aba === "pendentes" && lista.length > 0 && (
           <div className="space-y-3">
             {lista.map((item) => (
               <div key={item.id} className="bg-white border rounded-lg p-4">
