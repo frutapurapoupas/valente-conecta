@@ -52,41 +52,66 @@ export function BarcodeScanner({
     async function iniciar() {
       try {
         const { BrowserMultiFormatReader } = await import("@zxing/browser");
-        const { NotFoundException } = await import("@zxing/library");
-        const codeReader = new BrowserMultiFormatReader();
+        const { NotFoundException, DecodeHintType, BarcodeFormat } = await import("@zxing/library");
+
+        // Restringe aos formatos de codigo de barras de PRODUTO (o que
+        // aparece em nota fiscal/embalagem) em vez de tentar todos os
+        // formatos que o zxing sabe ler (inclusive 2D tipo QR/DataMatrix,
+        // que nunca vao aparecer aqui) -- isso deixa cada tentativa de
+        // decodificacao mais rapida e mais precisa. TRY_HARDER liga uma
+        // varredura mais caprichada (mais lenta por frame, mas le' codigo
+        // borrado/torto melhor -- combinacao clara pra codigo de barras 1D
+        // parado na frente da camera, ao contrario de video em movimento).
+        const hints = new Map();
+        hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+          BarcodeFormat.EAN_13, BarcodeFormat.EAN_8, BarcodeFormat.UPC_A, BarcodeFormat.UPC_E,
+          BarcodeFormat.CODE_128, BarcodeFormat.CODE_39, BarcodeFormat.ITF,
+        ]);
+        hints.set(DecodeHintType.TRY_HARDER, true);
+        const codeReader = new BrowserMultiFormatReader(hints);
 
         if (!videoRef.current) return;
 
-        // Passa deviceId undefined de proposito: isso faz o zxing pedir a
-        // camera via getUserMedia({video: {facingMode: 'environment'}}) direto,
-        // sem precisar listar dispositivos antes. listVideoInputDevices()
-        // (usado antes aqui) depende de enumerateDevices(), que no celular
-        // devolve lista VAZIA ate' a permissao de camera ja' ter sido concedida
-        // -- ou seja, sempre falhava com "nenhuma camera encontrada" no
-        // primeiro uso, mesmo o aparelho tendo camera. facingMode:
-        // 'environment' ja' pede a permissao E prefere a camera traseira.
-        const controls = await codeReader.decodeFromVideoDevice(undefined, videoRef.current, (resultado, erro) => {
-          if (cancelado) return;
-          if (resultado) {
-            const texto = resultado.getText();
-            onDetected(texto);
-            return;
+        // decodeFromConstraints (em vez de decodeFromVideoDevice) pra poder
+        // pedir resolucao maior e autofoco continuo -- resolucao baixa e
+        // foco fixo/lento sao a causa mais comum de "camera abre mas nunca
+        // le" com codigo de barras 1D fino, mesmo bem enquadrado. facingMode
+        // 'environment' (nao listVideoInputDevices(), ver correcao anterior)
+        // continua pedindo a camera traseira sem depender de enumerar
+        // dispositivos antes de ter permissao.
+        const controls = await codeReader.decodeFromConstraints(
+          {
+            video: {
+              facingMode: { ideal: "environment" },
+              width: { ideal: 1920 },
+              height: { ideal: 1080 },
+              advanced: [{ focusMode: "continuous" } as any],
+            },
+          },
+          videoRef.current,
+          (resultado, erro) => {
+            if (cancelado) return;
+            if (resultado) {
+              const texto = resultado.getText();
+              onDetected(texto);
+              return;
+            }
+            // NotFoundException e' esperado a cada frame sem codigo visivel --
+            // o proprio zxing tenta de novo sozinho nesse caso. Qualquer OUTRO
+            // erro (ex: canvas com dimensao 0 no primeiro frame, antes do video
+            // reportar largura/altura reais -- comum logo apos abrir a camera
+            // no celular) faz o loop de decodificacao do zxing MORRER de vez
+            // (sem chamar de novo), deixando o video parado na tela sem nunca
+            // mais tentar ler nada. Reinicia o scanner do zero nesse caso.
+            const isNotFound = erro instanceof NotFoundException || erro?.name === "NotFoundException";
+            if (erro && !isNotFound && tentativas < MAX_TENTATIVAS) {
+              tentativas += 1;
+              controlsRef.current?.stop();
+              controlsRef.current = null;
+              setTimeout(() => { if (!cancelado) iniciar(); }, 300);
+            }
           }
-          // NotFoundException e' esperado a cada frame sem codigo visivel --
-          // o proprio zxing tenta de novo sozinho nesse caso. Qualquer OUTRO
-          // erro (ex: canvas com dimensao 0 no primeiro frame, antes do video
-          // reportar largura/altura reais -- comum logo apos abrir a camera
-          // no celular) faz o loop de decodificacao do zxing MORRER de vez
-          // (sem chamar de novo), deixando o video parado na tela sem nunca
-          // mais tentar ler nada. Reinicia o scanner do zero nesse caso.
-          const isNotFound = erro instanceof NotFoundException || erro?.name === "NotFoundException";
-          if (erro && !isNotFound && tentativas < MAX_TENTATIVAS) {
-            tentativas += 1;
-            controlsRef.current?.stop();
-            controlsRef.current = null;
-            setTimeout(() => { if (!cancelado) iniciar(); }, 300);
-          }
-        });
+        );
         controlsRef.current = controls;
       } catch (error: any) {
         setErroCamera(error?.message || "Não foi possível acessar a câmera. Verifique a permissão do navegador.");
