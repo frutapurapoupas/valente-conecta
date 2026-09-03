@@ -141,7 +141,7 @@ export function CapturaCodigoBarras({
           className="w-full py-4 bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-500 transition flex items-center justify-center gap-2 disabled:opacity-60"
         >
           {processando ? <Loader2 className="w-5 h-5 text-blue-500 animate-spin" /> : <Camera className="w-5 h-5 text-gray-400" />}
-          <span className="text-sm text-gray-600">{processando ? "Processando foto..." : "Tirar foto do código de barras"}</span>
+          <span className="text-sm text-gray-600">{processando ? "Processando foto..." : `Tirar ${titulo.toLowerCase()}`}</span>
         </button>
       )}
 

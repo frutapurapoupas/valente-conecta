@@ -24,7 +24,7 @@ interface Props {
   onSucesso: () => void;
 }
 
-type Etapa = "loja" | "produto" | "codigo" | "nota" | "foto" | "qrcode" | "detalhes";
+type Etapa = "loja" | "nota" | "qrcode" | "codigo" | "produto" | "foto" | "detalhes" | "sucesso";
 
 interface Loja {
   usuarioId: string;
@@ -43,7 +43,8 @@ const CATEGORIAS = [
 ];
 
 export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
-  const [etapa, setEtapa] = useState<Etapa>("codigo");
+  const [etapa, setEtapa] = useState<Etapa>("loja");
+  const [produtosEnviados, setProdutosEnviados] = useState(0);
 
   const [buscaLoja, setBuscaLoja] = useState("");
   const [resultadosLoja, setResultadosLoja] = useState<Loja[]>([]);
@@ -113,7 +114,22 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
       return;
     }
     setAlertaDuplicidade(null);
-    setEtapa("nota");
+    setEtapa("foto");
+  };
+
+  // Reseta so' os campos ESPECIFICOS DO PRODUTO (mantem loja, nota fiscal e
+  // QR code, que valem pra nota inteira) -- pra cadastrar o proximo produto
+  // da MESMA nota sem repetir as fotos de comprovante, que ja foram
+  // tiradas uma vez so' no comeco.
+  const cadastrarOutroProdutoDaMesmaNota = () => {
+    setNomeProduto("");
+    setCategoria("mercado");
+    setEan("");
+    setMidiaProduto([]);
+    setPrecoPago("");
+    setDetalhes("");
+    setAlertaDuplicidade(null);
+    setEtapa("codigo");
   };
 
   const enviar = async () => {
@@ -152,7 +168,8 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
         throw new Error(resultado.error);
       }
       toast.success("Cadastro enviado! A loja vai revisar e aprovar.");
-      onSucesso();
+      setProdutosEnviados((n) => n + 1);
+      setEtapa("sucesso");
     } catch (err: any) {
       toast.error(err.message || "Erro ao enviar cadastro");
     } finally {
@@ -161,7 +178,7 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
   };
 
   const voltar = () => {
-    const ordem: Etapa[] = ["codigo", "loja", "produto", "nota", "foto", "qrcode", "detalhes"];
+    const ordem: Etapa[] = ["loja", "nota", "qrcode", "codigo", "produto", "foto", "detalhes"];
     const idx = ordem.indexOf(etapa);
     if (idx > 0) setEtapa(ordem[idx - 1]);
   };
@@ -171,12 +188,12 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
       <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-md p-5 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            {etapa !== "codigo" && (
+            {etapa !== "loja" && etapa !== "sucesso" && (
               <button onClick={voltar}><ArrowLeft className="w-5 h-5 text-gray-500" /></button>
             )}
             <h2 className="font-bold text-gray-800">Cadastrar produto comprado</h2>
           </div>
-          <button onClick={onClose}><X className="w-5 h-5 text-gray-400" /></button>
+          <button onClick={() => (produtosEnviados > 0 ? onSucesso() : onClose())}><X className="w-5 h-5 text-gray-400" /></button>
         </div>
 
         {etapa === "loja" && (
@@ -201,7 +218,7 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
                     onClick={() => {
                       setLojaSelecionada(loja);
                       setNomeLojaTexto(null);
-                      setEtapa("produto");
+                      setEtapa("nota");
                     }}
                     className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm"
                   >
@@ -218,7 +235,7 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
                   onClick={() => {
                     setLojaSelecionada(null);
                     setNomeLojaTexto(buscaLoja.trim());
-                    setEtapa("produto");
+                    setEtapa("nota");
                   }}
                   className="w-full py-2.5 border-2 border-dashed rounded-xl text-sm text-gray-600 hover:border-blue-500"
                 >
@@ -226,6 +243,81 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
                 </button>
               </div>
             )}
+          </div>
+        )}
+
+        {etapa === "nota" && (
+          <div className="space-y-3">
+            <p className="text-sm text-gray-500">Comprado em: <strong>{lojaSelecionada?.nomeExibicao || nomeLojaTexto}</strong></p>
+            <CapturaFotoComprovante
+              fotoPath={fotoNotaFiscalPath}
+              donoId={usuarioId}
+              titulo="Foto da nota fiscal / cupom"
+              obrigatoria
+              onFotoPathChange={setFotoNotaFiscalPath}
+            />
+            <button
+              onClick={() => setEtapa("qrcode")}
+              disabled={!fotoNotaFiscalPath}
+              className="w-full bg-blue-600 text-white py-2.5 rounded-xl text-sm font-semibold disabled:opacity-60"
+            >
+              Continuar
+            </button>
+          </div>
+        )}
+
+        {etapa === "qrcode" && (
+          <div className="space-y-3">
+            <CapturaCodigoBarras
+              fotoPath={fotoQrcodePath}
+              donoId={usuarioId}
+              ean={qrcodeConteudo}
+              obrigatoria
+              titulo="Foto do QR code da nota"
+              textoObrigatoria="Obrigatória — é a prova de que a nota é verdadeira. Fica no canto da nota fiscal/cupom."
+              onEanChange={setQrcodeConteudo}
+              onFotoPathChange={setFotoQrcodePath}
+            />
+            <p className="text-xs text-gray-400">
+              Se sua nota tiver mais de um produto, essas duas fotos valem pra todos — você só tira uma vez.
+            </p>
+            <button
+              onClick={() => setEtapa("codigo")}
+              disabled={!fotoQrcodePath}
+              className="w-full bg-blue-600 text-white py-2.5 rounded-xl text-sm font-semibold disabled:opacity-60"
+            >
+              Continuar
+            </button>
+          </div>
+        )}
+
+        {etapa === "codigo" && (
+          <div className="space-y-3">
+            {produtosEnviados > 0 && (
+              <p className="text-xs text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-lg p-2">
+                Produto {produtosEnviados + 1} dessa nota — nota fiscal e QR code já registrados.
+              </p>
+            )}
+            {alertaDuplicidade && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex gap-2 text-amber-800">
+                <AlertTriangle className="w-5 h-5 shrink-0" />
+                <p className="text-sm">
+                  O produto <strong>"{alertaDuplicidade}"</strong> já existe no app. Escaneie outro produto ou continue sem código de barras.
+                </p>
+              </div>
+            )}
+            <p className="text-sm text-gray-600">Esse produto tem código de barras? Escaneie primeiro — ajuda a evitar duplicidade antes de você tirar as fotos.</p>
+            <button
+              onClick={() => { setAlertaDuplicidade(null); setShowScanner(true); }}
+              disabled={verificandoEan}
+              className="w-full py-3 border-2 border-dashed rounded-xl text-sm text-gray-600 hover:border-blue-500 disabled:opacity-60"
+            >
+              {verificandoEan ? "Verificando código..." : "Escanear código de barras"}
+            </button>
+            {ean && <p className="text-sm text-emerald-600 text-center">Código lido: {ean}</p>}
+            <button onClick={() => setEtapa("produto")} className="w-full bg-blue-600 text-white py-2.5 rounded-xl text-sm font-semibold">
+              {ean ? "Continuar" : "Não tem código de barras"}
+            </button>
           </div>
         )}
 
@@ -239,7 +331,6 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
                 </p>
               </div>
             )}
-            <p className="text-sm text-gray-500">Comprado em: <strong>{lojaSelecionada?.nomeExibicao || nomeLojaTexto}</strong></p>
             {!lojaSelecionada && nomeLojaTexto && (
               <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg p-2">
                 Essa loja ainda não tem cadastro no app. Seu produto fica registrado e, quando ela se cadastrar e for validada, poderá aprovar e você ganha normalmente.
@@ -265,79 +356,13 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
           </div>
         )}
 
-        {etapa === "codigo" && (
-          <div className="space-y-3">
-            {alertaDuplicidade && (
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex gap-2 text-amber-800">
-                <AlertTriangle className="w-5 h-5 shrink-0" />
-                <p className="text-sm">
-                  O produto <strong>"{alertaDuplicidade}"</strong> já existe no app. Escaneie outro produto ou continue sem código de barras.
-                </p>
-              </div>
-            )}
-            <p className="text-sm text-gray-600">Esse produto tem código de barras? Escaneie primeiro — ajuda a evitar duplicidade antes de você tirar as fotos.</p>
-            <button
-              onClick={() => { setAlertaDuplicidade(null); setShowScanner(true); }}
-              disabled={verificandoEan}
-              className="w-full py-3 border-2 border-dashed rounded-xl text-sm text-gray-600 hover:border-blue-500 disabled:opacity-60"
-            >
-              {verificandoEan ? "Verificando código..." : "Escanear código de barras"}
-            </button>
-            {ean && <p className="text-sm text-emerald-600 text-center">Código lido: {ean}</p>}
-            <button onClick={() => setEtapa("loja")} className="w-full bg-blue-600 text-white py-2.5 rounded-xl text-sm font-semibold">
-              {ean ? "Continuar" : "Não tem código de barras"}
-            </button>
-          </div>
-        )}
-
-        {etapa === "nota" && (
-          <div className="space-y-3">
-            <CapturaFotoComprovante
-              fotoPath={fotoNotaFiscalPath}
-              donoId={usuarioId}
-              titulo="Foto da nota fiscal / cupom"
-              obrigatoria
-              onFotoPathChange={setFotoNotaFiscalPath}
-            />
-            <button
-              onClick={() => setEtapa("foto")}
-              disabled={!fotoNotaFiscalPath}
-              className="w-full bg-blue-600 text-white py-2.5 rounded-xl text-sm font-semibold disabled:opacity-60"
-            >
-              Continuar
-            </button>
-          </div>
-        )}
-
         {etapa === "foto" && (
           <div className="space-y-3">
             <label className="text-sm font-medium text-gray-700">Foto do produto</label>
             <MidiaUploader midia={midiaProduto} onChange={setMidiaProduto} maximo={1} />
             <button
-              onClick={() => setEtapa("qrcode")}
-              disabled={!midiaProduto[0]?.url}
-              className="w-full bg-blue-600 text-white py-2.5 rounded-xl text-sm font-semibold disabled:opacity-60"
-            >
-              Continuar
-            </button>
-          </div>
-        )}
-
-        {etapa === "qrcode" && (
-          <div className="space-y-3">
-            <CapturaCodigoBarras
-              fotoPath={fotoQrcodePath}
-              donoId={usuarioId}
-              ean={qrcodeConteudo}
-              obrigatoria
-              titulo="Foto do QR code da nota"
-              textoObrigatoria="Obrigatória — é a prova de que a nota é verdadeira. Fica no canto da nota fiscal/cupom."
-              onEanChange={setQrcodeConteudo}
-              onFotoPathChange={setFotoQrcodePath}
-            />
-            <button
               onClick={() => setEtapa("detalhes")}
-              disabled={!fotoQrcodePath}
+              disabled={!midiaProduto[0]?.url}
               className="w-full bg-blue-600 text-white py-2.5 rounded-xl text-sm font-semibold disabled:opacity-60"
             >
               Continuar
@@ -374,6 +399,30 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
               {enviando ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
               {enviando ? "Enviando..." : "Enviar pra aprovação"}
             </button>
+          </div>
+        )}
+
+        {etapa === "sucesso" && (
+          <div className="space-y-4 text-center py-4">
+            <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto" />
+            <div>
+              <p className="font-semibold text-gray-800">Produto cadastrado!</p>
+              <p className="text-sm text-gray-500 mt-1">A loja vai revisar e aprovar. Essa nota tem mais algum produto?</p>
+            </div>
+            <div className="space-y-2">
+              <button
+                onClick={cadastrarOutroProdutoDaMesmaNota}
+                className="w-full bg-blue-600 text-white py-2.5 rounded-xl text-sm font-semibold"
+              >
+                Cadastrar outro produto dessa nota
+              </button>
+              <button
+                onClick={onSucesso}
+                className="w-full bg-gray-100 text-gray-700 py-2.5 rounded-xl text-sm font-semibold"
+              >
+                Concluir
+              </button>
+            </div>
           </div>
         )}
       </div>
