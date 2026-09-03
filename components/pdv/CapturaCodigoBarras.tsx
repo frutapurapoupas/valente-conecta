@@ -74,7 +74,22 @@ export function CapturaCodigoBarras({
     try {
       try {
         const { BrowserMultiFormatReader } = await import("@zxing/browser");
-        const leitor = new BrowserMultiFormatReader();
+        const { DecodeHintType, BarcodeFormat } = await import("@zxing/library");
+        // TRY_HARDER faz o zxing tentar mais (varias rotacoes/limiares de
+        // contraste) antes de desistir, em vez de uma unica passada rapida —
+        // sem isso, a MESMA foto podia ler numa hora e falhar na outra, mesmo
+        // sem mudar nada da cena (angulo/reflexo minimos ja bastam pra passada
+        // rapida falhar). Formatos amplos porque essa foto tanto pode ser o
+        // QR code da nota quanto, se usado como codigo de barras generico,
+        // um EAN/UPC/Code128 de produto.
+        const hints = new Map();
+        hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+          BarcodeFormat.QR_CODE, BarcodeFormat.EAN_13, BarcodeFormat.EAN_8,
+          BarcodeFormat.UPC_A, BarcodeFormat.UPC_E, BarcodeFormat.CODE_128,
+          BarcodeFormat.CODE_39, BarcodeFormat.ITF, BarcodeFormat.DATA_MATRIX,
+        ]);
+        hints.set(DecodeHintType.TRY_HARDER, true);
+        const leitor = new BrowserMultiFormatReader(hints);
         const resultado = await leitor.decodeFromImageUrl(urlObjeto);
         onEanChange(resultado.getText());
         setDecodificado(true);
