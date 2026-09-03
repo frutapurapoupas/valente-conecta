@@ -49,7 +49,15 @@ export function CapturaFotoComprovante({ fotoPath, donoId, titulo, obrigatoria, 
       formData.append("donoId", donoId);
       const resposta = await fetch("/api/upload/comprovante-catalogo", { method: "POST", body: formData });
       const resultadoUpload = await resposta.json();
-      if (!resultadoUpload.success) throw new Error(resultadoUpload.error || "Falha no upload");
+      if (!resultadoUpload.success) {
+        // DIAGNOSTICO TEMPORARIO: mostra o "detalhe" (erro real do servidor)
+        // junto da mensagem generica, pra achar a causa de um erro que so'
+        // acontece em producao. Reverter quando identificarmos a causa.
+        const msg = resultadoUpload.detalhe
+          ? `${resultadoUpload.error || "Falha no upload"} — ${resultadoUpload.detalhe}`
+          : resultadoUpload.error || "Falha no upload";
+        throw new Error(msg);
+      }
       if (previewUrl) URL.revokeObjectURL(previewUrl);
       setPreviewUrl(urlObjeto);
       onFotoPathChange(resultadoUpload.path);

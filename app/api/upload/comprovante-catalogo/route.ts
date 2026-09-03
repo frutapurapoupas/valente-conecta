@@ -9,6 +9,7 @@
 // Nunca devolve URL publica (nao existe pra esse bucket), so' o path.
 
 import { NextRequest, NextResponse } from 'next/server';
+import { randomUUID } from 'crypto';
 import { createAdminClient } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = createAdminClient();
-    const caminho = `${donoId}/${crypto.randomUUID()}.webp`;
+    const caminho = `${donoId}/${randomUUID()}.webp`;
 
     const { error } = await supabase.storage
       .from('catalogo-comprovantes')
@@ -32,8 +33,13 @@ export async function POST(request: NextRequest) {
     if (error) throw error;
 
     return NextResponse.json({ success: true, path: caminho });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Erro ao subir comprovante do catálogo colaborativo:', error);
-    return NextResponse.json({ success: false, error: 'Erro ao enviar imagem' }, { status: 500 });
+    // DIAGNOSTICO TEMPORARIO: incluindo o erro real na resposta (em vez de
+    // so' logar no servidor, que ninguem consegue ver daqui) pra achar a
+    // causa de verdade de um erro que esta acontecendo sempre em producao,
+    // mas que nao reproduzimos em teste direto contra o mesmo bucket/rota.
+    // Reverter pra mensagem generica assim que identificarmos a causa.
+    return NextResponse.json({ success: false, error: 'Erro ao enviar imagem', detalhe: error?.message || String(error) }, { status: 500 });
   }
 }
