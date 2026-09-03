@@ -342,7 +342,7 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
         {etapa === "foto" && (
           <div className="space-y-3">
             <label className="text-sm font-medium text-gray-700">Foto do produto</label>
-            <MidiaUploader midia={midiaProduto} onChange={setMidiaProduto} maximo={1} />
+            <MidiaUploader midia={midiaProduto} onChange={setMidiaProduto} maximo={1} preferirCamera />
             <button
               onClick={() => setEtapa("detalhes")}
               disabled={!midiaProduto[0]?.url}

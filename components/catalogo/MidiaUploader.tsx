@@ -23,9 +23,15 @@ interface MidiaUploaderProps {
   maximo?: number;
   uploadUrl?: string; // endpoint que recebe FormData e devolve { url, thumb_url }
   permitirRemoverFundo?: boolean;
+  // Sem isso, o navegador abre a GALERIA por padrao (o componente e'
+  // reusado tambem onde escolher uma foto ja existente faz sentido, ex:
+  // fotos de marketplace). So' liga onde faz sentido abrir a camera direto
+  // (ex: "foto do produto que voce acabou de comprar", no quiz do
+  // consumidor) -- nao muda o comportamento de quem ja usa o componente.
+  preferirCamera?: boolean;
 }
 
-export function MidiaUploader({ midia, onChange, maximo = 6, uploadUrl = "/api/upload/catalogo", permitirRemoverFundo = false }: MidiaUploaderProps) {
+export function MidiaUploader({ midia, onChange, maximo = 6, uploadUrl = "/api/upload/catalogo", permitirRemoverFundo = false, preferirCamera = false }: MidiaUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [processando, setProcessando] = useState(false);
   const [erro, setErro] = useState("");
@@ -142,7 +148,15 @@ export function MidiaUploader({ midia, onChange, maximo = 6, uploadUrl = "/api/u
           </button>
         )}
       </div>
-      <input ref={inputRef} type="file" accept="image/*" multiple onChange={handleSelecao} className="hidden" />
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        multiple={maximo > 1}
+        capture={preferirCamera ? "environment" : undefined}
+        onChange={handleSelecao}
+        className="hidden"
+      />
       {erro && <p className="text-sm text-red-600 mt-2">{erro}</p>}
       <p className="text-xs text-gray-400 mt-2">
         As imagens são comprimidas automaticamente antes do envio (economiza dados e espaço).
