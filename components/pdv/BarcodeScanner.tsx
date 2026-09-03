@@ -60,7 +60,7 @@ export function BarcodeScanner({
   // angulo) mesmo com o codigo bem visivel -- esse botao deixa o usuario
   // FORCAR uma captura na hora que achar que esta' bom, em vez de ficar
   // dependente so' do loop automatico tentar de novo sozinho.
-  const capturarManualRef = useRef<(() => void) | null>(null);
+  const capturarManualRef = useRef<(() => void | Promise<void>) | null>(null);
 
   // INSET_PX precisa bater com o "inset-8" (2rem = 32px) do quadro-guia
   // desenhado por cima do video mais abaixo -- e' usado aqui pra recortar
@@ -185,11 +185,14 @@ export function BarcodeScanner({
 
         // Captura forcada pelo usuario (botao "Tirar foto") -- tenta
         // decodificar o quadro atual e, se conseguir, segue como se o loop
-        // automatico tivesse achado. Se nao conseguir mas a etapa EXIGE foto
-        // (capturarFoto), sobe a foto mesmo assim com codigo vazio, pra nao
-        // deixar o usuario travado sem nenhuma saida quando a leitura
-        // automatica insiste em nao pegar.
-        capturarManualRef.current = () => {
+        // automatico tivesse achado. Se o zxing (leitura por padrao de
+        // barras) nao conseguir, tenta uma SEGUNDA vez com IA de visao
+        // (Gemini, gratuito e sem limite) antes de desistir -- ela le os
+        // numeros impressos embaixo das barras, o que costuma funcionar
+        // mesmo com reflexo/angulo que atrapalha a leitura tradicional. Se
+        // nem assim conseguir mas a etapa EXIGE foto (capturarFoto), sobe a
+        // foto mesmo com codigo vazio, pra nao deixar o usuario travado.
+        capturarManualRef.current = async () => {
           if (!recortarQuadro()) {
             toast.error("Câmera ainda não está pronta, tenta de novo em 1 segundo.");
             return;
@@ -198,16 +201,32 @@ export function BarcodeScanner({
             confirmarDetectado(codeReader.decodeFromCanvas(canvas).getText());
             return;
           } catch {
-            // Nao leu sozinho.
+            // Nao leu sozinho -- tenta com IA antes de desistir.
           }
+
+          const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.85));
+          if (!blob) {
+            toast.error("Não deu pra capturar a foto. Tente de novo.");
+            return;
+          }
+
+          try {
+            const formData = new FormData();
+            formData.append("arquivo", blob, "codigo.jpg");
+            const respIA = await fetch("/api/codigo-barras/ler-com-ia", { method: "POST", body: formData }).then((r) => r.json());
+            if (respIA?.success && respIA.codigo) {
+              onDetected(respIA.codigo, capturarFoto ? blob : undefined);
+              return;
+            }
+          } catch {
+            // IA indisponivel/erro de rede -- segue pro fallback abaixo.
+          }
+
           if (capturarFoto) {
-            canvas.toBlob((blob) => {
-              if (!blob) { toast.error("Não deu pra capturar a foto. Tente de novo."); return; }
-              toast("Foto salva, mas não deu pra ler o número sozinho.", { icon: "📷" });
-              onDetected("", blob);
-            }, "image/jpeg", 0.85);
+            toast("Foto salva, mas não deu pra ler o número (nem com IA).", { icon: "📷" });
+            onDetected("", blob);
           } else {
-            toast.error("Não deu pra ler o código. Ajuste o foco/ângulo e tente de novo.");
+            toast.error("Não deu pra ler o código, nem com IA. Ajuste o foco/ângulo e tente de novo.");
           }
         };
 
@@ -276,15 +295,18 @@ export function BarcodeScanner({
               </div>
               <button
                 type="button"
-                onClick={() => {
+                onClick={async () => {
                   setCapturando(true);
-                  capturarManualRef.current?.();
-                  setTimeout(() => setCapturando(false), 400);
+                  try {
+                    await capturarManualRef.current?.();
+                  } finally {
+                    setCapturando(false);
+                  }
                 }}
                 disabled={capturando}
                 className="flex items-center gap-2 bg-white text-gray-800 font-semibold px-5 py-3 rounded-full shadow-lg disabled:opacity-60"
               >
-                <Aperture className="w-5 h-5" /> {capturando ? "Capturando..." : "Tirar foto agora"}
+                <Aperture className="w-5 h-5" /> {capturando ? "Lendo o código..." : "Tirar foto agora"}
               </button>
             </div>
           )
