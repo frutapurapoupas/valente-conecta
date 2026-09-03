@@ -22,11 +22,21 @@ import { Camera, Keyboard, X } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface BarcodeScannerProps {
-  onDetected: (codigo: string) => void;
+  onDetected: (codigo: string, fotoBlob?: Blob) => void;
   onClose: () => void;
   titulo?: string;
   instrucaoCamera?: string;
   instrucaoLeitor?: string;
+  // QR code (nota fiscal/cupom) e' formato diferente dos codigos de produto
+  // -- so' entra na lista de formatos aceitos quando pedido explicitamente,
+  // pra nao deixar a leitura de codigo de produto mais lenta/imprecisa
+  // tentando reconhecer um formato que nunca vai aparecer ali.
+  incluirQrCode?: boolean;
+  // Quando true, ao detectar o codigo com sucesso, tambem gera uma foto
+  // (o proprio recorte usado pra decodificar) e manda no 2o parametro do
+  // onDetected -- usado quando o chamador precisa ARQUIVAR a foto como
+  // comprovante (ex: QR code da nota), nao so' o valor decodificado.
+  capturarFoto?: boolean;
 }
 
 export function BarcodeScanner({
@@ -35,6 +45,8 @@ export function BarcodeScanner({
   titulo = "Escanear código de barras",
   instrucaoCamera = "Centralize o código de barras no quadro.",
   instrucaoLeitor = "Funciona com qualquer leitor USB ou Bluetooth configurado como teclado.",
+  incluirQrCode = false,
+  capturarFoto = false,
 }: BarcodeScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -66,11 +78,13 @@ export function BarcodeScanner({
         // caprichada (mais lenta, mas le' codigo borrado/torto melhor --
         // faz sentido aqui porque decodificamos so' um recorte por vez,
         // nao o video inteiro a toda hora).
-        const hints = new Map();
-        hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+        const formatos = [
           BarcodeFormat.EAN_13, BarcodeFormat.EAN_8, BarcodeFormat.UPC_A, BarcodeFormat.UPC_E,
           BarcodeFormat.CODE_128, BarcodeFormat.CODE_39, BarcodeFormat.ITF,
-        ]);
+        ];
+        if (incluirQrCode) formatos.push(BarcodeFormat.QR_CODE);
+        const hints = new Map();
+        hints.set(DecodeHintType.POSSIBLE_FORMATS, formatos);
         hints.set(DecodeHintType.TRY_HARDER, true);
         const codeReader = new BrowserMultiFormatReader(hints);
 
@@ -136,7 +150,14 @@ export function BarcodeScanner({
 
             try {
               const resultado = codeReader.decodeFromCanvas(canvas);
-              onDetected(resultado.getText());
+              const texto = resultado.getText();
+              if (capturarFoto) {
+                // O proprio recorte que decodificou com sucesso vira a foto —
+                // nao precisa de uma segunda captura separada.
+                canvas.toBlob((blob) => onDetected(texto, blob || undefined), "image/jpeg", 0.85);
+              } else {
+                onDetected(texto);
+              }
               return;
             } catch (erro: any) {
               const isNotFound = erro instanceof NotFoundException || erro?.name === "NotFoundException";
@@ -161,7 +182,7 @@ export function BarcodeScanner({
       streamRef.current?.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
     };
-  }, [modo, onDetected]);
+  }, [modo, onDetected, incluirQrCode, capturarFoto]);
 
   useEffect(() => {
     if (modo === "leitor") inputRef.current?.focus();

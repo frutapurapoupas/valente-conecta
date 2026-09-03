@@ -3,7 +3,7 @@
 // Caminho: C:\valente_conecta\components\consumidor\QuizCadastroProduto.tsx
 //
 // Quiz pra CONSUMIDOR cadastrar um produto que comprou, comprovando com
-// foto da nota fiscal/cupom + foto do QR code da nota + foto do produto
+// foto da nota fiscal/cupom + foto do código de barras da nota + foto do produto
 // (ver 093_cadastro_consumidor_produto.sql). O lojista identificado (loja
 // onde comprou) precisa aprovar antes do produto "aparecer" no catálogo
 // colaborativo do PDV pros outros lojistas. Duplicidade é bloqueada de
@@ -15,7 +15,6 @@ import toast from "react-hot-toast";
 import { X, ArrowLeft, Search, Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
 import { MidiaUploader } from "@/components/catalogo/MidiaUploader";
 import { CapturaFotoComprovante } from "@/components/pdv/CapturaFotoComprovante";
-import { CapturaCodigoBarras } from "@/components/pdv/CapturaCodigoBarras";
 import { BarcodeScanner } from "@/components/pdv/BarcodeScanner";
 
 interface Props {
@@ -63,6 +62,8 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
   const [fotoNotaFiscalPath, setFotoNotaFiscalPath] = useState<string | null>(null);
   const [fotoQrcodePath, setFotoQrcodePath] = useState<string | null>(null);
   const [qrcodeConteudo, setQrcodeConteudo] = useState("");
+  const [showScannerQrcode, setShowScannerQrcode] = useState(false);
+  const [enviandoFotoQrcode, setEnviandoFotoQrcode] = useState(false);
   const [midiaProduto, setMidiaProduto] = useState<any[]>([]);
 
   const [precoPago, setPrecoPago] = useState("");
@@ -81,6 +82,35 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
       setResultadosLoja(resp.success ? resp.data : []);
     } finally {
       setBuscandoLoja(false);
+    }
+  };
+
+  // Le' o codigo de barras da NOTA (nao do produto) AO VIVO -- mesmo scanner
+  // por camera usado no codigo de barras do produto, unifica os dois passos
+  // de "escanear codigo" no mesmo jeito de usar, em vez de abrir o app de
+  // camera nativo do celular como antes -- e sobe o recorte que decodificou
+  // como foto comprovante (obrigatorio pra essa etapa, diferente do codigo
+  // de barras do produto que e' so' leitura, sem precisar arquivar).
+  const handleCodigoNotaDetectado = async (codigo: string, fotoBlob?: Blob) => {
+    setShowScannerQrcode(false);
+    if (!fotoBlob) {
+      toast.error("Não deu pra capturar a foto. Tente escanear de novo.");
+      return;
+    }
+    setQrcodeConteudo(codigo);
+    setEnviandoFotoQrcode(true);
+    try {
+      const formData = new FormData();
+      formData.append("arquivo", fotoBlob, "codigo-nota.jpg");
+      formData.append("donoId", usuarioId);
+      const resp = await fetch("/api/upload/comprovante-catalogo", { method: "POST", body: formData }).then((r) => r.json());
+      if (!resp.success) throw new Error(resp.error || "Falha no upload");
+      setFotoQrcodePath(resp.path);
+      toast.success("Código de barras da nota capturado!");
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao salvar a foto do código de barras.");
+    } finally {
+      setEnviandoFotoQrcode(false);
     }
   };
 
@@ -268,18 +298,19 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
 
         {etapa === "qrcode" && (
           <div className="space-y-3">
-            <CapturaCodigoBarras
-              fotoPath={fotoQrcodePath}
-              donoId={usuarioId}
-              ean={qrcodeConteudo}
-              obrigatoria
-              titulo="Foto do QR code da nota"
-              textoObrigatoria="Obrigatória — é a prova de que a nota é verdadeira. Fica no canto da nota fiscal/cupom."
-              onEanChange={setQrcodeConteudo}
-              onFotoPathChange={setFotoQrcodePath}
-            />
+            <p className="text-sm text-gray-600">
+              Aponte a câmera pro código de barras impresso na nota fiscal/cupom (obrigatório — é a prova de que a nota é verdadeira).
+            </p>
+            <button
+              onClick={() => setShowScannerQrcode(true)}
+              disabled={enviandoFotoQrcode}
+              className="w-full py-3 border-2 border-dashed rounded-xl text-sm text-gray-600 hover:border-blue-500 disabled:opacity-60"
+            >
+              {enviandoFotoQrcode ? "Salvando foto..." : fotoQrcodePath ? "Escanear de novo" : "Escanear código de barras da nota"}
+            </button>
+            {fotoQrcodePath && <p className="text-sm text-emerald-600 text-center">Código de barras da nota capturado ✓</p>}
             <p className="text-xs text-gray-400">
-              Se sua nota tiver mais de um produto, essas duas fotos valem pra todos — você só tira uma vez.
+              Se sua nota tiver mais de um produto, essa foto vale pra todos — você só tira uma vez.
             </p>
             <button
               onClick={() => setEtapa("codigo")}
@@ -295,7 +326,7 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
           <div className="space-y-3">
             {produtosEnviados > 0 && (
               <p className="text-xs text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-lg p-2">
-                Produto {produtosEnviados + 1} dessa nota — nota fiscal e QR code já registrados.
+                Produto {produtosEnviados + 1} dessa nota — nota fiscal e código de barras da nota já registrados.
               </p>
             )}
             {alertaDuplicidade && (
@@ -431,6 +462,16 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
         <BarcodeScanner
           onDetected={handleEanDetectado}
           onClose={() => setShowScanner(false)}
+        />
+      )}
+
+      {showScannerQrcode && (
+        <BarcodeScanner
+          titulo="Escanear código de barras da nota"
+          instrucaoCamera="Centralize o código de barras da nota fiscal/cupom no quadro."
+          capturarFoto
+          onDetected={handleCodigoNotaDetectado}
+          onClose={() => setShowScannerQrcode(false)}
         />
       )}
     </div>
