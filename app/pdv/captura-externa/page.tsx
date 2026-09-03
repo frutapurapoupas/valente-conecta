@@ -231,7 +231,7 @@ export default function CapturaExternaPage() {
                   <DollarSign className="w-4 h-4" /> Venda
                 </button>
               </div>
-              <MidiaUploader midia={novaFoto} onChange={setNovaFoto} maximo={1} />
+              <MidiaUploader midia={novaFoto} onChange={setNovaFoto} maximo={1} preferirCamera />
               <button
                 onClick={registrarCaptura}
                 disabled={criandoCaptura || novaFoto.length === 0}

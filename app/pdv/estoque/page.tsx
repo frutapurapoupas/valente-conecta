@@ -535,7 +535,7 @@ export default function PdvEstoquePage() {
             {etapa === "foto" && (
               <div className="space-y-4">
                 <p className="text-sm text-gray-500">Foto de exibição no catálogo (opcional, mas ajuda muito).</p>
-                <MidiaUploader midia={midia} onChange={setMidia} maximo={1} />
+                <MidiaUploader midia={midia} onChange={setMidia} maximo={1} preferirCamera />
                 <button onClick={avancarParaCodigo} className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold">Continuar</button>
               </div>
             )}

@@ -580,7 +580,7 @@ export default function FiadoPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Foto (opcional)</label>
-                  <MidiaUploader midia={fotoCliente} onChange={setFotoCliente} maximo={1} />
+                  <MidiaUploader midia={fotoCliente} onChange={setFotoCliente} maximo={1} preferirCamera />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Nome *</label>

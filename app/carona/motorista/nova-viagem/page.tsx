@@ -216,15 +216,15 @@ function FormularioCadastroMotorista({ usuario, onCadastrado }: { usuario: any; 
 
       <div>
         <p className="text-sm font-medium mb-1.5">Sua foto (rosto) *</p>
-        <MidiaUploader midia={fotoRosto} onChange={setFotoRosto} maximo={1} />
+        <MidiaUploader midia={fotoRosto} onChange={setFotoRosto} maximo={1} preferirCamera />
       </div>
       <div>
         <p className="text-sm font-medium mb-1.5">Foto do veículo *</p>
-        <MidiaUploader midia={fotoVeiculo} onChange={setFotoVeiculo} maximo={1} />
+        <MidiaUploader midia={fotoVeiculo} onChange={setFotoVeiculo} maximo={1} preferirCamera />
       </div>
       <div>
         <p className="text-sm font-medium mb-1.5">Foto da CNH *</p>
-        <MidiaUploader midia={fotoCnh} onChange={setFotoCnh} maximo={1} />
+        <MidiaUploader midia={fotoCnh} onChange={setFotoCnh} maximo={1} preferirCamera />
       </div>
 
       <label className="flex items-center gap-2 text-sm">

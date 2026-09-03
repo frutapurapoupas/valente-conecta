@@ -103,21 +103,21 @@ export default function CadastroMotoristaPage() {
           <div>
             <p className="text-sm font-medium mb-1.5">Sua foto (rosto) *</p>
             <div className="bg-slate-800 rounded-xl p-2">
-              <MidiaUploader midia={fotoRosto} onChange={setFotoRosto} maximo={1} />
+              <MidiaUploader midia={fotoRosto} onChange={setFotoRosto} maximo={1} preferirCamera />
             </div>
           </div>
 
           <div>
             <p className="text-sm font-medium mb-1.5">Foto do veículo *</p>
             <div className="bg-slate-800 rounded-xl p-2">
-              <MidiaUploader midia={fotoVeiculo} onChange={setFotoVeiculo} maximo={1} />
+              <MidiaUploader midia={fotoVeiculo} onChange={setFotoVeiculo} maximo={1} preferirCamera />
             </div>
           </div>
 
           <div>
             <p className="text-sm font-medium mb-1.5">Foto da CNH *</p>
             <div className="bg-slate-800 rounded-xl p-2">
-              <MidiaUploader midia={fotoCnh} onChange={setFotoCnh} maximo={1} />
+              <MidiaUploader midia={fotoCnh} onChange={setFotoCnh} maximo={1} preferirCamera />
             </div>
           </div>
 

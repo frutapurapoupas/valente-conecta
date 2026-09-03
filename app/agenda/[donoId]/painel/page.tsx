@@ -339,7 +339,7 @@ function ModalMinhaFoto({ profissionalId, fotoAtual, onSalvo, onFechar }: {
           <button onClick={onFechar} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
         </div>
         <p className="text-sm text-gray-500 mb-3">Essa foto aparece pro cliente na hora de escolher quem vai atender.</p>
-        <MidiaUploader midia={midia} onChange={setMidia} maximo={1} />
+        <MidiaUploader midia={midia} onChange={setMidia} maximo={1} preferirCamera />
         <button onClick={salvar} disabled={salvando} className="w-full mt-4 bg-blue-600 text-white py-2.5 rounded-xl font-bold disabled:opacity-60">
           {salvando ? "Salvando..." : "Salvar foto"}
         </button>
