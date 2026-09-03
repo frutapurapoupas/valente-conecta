@@ -468,7 +468,7 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
       {showScannerQrcode && (
         <BarcodeScanner
           titulo="Escanear código de barras da nota"
-          instrucaoCamera="Centralize o código de barras da nota fiscal/cupom no quadro."
+          instrucaoCamera="Centralize o código de barras da nota fiscal/cupom no quadro. A leitura tenta sozinha, mas você pode tocar em 'Tirar foto agora' pra forçar."
           capturarFoto
           onDetected={handleCodigoNotaDetectado}
           onClose={() => setShowScannerQrcode(false)}

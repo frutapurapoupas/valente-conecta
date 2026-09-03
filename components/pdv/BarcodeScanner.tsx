@@ -18,7 +18,7 @@
 // callback — quem usa o componente nao precisa saber qual entrada captou.
 
 import { useEffect, useRef, useState } from "react";
-import { Camera, Keyboard, X } from "lucide-react";
+import { Camera, Keyboard, X, Aperture } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface BarcodeScannerProps {
@@ -43,7 +43,7 @@ export function BarcodeScanner({
   onDetected,
   onClose,
   titulo = "Escanear código de barras",
-  instrucaoCamera = "Centralize o código de barras no quadro.",
+  instrucaoCamera = "Centralize o código de barras no quadro. A leitura tenta sozinha, mas você pode tocar em \"Tirar foto agora\" pra forçar.",
   instrucaoLeitor = "Funciona com qualquer leitor USB ou Bluetooth configurado como teclado.",
   incluirQrCode = false,
   capturarFoto = false,
@@ -55,6 +55,12 @@ export function BarcodeScanner({
   const [modo, setModo] = useState<"camera" | "leitor">("camera");
   const [erroCamera, setErroCamera] = useState<string | null>(null);
   const [leitorBuffer, setLeitorBuffer] = useState("");
+  const [capturando, setCapturando] = useState(false);
+  // A leitura automatica roda sozinha, mas pode nao pegar (foco, reflexo,
+  // angulo) mesmo com o codigo bem visivel -- esse botao deixa o usuario
+  // FORCAR uma captura na hora que achar que esta' bom, em vez de ficar
+  // dependente so' do loop automatico tentar de novo sozinho.
+  const capturarManualRef = useRef<(() => void) | null>(null);
 
   // INSET_PX precisa bater com o "inset-8" (2rem = 32px) do quadro-guia
   // desenhado por cima do video mais abaixo -- e' usado aqui pra recortar
@@ -120,52 +126,89 @@ export function BarcodeScanner({
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d", { willReadFrequently: true });
 
-        const tentarLer = () => {
-          if (cancelado || !videoRef.current || !previewBoxRef.current || !ctx) return;
+        // Recorta o video no canvas seguindo a area do quadro-guia (mesma
+        // logica pro loop automatico e pra captura manual) -- devolve false
+        // se o video ainda nao tem dimensao real (comeco do stream).
+        const recortarQuadro = () => {
+          if (!videoRef.current || !previewBoxRef.current || !ctx) return false;
           const video = videoRef.current;
           const vw = video.videoWidth;
           const vh = video.videoHeight;
+          if (vw <= 0 || vh <= 0) return false;
 
-          if (vw > 0 && vh > 0) {
-            const caixa = previewBoxRef.current.getBoundingClientRect();
-            const fracX = Math.min(0.4, INSET_PX / caixa.width);
-            const fracY = Math.min(0.4, INSET_PX / caixa.height);
+          const caixa = previewBoxRef.current.getBoundingClientRect();
+          const fracX = Math.min(0.4, INSET_PX / caixa.width);
+          const fracY = Math.min(0.4, INSET_PX / caixa.height);
 
-            // object-cover: o video preenche o quadrado cortando o excesso
-            // no eixo mais largo, centralizado -- reproduz esse mesmo corte
-            // pra achar, dentro do frame NATIVO da camera, a mesma area que
-            // o usuario ve dentro do quadro-guia na tela.
-            const lado = Math.min(vw, vh);
-            const offX = (vw - lado) / 2;
-            const offY = (vh - lado) / 2;
-            const gx = offX + lado * fracX;
-            const gy = offY + lado * fracY;
-            const gw = lado * (1 - 2 * fracX);
-            const gh = lado * (1 - 2 * fracY);
+          // object-cover: o video preenche o quadrado cortando o excesso no
+          // eixo mais largo, centralizado -- reproduz esse mesmo corte pra
+          // achar, dentro do frame NATIVO da camera, a mesma area que o
+          // usuario ve dentro do quadro-guia na tela.
+          const lado = Math.min(vw, vh);
+          const offX = (vw - lado) / 2;
+          const offY = (vh - lado) / 2;
+          const gx = offX + lado * fracX;
+          const gy = offY + lado * fracY;
+          const gw = lado * (1 - 2 * fracX);
+          const gh = lado * (1 - 2 * fracY);
 
-            const ESCALA = 2;
-            canvas.width = Math.round(gw * ESCALA);
-            canvas.height = Math.round(gh * ESCALA);
-            ctx.drawImage(video, gx, gy, gw, gh, 0, 0, canvas.width, canvas.height);
+          const ESCALA = 2;
+          canvas.width = Math.round(gw * ESCALA);
+          canvas.height = Math.round(gh * ESCALA);
+          ctx.drawImage(video, gx, gy, gw, gh, 0, 0, canvas.width, canvas.height);
+          return true;
+        };
 
+        const confirmarDetectado = (texto: string) => {
+          if (capturarFoto) {
+            // O proprio recorte que decodificou com sucesso vira a foto —
+            // nao precisa de uma segunda captura separada.
+            canvas.toBlob((blob) => onDetected(texto, blob || undefined), "image/jpeg", 0.85);
+          } else {
+            onDetected(texto);
+          }
+        };
+
+        const tentarLer = () => {
+          if (cancelado) return;
+          if (recortarQuadro()) {
             try {
-              const resultado = codeReader.decodeFromCanvas(canvas);
-              const texto = resultado.getText();
-              if (capturarFoto) {
-                // O proprio recorte que decodificou com sucesso vira a foto —
-                // nao precisa de uma segunda captura separada.
-                canvas.toBlob((blob) => onDetected(texto, blob || undefined), "image/jpeg", 0.85);
-              } else {
-                onDetected(texto);
-              }
+              confirmarDetectado(codeReader.decodeFromCanvas(canvas).getText());
               return;
             } catch (erro: any) {
               const isNotFound = erro instanceof NotFoundException || erro?.name === "NotFoundException";
               if (!isNotFound) console.error("Erro ao decodificar código de barras:", erro);
             }
           }
-
           loopTimeoutId = setTimeout(tentarLer, 300);
+        };
+
+        // Captura forcada pelo usuario (botao "Tirar foto") -- tenta
+        // decodificar o quadro atual e, se conseguir, segue como se o loop
+        // automatico tivesse achado. Se nao conseguir mas a etapa EXIGE foto
+        // (capturarFoto), sobe a foto mesmo assim com codigo vazio, pra nao
+        // deixar o usuario travado sem nenhuma saida quando a leitura
+        // automatica insiste em nao pegar.
+        capturarManualRef.current = () => {
+          if (!recortarQuadro()) {
+            toast.error("Câmera ainda não está pronta, tenta de novo em 1 segundo.");
+            return;
+          }
+          try {
+            confirmarDetectado(codeReader.decodeFromCanvas(canvas).getText());
+            return;
+          } catch {
+            // Nao leu sozinho.
+          }
+          if (capturarFoto) {
+            canvas.toBlob((blob) => {
+              if (!blob) { toast.error("Não deu pra capturar a foto. Tente de novo."); return; }
+              toast("Foto salva, mas não deu pra ler o número sozinho.", { icon: "📷" });
+              onDetected("", blob);
+            }, "image/jpeg", 0.85);
+          } else {
+            toast.error("Não deu pra ler o código. Ajuste o foco/ângulo e tente de novo.");
+          }
         };
 
         tentarLer();
@@ -179,6 +222,7 @@ export function BarcodeScanner({
     return () => {
       cancelado = true;
       clearTimeout(loopTimeoutId);
+      capturarManualRef.current = null;
       streamRef.current?.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
     };
@@ -225,9 +269,23 @@ export function BarcodeScanner({
           erroCamera ? (
             <p className="text-red-400 text-center text-sm max-w-xs">{erroCamera}</p>
           ) : (
-            <div ref={previewBoxRef} className="relative w-full max-w-md aspect-square rounded-2xl overflow-hidden border-2 border-white/30">
-              <video ref={videoRef} className="w-full h-full object-cover" muted playsInline />
-              <div className="absolute inset-8 border-2 border-blue-400 rounded-xl pointer-events-none" />
+            <div className="w-full max-w-md flex flex-col items-center gap-4">
+              <div ref={previewBoxRef} className="relative w-full aspect-square rounded-2xl overflow-hidden border-2 border-white/30">
+                <video ref={videoRef} className="w-full h-full object-cover" muted playsInline />
+                <div className="absolute inset-8 border-2 border-blue-400 rounded-xl pointer-events-none" />
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setCapturando(true);
+                  capturarManualRef.current?.();
+                  setTimeout(() => setCapturando(false), 400);
+                }}
+                disabled={capturando}
+                className="flex items-center gap-2 bg-white text-gray-800 font-semibold px-5 py-3 rounded-full shadow-lg disabled:opacity-60"
+              >
+                <Aperture className="w-5 h-5" /> {capturando ? "Capturando..." : "Tirar foto agora"}
+              </button>
             </div>
           )
         ) : (
