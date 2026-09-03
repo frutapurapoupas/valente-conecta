@@ -3,8 +3,11 @@
 // Caminho: C:\valente_conecta\components\consumidor\QuizCadastroProduto.tsx
 //
 // Quiz pra CONSUMIDOR cadastrar um produto que comprou, comprovando com
-// foto da nota fiscal/cupom + foto do código de barras da nota + foto do produto
-// (ver 093_cadastro_consumidor_produto.sql). O lojista identificado (loja
+// foto da nota fiscal/cupom + foto do produto (ver
+// 093_cadastro_consumidor_produto.sql -- a etapa de foto do codigo de
+// barras da NOTA foi removida, leitura por foto era muito inconsistente
+// e virou atrito sem beneficio real; a foto da nota fiscal ja e' a prova
+// de compra, ver 099_remove_obrigatorio_foto_qrcode.sql). O lojista identificado (loja
 // onde comprou) precisa aprovar antes do produto "aparecer" no catálogo
 // colaborativo do PDV pros outros lojistas. Duplicidade é bloqueada de
 // verdade pelo backend (POST /api/consumidor/cadastro-produto devolve 409
@@ -23,7 +26,7 @@ interface Props {
   onSucesso: () => void;
 }
 
-type Etapa = "loja" | "nota" | "qrcode" | "codigo" | "produto" | "foto" | "detalhes" | "sucesso";
+type Etapa = "loja" | "nota" | "codigo" | "produto" | "foto" | "detalhes" | "sucesso";
 
 interface Loja {
   usuarioId: string;
@@ -60,10 +63,6 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
   const [verificandoEan, setVerificandoEan] = useState(false);
 
   const [fotoNotaFiscalPath, setFotoNotaFiscalPath] = useState<string | null>(null);
-  const [fotoQrcodePath, setFotoQrcodePath] = useState<string | null>(null);
-  const [qrcodeConteudo, setQrcodeConteudo] = useState("");
-  const [showScannerQrcode, setShowScannerQrcode] = useState(false);
-  const [enviandoFotoQrcode, setEnviandoFotoQrcode] = useState(false);
   const [midiaProduto, setMidiaProduto] = useState<any[]>([]);
 
   const [precoPago, setPrecoPago] = useState("");
@@ -82,35 +81,6 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
       setResultadosLoja(resp.success ? resp.data : []);
     } finally {
       setBuscandoLoja(false);
-    }
-  };
-
-  // Le' o codigo de barras da NOTA (nao do produto) AO VIVO -- mesmo scanner
-  // por camera usado no codigo de barras do produto, unifica os dois passos
-  // de "escanear codigo" no mesmo jeito de usar, em vez de abrir o app de
-  // camera nativo do celular como antes -- e sobe o recorte que decodificou
-  // como foto comprovante (obrigatorio pra essa etapa, diferente do codigo
-  // de barras do produto que e' so' leitura, sem precisar arquivar).
-  const handleCodigoNotaDetectado = async (codigo: string, fotoBlob?: Blob) => {
-    setShowScannerQrcode(false);
-    if (!fotoBlob) {
-      toast.error("Não deu pra capturar a foto. Tente escanear de novo.");
-      return;
-    }
-    setQrcodeConteudo(codigo);
-    setEnviandoFotoQrcode(true);
-    try {
-      const formData = new FormData();
-      formData.append("arquivo", fotoBlob, "codigo-nota.jpg");
-      formData.append("donoId", usuarioId);
-      const resp = await fetch("/api/upload/comprovante-catalogo", { method: "POST", body: formData }).then((r) => r.json());
-      if (!resp.success) throw new Error(resp.error || "Falha no upload");
-      setFotoQrcodePath(resp.path);
-      toast.success("Código de barras da nota capturado!");
-    } catch (err: any) {
-      toast.error(err.message || "Erro ao salvar a foto do código de barras.");
-    } finally {
-      setEnviandoFotoQrcode(false);
     }
   };
 
@@ -164,7 +134,7 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
 
   const enviar = async () => {
     if (!lojaSelecionada && !nomeLojaTexto) return;
-    if (!fotoNotaFiscalPath || !midiaProduto[0]?.url || !fotoQrcodePath) {
+    if (!fotoNotaFiscalPath || !midiaProduto[0]?.url) {
       toast.error("Faltam fotos obrigatórias.");
       return;
     }
@@ -188,13 +158,17 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
           detalhes: detalhes.trim() || null,
           fotoProdutoUrl: midiaProduto[0].url,
           fotoNotaFiscalPath,
-          fotoQrcodePath,
-          qrcodeConteudo: qrcodeConteudo || null,
         }),
       });
       const resultado = await resp.json();
       if (!resultado.success) {
         if (resultado.error === "produto_ja_existe") {
+          setAlertaDuplicidade(resultado.nomeExistente || nomeProduto);
+          setEtapa("produto");
+          return;
+        }
+        if (resultado.error === "voce_ja_cadastrou") {
+          toast.error("Você já cadastrou esse produto nessa loja.");
           setAlertaDuplicidade(resultado.nomeExistente || nomeProduto);
           setEtapa("produto");
           return;
@@ -212,7 +186,7 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
   };
 
   const voltar = () => {
-    const ordem: Etapa[] = ["loja", "nota", "qrcode", "codigo", "produto", "foto", "detalhes"];
+    const ordem: Etapa[] = ["loja", "nota", "codigo", "produto", "foto", "detalhes"];
     const idx = ordem.indexOf(etapa);
     if (idx > 0) setEtapa(ordem[idx - 1]);
   };
@@ -291,42 +265,8 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
               onFotoPathChange={setFotoNotaFiscalPath}
             />
             <button
-              onClick={() => setEtapa("qrcode")}
-              disabled={!fotoNotaFiscalPath}
-              className="w-full bg-blue-600 text-white py-2.5 rounded-xl text-sm font-semibold disabled:opacity-60"
-            >
-              Continuar
-            </button>
-          </div>
-        )}
-
-        {etapa === "qrcode" && (
-          <div className="space-y-3">
-            <p className="text-sm text-gray-600">
-              Aponte a câmera pro código de barras impresso na nota fiscal/cupom (obrigatório — é a prova de que a nota é verdadeira).
-            </p>
-            <button
-              onClick={() => setShowScannerQrcode(true)}
-              disabled={enviandoFotoQrcode}
-              className="w-full py-3 border-2 border-dashed rounded-xl text-sm text-gray-600 hover:border-blue-500 disabled:opacity-60"
-            >
-              {enviandoFotoQrcode ? "Salvando foto..." : fotoQrcodePath ? "Escanear de novo" : "Escanear código de barras da nota"}
-            </button>
-            {fotoQrcodePath && <p className="text-sm text-emerald-600 text-center">Código de barras da nota capturado ✓</p>}
-            {!fotoQrcodePath && (
-              <button
-                onClick={() => setFotoQrcodePath(fotoNotaFiscalPath)}
-                className="w-full text-sm text-gray-500 underline text-center"
-              >
-                Essa nota não tem código de barras
-              </button>
-            )}
-            <p className="text-xs text-gray-400">
-              Se sua nota tiver mais de um produto, essa foto vale pra todos — você só tira uma vez.
-            </p>
-            <button
               onClick={() => setEtapa("codigo")}
-              disabled={!fotoQrcodePath}
+              disabled={!fotoNotaFiscalPath}
               className="w-full bg-blue-600 text-white py-2.5 rounded-xl text-sm font-semibold disabled:opacity-60"
             >
               Continuar
@@ -338,7 +278,7 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
           <div className="space-y-3">
             {produtosEnviados > 0 && (
               <p className="text-xs text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-lg p-2">
-                Produto {produtosEnviados + 1} dessa nota — nota fiscal e código de barras da nota já registrados.
+                Produto {produtosEnviados + 1} dessa nota — nota fiscal já registrada.
               </p>
             )}
             {alertaDuplicidade && (
@@ -476,16 +416,6 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
         <BarcodeScanner
           onDetected={handleEanDetectado}
           onClose={() => setShowScanner(false)}
-        />
-      )}
-
-      {showScannerQrcode && (
-        <BarcodeScanner
-          titulo="Escanear código de barras da nota"
-          instrucaoCamera="Centralize o código de barras da nota fiscal/cupom no quadro. A leitura tenta sozinha, mas você pode tocar em 'Tirar foto agora' pra forçar."
-          capturarFoto
-          onDetected={handleCodigoNotaDetectado}
-          onClose={() => setShowScannerQrcode(false)}
         />
       )}
     </div>

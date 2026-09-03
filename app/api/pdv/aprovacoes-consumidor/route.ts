@@ -38,9 +38,14 @@ export async function GET(request: NextRequest) {
   const admin = createAdminClient();
   const comSignedUrl = await Promise.all(
     (itens || []).map(async (item: any) => {
+      // foto_qrcode_path e' de cadastros antigos (etapa removida do fluxo
+      // atual, ver 099_remove_obrigatorio_foto_qrcode.sql) -- so' gera
+      // signed URL se ainda existir.
       const [notaFiscal, qrcode] = await Promise.all([
         admin.storage.from('catalogo-comprovantes').createSignedUrl(item.foto_nota_fiscal_path, 300),
-        admin.storage.from('catalogo-comprovantes').createSignedUrl(item.foto_qrcode_path, 300),
+        item.foto_qrcode_path
+          ? admin.storage.from('catalogo-comprovantes').createSignedUrl(item.foto_qrcode_path, 300)
+          : Promise.resolve({ data: null }),
       ]);
       return {
         ...item,

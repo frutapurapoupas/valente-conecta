@@ -32,7 +32,6 @@ export async function POST(request: NextRequest) {
     const ean = body.ean ? String(body.ean).trim() : null;
     const fotoProdutoUrl = String(body.fotoProdutoUrl || '').trim();
     const fotoNotaFiscalPath = String(body.fotoNotaFiscalPath || '').trim();
-    const fotoQrcodePath = String(body.fotoQrcodePath || '').trim();
     const precoPago = body.precoPago !== undefined && body.precoPago !== null ? Number(body.precoPago) : NaN;
 
     if (!usuarioId) return NextResponse.json({ success: false, error: 'usuarioId é obrigatório' }, { status: 400 });
@@ -41,14 +40,31 @@ export async function POST(request: NextRequest) {
     }
     if (!nomeProduto) return NextResponse.json({ success: false, error: 'Informe o nome do produto' }, { status: 400 });
     if (!categoria) return NextResponse.json({ success: false, error: 'Informe a categoria' }, { status: 400 });
-    if (!fotoProdutoUrl || !fotoNotaFiscalPath || !fotoQrcodePath) {
-      return NextResponse.json({ success: false, error: 'Foto da nota fiscal, foto do produto e foto do código de barras da nota são obrigatórias' }, { status: 400 });
+    if (!fotoProdutoUrl || !fotoNotaFiscalPath) {
+      return NextResponse.json({ success: false, error: 'Foto da nota fiscal e foto do produto são obrigatórias' }, { status: 400 });
     }
     if (!(precoPago > 0)) {
       return NextResponse.json({ success: false, error: 'Informe o preço que você pagou' }, { status: 400 });
     }
 
     const supabase = createClient();
+
+    // O MESMO consumidor nao pode cadastrar o MESMO produto pra MESMA loja
+    // duas vezes -- a checagem contra pdv_produtos_catalogo abaixo so' pega
+    // depois que ALGUM lojista aprova a primeira submissao, entao sozinha
+    // ela nao impede reenvio enquanto a primeira ainda esta' "pendente".
+    let queryProprio = supabase
+      .from('consumidor_cadastros_produto')
+      .select('id, nome_produto')
+      .eq('usuario_id', usuarioId)
+      .in('status', ['pendente', 'aprovado'])
+      .limit(1);
+    queryProprio = fornecedorId ? queryProprio.eq('fornecedor_id', fornecedorId) : queryProprio.eq('nome_loja_texto', nomeLojaTexto);
+    queryProprio = ean ? queryProprio.eq('ean', ean) : queryProprio.ilike('nome_produto', nomeProduto);
+    const { data: proprioExistente } = await queryProprio;
+    if (proprioExistente && proprioExistente.length > 0) {
+      return NextResponse.json({ success: false, error: 'voce_ja_cadastrou', nomeExistente: proprioExistente[0].nome_produto }, { status: 409 });
+    }
 
     if (ean) {
       const { data: existente } = await supabase.from('pdv_produtos_catalogo').select('nome').eq('ean', ean).maybeSingle();
@@ -81,8 +97,6 @@ export async function POST(request: NextRequest) {
         detalhes: body.detalhes ? String(body.detalhes).trim() : null,
         foto_produto_url: fotoProdutoUrl,
         foto_nota_fiscal_path: fotoNotaFiscalPath,
-        foto_qrcode_path: fotoQrcodePath,
-        qrcode_conteudo: body.qrcodeConteudo ? String(body.qrcodeConteudo) : null,
       })
       .select('*')
       .single();
