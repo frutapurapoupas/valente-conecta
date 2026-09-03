@@ -71,6 +71,23 @@ export async function POST(request: NextRequest) {
       if (existente) {
         return NextResponse.json({ success: false, error: 'produto_ja_existe', nomeExistente: existente.nome }, { status: 409 });
       }
+
+      // EAN e' unico GLOBALMENTE no catalogo (idx_pdv_catalogo_ean_unico, ver
+      // 038) -- entao mesmo antes de qualquer lojista aprovar, uma submissao
+      // pendente de OUTRO consumidor pro mesmo codigo de barras ja "reserva"
+      // aquele produto. Sem isso, dois consumidores em lojas diferentes
+      // levavam o mesmo EAN ate' o final e o app acabava com duas submissoes
+      // pra virar um unico produto no catalogo.
+      const { data: pendenteOutro } = await supabase
+        .from('consumidor_cadastros_produto')
+        .select('id, nome_produto')
+        .eq('ean', ean)
+        .in('status', ['pendente', 'aprovado'])
+        .limit(1)
+        .maybeSingle();
+      if (pendenteOutro) {
+        return NextResponse.json({ success: false, error: 'codigo_ja_cadastrado_pendente', nomeExistente: pendenteOutro.nome_produto }, { status: 409 });
+      }
     } else {
       const { data: similares } = await supabase.rpc('pdv_buscar_produto_similar_v2', { p_nome: nomeProduto, p_segmento: categoria, p_limite: 1 });
       const maisParecido = similares?.[0];

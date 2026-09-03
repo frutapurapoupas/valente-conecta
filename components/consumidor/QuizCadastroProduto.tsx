@@ -90,10 +90,16 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
     try {
       const resp = await fetch(`/api/consumidor/cadastro-produto/verificar-ean?ean=${encodeURIComponent(codigo)}`).then((r) => r.json());
       if (resp.success && resp.existe) {
-        // Ja existe no catalogo -- avisa na hora, sem fazer o consumidor
-        // tirar as 3 fotos (nota fiscal, produto, QR code) pra so' descobrir
-        // isso no final (mesmo bloqueio que ja existia no POST, so' que mais cedo).
-        toast.error("Esse produto já existe no catálogo. Escaneie outro produto.");
+        // Ja existe no catalogo (ou algum outro consumidor ja mandou esse
+        // mesmo codigo de barras e ta' esperando aprovacao) -- avisa na
+        // hora, sem fazer o consumidor tirar as 3 fotos (nota fiscal,
+        // produto, QR code) pra so' descobrir isso no final (mesmo bloqueio
+        // que ja existia no POST, so' que mais cedo).
+        toast.error(
+          resp.pendente
+            ? "Outro cliente já cadastrou esse código de barras e está aguardando aprovação da loja."
+            : "Esse produto já existe no catálogo. Escaneie outro produto."
+        );
         setAlertaDuplicidade(resp.nome || codigo);
         setEan("");
         return;
@@ -169,6 +175,12 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
         }
         if (resultado.error === "voce_ja_cadastrou") {
           toast.error("Você já cadastrou esse produto nessa loja.");
+          setAlertaDuplicidade(resultado.nomeExistente || nomeProduto);
+          setEtapa("produto");
+          return;
+        }
+        if (resultado.error === "codigo_ja_cadastrado_pendente") {
+          toast.error("Outro cliente já cadastrou esse código de barras e está aguardando aprovação da loja.");
           setAlertaDuplicidade(resultado.nomeExistente || nomeProduto);
           setEtapa("produto");
           return;
