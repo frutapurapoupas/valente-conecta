@@ -168,6 +168,10 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
       toast.error("Faltam fotos obrigatórias.");
       return;
     }
+    if (!precoPago || Number(precoPago) <= 0) {
+      toast.error("Informe o preço que você pagou.");
+      return;
+    }
     setEnviando(true);
     try {
       const resp = await fetch("/api/consumidor/cadastro-produto", {
@@ -180,7 +184,7 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
           nomeProduto: nomeProduto.trim(),
           categoria,
           ean: ean || null,
-          precoPago: precoPago ? Number(precoPago) : null,
+          precoPago: Number(precoPago),
           detalhes: detalhes.trim() || null,
           fotoProdutoUrl: midiaProduto[0].url,
           fotoNotaFiscalPath,
@@ -309,6 +313,14 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
               {enviandoFotoQrcode ? "Salvando foto..." : fotoQrcodePath ? "Escanear de novo" : "Escanear código de barras da nota"}
             </button>
             {fotoQrcodePath && <p className="text-sm text-emerald-600 text-center">Código de barras da nota capturado ✓</p>}
+            {!fotoQrcodePath && (
+              <button
+                onClick={() => setFotoQrcodePath(fotoNotaFiscalPath)}
+                className="w-full text-sm text-gray-500 underline text-center"
+              >
+                Essa nota não tem código de barras
+              </button>
+            )}
             <p className="text-xs text-gray-400">
               Se sua nota tiver mais de um produto, essa foto vale pra todos — você só tira uma vez.
             </p>
@@ -404,12 +416,14 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
         {etapa === "detalhes" && (
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Preço pago (opcional)</label>
+              <label className="block text-sm font-medium text-gray-500 mb-1">Preço pago <span className="text-red-500">*</span></label>
               <input
-                type="number" step="0.01" min="0"
+                type="number" step="0.01" min="0.01"
                 value={precoPago}
                 onChange={(e) => setPrecoPago(e.target.value)}
+                placeholder="Ex: 12.90"
                 className="w-full px-3 py-2 border rounded-lg text-sm"
+                autoFocus
               />
             </div>
             <div>
@@ -424,7 +438,7 @@ export function QuizCadastroProduto({ usuarioId, onClose, onSucesso }: Props) {
             </div>
             <button
               onClick={enviar}
-              disabled={enviando}
+              disabled={enviando || !precoPago || Number(precoPago) <= 0}
               className="w-full bg-emerald-600 text-white py-2.5 rounded-xl text-sm font-semibold disabled:opacity-60 flex items-center justify-center gap-2"
             >
               {enviando ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}

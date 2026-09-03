@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
     const fotoProdutoUrl = String(body.fotoProdutoUrl || '').trim();
     const fotoNotaFiscalPath = String(body.fotoNotaFiscalPath || '').trim();
     const fotoQrcodePath = String(body.fotoQrcodePath || '').trim();
+    const precoPago = body.precoPago !== undefined && body.precoPago !== null ? Number(body.precoPago) : NaN;
 
     if (!usuarioId) return NextResponse.json({ success: false, error: 'usuarioId é obrigatório' }, { status: 400 });
     if (!fornecedorId && !nomeLojaTexto) {
@@ -41,7 +42,10 @@ export async function POST(request: NextRequest) {
     if (!nomeProduto) return NextResponse.json({ success: false, error: 'Informe o nome do produto' }, { status: 400 });
     if (!categoria) return NextResponse.json({ success: false, error: 'Informe a categoria' }, { status: 400 });
     if (!fotoProdutoUrl || !fotoNotaFiscalPath || !fotoQrcodePath) {
-      return NextResponse.json({ success: false, error: 'Foto da nota fiscal, foto do produto e foto do QR code são obrigatórias' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'Foto da nota fiscal, foto do produto e foto do código de barras da nota são obrigatórias' }, { status: 400 });
+    }
+    if (!(precoPago > 0)) {
+      return NextResponse.json({ success: false, error: 'Informe o preço que você pagou' }, { status: 400 });
     }
 
     const supabase = createClient();
@@ -73,7 +77,7 @@ export async function POST(request: NextRequest) {
         nome_produto: nomeProduto,
         categoria,
         ean,
-        preco_pago: body.precoPago ? Number(body.precoPago) : null,
+        preco_pago: precoPago,
         detalhes: body.detalhes ? String(body.detalhes).trim() : null,
         foto_produto_url: fotoProdutoUrl,
         foto_nota_fiscal_path: fotoNotaFiscalPath,
