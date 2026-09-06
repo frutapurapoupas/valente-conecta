@@ -100,13 +100,31 @@ export default function CheckoutCozinhaPage() {
   const subtotal = useMemo(() => carrinho.reduce((soma, item) => soma + item.preco * item.quantidade, 0), [carrinho]);
   const total = subtotal + (tipoEntrega === "entrega" ? taxaEntrega : 0);
 
+  // "mercado_pago" so' vira uma opcao de verdade se a chave publica estiver
+  // configurada -- sem ela, o Payment Brick nunca renderiza (ver
+  // components/cozinha/PagamentoMercadoPago.tsx) e o cliente ficava preso
+  // depois de finalizar o pedido, vendo so' um aviso sem conseguir pagar.
+  // Melhor nem oferecer a opcao do que oferecer uma que nao funciona.
+  const mercadoPagoConfigurado = !!process.env.NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY;
+
   const opcoesPagamento = useMemo(() => {
-    const opcoes = formasAceitas.map((id) => ({ id, label: LABEL_PAGAMENTO[id] || id }));
+    const opcoes = formasAceitas
+      .filter((id) => id !== "mercado_pago" || mercadoPagoConfigurado)
+      .map((id) => ({ id, label: LABEL_PAGAMENTO[id] || id }));
     if (perfil === "revendedor" && !opcoes.some((o) => o.id === "combinado_admin")) {
       opcoes.push({ id: "combinado_admin", label: "Combinar com a cozinha (sujeito a aprovação)" });
     }
     return opcoes;
-  }, [formasAceitas, perfil]);
+  }, [formasAceitas, perfil, mercadoPagoConfigurado]);
+
+  // Se a forma pre-selecionada (primeira de formasAceitas) acabou filtrada
+  // acima, cai pra primeira opcao que sobrou em vez de deixar selecionado
+  // algo que nao aparece mais na lista.
+  useEffect(() => {
+    if (opcoesPagamento.length > 0 && !opcoesPagamento.some((o) => o.id === formaPagamento)) {
+      setFormaPagamento(opcoesPagamento[0].id);
+    }
+  }, [opcoesPagamento, formaPagamento]);
 
   const identidadeResolvida = !!usuario;
 
@@ -280,17 +298,26 @@ export default function CheckoutCozinhaPage() {
 
         <div className="bg-white rounded-2xl border p-4 mb-4">
           <h2 className="font-semibold text-gray-700 mb-3">Forma de pagamento</h2>
-          <div className="space-y-2">
-            {opcoesPagamento.map((opcao) => (
-              <button
-                key={opcao.id}
-                onClick={() => setFormaPagamento(opcao.id)}
-                className={`w-full text-left px-3 py-2.5 rounded-xl text-sm border ${formaPagamento === opcao.id ? "border-orange-500 bg-orange-50 text-orange-700" : "text-gray-600"}`}
-              >
-                {opcao.label}
-              </button>
-            ))}
-          </div>
+          {formasAceitas.includes("mercado_pago") && !mercadoPagoConfigurado && (
+            <p className="text-xs text-amber-600 mb-2">
+              Pagamento por cartão/Pix (Mercado Pago) está habilitado, mas a chave pública ainda não foi configurada — por enquanto essa opção fica oculta pro cliente.
+            </p>
+          )}
+          {opcoesPagamento.length === 0 ? (
+            <p className="text-sm text-red-600">Nenhuma forma de pagamento disponível no momento. Avise a cozinha antes de continuar.</p>
+          ) : (
+            <div className="space-y-2">
+              {opcoesPagamento.map((opcao) => (
+                <button
+                  key={opcao.id}
+                  onClick={() => setFormaPagamento(opcao.id)}
+                  className={`w-full text-left px-3 py-2.5 rounded-xl text-sm border ${formaPagamento === opcao.id ? "border-orange-500 bg-orange-50 text-orange-700" : "text-gray-600"}`}
+                >
+                  {opcao.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="bg-white rounded-2xl border p-4 mb-4">
@@ -311,7 +338,7 @@ export default function CheckoutCozinhaPage() {
 
         <button
           onClick={finalizarPedido}
-          disabled={enviando}
+          disabled={enviando || opcoesPagamento.length === 0}
           className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3.5 rounded-xl font-semibold disabled:opacity-60 flex items-center justify-center gap-2"
         >
           {enviando ? <Loader2 className="w-4 h-4 animate-spin" /> : "Finalizar pedido"}
