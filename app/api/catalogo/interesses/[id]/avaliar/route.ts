@@ -45,6 +45,12 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       throw error;
     }
 
+    // Gamificação leve (102_avaliacao_bonus.sql) -- nunca deve derrubar o
+    // salvamento da avaliação em si se der erro.
+    try {
+      await supabase.rpc('avaliacao_processar_bonus_v1', { p_usuario_id: interesse.comprador_id });
+    } catch {}
+
     return NextResponse.json({ success: true, data });
   } catch (error: any) {
     console.error('Erro ao salvar avaliação da vitrine:', error);

@@ -85,6 +85,7 @@ export default function PdvEstoquePage() {
   const [quantidade, setQuantidade] = useState(0);
   const [precoVenda, setPrecoVenda] = useState(0);
   const [precoCusto, setPrecoCusto] = useState<number | "">("");
+  const [precoReferencia, setPrecoReferencia] = useState<{ total: number; min?: number; max?: number; media?: number } | null>(null);
   const [estoqueMinimo, setEstoqueMinimo] = useState(0);
   const [validade, setValidade] = useState("");
   const [temVariacao, setTemVariacao] = useState(false);
@@ -104,6 +105,21 @@ export default function PdvEstoquePage() {
       .then((resp) => { if (resp.success) setCategoriasNegocio(resp.data.services.map((s: any) => ({ id: s.id, nome: s.nome }))); })
       .catch(() => {});
   }, []);
+
+  // Preço de referência (o que OUTRAS lojas já cobram pelo mesmo produto do
+  // catalogo colaborativo) -- só existe quando o produto casou com um item
+  // que já tem histórico de preço de outro lojista, ver
+  // /api/pdv/catalogo/preco-referencia.
+  useEffect(() => {
+    if (etapa !== "preco" || !catalogoId || !usuario?.id) {
+      setPrecoReferencia(null);
+      return;
+    }
+    fetch(`/api/pdv/catalogo/preco-referencia?catalogoId=${catalogoId}&usuarioId=${usuario.id}`)
+      .then((r) => r.json())
+      .then((resp) => setPrecoReferencia(resp.success ? resp.data : null))
+      .catch(() => setPrecoReferencia(null));
+  }, [etapa, catalogoId, usuario?.id]);
 
   const executarPublicacao = async () => {
     if (!usuario) return;
@@ -622,6 +638,18 @@ export default function PdvEstoquePage() {
                 <div>
                   <label className="text-sm font-medium text-gray-700">Preço de venda</label>
                   <input type="number" step="0.01" value={precoVenda || ""} onChange={(e) => setPrecoVenda(parseFloat(e.target.value) || 0)} className="w-full mt-1 px-3 py-2.5 border rounded-xl" autoFocus />
+                  {precoReferencia && precoReferencia.total > 0 && (
+                    <div className="mt-1.5 bg-blue-50 border border-blue-100 rounded-lg px-2.5 py-1.5 flex items-center justify-between gap-2 text-xs text-blue-800">
+                      <span>
+                        {precoReferencia.total === 1
+                          ? `Outra loja vende por R$ ${precoReferencia.min!.toFixed(2)}`
+                          : `Outras ${precoReferencia.total} lojas vendem entre R$ ${precoReferencia.min!.toFixed(2)} e R$ ${precoReferencia.max!.toFixed(2)} (média R$ ${precoReferencia.media!.toFixed(2)})`}
+                      </span>
+                      <button type="button" onClick={() => setPrecoVenda(Number(precoReferencia.media!.toFixed(2)))} className="shrink-0 font-semibold underline">
+                        Usar média
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">Preço de custo (opcional)</label>

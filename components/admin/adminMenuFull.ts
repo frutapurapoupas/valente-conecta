@@ -142,6 +142,7 @@ export const adminMenuFull: MenuGroup[] = [
       { name: "Bônus catálogo colaborativo (EAN novo)", path: "/admin-master/configuracoes/bonus-catalogo-colaborativo", icon: Package, status: 'active' },
       { name: "Ciclo cadastro colaborativo (consumidor)", path: "/admin-master/configuracoes/ciclo-cadastro-consumidor", icon: Gift, status: 'active' },
       { name: "Indicações de estabelecimento/fornecedor", path: "/admin-master/indicacoes-estabelecimento", icon: Megaphone, status: 'active' },
+      { name: "Bônus por avaliação", path: "/admin-master/configuracoes/ciclo-avaliacao", icon: Gift, status: 'active' },
       { name: "Plano Geral (limites e preço)", path: "/admin-master/configuracoes/plano-geral", icon: Sparkles, status: 'active' },
     ]
   },
