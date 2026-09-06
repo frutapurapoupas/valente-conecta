@@ -1,217 +1,177 @@
-﻿"use client";
+"use client";
 
-import { useEstabelecimento } from "@/modules/estabelecimento";
-import { useState } from "react";
+// Caminho: C:\valente_conecta\app\indicar-estabelecimento\page.tsx
+//
+// Reescrita completa -- a versão anterior usava um módulo isolado
+// (@/modules/estabelecimento) que consultava uma tabela "estabelecimentos"
+// nunca criada em nenhuma migration, e usava um usuário fixo no código
+// ("current-user-id"). Agora usa a identidade real do usuário
+// (getCurrentUser()) e fala com /api/indicacao-estabelecimento, ligado a
+// 100_indicacao_estabelecimento_fornecedor.sql. O admin master revisa em
+// /admin-master/indicacoes-estabelecimento, e a indicação aprovada conta
+// pra meta de bônus em Moeda Conecta de quem indicou.
 
-// TODO: Obter userId do contexto de autenticação
-const USER_ID = "current-user-id";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { Megaphone, Send } from "lucide-react";
+import { getCurrentUser } from "@/lib/auth";
+
+interface MinhaIndicacao {
+  id: string;
+  nome: string;
+  categoria: string;
+  cidade: string;
+  status: "pendente" | "aprovado" | "recusado";
+  motivo_recusa: string | null;
+  created_at: string;
+}
+
+const statusInfo: Record<string, { label: string; classe: string }> = {
+  pendente: { label: "Em análise", classe: "bg-amber-100 text-amber-800" },
+  aprovado: { label: "Aprovado", classe: "bg-emerald-100 text-emerald-800" },
+  recusado: { label: "Não aprovado", classe: "bg-red-100 text-red-800" },
+};
 
 export default function IndicarEstabelecimentoPage() {
-  const { estabelecimentos, stats, loading, error, criar, aprovar, rejeitar } = useEstabelecimento();
-  const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({
-    nome: "",
-    descricao: "",
-    categoria: "",
-    endereco: "",
-    cidade: "",
-    estado: "",
-    cep: "",
-    telefone: "",
-    email: "",
-    site: ""
-  });
+  const [usuario, setUsuario] = useState<any>(null);
+  const [minhasIndicacoes, setMinhasIndicacoes] = useState<MinhaIndicacao[]>([]);
+  const [carregando, setCarregando] = useState(true);
+  const [enviando, setEnviando] = useState(false);
+  const [form, setForm] = useState({ nome: "", categoria: "", cidade: "", telefone: "", endereco: "", observacoes: "" });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await criar({
-        ...formData,
-        usuario_id: USER_ID,
-        status: "pendente"
-      });
-      setShowForm(false);
-      setFormData({
-        nome: "",
-        descricao: "",
-        categoria: "",
-        endereco: "",
-        cidade: "",
-        estado: "",
-        cep: "",
-        telefone: "",
-        email: "",
-        site: ""
-      });
-    } catch (err) {}
+  const carregar = (usuarioId: string) => {
+    setCarregando(true);
+    fetch(`/api/indicacao-estabelecimento?usuarioId=${usuarioId}`)
+      .then((r) => r.json())
+      .then((resp) => setMinhasIndicacoes(resp.success ? resp.data : []))
+      .finally(() => setCarregando(false));
   };
 
-  if (loading && estabelecimentos.length === 0) {
-    return <div className="p-6 text-center">Carregando...</div>;
-  }
+  useEffect(() => {
+    const u = getCurrentUser();
+    setUsuario(u);
+    if (u?.id) {
+      setForm((prev) => ({ ...prev, cidade: u.cidade_base || "" }));
+      carregar(u.id);
+    } else {
+      setCarregando(false);
+    }
+  }, []);
 
-  if (error) {
-    return <div className="p-6 text-red-600">Erro: {error.message}</div>;
-  }
-
-  const statusColors: Record<string, string> = {
-    pendente: "bg-yellow-100 text-yellow-800",
-    aprovado: "bg-green-100 text-green-800",
-    rejeitado: "bg-red-100 text-red-800"
+  const enviar = async () => {
+    if (!usuario?.id) {
+      toast.error("Faça seu cadastro pra indicar um estabelecimento.");
+      return;
+    }
+    if (!form.nome.trim() || !form.categoria.trim() || !form.cidade.trim()) {
+      toast.error("Preencha nome, categoria e cidade.");
+      return;
+    }
+    setEnviando(true);
+    try {
+      const resp = await fetch("/api/indicacao-estabelecimento", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ usuarioId: usuario.id, ...form }),
+      });
+      const resultado = await resp.json();
+      if (!resultado.success) throw new Error(resultado.error);
+      toast.success("Indicação enviada! Vamos avaliar e você acompanha o status aqui.");
+      setForm({ nome: "", categoria: "", cidade: usuario.cidade_base || "", telefone: "", endereco: "", observacoes: "" });
+      carregar(usuario.id);
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao enviar indicação");
+    } finally {
+      setEnviando(false);
+    }
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Indicar Estabelecimento</h1>
-        <button onClick={() => setShowForm(true)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-          + Novo Estabelecimento
-        </button>
-      </div>
-
-      {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white p-4 rounded-lg shadow"><p className="text-sm text-gray-600">Total</p><p className="text-2xl font-bold">{stats.total}</p></div>
-          <div className="bg-white p-4 rounded-lg shadow"><p className="text-sm text-gray-600">Pendentes</p><p className="text-2xl font-bold text-yellow-600">{stats.pendentes}</p></div>
-          <div className="bg-white p-4 rounded-lg shadow"><p className="text-sm text-gray-600">Aprovados</p><p className="text-2xl font-bold text-green-600">{stats.aprovados}</p></div>
-          <div className="bg-white p-4 rounded-lg shadow"><p className="text-sm text-gray-600">Rejeitados</p><p className="text-2xl font-bold text-red-600">{stats.rejeitados}</p></div>
-        </div>
-      )}
-
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50"><tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nome</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Categoria</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cidade</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>
-          </tr></thead>
-          <tbody className="divide-y divide-gray-200">
-            {estabelecimentos.length === 0 ? (
-              <tr><td colSpan={5} className="px-6 py-4 text-center text-gray-500">Nenhum estabelecimento</td></tr>
-            ) : (
-              estabelecimentos.map((e) => (
-                <tr key={e.id}>
-                  <td className="px-6 py-4 font-medium">{e.nome}</td>
-                  <td className="px-6 py-4">{e.categoria}</td>
-                  <td className="px-6 py-4">{e.cidade}</td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2 py-1 rounded-full text-xs ${statusColors[e.status] || "bg-gray-100"}`}>
-                      {e.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    {e.status === "pendente" && (
-                      <div className="flex gap-2">
-                        <button onClick={() => aprovar(e.id)} className="text-green-600 hover:text-green-800 text-sm">Aprovar</button>
-                        <button onClick={() => rejeitar(e.id)} className="text-red-600 hover:text-red-800 text-sm">Rejeitar</button>
-                      </div>
-                    )}
-                    {e.status === "aprovado" && (
-                      <span className="text-sm text-green-600">✓ Aprovado</span>
-                    )}
-                    {e.status === "rejeitado" && (
-                      <span className="text-sm text-red-600">✗ Rejeitado</span>
-                    )}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">Novo Estabelecimento</h2>
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <input
-                value={formData.nome}
-                onChange={(e) => setFormData({...formData, nome: e.target.value})}
-                placeholder="Nome do estabelecimento"
-                className="w-full p-2 border rounded"
-                required
-              />
-              <input
-                value={formData.categoria}
-                onChange={(e) => setFormData({...formData, categoria: e.target.value})}
-                placeholder="Categoria"
-                className="w-full p-2 border rounded"
-                required
-              />
-              <textarea
-                value={formData.descricao}
-                onChange={(e) => setFormData({...formData, descricao: e.target.value})}
-                placeholder="Descrição"
-                className="w-full p-2 border rounded"
-                rows={3}
-              />
-              <input
-                value={formData.endereco}
-                onChange={(e) => setFormData({...formData, endereco: e.target.value})}
-                placeholder="Endereço"
-                className="w-full p-2 border rounded"
-                required
-              />
-              <div className="grid grid-cols-2 gap-3">
-                <input
-                  value={formData.cidade}
-                  onChange={(e) => setFormData({...formData, cidade: e.target.value})}
-                  placeholder="Cidade"
-                  className="w-full p-2 border rounded"
-                  required
-                />
-                <input
-                  value={formData.estado}
-                  onChange={(e) => setFormData({...formData, estado: e.target.value})}
-                  placeholder="Estado"
-                  className="w-full p-2 border rounded"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <input
-                  value={formData.cep}
-                  onChange={(e) => setFormData({...formData, cep: e.target.value})}
-                  placeholder="CEP"
-                  className="w-full p-2 border rounded"
-                />
-                <input
-                  value={formData.telefone}
-                  onChange={(e) => setFormData({...formData, telefone: e.target.value})}
-                  placeholder="Telefone"
-                  className="w-full p-2 border rounded"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <input
-                  value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  placeholder="Email"
-                  className="w-full p-2 border rounded"
-                  type="email"
-                />
-                <input
-                  value={formData.site}
-                  onChange={(e) => setFormData({...formData, site: e.target.value})}
-                  placeholder="Site"
-                  className="w-full p-2 border rounded"
-                />
-              </div>
-              <div className="flex gap-2 mt-4">
-                <button type="submit" className="flex-1 bg-blue-600 text-white p-2 rounded hover:bg-blue-700">
-                  Enviar
-                </button>
-                <button type="button" onClick={() => setShowForm(false)} className="flex-1 bg-gray-300 p-2 rounded hover:bg-gray-400">
-                  Cancelar
-                </button>
-              </div>
-            </form>
+    <div className="min-h-screen bg-gray-50 pb-16">
+      <header className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-4 py-5">
+        <div className="max-w-lg mx-auto flex items-center gap-2">
+          <Megaphone size={20} />
+          <div>
+            <h1 className="font-bold text-lg">Indicar estabelecimento</h1>
+            <p className="text-sm text-white/90">Conhece uma loja ou fornecedor que ainda não está no app? Indique aqui.</p>
           </div>
         </div>
-      )}
+      </header>
+
+      <main className="max-w-lg mx-auto p-4 space-y-4">
+        <div className="bg-white rounded-2xl shadow p-4 space-y-3">
+          <input
+            value={form.nome}
+            onChange={(e) => setForm((p) => ({ ...p, nome: e.target.value }))}
+            placeholder="Nome do estabelecimento ou fornecedor *"
+            className="w-full px-3 py-2 border rounded-lg"
+          />
+          <input
+            value={form.categoria}
+            onChange={(e) => setForm((p) => ({ ...p, categoria: e.target.value }))}
+            placeholder="Categoria (ex: mercearia, farmácia, distribuidor) *"
+            className="w-full px-3 py-2 border rounded-lg"
+          />
+          <input
+            value={form.cidade}
+            onChange={(e) => setForm((p) => ({ ...p, cidade: e.target.value }))}
+            placeholder="Cidade *"
+            className="w-full px-3 py-2 border rounded-lg"
+          />
+          <input
+            value={form.telefone}
+            onChange={(e) => setForm((p) => ({ ...p, telefone: e.target.value }))}
+            placeholder="Telefone/WhatsApp (se souber)"
+            className="w-full px-3 py-2 border rounded-lg"
+          />
+          <input
+            value={form.endereco}
+            onChange={(e) => setForm((p) => ({ ...p, endereco: e.target.value }))}
+            placeholder="Endereço (se souber)"
+            className="w-full px-3 py-2 border rounded-lg"
+          />
+          <textarea
+            value={form.observacoes}
+            onChange={(e) => setForm((p) => ({ ...p, observacoes: e.target.value }))}
+            placeholder="Alguma observação? (opcional)"
+            rows={2}
+            className="w-full px-3 py-2 border rounded-lg"
+          />
+          <button
+            onClick={enviar}
+            disabled={enviando}
+            className="w-full flex items-center justify-center gap-2 bg-emerald-600 text-white font-semibold py-2.5 rounded-lg disabled:opacity-60"
+          >
+            <Send size={16} /> {enviando ? "Enviando..." : "Enviar indicação"}
+          </button>
+        </div>
+
+        <div>
+          <h2 className="font-semibold text-gray-700 mb-2">Minhas indicações</h2>
+          {carregando ? (
+            <p className="text-sm text-gray-500">Carregando...</p>
+          ) : minhasIndicacoes.length === 0 ? (
+            <p className="text-sm text-gray-500">Você ainda não indicou nenhum estabelecimento.</p>
+          ) : (
+            <div className="space-y-2">
+              {minhasIndicacoes.map((i) => (
+                <div key={i.id} className="bg-white rounded-xl shadow-sm p-3 flex items-center justify-between">
+                  <div>
+                    <p className="font-medium text-sm">{i.nome}</p>
+                    <p className="text-xs text-gray-500">{i.categoria} · {i.cidade}</p>
+                    {i.status === "recusado" && i.motivo_recusa && (
+                      <p className="text-xs text-red-600 mt-1">{i.motivo_recusa}</p>
+                    )}
+                  </div>
+                  <span className={`text-xs px-2 py-1 rounded-full shrink-0 ${statusInfo[i.status].classe}`}>
+                    {statusInfo[i.status].label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
     </div>
   );
 }
