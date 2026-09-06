@@ -104,8 +104,12 @@ export async function cadastroSimples(
       localStorage.setItem('user_logged_in', 'true');
       localStorage.setItem('user_data', JSON.stringify(usuarioAtualizado));
 
-      // Renovar cookie
+      // Renovar cookies -- user_role tambem precisa ser renovado aqui, nao
+      // so' no cadastro de usuario novo (bug antigo: sem MODO_DEV, um admin
+      // que ja tinha conta nunca conseguia gerar o cookie user_role de
+      // novo, so' ficava preso na tela de login).
       document.cookie = `user_logged_in=true; path=/; max-age=86400`;
+      document.cookie = `user_role=${usuarioAtualizado.role}; path=/; max-age=86400`;
 
       return { success: true, user: usuarioAtualizado };
     }
