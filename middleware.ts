@@ -14,6 +14,15 @@ const publicRoutes = [
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
+  // Link de acesso direto do Admin Master (ver app/admin-master/entrar +
+  // app/api/admin-master/bootstrap) -- precisa ficar de fora da checagem
+  // abaixo, senão vira loop: pedir o cookie de admin pra abrir a própria
+  // página que concede o cookie. Temporário, pra usar enquanto não existe
+  // autenticação em camadas de verdade.
+  if (pathname === '/admin-master/entrar') {
+    return NextResponse.next();
+  }
+
   // Regra específica para o painel administrativo (incluindo admin-master)
   // -- SEMPRE checada, mesmo em MODO_DEV. Antes essa checagem vinha depois
   // do "if (MODO_DEV) return NextResponse.next()", ou seja, com MODO_DEV
