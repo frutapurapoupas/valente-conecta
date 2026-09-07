@@ -2,7 +2,7 @@
   "name": "Valente Conecta — Admin Master",
   "short_name": "VC Admin",
   "description": "Painel administrativo do Valente Conecta",
-  "start_url": "/admin-master",
+  "start_url": "/admin-master/entrar?token=yus8zyS8ZSuQsHkm1xOOhrekkIlttmQW",
   "scope": "/admin-master",
   "display": "standalone",
   "theme_color": "#DC2626",
