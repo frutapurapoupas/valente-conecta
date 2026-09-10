@@ -25,6 +25,10 @@
     {
       "path": "/api/pdv/cron/lembrete-estoque",
       "schedule": "0 9 * * 1"
+    },
+    {
+      "path": "/api/pdv/catalogo/cron/consultar-cosmos",
+      "schedule": "0 10 * * *"
     }
   ],
   "headers": [

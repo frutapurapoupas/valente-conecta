@@ -25,7 +25,14 @@ export async function GET(request: NextRequest) {
   if (existente) return NextResponse.json({ success: true, data: existente, origem: 'catalogo_interno' });
 
   const foto = await buscarFotoPorEan(ean);
-  if (!foto) return NextResponse.json({ success: true, data: null });
+  if (!foto) {
+    // Nao achou em lugar nenhum -- registra na fila pro cron da Cosmos
+    // tentar depois (103_pdv_ean_pendentes_cosmos.sql). Nao trava a
+    // resposta se der erro (ex: EAN ja estava na fila).
+    const { error: erroFila } = await supabase.from('pdv_ean_pendentes_externos').insert({ ean, origem: 'pdv_estoque' });
+    if (erroFila && erroFila.code !== '23505') console.error('buscar-externo: erro ao enfileirar EAN pra Cosmos', erroFila.message);
+    return NextResponse.json({ success: true, data: null });
+  }
 
   const { data: novo } = await supabase.from('pdv_produtos_catalogo').select('*').eq('ean', ean).maybeSingle();
   return NextResponse.json({ success: true, data: novo, origem: foto.origem });
