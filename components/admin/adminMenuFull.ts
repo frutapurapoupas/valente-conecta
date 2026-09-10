@@ -116,15 +116,19 @@ export const adminMenuFull: MenuGroup[] = [
     ]
   },
 
-  // ==================== FINANCEIRO & MARKETING ====================
+  // ==================== PDV COLABORATIVO ====================
   {
-    name: "💰 Financeiro & Marketing",
-    icon: DollarSign,
+    name: "📦 PDV COLABORATIVO",
+    icon: Package,
     collapsible: true,
     items: [
-      { name: "Financeiro", path: "/admin-master/financeiro", icon: DollarSign, status: 'active' },
-      { name: "Marketing", path: "/admin-master/marketing", icon: Megaphone, status: 'construction' },
-      { name: "Configurações", path: "/admin-master/config", icon: Settings, status: 'active' },
+      { name: "Carregar catálogo (foto + IA)", path: "/admin-master/pdv-catalogo/carregar", icon: Camera, status: 'active' },
+      { name: "Relatório do catálogo", path: "/admin-master/pdv/relatorios", icon: Package, status: 'active' },
+      { name: "Base fiscal (NFe/NFC-e)", path: "/admin-master/pdv/fiscal", icon: FileText, status: 'active' },
+      { name: "Captura externa (modo espião)", path: "/admin-master/pdv/captura-externa", icon: Eye, status: 'active' },
+      { name: "Moderação de comprovantes (bônus EAN)", path: "/admin-master/pdv-catalogo/moderacao", icon: UserCheck, status: 'active' },
+      { name: "Validação de dono/responsável de loja", path: "/admin-master/pdv/validacao-proprietario", icon: ShieldCheck, status: 'active' },
+      { name: "Validação de motoristas (selo)", path: "/admin-master/validacao-motorista", icon: ShieldCheck, status: 'active' },
     ]
   },
 
@@ -638,19 +642,15 @@ export const adminMenuFull: MenuGroup[] = [
     ]
   },
 
-  // ==================== PDV COLABORATIVO ====================
+  // ==================== FINANCEIRO & MARKETING ====================
   {
-    name: "📦 PDV COLABORATIVO",
-    icon: Package,
+    name: "💰 Financeiro & Marketing",
+    icon: DollarSign,
     collapsible: true,
     items: [
-      { name: "Carregar catálogo (foto + IA)", path: "/admin-master/pdv-catalogo/carregar", icon: Camera, status: 'active' },
-      { name: "Relatório do catálogo", path: "/admin-master/pdv/relatorios", icon: Package, status: 'active' },
-      { name: "Base fiscal (NFe/NFC-e)", path: "/admin-master/pdv/fiscal", icon: FileText, status: 'active' },
-      { name: "Captura externa (modo espião)", path: "/admin-master/pdv/captura-externa", icon: Eye, status: 'active' },
-      { name: "Moderação de comprovantes (bônus EAN)", path: "/admin-master/pdv-catalogo/moderacao", icon: UserCheck, status: 'active' },
-      { name: "Validação de dono/responsável de loja", path: "/admin-master/pdv/validacao-proprietario", icon: ShieldCheck, status: 'active' },
-      { name: "Validação de motoristas (selo)", path: "/admin-master/validacao-motorista", icon: ShieldCheck, status: 'active' },
+      { name: "Financeiro", path: "/admin-master/financeiro", icon: DollarSign, status: 'active' },
+      { name: "Marketing", path: "/admin-master/marketing", icon: Megaphone, status: 'construction' },
+      { name: "Configurações", path: "/admin-master/config", icon: Settings, status: 'active' },
     ]
   },
 
