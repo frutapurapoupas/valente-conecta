@@ -35,6 +35,7 @@ import {
   Wrench,
   Store,
   UserCheck,
+  Camera,
   Gift,
   ShieldCheck,
   Home,
@@ -643,6 +644,7 @@ export const adminMenuFull: MenuGroup[] = [
     icon: Package,
     collapsible: true,
     items: [
+      { name: "Carregar catálogo (foto + IA)", path: "/admin-master/pdv-catalogo/carregar", icon: Camera, status: 'active' },
       { name: "Relatório do catálogo", path: "/admin-master/pdv/relatorios", icon: Package, status: 'active' },
       { name: "Base fiscal (NFe/NFC-e)", path: "/admin-master/pdv/fiscal", icon: FileText, status: 'active' },
       { name: "Captura externa (modo espião)", path: "/admin-master/pdv/captura-externa", icon: Eye, status: 'active' },

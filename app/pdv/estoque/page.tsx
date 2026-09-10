@@ -59,7 +59,7 @@ function diasParaVencer(validade: string | null): number | null {
   return Math.round((dataValidade.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
 }
 
-type Etapa = "fechado" | "nome" | "foto" | "codigo" | "sugestoes" | "preco";
+type Etapa = "fechado" | "foto" | "codigo" | "confirmarCatalogo" | "nome" | "sugestoes" | "preco";
 
 export default function PdvEstoquePage() {
   const router = useRouter();
@@ -86,6 +86,9 @@ export default function PdvEstoquePage() {
   const [precoVenda, setPrecoVenda] = useState(0);
   const [precoCusto, setPrecoCusto] = useState<number | "">("");
   const [precoReferencia, setPrecoReferencia] = useState<{ total: number; min?: number; max?: number; media?: number } | null>(null);
+  const [identificando, setIdentificando] = useState(false);
+  const [iaConfianca, setIaConfianca] = useState<string | null>(null);
+  const [catalogoMatch, setCatalogoMatch] = useState<{ id: string; nome: string; foto_url: string | null; sku: string; ean: string | null } | null>(null);
   const [estoqueMinimo, setEstoqueMinimo] = useState(0);
   const [validade, setValidade] = useState("");
   const [temVariacao, setTemVariacao] = useState(false);
@@ -238,23 +241,45 @@ export default function PdvEstoquePage() {
     setValidade("");
     setTemVariacao(false);
     setVariantes([{ nome: "", quantidade: 0 }]);
+    setIdentificando(false);
+    setIaConfianca(null);
+    setCatalogoMatch(null);
   };
 
   const iniciarNovoProduto = () => {
     resetarFormulario();
-    setEtapa("nome");
-  };
-
-  const avancarParaFoto = () => {
-    if (!nome.trim()) {
-      toast.error("Informe o nome do produto");
-      return;
-    }
-    localStorage.setItem("pdv_segmento", segmento);
     setEtapa("foto");
   };
 
-  const avancarParaCodigo = () => setEtapa("codigo");
+  // Foto geral do produto -> tenta identificar por IA (nome + segmento)
+  // antes de pedir o código de barras (próximo passo). Se a IA não
+  // reconhecer nada, segue normal pro código de barras -- o nome fica
+  // pra ser digitado/confirmado mais na frente, sem travar o fluxo.
+  const avancarParaCodigo = async () => {
+    if (!midia[0]?.url) {
+      toast.error("Tire uma foto do produto primeiro");
+      return;
+    }
+    setIdentificando(true);
+    try {
+      const blob = await fetch(midia[0].url).then((r) => r.blob());
+      const formData = new FormData();
+      formData.append("arquivo", blob, "produto.jpg");
+      const resp = await fetch("/api/pdv/catalogo/identificar-produto", { method: "POST", body: formData }).then((r) => r.json());
+      if (resp.success && resp.nome) {
+        setNome(resp.nome);
+        setIaConfianca(resp.confianca);
+        if (resp.segmento) setSegmento(resp.segmento);
+        toast.success(`IA reconheceu: "${resp.nome}" — confirme mais à frente.`);
+      }
+    } catch {
+      // IA indisponível não deve travar o cadastro -- segue pro código
+      // de barras normalmente, nome fica em branco pra digitar depois.
+    } finally {
+      setIdentificando(false);
+      setEtapa("codigo");
+    }
+  };
 
   const buscarPorEan = async (codigo: string) => {
     setShowScanner(false);
@@ -264,17 +289,11 @@ export default function PdvEstoquePage() {
       const resp = await fetch(`/api/pdv/catalogo/buscar-externo?ean=${encodeURIComponent(codigo)}`).then((r) => r.json());
       toast.dismiss(toastId);
       if (resp.success && resp.data) {
-        toast.success(
-          resp.origem === "kodebar"
-            ? `Achamos "${resp.data.nome}" numa base externa — foto já vem preenchida!`
-            : `Produto já existe no catálogo: ${resp.data.nome}`
-        );
-        setCatalogoId(resp.data.id);
-        setNome(resp.data.nome);
-        setEtapa("preco");
+        setCatalogoMatch(resp.data);
+        setEtapa("confirmarCatalogo");
       } else {
         toast.success("Código capturado! Vamos criar esse produto no catálogo.");
-        setEtapa("preco");
+        setEtapa("nome");
       }
     } catch {
       toast.dismiss(toastId);
@@ -282,13 +301,33 @@ export default function PdvEstoquePage() {
     }
   };
 
+  const confirmarMatchCatalogo = () => {
+    if (!catalogoMatch) return;
+    setCatalogoId(catalogoMatch.id);
+    setNome(catalogoMatch.nome);
+    setEtapa("preco");
+  };
+
+  const rejeitarMatchCatalogo = () => {
+    // Mantém o EAN escaneado (é o código de barras real do produto que
+    // está na mão do lojista) -- só o registro do catálogo é que não bate,
+    // então segue pra criar um cadastro novo com esse mesmo código.
+    setCatalogoMatch(null);
+    setEtapa("nome");
+  };
+
   const pularCodigoDeBarras = async () => {
     setEan("");
+    if (!nome.trim()) {
+      // IA não sugeriu nada nessa foto -- direto pro nome manual, sem
+      // gastar uma busca por similaridade com termo vazio.
+      setEtapa("nome");
+      return;
+    }
     setBuscandoSugestoes(true);
     setEtapa("sugestoes");
     try {
-      const termoBusca = apelido.trim() || nome.trim();
-      const resp = await fetch(`/api/pdv/catalogo/buscar-similar?nome=${encodeURIComponent(termoBusca)}&segmento=${segmento}`).then((r) => r.json());
+      const resp = await fetch(`/api/pdv/catalogo/buscar-similar?nome=${encodeURIComponent(nome.trim())}&segmento=${segmento}`).then((r) => r.json());
       setSugestoes(resp.success ? resp.data : []);
     } finally {
       setBuscandoSugestoes(false);
@@ -310,6 +349,15 @@ export default function PdvEstoquePage() {
 
   const criarProdutoNovo = () => {
     setCatalogoId(null);
+    setEtapa("nome");
+  };
+
+  const avancarParaPreco = () => {
+    if (!nome.trim()) {
+      toast.error("Informe o nome do produto");
+      return;
+    }
+    localStorage.setItem("pdv_segmento", segmento);
     setEtapa("preco");
   };
 
@@ -528,8 +576,57 @@ export default function PdvEstoquePage() {
               <button onClick={resetarFormulario}><X className="w-5 h-5 text-gray-400" /></button>
             </div>
 
+            {etapa === "foto" && (
+              <div className="space-y-4">
+                <p className="text-sm text-gray-500">Tire uma foto do produto — a gente tenta reconhecer sozinho o que é, você só confirma depois.</p>
+                <MidiaUploader midia={midia} onChange={setMidia} maximo={1} preferirCamera />
+                <button onClick={avancarParaCodigo} disabled={identificando} className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold disabled:opacity-60">
+                  {identificando ? "Identificando..." : "Continuar"}
+                </button>
+              </div>
+            )}
+
+            {etapa === "codigo" && (
+              <div className="space-y-4 text-center">
+                <Barcode className="w-12 h-12 text-blue-600 mx-auto" />
+                <p className="text-sm text-gray-600">Agora o código de barras — escaneie pra gente já saber se ele existe no catálogo.</p>
+                <button onClick={() => setShowScanner(true)} className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2">
+                  <Camera className="w-4 h-4" /> Escanear código de barras
+                </button>
+                <button onClick={pularCodigoDeBarras} className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold">Não tem código de barras</button>
+              </div>
+            )}
+
+            {etapa === "confirmarCatalogo" && catalogoMatch && (
+              <div className="space-y-4">
+                <p className="text-sm text-gray-600 text-center">Esse código já existe no catálogo. É esse produto?</p>
+                <div className="border rounded-xl p-3 flex items-center gap-3">
+                  {catalogoMatch.foto_url ? (
+                    <img src={catalogoMatch.foto_url} alt="" className="w-16 h-16 rounded-lg object-cover shrink-0" />
+                  ) : (
+                    <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center shrink-0"><Package className="w-6 h-6 text-gray-400" /></div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-800">{catalogoMatch.nome}</p>
+                    <p className="text-sm text-gray-500">{catalogoMatch.ean ? `EAN ${catalogoMatch.ean}` : `SKU ${catalogoMatch.sku}`}</p>
+                  </div>
+                </div>
+                {midia[0]?.url && (
+                  <div className="text-center">
+                    <p className="text-sm text-gray-500 mb-1">A foto que você tirou:</p>
+                    <img src={midia[0].url} alt="" className="w-16 h-16 rounded-lg object-cover mx-auto" />
+                  </div>
+                )}
+                <button onClick={confirmarMatchCatalogo} className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold">Sim, é esse produto</button>
+                <button onClick={rejeitarMatchCatalogo} className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold">Não, é outro produto</button>
+              </div>
+            )}
+
             {etapa === "nome" && (
               <div className="space-y-4">
+                {iaConfianca === "baixa" && (
+                  <p className="text-sm text-amber-600 bg-amber-50 rounded-lg px-3 py-2">A IA não teve certeza sobre esse produto — confira o nome antes de continuar.</p>
+                )}
                 <div>
                   <label className="text-sm font-medium text-gray-700">Nome do produto</label>
                   <input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex: Refrigerante Coca-Cola 2L" className="w-full mt-1 px-3 py-2.5 border rounded-xl" autoFocus />
@@ -544,26 +641,7 @@ export default function PdvEstoquePage() {
                     {SEGMENTOS.map((s) => <option key={s.id} value={s.id}>{s.nome}</option>)}
                   </select>
                 </div>
-                <button onClick={avancarParaFoto} className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold">Continuar</button>
-              </div>
-            )}
-
-            {etapa === "foto" && (
-              <div className="space-y-4">
-                <p className="text-sm text-gray-500">Foto de exibição no catálogo (opcional, mas ajuda muito).</p>
-                <MidiaUploader midia={midia} onChange={setMidia} maximo={1} preferirCamera />
-                <button onClick={avancarParaCodigo} className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold">Continuar</button>
-              </div>
-            )}
-
-            {etapa === "codigo" && (
-              <div className="space-y-4 text-center">
-                <Barcode className="w-12 h-12 text-blue-600 mx-auto" />
-                <p className="text-sm text-gray-600">Esse produto tem código de barras? Escaneie pra gente já saber se ele existe no catálogo.</p>
-                <button onClick={() => setShowScanner(true)} className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2">
-                  <Camera className="w-4 h-4" /> Escanear código de barras
-                </button>
-                <button onClick={pularCodigoDeBarras} className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold">Não tem código de barras</button>
+                <button onClick={avancarParaPreco} className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold">Continuar</button>
               </div>
             )}
 
