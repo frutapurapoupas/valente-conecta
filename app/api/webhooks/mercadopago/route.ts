@@ -380,6 +380,37 @@ async function processWebhookVitrineDesbloqueio(interesseId: string, payment: an
 	return NextResponse.json({ success: true, interesseId, status: statusPagamento });
 }
 
+// Paciente pagou online (cartao/Pix) na Fila Virtual de Saude, com split
+// automatico pro diretor da unidade (ver 111_fila_saude_mercadopago.sql).
+async function processWebhookFilaSaude(senhaId: string, payment: any) {
+	const supabase = createClient();
+	const statusPagamento = normalizeStatus(String(payment?.status || ''));
+
+	const { data: senha, error } = await supabase
+		.from('fila_saude_senhas')
+		.update({
+			status_pagamento: statusPagamento === 'pago' ? 'pago' : 'aguardando',
+			mp_payment_id: String(payment?.id || ''),
+		})
+		.eq('id', senhaId)
+		.select('*')
+		.single();
+
+	if (error || !senha) {
+		return NextResponse.json({ success: true, ignored: true, reason: 'senha nao encontrada' });
+	}
+
+	if (statusPagamento === 'pago' && senha.usuario_id) {
+		await enviarPushParaUsuario(senha.usuario_id, {
+			titulo: 'Pagamento confirmado',
+			corpo: 'Seu pagamento foi aprovado. Sua senha na fila continua normalmente.',
+			url: `/saude/fila/${senha.unidade_id}?senha=${senha.id}`,
+		}).catch(() => {});
+	}
+
+	return NextResponse.json({ success: true, senhaId, status: statusPagamento });
+}
+
 async function processWebhook(request: NextRequest, payload: any) {
 	try {
 		const { searchParams } = new URL(request.url);
@@ -445,6 +476,9 @@ async function processWebhook(request: NextRequest, payload: any) {
 		}
 		if (pedidoId.startsWith('cozinha_pedido_')) {
 			return processWebhookCozinhaPedido(pedidoId.replace('cozinha_pedido_', ''), payment);
+		}
+		if (pedidoId.startsWith('fila_saude_senha_')) {
+			return processWebhookFilaSaude(pedidoId.replace('fila_saude_senha_', ''), payment);
 		}
 
 		const pedidos = readPedidos();
