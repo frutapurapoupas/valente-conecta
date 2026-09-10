@@ -36,4 +36,5 @@ export interface Usuario {
   aceitou_privacidade_em?: string | null;
   total_earned?: number;
   role: string;
+  foto_url?: string | null;
 }

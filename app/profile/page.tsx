@@ -13,16 +13,54 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { User, Mail, Phone, Wallet, Copy, LogOut, ArrowLeft, Edit2, Save, X, Calendar, Crown, Gift, History, MapPin, Tag, Receipt } from "lucide-react";
+import { User, Mail, Phone, Wallet, Copy, LogOut, ArrowLeft, Edit2, Save, X, Calendar, Crown, Gift, History, MapPin, Tag, Receipt, Type, Bell, BellRing } from "lucide-react";
 import toast from "react-hot-toast";
 import { getCurrentUser, logout as logoutAuth } from "@/lib/auth";
 import type { Usuario } from "@/lib/supabase";
+import { aplicarFonteGrande, lerFonteGrandeAtiva } from "@/lib/preferencias/fonteGrande";
+import { verificarInscricaoPush, ativarPush, desativarPush, pushSuportadoNoNavegador } from "@/lib/push/pushCliente";
 
 export const dynamic = 'force-dynamic';
 
 export default function ProfilePage() {
   const router = useRouter();
   const [user, setUser] = useState<Usuario | null>(null);
+  const [fonteGrande, setFonteGrande] = useState(false);
+  const [pushAtivo, setPushAtivo] = useState(false);
+  const [pushSuportado, setPushSuportado] = useState(false);
+  const [alterandoPush, setAlterandoPush] = useState(false);
+
+  useEffect(() => {
+    setFonteGrande(lerFonteGrandeAtiva());
+    if (pushSuportadoNoNavegador()) {
+      setPushSuportado(true);
+      verificarInscricaoPush().then(setPushAtivo);
+    }
+  }, []);
+
+  const alternarFonteGrande = () => {
+    const novoValor = !fonteGrande;
+    setFonteGrande(novoValor);
+    aplicarFonteGrande(novoValor);
+  };
+
+  const alternarPush = async () => {
+    if (!user) return;
+    setAlterandoPush(true);
+    try {
+      if (pushAtivo) {
+        await desativarPush();
+        setPushAtivo(false);
+        toast.success('Avisos desativados.');
+      } else {
+        const ok = await ativarPush(user.id);
+        if (ok) { setPushAtivo(true); toast.success('Avisos ativados!'); }
+        else toast.error('Você precisa permitir notificações no navegador pra ativar.');
+      }
+    } finally {
+      setAlterandoPush(false);
+    }
+  };
   const [loading, setLoading] = useState(true);
   const [editando, setEditando] = useState(false);
   const [emailForm, setEmailForm] = useState("");
@@ -308,6 +346,63 @@ export default function ProfilePage() {
             </div>
           </div>
         )}
+
+        {pushSuportado && (
+          <div className="bg-white/10 rounded-2xl p-4 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+                {pushAtivo ? <BellRing className="w-5 h-5" /> : <Bell className="w-5 h-5" />}
+              </div>
+              <div>
+                <p className="font-semibold">Avisos no celular</p>
+                <p className="text-sm text-gray-400">Ex: chegou sua vez na fila, pedido confirmado</p>
+              </div>
+            </div>
+            <button
+              onClick={alternarPush}
+              disabled={alterandoPush}
+              aria-pressed={pushAtivo}
+              className={`w-14 h-8 rounded-full shrink-0 transition-colors relative disabled:opacity-50 ${pushAtivo ? "bg-amber-500" : "bg-white/20"}`}
+            >
+              <span className={`absolute top-1 w-6 h-6 rounded-full bg-white transition-all ${pushAtivo ? "left-7" : "left-1"}`} />
+            </button>
+          </div>
+        )}
+
+        <div className="bg-white/10 rounded-2xl p-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+              <Type className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="font-semibold">Aumentar letra</p>
+              <p className="text-sm text-gray-400">Deixa o texto de todo o app maior</p>
+            </div>
+          </div>
+          <button
+            onClick={alternarFonteGrande}
+            aria-pressed={fonteGrande}
+            className={`w-14 h-8 rounded-full shrink-0 transition-colors relative ${fonteGrande ? "bg-amber-500" : "bg-white/20"}`}
+          >
+            <span className={`absolute top-1 w-6 h-6 rounded-full bg-white transition-all ${fonteGrande ? "left-7" : "left-1"}`} />
+          </button>
+        </div>
+
+        <button
+          onClick={() => router.push("/cartao-virtual")}
+          className="w-full py-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-3 hover:from-orange-600 hover:to-amber-600 transition-all duration-300"
+        >
+          <Receipt className="w-5 h-5" />
+          Cartão Valente
+        </button>
+
+        <button
+          onClick={() => router.push("/meu-prontuario")}
+          className="w-full py-4 bg-white/10 text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-white/20 transition-all duration-300"
+        >
+          <History className="w-5 h-5" />
+          Meu Prontuário
+        </button>
 
         <button
           onClick={() => router.push("/qr-code")}

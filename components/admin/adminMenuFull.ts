@@ -298,7 +298,7 @@ export const adminMenuFull: MenuGroup[] = [
     items: [
       { name: "Gerenciar Todos", path: "/admin-master/profissionais", icon: Users },
       { name: "Pedidos / Agendamentos", path: "/admin-master/profissionais?aba=agendamentos", icon: Calendar },
-      { name: "Página Pública", path: "/profissionais", icon: ExternalLink },
+      { name: "Página Pública", path: "/servicos", icon: ExternalLink },
     ]
   },
 
@@ -471,6 +471,8 @@ export const adminMenuFull: MenuGroup[] = [
       { name: "Hospitais e Clínicas (diretório grátis)", path: "/admin-master/saude/estabelecimentos", icon: Hospital, status: 'active' },
       { name: "Reivindicações (Sou proprietário)", path: "/admin-master/saude/reivindicacoes", icon: UserCheck, status: 'active' },
       { name: "Página Pública", path: "/saude", icon: ExternalLink, status: 'active' },
+      { name: "Fila Virtual — cadastrar unidade", path: "/admin-master/saude-fila", icon: UserCheck, status: 'active' },
+      { name: "Fila Virtual — entrar na fila (público)", path: "/saude/fila", icon: ExternalLink, status: 'active' },
       { name: "Farmácias", path: "/admin-master/saude/farmacias", icon: Hospital, status: 'construction' },
       { name: "Clínicas", path: "/admin-master/saude/clinicas", icon: Hospital, status: 'construction' },
       { name: "Dentistas", path: "/admin-master/saude/dentistas", icon: Hospital, status: 'construction' },

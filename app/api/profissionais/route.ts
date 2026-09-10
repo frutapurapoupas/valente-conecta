@@ -17,6 +17,7 @@ function paraApi(row: any) {
     id: row.id,
     nome: row.nome,
     foto: row.foto || '',
+    tipo: row.tipo || 'profissional',
     categoria: row.categoria,
     especialidades: row.especialidades || [],
     descricao: row.descricao || '',
@@ -42,12 +43,14 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const categoria = searchParams.get('categoria');
+    const tipo = searchParams.get('tipo');
     const status = searchParams.get('status');
     const busca = (searchParams.get('busca') || '').trim();
 
     const supabase = createClient();
     let query = supabase.from('profissionais_diretorio').select('*').order('created_at', { ascending: false });
 
+    if (tipo) query = query.eq('tipo', tipo);
     if (categoria) query = query.eq('categoria', categoria);
     if (status) query = query.eq('status', status);
     if (busca) {
@@ -84,6 +87,7 @@ export async function POST(request: NextRequest) {
       .insert({
         nome: String(body.nome).trim(),
         foto: String(body.foto || '').trim(),
+        tipo: body.tipo === 'empresa' ? 'empresa' : 'profissional',
         categoria: String(body.categoria).trim(),
         especialidades,
         descricao: String(body.descricao || '').trim(),
@@ -118,6 +122,7 @@ export async function PUT(request: NextRequest) {
     const patch: Record<string, any> = {};
     if (body.nome !== undefined) patch.nome = String(body.nome).trim();
     if (body.foto !== undefined) patch.foto = String(body.foto || '').trim();
+    if (body.tipo !== undefined) patch.tipo = body.tipo === 'empresa' ? 'empresa' : 'profissional';
     if (body.categoria !== undefined) patch.categoria = String(body.categoria).trim();
     if (body.especialidades !== undefined) {
       patch.especialidades = Array.isArray(body.especialidades)

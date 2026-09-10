@@ -14,6 +14,7 @@ import { VerificadorAtualizacao } from '@/components/VerificadorAtualizacao';
 import { Suspense } from 'react';
 import Sidebar from '@/components/admin/Sidebar';
 import { BottomNav } from '@/components/layout/BottomNav';
+import { FonteGrandeInit } from '@/components/layout/FonteGrandeInit';
 import { usePathname } from 'next/navigation';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -64,6 +65,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body className={`${inter.className} h-full bg-gray-50 text-gray-900`}>
+        <FonteGrandeInit />
         <VerificadorAtualizacao />
         <AppProvider>
           <Suspense fallback={<LoadingSpinner />}>

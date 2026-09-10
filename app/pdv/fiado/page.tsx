@@ -30,8 +30,9 @@
 import { useState, useEffect } from 'react';
 import {
   Users, Plus, Search, DollarSign, CheckCircle, XCircle, AlertCircle,
-  Phone, CreditCard, Send, Printer, MessageCircle, Receipt, MapPin, Edit2
+  Phone, CreditCard, Send, Printer, MessageCircle, Receipt, MapPin, Edit2, ScanLine
 } from 'lucide-react';
+import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 import { getCurrentUser } from '@/lib/auth';
 import { PdvSubNav } from '@/components/pdv/PdvSubNav';
@@ -392,6 +393,9 @@ export default function FiadoPage() {
             <p className="text-sm text-gray-500">Gerencie crédito e cobranças</p>
           </div>
           <div className="flex gap-2">
+            <Link href="/pdv/identificar-cliente" className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-200 text-sm font-medium">
+              <ScanLine className="w-4 h-4" /> Identificar cliente
+            </Link>
             <button onClick={abrirNovoCliente} className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-200 text-sm font-medium">
               <Users className="w-4 h-4" /> Novo Cliente
             </button>
