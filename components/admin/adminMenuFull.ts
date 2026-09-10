@@ -36,6 +36,7 @@ import {
   Store,
   UserCheck,
   Camera,
+  Search,
   Gift,
   ShieldCheck,
   Home,
@@ -122,6 +123,7 @@ export const adminMenuFull: MenuGroup[] = [
     icon: Package,
     collapsible: true,
     items: [
+      { name: "Buscar no catálogo (conferir importação)", path: "/admin-master/pdv-catalogo/buscar", icon: Search, status: 'active' },
       { name: "Carregar catálogo (foto + IA)", path: "/admin-master/pdv-catalogo/carregar", icon: Camera, status: 'active' },
       { name: "Relatório do catálogo", path: "/admin-master/pdv/relatorios", icon: Package, status: 'active' },
       { name: "Base fiscal (NFe/NFC-e)", path: "/admin-master/pdv/fiscal", icon: FileText, status: 'active' },
