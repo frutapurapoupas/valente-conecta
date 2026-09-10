@@ -159,9 +159,13 @@ export default function ForumConstrucaoPage() {
               <p className="text-sm text-gray-700 mt-2 whitespace-pre-wrap">{post.texto}</p>
               {post.midia?.length > 0 && (
                 <div className="grid grid-cols-3 gap-2 mt-3">
-                  {post.midia.map((m, i) => (
-                    <img key={i} src={m.thumb_url || m.url} alt="" className="aspect-square object-cover rounded-lg" />
-                  ))}
+                  {post.midia.map((m, i) =>
+                    m.tipo === "video" ? (
+                      <video key={i} src={m.url} controls className="aspect-square object-cover rounded-lg bg-black" />
+                    ) : (
+                      <img key={i} src={m.thumb_url || m.url} alt="" className="aspect-square object-cover rounded-lg" />
+                    )
+                  )}
                 </div>
               )}
               <button
@@ -204,7 +208,7 @@ export default function ForumConstrucaoPage() {
               className="w-full px-3 py-2 border rounded-lg text-sm mb-3"
               autoFocus
             />
-            <MidiaUploader midia={midia} onChange={setMidia} maximo={4} />
+            <MidiaUploader midia={midia} onChange={setMidia} maximo={4} aceitarVideo />
             <button
               onClick={publicar}
               disabled={publicando}

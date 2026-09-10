@@ -13,9 +13,11 @@
 // esse componente.
 
 import { useRef, useState } from "react";
-import { Upload, X, Loader2, Wand2 } from "lucide-react";
+import { Upload, X, Loader2, Wand2, PlayCircle } from "lucide-react";
 import { comprimirImagem } from "@/utils/comprimirImagem";
 import type { MidiaItem } from "@/lib/catalogo/marketplaceTypes";
+
+const LIMITE_VIDEO_MB = 20;
 
 interface MidiaUploaderProps {
   midia: MidiaItem[];
@@ -29,9 +31,15 @@ interface MidiaUploaderProps {
   // (ex: "foto do produto que voce acabou de comprar", no quiz do
   // consumidor) -- nao muda o comportamento de quem ja usa o componente.
   preferirCamera?: boolean;
+  // Opt-in (ex: fórum de construção) -- alem de imagem, aceita video.
+  // Sem compressao (nao existe pipeline de compressao de video no
+  // client), so' um limite de tamanho. Continua abrindo o seletor nativo
+  // do navegador, que no celular ja oferece "Câmera"/"Gravar vídeo" e
+  // "Galeria" quando o accept inclui os dois tipos.
+  aceitarVideo?: boolean;
 }
 
-export function MidiaUploader({ midia, onChange, maximo = 6, uploadUrl = "/api/upload/catalogo", permitirRemoverFundo = false, preferirCamera = false }: MidiaUploaderProps) {
+export function MidiaUploader({ midia, onChange, maximo = 6, uploadUrl = "/api/upload/catalogo", permitirRemoverFundo = false, preferirCamera = false, aceitarVideo = false }: MidiaUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [processando, setProcessando] = useState(false);
   const [erro, setErro] = useState("");
@@ -70,7 +78,28 @@ export function MidiaUploader({ midia, onChange, maximo = 6, uploadUrl = "/api/u
     try {
       const novasMidias: MidiaItem[] = [];
       for (const arquivo of arquivos) {
-        // Funil obrigatorio: nada e enviado sem passar pela compressao.
+        const ehVideo = arquivo.type.startsWith("video/");
+
+        if (ehVideo) {
+          if (arquivo.size > LIMITE_VIDEO_MB * 1024 * 1024) {
+            throw new Error(`Vídeo muito grande — máximo de ${LIMITE_VIDEO_MB}MB.`);
+          }
+          const formData = new FormData();
+          formData.append("arquivo", arquivo);
+          const resposta = await fetch(uploadUrl, { method: "POST", body: formData });
+          const resultado = await resposta.json();
+          if (!resultado.success) throw new Error(resultado.error || "Falha no upload do vídeo");
+
+          novasMidias.push({
+            tipo: "video",
+            url: resultado.url,
+            thumb_url: resultado.thumb_url,
+            ordem: midia.length + novasMidias.length,
+          });
+          continue;
+        }
+
+        // Funil obrigatorio pra imagem: nada e enviado sem passar pela compressao.
         const comprimida = await comprimirImagem(arquivo);
 
         const formData = new FormData();
@@ -90,7 +119,7 @@ export function MidiaUploader({ midia, onChange, maximo = 6, uploadUrl = "/api/u
       }
       onChange([...midia, ...novasMidias]);
     } catch (err: any) {
-      setErro(err?.message || "Não foi possível processar a imagem.");
+      setErro(err?.message || "Não foi possível processar o arquivo.");
     } finally {
       setProcessando(false);
       if (inputRef.current) inputRef.current.value = "";
@@ -106,7 +135,16 @@ export function MidiaUploader({ midia, onChange, maximo = 6, uploadUrl = "/api/u
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {midia.map((item, index) => (
           <div key={item.url + index} className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden border">
-            <img src={item.thumb_url || item.url} alt="" className="w-full h-full object-cover" />
+            {item.tipo === "video" ? (
+              <>
+                <video src={item.url} className="w-full h-full object-cover" muted preload="metadata" />
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <PlayCircle className="w-8 h-8 text-white drop-shadow" />
+                </div>
+              </>
+            ) : (
+              <img src={item.thumb_url || item.url} alt="" className="w-full h-full object-cover" />
+            )}
             <button
               type="button"
               onClick={() => remover(index)}
@@ -119,7 +157,7 @@ export function MidiaUploader({ midia, onChange, maximo = 6, uploadUrl = "/api/u
                 Capa
               </span>
             )}
-            {permitirRemoverFundo && (
+            {permitirRemoverFundo && item.tipo !== "video" && (
               <button
                 type="button"
                 onClick={() => removerFundo(index)}
@@ -151,7 +189,7 @@ export function MidiaUploader({ midia, onChange, maximo = 6, uploadUrl = "/api/u
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
+        accept={aceitarVideo ? "image/*,video/*" : "image/*"}
         multiple={maximo > 1}
         capture={preferirCamera ? "environment" : undefined}
         onChange={handleSelecao}
@@ -159,7 +197,9 @@ export function MidiaUploader({ midia, onChange, maximo = 6, uploadUrl = "/api/u
       />
       {erro && <p className="text-sm text-red-600 mt-2">{erro}</p>}
       <p className="text-xs text-gray-400 mt-2">
-        As imagens são comprimidas automaticamente antes do envio (economiza dados e espaço).
+        {aceitarVideo
+          ? `Fotos são comprimidas automaticamente. Vídeos são enviados como estão (máximo ${LIMITE_VIDEO_MB}MB).`
+          : "As imagens são comprimidas automaticamente antes do envio (economiza dados e espaço)."}
       </p>
     </div>
   );
