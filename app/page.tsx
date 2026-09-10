@@ -175,7 +175,7 @@ export default function HomePage() {
   const categoriasPrincipais: CategoriaItem[] = [
     { nome: "Mercados", Icone: ShoppingBag, href: "/mercados" },
     { nome: "Alimentação", Icone: Utensils, href: "/alimentacao" },
-    { nome: "Farmácias", Icone: Pill, href: "/saude?tipo=farmacia" },
+    { nome: "Carona Solidária", Icone: Users, href: "/carona" },
     { nome: "Moto Táxi", Icone: Bike, href: "/mototaxi" },
     { nome: "Academias & Esportes", Icone: Dumbbell, href: "/academia" },
     { nome: "Água e Gás", Icone: Droplets, href: "/agua-gas" },
@@ -199,7 +199,7 @@ export default function HomePage() {
     { nome: "Eventos", Icone: PartyPopper, href: "/servicos?categoria=" + encodeURIComponent("Eventos") },
     { nome: "Pet Shop", Icone: PawPrint, href: "/pet" },
     { nome: "Financeiro", Icone: DollarSign, href: "/servicos?categoria=" + encodeURIComponent("Financeiro") },
-    { nome: "Carona Solidária", Icone: Users, href: "/carona" },
+    { nome: "Farmácias", Icone: Pill, href: "/saude?tipo=farmacia" },
   ];
 
   const handleSearch = () => {
