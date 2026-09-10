@@ -1,12 +1,24 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { obterUsuarioLocalId } from '@/lib/usuarioLocal';
-import { notificacaoService } from '@/services/notificacaoService';
+import { getCurrentUser } from '@/lib/auth';
+import { verificarInscricaoPush, ativarPush, desativarPush, pushSuportadoNoNavegador } from '@/lib/push/pushCliente';
 import { GRUPOS_INTERESSE } from '@/lib/gruposInteresse';
-import { Bell, X } from 'lucide-react';
+import { Bell, BellRing, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+// Antes disso usava obterUsuarioLocalId() (um id aleatorio por
+// aparelho, guardado antes de existir login de verdade) -- a inscricao
+// de push ficava salva sob um id que NUNCA bate com usuarios.id, que e'
+// o que enviarPushParaUsuario() usa em todo o app (lib/push.ts, ~30
+// rotas). Resultado: nenhum push jamais chegou a ninguem, em lugar
+// nenhum do app, desde que o recurso existe (confirmado: push_subscriptions
+// estava vazia). Agora usa a conta logada de verdade.
+//
+// Tambem era so' um icone de sino sem texto nenhum, escondido no canto
+// -- quem tem pouca intimidade com celular nunca ia adivinhar o que
+// aquilo faz. Agora tem escrito, e a mesma acao tambem existe dentro do
+// Perfil (ver app/profile/page.tsx) -- dois jeitos de achar, nao um so'.
 export default function PushSubscriptionManager() {
   const [usuarioId, setUsuarioId] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -17,54 +29,26 @@ export default function PushSubscriptionManager() {
   const [salvando, setSalvando] = useState(false);
 
   useEffect(() => {
-    setUsuarioId(obterUsuarioLocalId());
-  }, []);
-
-  useEffect(() => {
-    if ('serviceWorker' in navigator && 'PushManager' in window) {
+    const usuario = getCurrentUser();
+    setUsuarioId(usuario?.id || '');
+    if (pushSuportadoNoNavegador()) {
       setIsSupported(true);
-      verificarAssinatura();
+      verificarInscricaoPush().then(setIsSubscribed);
     }
   }, []);
 
-  const verificarAssinatura = async () => {
-    const registration = await navigator.serviceWorker.ready;
-    const subscription = await registration.pushManager.getSubscription();
-    setIsSubscribed(!!subscription);
-  };
-
-  const subscribeToPush = async () => {
-    try {
-      const registration = await navigator.serviceWorker.ready;
-
-      const permission = await Notification.requestPermission();
-      if (permission !== 'granted') {
-        return;
-      }
-
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
-      });
-
-      const success = await notificacaoService.salvarPushSubscription(subscription, usuarioId);
-
-      if (success) {
-        setIsSubscribed(true);
-        setMostrarPreferencias(true);
-      }
-    } catch (error) {
-      console.error('Erro ao assinar push:', error);
+  const ativar = async () => {
+    const ok = await ativarPush(usuarioId);
+    if (ok) {
+      setIsSubscribed(true);
+      setMostrarPreferencias(true);
+      toast.success('Avisos ativados!');
     }
   };
 
-  const unsubscribeFromPush = async () => {
-    const registration = await navigator.serviceWorker.ready;
-    const subscription = await registration.pushManager.getSubscription();
-    if (subscription) {
-      await subscription.unsubscribe();
-      setIsSubscribed(false);
-    }
+  const desativar = async () => {
+    await desativarPush();
+    setIsSubscribed(false);
     setMostrarPreferencias(false);
   };
 
@@ -110,15 +94,13 @@ export default function PushSubscriptionManager() {
   return (
     <>
       <button
-        onClick={() => (isSubscribed ? abrirPreferencias() : subscribeToPush())}
-        className={`fixed bottom-24 right-4 z-50 p-3 rounded-full shadow-lg transition-all ${
-          isSubscribed
-            ? 'bg-green-500 hover:bg-green-600'
-            : 'bg-gray-500 hover:bg-gray-600'
+        onClick={() => (isSubscribed ? abrirPreferencias() : ativar())}
+        className={`fixed bottom-24 right-4 z-50 flex items-center gap-2 pl-3.5 pr-4 py-2.5 rounded-full shadow-lg transition-all text-sm font-semibold ${
+          isSubscribed ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-amber-500 hover:bg-amber-600'
         } text-white`}
-        title={isSubscribed ? 'Notificações ativadas' : 'Ativar notificações'}
       >
-        <Bell className="w-5 h-5" />
+        {isSubscribed ? <BellRing className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
+        {isSubscribed ? 'Avisos ativados' : 'Ativar avisos'}
       </button>
 
       {mostrarPreferencias && (
@@ -167,7 +149,7 @@ export default function PushSubscriptionManager() {
               {salvando ? 'Salvando...' : 'Salvar'}
             </button>
             <button
-              onClick={unsubscribeFromPush}
+              onClick={desativar}
               className="w-full py-2 text-red-500 text-xs font-medium"
             >
               Desativar notificações
