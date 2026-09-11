@@ -150,7 +150,10 @@ export default function ProfilePage() {
   const handleLogout = () => {
     logoutAuth();
     toast.success("👋 Logout realizado com sucesso!");
-    router.push("/login");
+    // /login e' uma tela antiga de email+senha, de antes do cadastro sem
+    // senha existir -- nao tem usuario real nenhum ligado a ela. O
+    // cadastro de verdade (nome + whatsapp) mora na home.
+    router.push("/");
   };
 
   const copiarLink = () => {
