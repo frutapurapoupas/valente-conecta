@@ -570,23 +570,48 @@ export function FrenteCaixaDesktop({ usuarioId, usuarioNome, produtos, clientes,
           </button>
         </div>
 
-        {/* Preview do produto batido pelo codigo, antes de confirmar com Enter */}
+        {/* Painel grande do item atual -- referencia: sistema PDV de terceiro
+            que o dono do produto mandou print (nome/codigo/quantidade/preco
+            em caixas grandes + foto grande), pra dar resposta rapida e clara
+            pra quem esta' no balcao, operador e cliente, antes de apertar
+            Enter. Antes disso era so' uma linha compacta (ver historico). */}
         {produtoPreview && (
-          <div className="bg-blue-50 border-b border-blue-100 px-5 py-2.5 flex items-center gap-3">
-            <div className="w-12 h-12 rounded-lg bg-white border overflow-hidden shrink-0 flex items-center justify-center">
-              {produtoPreview.fotoUrl ? (
-                <img src={produtoPreview.fotoUrl} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <ShoppingCart className="w-5 h-5 text-gray-300" />
-              )}
+          <div className="bg-white border-b px-5 py-4">
+            <div className="grid grid-cols-[1fr_auto] gap-5 items-start">
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Descrição do produto</p>
+                <p className="text-2xl font-extrabold text-gray-900 leading-tight mb-3 truncate">{produtoPreview.nome}</p>
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div className="bg-gray-50 rounded-xl px-3.5 py-2.5">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Código</p>
+                    <p className="text-lg font-extrabold text-gray-800 font-mono tabular-nums truncate">{produtoPreview.ean || codigo}</p>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl px-3.5 py-2.5">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Quantidade</p>
+                    <p className="text-lg font-extrabold text-gray-800 tabular-nums">{qtdEntrada}</p>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl px-3.5 py-2.5">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Preço unitário</p>
+                    <p className="text-lg font-extrabold text-gray-800 tabular-nums">{formatarMoeda(produtoPreview.preco)}</p>
+                  </div>
+                  <div className="bg-emerald-50 rounded-xl px-3.5 py-2.5">
+                    <p className="text-[10px] font-bold text-emerald-700/70 uppercase tracking-wide">Preço total</p>
+                    <p className="text-xl font-extrabold text-emerald-700 tabular-nums">{formatarMoeda(produtoPreview.preco * qtdEntrada)}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="w-40 h-40 rounded-xl bg-gray-50 border overflow-hidden flex items-center justify-center shrink-0">
+                {produtoPreview.fotoUrl ? (
+                  <img src={produtoPreview.fotoUrl} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <ShoppingCart className="w-10 h-10 text-gray-300" />
+                )}
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-gray-800 text-sm truncate">{produtoPreview.nome}</p>
-              <p className="text-xs text-gray-500">
-                {produtoPreview.estoque} {produtoPreview.unidade || "un"} em estoque · {formatarMoeda(produtoPreview.preco)}
-              </p>
+            <div className="flex items-center justify-between mt-3">
+              <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full">Enter pra adicionar</span>
+              <span className="text-xs text-gray-400">{produtoPreview.estoque} {produtoPreview.unidade || "un"} em estoque</span>
             </div>
-            <span className="text-xs text-blue-600 font-medium whitespace-nowrap">Enter pra adicionar</span>
           </div>
         )}
 
